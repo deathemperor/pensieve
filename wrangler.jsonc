@@ -1,0 +1,42 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "pensieve",
+	"main": "./src/worker.ts",
+	"compatibility_date": "2026-03-29",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"routes": [
+		{
+			"pattern": "huuloc.com/pensieve*",
+			"zone_name": "huuloc.com"
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "pensieve-db",
+			"database_id": "1855e187-632c-4585-8c94-e5b7b139f76c",
+		},
+	],
+	"r2_buckets": [
+		{
+			"binding": "MEDIA",
+			"bucket_name": "pensieve-media",
+		},
+	],
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "3b03dd400a3645aba498f70808f08c76",
+		},
+	],
+	"observability": {
+		"enabled": true,
+	},
+	"worker_loaders": [
+		{
+			"binding": "LOADER",
+		},
+	],
+}

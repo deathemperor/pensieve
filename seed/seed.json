@@ -1,0 +1,381 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Pensieve",
+		"description": "A personal blog where long-form narratives live under per-category visual themes",
+		"author": "deathemperor"
+	},
+
+	"settings": {
+		"title": "pensieve",
+		"tagline": "long-form thoughts, one theme per topic"
+	},
+
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Posts",
+			"labelSingular": "Post",
+			"supports": ["drafts", "revisions", "search", "seo"],
+			"commentsEnabled": true,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Excerpt",
+					"type": "text"
+				},
+				{
+					"slug": "source",
+					"label": "Source",
+					"type": "string"
+				},
+				{
+					"slug": "source_id",
+					"label": "Source ID",
+					"type": "string"
+				},
+				{
+					"slug": "language",
+					"label": "Language",
+					"type": "string"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"supports": ["drafts", "revisions", "search"],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		}
+	],
+
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Categories",
+			"labelSingular": "Category",
+			"hierarchical": true,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "philosophy", "label": "Philosophy" },
+				{ "slug": "science", "label": "Science" },
+				{ "slug": "personal-stories", "label": "Personal Stories" },
+				{ "slug": "generative-ai", "label": "Generative AI" },
+				{ "slug": "startups", "label": "Startups" },
+				{ "slug": "nature", "label": "Nature" },
+				{ "slug": "misc", "label": "Miscellany" }
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": ["posts"],
+			"terms": [
+				{ "slug": "long-read", "label": "Long read" },
+				{ "slug": "essay", "label": "Essay" },
+				{ "slug": "notes", "label": "Notes" }
+			]
+		}
+	],
+
+	"bylines": [
+		{
+			"id": "byline-main",
+			"slug": "deathemperor",
+			"displayName": "deathemperor"
+		}
+	],
+
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{ "type": "custom", "label": "Home", "url": "/pensieve/" },
+				{ "type": "custom", "label": "All posts", "url": "/pensieve/posts" },
+				{ "type": "custom", "label": "About", "url": "/pensieve/pages/about" }
+			]
+		}
+	],
+
+	"widgetAreas": [
+		{
+			"name": "sidebar",
+			"label": "Sidebar",
+			"description": "Widget area displayed on single post pages",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:categories",
+					"title": "Categories"
+				},
+				{
+					"type": "component",
+					"componentId": "core:tags",
+					"title": "Tags"
+				},
+				{
+					"type": "component",
+					"componentId": "core:recent-posts",
+					"title": "Recent",
+					"settings": {
+						"count": 5,
+						"showDate": true
+					}
+				}
+			]
+		},
+		{
+			"name": "footer",
+			"label": "Footer",
+			"description": "Widget area displayed in the site footer",
+			"widgets": [
+				{
+					"type": "content",
+					"title": "About pensieve",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A personal archive of long-form narratives, sorted by topic and given a visual home that matches the subject."
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	],
+
+	"content": {
+		"pages": [
+			{
+				"id": "about",
+				"slug": "about",
+				"status": "published",
+				"data": {
+					"title": "About",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "This is pensieve. A place where long posts find a second life out of the scroll feed, sorted by category, each category given its own visual theme that tries to match the terrain of the topic."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Built on EmDash and Cloudflare Workers. Content sourced from long-form writing originally published on Facebook."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"posts": [
+			{
+				"id": "placeholder-philosophy",
+				"slug": "on-the-shape-of-an-answer",
+				"status": "published",
+				"data": {
+					"title": "On the Shape of an Answer",
+					"excerpt": "A placeholder essay in the philosophy category, used to verify the philosophers-salon theme renders end-to-end.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "An answer is not the end of a question. It is the question held still long enough to be looked at from one angle. Move, and it becomes another question."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["philosophy"],
+					"tag": ["essay"]
+				}
+			},
+			{
+				"id": "placeholder-science",
+				"slug": "a-rough-measurement",
+				"status": "published",
+				"data": {
+					"title": "A Rough Measurement",
+					"excerpt": "Placeholder in the science category to verify the lab-notebook theme.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The first measurement is almost always wrong. The value of the first measurement is that it teaches you how to take the second one."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["science"],
+					"tag": ["notes"]
+				}
+			},
+			{
+				"id": "placeholder-personal",
+				"slug": "the-summer-of-quiet-kitchens",
+				"status": "published",
+				"data": {
+					"title": "The Summer of Quiet Kitchens",
+					"excerpt": "Placeholder in the personal-stories category to verify the campfire theme.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "There was a stretch of months when the kitchen was always quiet. Not empty — quiet. The radio turned low, the window half open, the stove warm from something that had just finished cooking but that nobody remembered making."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["personal-stories"],
+					"tag": ["long-read"]
+				}
+			},
+			{
+				"id": "placeholder-genai",
+				"slug": "the-model-as-co-author",
+				"status": "published",
+				"data": {
+					"title": "The Model as Co-Author",
+					"excerpt": "Placeholder in the generative-ai category to verify the neural-net theme.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Writing with a language model is a little like writing with someone who has read everything and remembered none of it. You bring the wanting and the shape. It brings the permutations of words that wouldn't have otherwise surfaced."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["generative-ai"],
+					"tag": ["essay"]
+				}
+			},
+			{
+				"id": "placeholder-startups",
+				"slug": "the-pitch-that-couldnt-be-pitched",
+				"status": "published",
+				"data": {
+					"title": "The Pitch That Couldn't Be Pitched",
+					"excerpt": "Placeholder in the startups category to verify the rocket-science theme.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "The best part of the deck was the slide we never showed. It was the one where the market size was honest, the moat was thin, and the team was three people who had never shipped together before. We left it out. Everyone does."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["startups"],
+					"tag": ["essay"]
+				}
+			},
+			{
+				"id": "placeholder-nature",
+				"slug": "koi-and-the-weight-of-morning",
+				"status": "published",
+				"data": {
+					"title": "Koi and the Weight of Morning",
+					"excerpt": "Placeholder in the nature category to verify the natural-ponds theme.",
+					"language": "en",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "At dawn the pond is a mirror nobody has cleaned. The koi come up to break it, not because they are hungry, but because the surface is softer than the depth at this hour, and every fish has a morning in it."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": {
+					"category": ["nature"],
+					"tag": ["long-read"]
+				}
+			}
+		]
+	}
+}

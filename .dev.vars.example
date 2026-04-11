@@ -1,0 +1,10 @@
+# Copy to .dev.vars (gitignored) and fill in real values.
+# .dev.vars is picked up by `wrangler dev` and by EmDash's Node-side scripts.
+
+# Anthropic API key — used by scripts/taste-profile.ts and scripts/classify.ts
+# when synthesizing the taste profile and classifying Facebook posts into
+# categories. Only needed offline, not inside the Worker runtime.
+ANTHROPIC_API_KEY=
+
+# Optional: override the default Sonnet model used by the classify script.
+# ANTHROPIC_MODEL=claude-sonnet-4-6
