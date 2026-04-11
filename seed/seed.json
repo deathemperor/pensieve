@@ -1,0 +1,1562 @@
+{
+	"$schema": "https://emdashcms.com/seed.schema.json",
+	"version": "1",
+	"meta": {
+		"name": "Pensieve",
+		"description": "A personal blog where long-form narratives live under per-category visual themes",
+		"author": "deathemperor"
+	},
+	"settings": {
+		"title": "pensieve",
+		"tagline": "long-form thoughts, one theme per topic"
+	},
+	"collections": [
+		{
+			"slug": "posts",
+			"label": "Posts",
+			"labelSingular": "Post",
+			"supports": [
+				"drafts",
+				"revisions",
+				"search",
+				"seo"
+			],
+			"commentsEnabled": true,
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "excerpt",
+					"label": "Excerpt",
+					"type": "text"
+				},
+				{
+					"slug": "source",
+					"label": "Source",
+					"type": "string"
+				},
+				{
+					"slug": "source_id",
+					"label": "Source ID",
+					"type": "string"
+				},
+				{
+					"slug": "language",
+					"label": "Language",
+					"type": "string"
+				},
+				{
+					"slug": "original_language",
+					"label": "Original Language",
+					"type": "string"
+				},
+				{
+					"slug": "notify_subscribers",
+					"label": "Notify Subscribers",
+					"type": "boolean"
+				}
+			]
+		},
+		{
+			"slug": "pages",
+			"label": "Pages",
+			"labelSingular": "Page",
+			"supports": [
+				"drafts",
+				"revisions",
+				"search"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				}
+			]
+		},
+		{
+			"slug": "diary",
+			"label": "Build Diary",
+			"labelSingular": "Diary Entry",
+			"supports": [
+				"search"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "date",
+					"label": "Date",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "entry_type",
+					"label": "Type",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "prompt",
+					"label": "Prompt",
+					"type": "text"
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "model",
+					"label": "Model",
+					"type": "string"
+				},
+				{
+					"slug": "claude_code",
+					"label": "Claude Code Version",
+					"type": "string"
+				},
+				{
+					"slug": "input_tokens",
+					"label": "Input Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "output_tokens",
+					"label": "Output Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "cache_read",
+					"label": "Cache Read Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "cost",
+					"label": "Cost (USD cents)",
+					"type": "integer"
+				}
+			]
+		},
+		{
+			"slug": "lessons",
+			"label": "Lessons",
+			"labelSingular": "Lesson",
+			"supports": [
+				"drafts",
+				"search"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "description",
+					"label": "Description",
+					"type": "text"
+				},
+				{
+					"slug": "featured_image",
+					"label": "Featured Image",
+					"type": "image"
+				},
+				{
+					"slug": "duration",
+					"label": "Duration",
+					"type": "string"
+				},
+				{
+					"slug": "objectives",
+					"label": "Objectives",
+					"type": "text"
+				},
+				{
+					"slug": "difficulty",
+					"label": "Difficulty",
+					"type": "string"
+				},
+				{
+					"slug": "order",
+					"label": "Order",
+					"type": "integer"
+				},
+				{
+					"slug": "language",
+					"label": "Language",
+					"type": "string"
+				},
+				{
+					"slug": "slides",
+					"label": "Slides",
+					"type": "json"
+				}
+			]
+		}
+	],
+	"taxonomies": [
+		{
+			"name": "category",
+			"label": "Categories",
+			"labelSingular": "Category",
+			"hierarchical": true,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "philosophy",
+					"label": "Philosophy"
+				},
+				{
+					"slug": "science",
+					"label": "Science"
+				},
+				{
+					"slug": "personal-stories",
+					"label": "Personal Stories"
+				},
+				{
+					"slug": "generative-ai",
+					"label": "Generative AI"
+				},
+				{
+					"slug": "startups",
+					"label": "Startups"
+				},
+				{
+					"slug": "nature",
+					"label": "Nature"
+				},
+				{
+					"slug": "misc",
+					"label": "Miscellany"
+				}
+			]
+		},
+		{
+			"name": "tag",
+			"label": "Tags",
+			"labelSingular": "Tag",
+			"hierarchical": false,
+			"collections": [
+				"posts"
+			],
+			"terms": [
+				{
+					"slug": "long-read",
+					"label": "Long read"
+				},
+				{
+					"slug": "essay",
+					"label": "Essay"
+				},
+				{
+					"slug": "notes",
+					"label": "Notes"
+				},
+				{
+					"slug": "childhood",
+					"label": "Childhood"
+				},
+				{
+					"slug": "ba",
+					"label": "Ba"
+				},
+				{
+					"slug": "phong-sanh",
+					"label": "Phong Sanh"
+				},
+				{
+					"slug": "wife-and-nai",
+					"label": "Wife And Nai"
+				},
+				{
+					"slug": "nai",
+					"label": "Nai"
+				},
+				{
+					"slug": "fatherhood",
+					"label": "Fatherhood"
+				},
+				{
+					"slug": "english-learning",
+					"label": "English Learning"
+				},
+				{
+					"slug": "family-vignette",
+					"label": "Family Vignette"
+				},
+				{
+					"slug": "vng",
+					"label": "Vng"
+				},
+				{
+					"slug": "vinagame",
+					"label": "Vinagame"
+				},
+				{
+					"slug": "resume",
+					"label": "Resume"
+				},
+				{
+					"slug": "sso",
+					"label": "Sso"
+				},
+				{
+					"slug": "mentorship",
+					"label": "Mentorship"
+				},
+				{
+					"slug": "su-phu",
+					"label": "Su Phu"
+				},
+				{
+					"slug": "emotions",
+					"label": "Emotions"
+				},
+				{
+					"slug": "tran-hoang-phong",
+					"label": "Tran Hoang Phong"
+				},
+				{
+					"slug": "tim-nhanh",
+					"label": "Tim Nhanh"
+				},
+				{
+					"slug": "friendship",
+					"label": "Friendship"
+				},
+				{
+					"slug": "theorycrafting",
+					"label": "Theorycrafting"
+				},
+				{
+					"slug": "xap-xam",
+					"label": "Xap Xam"
+				},
+				{
+					"slug": "strategy",
+					"label": "Strategy"
+				},
+				{
+					"slug": "tet",
+					"label": "Tet"
+				},
+				{
+					"slug": "nguyen-cong-huan",
+					"label": "Nguyen Cong Huan"
+				},
+				{
+					"slug": "nguyen-binh-khiem",
+					"label": "Nguyen Binh Khiem"
+				},
+				{
+					"slug": "childhood-anger",
+					"label": "Childhood Anger"
+				},
+				{
+					"slug": "letter-to-friend",
+					"label": "Letter To Friend"
+				},
+				{
+					"slug": "ma",
+					"label": "Ma"
+				},
+				{
+					"slug": "motorbike",
+					"label": "Motorbike"
+				},
+				{
+					"slug": "papaya",
+					"label": "Papaya"
+				},
+				{
+					"slug": "chi-huong",
+					"label": "Chi Huong"
+				},
+				{
+					"slug": "ctoo",
+					"label": "Ctoo"
+				},
+				{
+					"slug": "thu-gui-thay",
+					"label": "Thu Gui Thay"
+				},
+				{
+					"slug": "llm",
+					"label": "Llm"
+				},
+				{
+					"slug": "programming-craft",
+					"label": "Programming Craft"
+				},
+				{
+					"slug": "ba-xe-om",
+					"label": "Ba Xe Om"
+				},
+				{
+					"slug": "soul-in-software",
+					"label": "Soul In Software"
+				},
+				{
+					"slug": "oasis",
+					"label": "Oasis"
+				},
+				{
+					"slug": "agent",
+					"label": "Agent"
+				},
+				{
+					"slug": "starcraft",
+					"label": "Starcraft"
+				},
+				{
+					"slug": "truancy",
+					"label": "Truancy"
+				},
+				{
+					"slug": "english-tutor",
+					"label": "English Tutor"
+				},
+				{
+					"slug": "cay-dua",
+					"label": "Cay Dua"
+				},
+				{
+					"slug": "mien-tay",
+					"label": "Mien Tay"
+				},
+				{
+					"slug": "plant-catalog",
+					"label": "Plant Catalog"
+				},
+				{
+					"slug": "lop-truong",
+					"label": "Lop Truong"
+				},
+				{
+					"slug": "reunion",
+					"label": "Reunion"
+				},
+				{
+					"slug": "ambition",
+					"label": "Ambition"
+				},
+				{
+					"slug": "friendship-ledger",
+					"label": "Friendship Ledger"
+				},
+				{
+					"slug": "birds",
+					"label": "Birds"
+				},
+				{
+					"slug": "memory",
+					"label": "Memory"
+				},
+				{
+					"slug": "daughter",
+					"label": "Daughter"
+				},
+				{
+					"slug": "family",
+					"label": "Family"
+				},
+				{
+					"slug": "language",
+					"label": "Language"
+				},
+				{
+					"slug": "career",
+					"label": "Career"
+				},
+				{
+					"slug": "gaming",
+					"label": "Gaming"
+				},
+				{
+					"slug": "2026",
+					"label": "2026"
+				},
+				{
+					"slug": "friends",
+					"label": "Friends"
+				},
+				{
+					"slug": "phong-tran",
+					"label": "Phong Tran"
+				},
+				{
+					"slug": "cards",
+					"label": "Cards"
+				},
+				{
+					"slug": "theory",
+					"label": "Theory"
+				},
+				{
+					"slug": "games",
+					"label": "Games"
+				},
+				{
+					"slug": "open-letter",
+					"label": "Open Letter"
+				},
+				{
+					"slug": "memoir",
+					"label": "Memoir"
+				},
+				{
+					"slug": "first-day",
+					"label": "First Day"
+				},
+				{
+					"slug": "software",
+					"label": "Software"
+				},
+				{
+					"slug": "craft",
+					"label": "Craft"
+				},
+				{
+					"slug": "soul",
+					"label": "Soul"
+				},
+				{
+					"slug": "huynh-gia-tai",
+					"label": "Huynh Gia Tai"
+				},
+				{
+					"slug": "school",
+					"label": "School"
+				},
+				{
+					"slug": "leadership",
+					"label": "Leadership"
+				},
+				{
+					"slug": "plants",
+					"label": "Plants"
+				},
+				{
+					"slug": "living",
+					"label": "Living"
+				},
+				{
+					"slug": "east-west",
+					"label": "East West"
+				},
+				{
+					"slug": "aphorism",
+					"label": "Aphorism"
+				},
+				{
+					"slug": "origin",
+					"label": "Origin"
+				},
+				{
+					"slug": "meta-us",
+					"label": "Meta Us"
+				},
+				{
+					"slug": "uk-trip",
+					"label": "Uk Trip"
+				},
+				{
+					"slug": "manchester-united",
+					"label": "Manchester United"
+				},
+				{
+					"slug": "communication",
+					"label": "Communication"
+				},
+				{
+					"slug": "children",
+					"label": "Children"
+				},
+				{
+					"slug": "hiring",
+					"label": "Hiring"
+				},
+				{
+					"slug": "recruiting",
+					"label": "Recruiting"
+				},
+				{
+					"slug": "engineering",
+					"label": "Engineering"
+				},
+				{
+					"slug": "mental-health",
+					"label": "Mental Health"
+				},
+				{
+					"slug": "bipolar",
+					"label": "Bipolar"
+				},
+				{
+					"slug": "gratitude",
+					"label": "Gratitude"
+				},
+				{
+					"slug": "father",
+					"label": "Father"
+				},
+				{
+					"slug": "love",
+					"label": "Love"
+				},
+				{
+					"slug": "wife",
+					"label": "Wife"
+				},
+				{
+					"slug": "project-x",
+					"label": "Project X"
+				},
+				{
+					"slug": "1984",
+					"label": "1984"
+				},
+				{
+					"slug": "work-ethic",
+					"label": "Work Ethic"
+				},
+				{
+					"slug": "graphql",
+					"label": "Graphql"
+				},
+				{
+					"slug": "opensource",
+					"label": "Opensource"
+				},
+				{
+					"slug": "parenting",
+					"label": "Parenting"
+				},
+				{
+					"slug": "nhau",
+					"label": "Nhau"
+				},
+				{
+					"slug": "refreshment",
+					"label": "Refreshment"
+				},
+				{
+					"slug": "athletics",
+					"label": "Athletics"
+				},
+				{
+					"slug": "wow",
+					"label": "Wow"
+				},
+				{
+					"slug": "cold",
+					"label": "Cold"
+				},
+				{
+					"slug": "design",
+					"label": "Design"
+				},
+				{
+					"slug": "home",
+					"label": "Home"
+				},
+				{
+					"slug": "habits",
+					"label": "Habits"
+				},
+				{
+					"slug": "injury",
+					"label": "Injury"
+				},
+				{
+					"slug": "accident",
+					"label": "Accident"
+				},
+				{
+					"slug": "vinh-long",
+					"label": "Vinh Long"
+				},
+				{
+					"slug": "salary",
+					"label": "Salary"
+				},
+				{
+					"slug": "gym",
+					"label": "Gym"
+				},
+				{
+					"slug": "ly-duc",
+					"label": "Ly Duc"
+				},
+				{
+					"slug": "jordan-peterson",
+					"label": "Jordan Peterson"
+				},
+				{
+					"slug": "observation",
+					"label": "Observation"
+				},
+				{
+					"slug": "sun",
+					"label": "Sun"
+				},
+				{
+					"slug": "photography",
+					"label": "Photography"
+				},
+				{
+					"slug": "awareness",
+					"label": "Awareness"
+				},
+				{
+					"slug": "smile",
+					"label": "Smile"
+				},
+				{
+					"slug": "mechanics",
+					"label": "Mechanics"
+				},
+				{
+					"slug": "anniversary",
+					"label": "Anniversary"
+				},
+				{
+					"slug": "apple",
+					"label": "Apple"
+				},
+				{
+					"slug": "mobile-world",
+					"label": "Mobile World"
+				},
+				{
+					"slug": "consumer",
+					"label": "Consumer"
+				},
+				{
+					"slug": "identity",
+					"label": "Identity"
+				},
+				{
+					"slug": "limits",
+					"label": "Limits"
+				},
+				{
+					"slug": "etymology",
+					"label": "Etymology"
+				},
+				{
+					"slug": "astronomy",
+					"label": "Astronomy"
+				},
+				{
+					"slug": "creation",
+					"label": "Creation"
+				},
+				{
+					"slug": "latin",
+					"label": "Latin"
+				},
+				{
+					"slug": "learning",
+					"label": "Learning"
+				},
+				{
+					"slug": "value",
+					"label": "Value"
+				},
+				{
+					"slug": "phuong-bui-minh",
+					"label": "Phuong Bui Minh"
+				},
+				{
+					"slug": "competition",
+					"label": "Competition"
+				},
+				{
+					"slug": "colleagues",
+					"label": "Colleagues"
+				},
+				{
+					"slug": "self-reflection",
+					"label": "Self Reflection"
+				},
+				{
+					"slug": "mua-mua-nang",
+					"label": "Mua Mua Nang"
+				},
+				{
+					"slug": "buddhism",
+					"label": "Buddhism"
+				},
+				{
+					"slug": "writing",
+					"label": "Writing"
+				},
+				{
+					"slug": "su-phu-tech",
+					"label": "Su Phu Tech"
+				},
+				{
+					"slug": "aging",
+					"label": "Aging"
+				},
+				{
+					"slug": "teacher",
+					"label": "Teacher"
+				},
+				{
+					"slug": "patience",
+					"label": "Patience"
+				},
+				{
+					"slug": "football",
+					"label": "Football"
+				},
+				{
+					"slug": "beckham",
+					"label": "Beckham"
+				},
+				{
+					"slug": "rashford",
+					"label": "Rashford"
+				},
+				{
+					"slug": "copilot",
+					"label": "Copilot"
+				},
+				{
+					"slug": "ai",
+					"label": "Ai"
+				},
+				{
+					"slug": "developer-tools",
+					"label": "Developer Tools"
+				},
+				{
+					"slug": "mind-master",
+					"label": "Mind Master"
+				},
+				{
+					"slug": "thinking",
+					"label": "Thinking"
+				},
+				{
+					"slug": "typescript",
+					"label": "Typescript"
+				},
+				{
+					"slug": "oss",
+					"label": "Oss"
+				},
+				{
+					"slug": "rest",
+					"label": "Rest"
+				},
+				{
+					"slug": "htmx",
+					"label": "Htmx"
+				},
+				{
+					"slug": "engineering-philosophy",
+					"label": "Engineering Philosophy"
+				},
+				{
+					"slug": "web",
+					"label": "Web"
+				},
+				{
+					"slug": "birth",
+					"label": "Birth"
+				},
+				{
+					"slug": "naming",
+					"label": "Naming"
+				},
+				{
+					"slug": "tech-debt",
+					"label": "Tech Debt"
+				},
+				{
+					"slug": "ro-my",
+					"label": "Ro My"
+				},
+				{
+					"slug": "cichlids",
+					"label": "Cichlids"
+				},
+				{
+					"slug": "community",
+					"label": "Community"
+				},
+				{
+					"slug": "admin",
+					"label": "Admin"
+				},
+				{
+					"slug": "contest",
+					"label": "Contest"
+				},
+				{
+					"slug": "death",
+					"label": "Death"
+				},
+				{
+					"slug": "tattoo",
+					"label": "Tattoo"
+				},
+				{
+					"slug": "funeral",
+					"label": "Funeral"
+				},
+				{
+					"slug": "culture",
+					"label": "Culture"
+				},
+				{
+					"slug": "vieja-bifasciatus",
+					"label": "Vieja Bifasciatus"
+				},
+				{
+					"slug": "hikari",
+					"label": "Hikari"
+				},
+				{
+					"slug": "fish",
+					"label": "Fish"
+				},
+				{
+					"slug": "evolution",
+					"label": "Evolution"
+				},
+				{
+					"slug": "hobby",
+					"label": "Hobby"
+				},
+				{
+					"slug": "breeding",
+					"label": "Breeding"
+				},
+				{
+					"slug": "fry",
+					"label": "Fry"
+				},
+				{
+					"slug": "water-chemistry",
+					"label": "Water Chemistry"
+				},
+				{
+					"slug": "oxygen",
+					"label": "Oxygen"
+				},
+				{
+					"slug": "summer",
+					"label": "Summer"
+				},
+				{
+					"slug": "pair-bonds",
+					"label": "Pair Bonds"
+				},
+				{
+					"slug": "heros",
+					"label": "Heros"
+				},
+				{
+					"slug": "fish-care",
+					"label": "Fish Care"
+				},
+				{
+					"slug": "holiday",
+					"label": "Holiday"
+				},
+				{
+					"slug": "tank",
+					"label": "Tank"
+				},
+				{
+					"slug": "madagascar",
+					"label": "Madagascar"
+				},
+				{
+					"slug": "ptychochromis",
+					"label": "Ptychochromis"
+				},
+				{
+					"slug": "conservation",
+					"label": "Conservation"
+				},
+				{
+					"slug": "behavior",
+					"label": "Behavior"
+				},
+				{
+					"slug": "brand",
+					"label": "Brand"
+				},
+				{
+					"slug": "desire",
+					"label": "Desire"
+				},
+				{
+					"slug": "import",
+					"label": "Import"
+				},
+				{
+					"slug": "covid",
+					"label": "Covid"
+				},
+				{
+					"slug": "grief",
+					"label": "Grief"
+				},
+				{
+					"slug": "paretroplus",
+					"label": "Paretroplus"
+				},
+				{
+					"slug": "eggs",
+					"label": "Eggs"
+				},
+				{
+					"slug": "chuco",
+					"label": "Chuco"
+				},
+				{
+					"slug": "monotypic",
+					"label": "Monotypic"
+				},
+				{
+					"slug": "species",
+					"label": "Species"
+				},
+				{
+					"slug": "oscura-heterospila",
+					"label": "Oscura Heterospila"
+				},
+				{
+					"slug": "color",
+					"label": "Color"
+				},
+				{
+					"slug": "feeding",
+					"label": "Feeding"
+				},
+				{
+					"slug": "group",
+					"label": "Group"
+				},
+				{
+					"slug": "tamarind",
+					"label": "Tamarind"
+				},
+				{
+					"slug": "food",
+					"label": "Food"
+				},
+				{
+					"slug": "ad",
+					"label": "Ad"
+				},
+				{
+					"slug": "product",
+					"label": "Product"
+				},
+				{
+					"slug": "vieja",
+					"label": "Vieja"
+				},
+				{
+					"slug": "genetics",
+					"label": "Genetics"
+				},
+				{
+					"slug": "marble",
+					"label": "Marble"
+				},
+				{
+					"slug": "hac-hau",
+					"label": "Hac Hau"
+				},
+				{
+					"slug": "astatheros",
+					"label": "Astatheros"
+				},
+				{
+					"slug": "beauty",
+					"label": "Beauty"
+				},
+				{
+					"slug": "website",
+					"label": "Website"
+				},
+				{
+					"slug": "f1",
+					"label": "F1"
+				},
+				{
+					"slug": "cribroheros",
+					"label": "Cribroheros"
+				},
+				{
+					"slug": "artemia",
+					"label": "Artemia"
+				},
+				{
+					"slug": "development",
+					"label": "Development"
+				},
+				{
+					"slug": "lifecycle",
+					"label": "Lifecycle"
+				},
+				{
+					"slug": "paratipalia",
+					"label": "Paratipalia"
+				},
+				{
+					"slug": "vietnam-first",
+					"label": "Vietnam First"
+				},
+				{
+					"slug": "wife-family",
+					"label": "Wife Family"
+				},
+				{
+					"slug": "r6",
+					"label": "R6"
+				},
+				{
+					"slug": "arrogance",
+					"label": "Arrogance"
+				},
+				{
+					"slug": "psg",
+					"label": "Psg"
+				},
+				{
+					"slug": "luck",
+					"label": "Luck"
+				},
+				{
+					"slug": "fergie",
+					"label": "Fergie"
+				},
+				{
+					"slug": "effort",
+					"label": "Effort"
+				},
+				{
+					"slug": "solo-travel",
+					"label": "Solo Travel"
+				},
+				{
+					"slug": "courage",
+					"label": "Courage"
+				},
+				{
+					"slug": "self-love",
+					"label": "Self Love"
+				},
+				{
+					"slug": "fire",
+					"label": "Fire"
+				},
+				{
+					"slug": "2018",
+					"label": "2018"
+				},
+				{
+					"slug": "movie",
+					"label": "Movie"
+				},
+				{
+					"slug": "la-la-land",
+					"label": "La La Land"
+				},
+				{
+					"slug": "critique",
+					"label": "Critique"
+				},
+				{
+					"slug": "vnexpress",
+					"label": "Vnexpress"
+				},
+				{
+					"slug": "game",
+					"label": "Game"
+				},
+				{
+					"slug": "riddle",
+					"label": "Riddle"
+				},
+				{
+					"slug": "social",
+					"label": "Social"
+				},
+				{
+					"slug": "profile",
+					"label": "Profile"
+				},
+				{
+					"slug": "news",
+					"label": "News"
+				},
+				{
+					"slug": "misinformation",
+					"label": "Misinformation"
+				},
+				{
+					"slug": "gvn-studio",
+					"label": "Gvn Studio"
+				},
+				{
+					"slug": "game-launch",
+					"label": "Game Launch"
+				},
+				{
+					"slug": "global",
+					"label": "Global"
+				},
+				{
+					"slug": "startup",
+					"label": "Startup"
+				},
+				{
+					"slug": "zing-news",
+					"label": "Zing News"
+				},
+				{
+					"slug": "clickbait",
+					"label": "Clickbait"
+				},
+				{
+					"slug": "media",
+					"label": "Media"
+				},
+				{
+					"slug": "industry",
+					"label": "Industry"
+				},
+				{
+					"slug": "monumental-valley",
+					"label": "Monumental Valley"
+				},
+				{
+					"slug": "laid-off",
+					"label": "Laid Off"
+				},
+				{
+					"slug": "kojima",
+					"label": "Kojima"
+				},
+				{
+					"slug": "konami",
+					"label": "Konami"
+				},
+				{
+					"slug": "metal-gear",
+					"label": "Metal Gear"
+				},
+				{
+					"slug": "chameleon",
+					"label": "Chameleon"
+				},
+				{
+					"slug": "sully",
+					"label": "Sully"
+				},
+				{
+					"slug": "hunting",
+					"label": "Hunting"
+				},
+				{
+					"slug": "ethics",
+					"label": "Ethics"
+				},
+				{
+					"slug": "123pay",
+					"label": "123pay"
+				},
+				{
+					"slug": "milestone",
+					"label": "Milestone"
+				},
+				{
+					"slug": "cuong",
+					"label": "Cuong"
+				},
+				{
+					"slug": "cafe",
+					"label": "Cafe"
+				},
+				{
+					"slug": "kindness",
+					"label": "Kindness"
+				},
+				{
+					"slug": "street",
+					"label": "Street"
+				},
+				{
+					"slug": "saigon",
+					"label": "Saigon"
+				},
+				{
+					"slug": "blizzard",
+					"label": "Blizzard"
+				},
+				{
+					"slug": "battle-net",
+					"label": "Battle Net"
+				},
+				{
+					"slug": "launcher",
+					"label": "Launcher"
+				},
+				{
+					"slug": "hdviet",
+					"label": "Hdviet"
+				},
+				{
+					"slug": "video",
+					"label": "Video"
+				},
+				{
+					"slug": "scaling",
+					"label": "Scaling"
+				},
+				{
+					"slug": "quality",
+					"label": "Quality"
+				},
+				{
+					"slug": "after-earth",
+					"label": "After Earth"
+				},
+				{
+					"slug": "review",
+					"label": "Review"
+				},
+				{
+					"slug": "allegory",
+					"label": "Allegory"
+				},
+				{
+					"slug": "fable",
+					"label": "Fable"
+				},
+				{
+					"slug": "loyalty",
+					"label": "Loyalty"
+				},
+				{
+					"slug": "chinese",
+					"label": "Chinese"
+				},
+				{
+					"slug": "nephew",
+					"label": "Nephew"
+				},
+				{
+					"slug": "advice",
+					"label": "Advice"
+				},
+				{
+					"slug": "app-review",
+					"label": "App Review"
+				},
+				{
+					"slug": "123phim",
+					"label": "123phim"
+				},
+				{
+					"slug": "ux",
+					"label": "Ux"
+				},
+				{
+					"slug": "amazon",
+					"label": "Amazon"
+				},
+				{
+					"slug": "customer-service",
+					"label": "Customer Service"
+				},
+				{
+					"slug": "sc2",
+					"label": "Sc2"
+				},
+				{
+					"slug": "shipping",
+					"label": "Shipping"
+				},
+				{
+					"slug": "quora",
+					"label": "Quora"
+				},
+				{
+					"slug": "share",
+					"label": "Share"
+				},
+				{
+					"slug": "imagination",
+					"label": "Imagination"
+				},
+				{
+					"slug": "prometheus",
+					"label": "Prometheus"
+				},
+				{
+					"slug": "jd",
+					"label": "Jd"
+				},
+				{
+					"slug": "graphic-design",
+					"label": "Graphic Design"
+				},
+				{
+					"slug": "urban-legend",
+					"label": "Urban Legend"
+				},
+				{
+					"slug": "vietnamese",
+					"label": "Vietnamese"
+				},
+				{
+					"slug": "snark",
+					"label": "Snark"
+				}
+			]
+		},
+		{
+			"name": "subject",
+			"label": "Subjects",
+			"labelSingular": "Subject",
+			"hierarchical": false,
+			"collections": [
+				"lessons"
+			],
+			"terms": [
+				{
+					"slug": "modern-ai",
+					"label": "What is Modern AI"
+				}
+			]
+		}
+	],
+	"bylines": [
+		{
+			"id": "byline-main",
+			"slug": "deathemperor",
+			"displayName": "deathemperor"
+		}
+	],
+	"menus": [
+		{
+			"name": "primary",
+			"label": "Primary Navigation",
+			"items": [
+				{
+					"type": "custom",
+					"label": "Home",
+					"url": "/pensieve/"
+				},
+				{
+					"type": "custom",
+					"label": "All Memories",
+					"url": "/pensieve/memories"
+				},
+				{
+					"type": "custom",
+					"label": "About",
+					"url": "/Trương"
+				}
+			]
+		}
+	],
+	"widgetAreas": [
+		{
+			"name": "sidebar",
+			"label": "Sidebar",
+			"description": "Widget area displayed on single post pages",
+			"widgets": [
+				{
+					"type": "component",
+					"componentId": "core:categories",
+					"title": "Categories"
+				},
+				{
+					"type": "component",
+					"componentId": "core:tags",
+					"title": "Tags"
+				},
+				{
+					"type": "component",
+					"componentId": "core:recent-posts",
+					"title": "Recent",
+					"settings": {
+						"count": 5,
+						"showDate": true
+					}
+				}
+			]
+		},
+		{
+			"name": "footer",
+			"label": "Footer",
+			"description": "Widget area displayed in the site footer",
+			"widgets": [
+				{
+					"type": "content",
+					"title": "About pensieve",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A personal archive of long-form narratives, sorted by topic and given a visual home that matches the subject."
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}
