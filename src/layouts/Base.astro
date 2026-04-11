@@ -12,6 +12,8 @@ import "../styles/theme.css";
 import ThemeStyles from "../components/ThemeStyles.astro";
 import type { Theme } from "../themes/types";
 import { link } from "../utils/link";
+import { allThemes } from "../themes";
+import { categoryThemeMap } from "../themes/categoryThemes";
 
 interface Props {
 	title: string;
@@ -27,6 +29,8 @@ interface Props {
 	content?: { collection: string; id: string; slug?: string | null };
 	/** Optional per-category visual theme. Re-themes the whole page. */
 	theme?: Theme | null;
+	/** Load all theme Google Font families — for pages that render multiple themes (home, /categories). */
+	loadAllThemeFonts?: boolean;
 }
 
 const {
@@ -41,8 +45,36 @@ const {
 	author,
 	content,
 	theme = null,
+	loadAllThemeFonts = false,
 } = Astro.props;
 const siteTitle = "pensieve";
+
+// For the home + /categories pages we load every theme's google fonts stylesheet
+// so themed hero/section/tile elements can actually render in the right typeface.
+// display=swap keeps paint fast; the browser falls back while fetching.
+const allThemeFontHrefs = loadAllThemeFonts
+	? Array.from(
+			new Set(
+				allThemes
+					.map((t) => t.fonts.googleFontsHref)
+					.filter(Boolean) as string[],
+			),
+		)
+	: [];
+
+// Nav menu: primary items from seed + a hardcoded Categories link
+const categoryMenuEntries = Object.entries(categoryThemeMap).map(([slug, themeSlug]) => {
+	const t = allThemes.find((x) => x.slug === themeSlug);
+	// Capitalize the category slug for display
+	const label = slug
+		.replace(/-/g, " ")
+		.replace(/\b\w/g, (c) => c.toUpperCase());
+	return {
+		categorySlug: slug,
+		label,
+		accent: t?.palette.accent ?? "#666",
+	};
+});
 // If title already includes site title (from getSeoMeta), use as-is
 const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 
@@ -87,6 +119,11 @@ const isLoggedIn = !!Astro.locals.user;
 				/>
 			)
 		}
+		{
+			allThemeFontHrefs.map((href) => (
+				<link rel="stylesheet" href={href} />
+			))
+		}
 		<title>{fullTitle}</title>
 		<EmDashHead page={pageCtx} />
 		{theme && <ThemeStyles theme={theme} />}
@@ -126,6 +163,28 @@ const isLoggedIn = !!Astro.locals.user;
 								</a>
 							))
 						}
+						<details class="nav-categories">
+							<summary>
+								Categories <span class="nav-arrow">▾</span>
+							</summary>
+							<div class="nav-dropdown">
+								<a href={link("categories")} class="nav-dropdown-header">
+									All categories →
+								</a>
+								{
+									categoryMenuEntries.map((c) => (
+										<a
+											href={link(`category/${c.categorySlug}`)}
+											class="nav-dropdown-item"
+											style={`--cat-accent: ${c.accent};`}
+										>
+											<span class="nav-dot" />
+											{c.label}
+										</a>
+									))
+								}
+							</div>
+						</details>
 					</div>
 					{
 						isLoggedIn && (
@@ -190,6 +249,22 @@ const isLoggedIn = !!Astro.locals.user;
 					</div>
 					<div class="footer-widgets-section">
 						<WidgetArea name="footer" />
+					</div>
+				</div>
+				<div class="footer-categories">
+					<span class="footer-categories-label">Categories</span>
+					<div class="footer-categories-cloud">
+						{
+							categoryMenuEntries.map((c) => (
+								<a
+									href={link(`category/${c.categorySlug}`)}
+									class="footer-cat-chip"
+									style={`--cat-accent: ${c.accent};`}
+								>
+									{c.label}
+								</a>
+							))
+						}
 					</div>
 				</div>
 				<div class="footer-bottom">
@@ -622,6 +697,141 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.nav-links a:hover {
 				color: var(--color-accent);
+			}
+
+			/* Categories dropdown */
+			.nav-categories {
+				position: relative;
+			}
+
+			.nav-categories > summary {
+				list-style: none;
+				cursor: pointer;
+				color: var(--color-text);
+				font-size: var(--font-size-sm);
+				display: inline-flex;
+				align-items: center;
+				gap: 2px;
+				transition: color var(--transition-fast);
+			}
+
+			.nav-categories > summary::-webkit-details-marker {
+				display: none;
+			}
+
+			.nav-categories > summary:hover {
+				color: var(--color-accent);
+			}
+
+			.nav-arrow {
+				display: inline-block;
+				font-size: var(--font-size-xs);
+				line-height: 1;
+				transition: transform var(--transition-fast);
+			}
+
+			.nav-categories[open] .nav-arrow {
+				transform: rotate(180deg);
+			}
+
+			.nav-dropdown {
+				position: absolute;
+				top: calc(100% + var(--spacing-3));
+				right: 0;
+				min-width: 220px;
+				background: var(--color-bg);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-lg);
+				box-shadow: var(--shadow-dropdown);
+				padding: var(--spacing-2);
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				z-index: 200;
+			}
+
+			.nav-dropdown-header {
+				font-size: var(--font-size-xs);
+				color: var(--color-muted);
+				text-transform: uppercase;
+				letter-spacing: var(--tracking-wider);
+				padding: var(--spacing-2) var(--spacing-3);
+				border-bottom: 1px solid var(--color-border-subtle);
+				margin-bottom: var(--spacing-1);
+				text-decoration: none;
+				transition: color var(--transition-fast);
+			}
+
+			.nav-dropdown-header:hover {
+				color: var(--color-text);
+			}
+
+			.nav-dropdown-item {
+				display: flex;
+				align-items: center;
+				gap: var(--spacing-3);
+				padding: var(--spacing-2) var(--spacing-3);
+				font-size: var(--font-size-sm);
+				color: var(--color-text);
+				text-decoration: none;
+				border-radius: var(--radius);
+				transition: background var(--transition-fast);
+			}
+
+			.nav-dropdown-item:hover {
+				background: var(--color-surface);
+			}
+
+			.nav-dot {
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+				background: var(--cat-accent);
+				flex-shrink: 0;
+			}
+
+			/* Footer categories cloud */
+			.footer-categories {
+				display: flex;
+				flex-direction: column;
+				gap: var(--spacing-3);
+				padding-top: var(--spacing-8);
+				padding-bottom: var(--spacing-8);
+				border-top: 1px solid var(--color-border-subtle);
+			}
+
+			.footer-categories-label {
+				font-size: var(--font-size-xs);
+				font-weight: 500;
+				text-transform: uppercase;
+				letter-spacing: var(--tracking-wider);
+				color: var(--color-muted);
+			}
+
+			.footer-categories-cloud {
+				display: flex;
+				flex-wrap: wrap;
+				gap: var(--spacing-2);
+			}
+
+			.footer-cat-chip {
+				display: inline-block;
+				padding: var(--spacing-2) var(--spacing-4);
+				font-size: var(--font-size-sm);
+				font-weight: 500;
+				color: var(--cat-accent);
+				background: color-mix(in srgb, var(--cat-accent) 12%, transparent);
+				border: 1px solid color-mix(in srgb, var(--cat-accent) 30%, transparent);
+				border-radius: var(--radius);
+				text-decoration: none;
+				transition:
+					background var(--transition-fast),
+					border-color var(--transition-fast);
+			}
+
+			.footer-cat-chip:hover {
+				background: color-mix(in srgb, var(--cat-accent) 22%, transparent);
+				border-color: var(--cat-accent);
 			}
 
 			.nav-admin {
