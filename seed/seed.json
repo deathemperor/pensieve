@@ -6,18 +6,21 @@
 		"description": "A personal blog where long-form narratives live under per-category visual themes",
 		"author": "deathemperor"
 	},
-
 	"settings": {
 		"title": "pensieve",
 		"tagline": "long-form thoughts, one theme per topic"
 	},
-
 	"collections": [
 		{
 			"slug": "posts",
 			"label": "Posts",
 			"labelSingular": "Post",
-			"supports": ["drafts", "revisions", "search", "seo"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"search",
+				"seo"
+			],
 			"commentsEnabled": true,
 			"fields": [
 				{
@@ -64,7 +67,11 @@
 			"slug": "pages",
 			"label": "Pages",
 			"labelSingular": "Page",
-			"supports": ["drafts", "revisions", "search"],
+			"supports": [
+				"drafts",
+				"revisions",
+				"search"
+			],
 			"fields": [
 				{
 					"slug": "title",
@@ -82,22 +89,44 @@
 			]
 		}
 	],
-
 	"taxonomies": [
 		{
 			"name": "category",
 			"label": "Categories",
 			"labelSingular": "Category",
 			"hierarchical": true,
-			"collections": ["posts"],
+			"collections": [
+				"posts"
+			],
 			"terms": [
-				{ "slug": "philosophy", "label": "Philosophy" },
-				{ "slug": "science", "label": "Science" },
-				{ "slug": "personal-stories", "label": "Personal Stories" },
-				{ "slug": "generative-ai", "label": "Generative AI" },
-				{ "slug": "startups", "label": "Startups" },
-				{ "slug": "nature", "label": "Nature" },
-				{ "slug": "misc", "label": "Miscellany" }
+				{
+					"slug": "philosophy",
+					"label": "Philosophy"
+				},
+				{
+					"slug": "science",
+					"label": "Science"
+				},
+				{
+					"slug": "personal-stories",
+					"label": "Personal Stories"
+				},
+				{
+					"slug": "generative-ai",
+					"label": "Generative AI"
+				},
+				{
+					"slug": "startups",
+					"label": "Startups"
+				},
+				{
+					"slug": "nature",
+					"label": "Nature"
+				},
+				{
+					"slug": "misc",
+					"label": "Miscellany"
+				}
 			]
 		},
 		{
@@ -105,15 +134,217 @@
 			"label": "Tags",
 			"labelSingular": "Tag",
 			"hierarchical": false,
-			"collections": ["posts"],
+			"collections": [
+				"posts"
+			],
 			"terms": [
-				{ "slug": "long-read", "label": "Long read" },
-				{ "slug": "essay", "label": "Essay" },
-				{ "slug": "notes", "label": "Notes" }
+				{
+					"slug": "long-read",
+					"label": "Long read"
+				},
+				{
+					"slug": "essay",
+					"label": "Essay"
+				},
+				{
+					"slug": "notes",
+					"label": "Notes"
+				},
+				{
+					"slug": "childhood",
+					"label": "Childhood"
+				},
+				{
+					"slug": "ba",
+					"label": "Ba"
+				},
+				{
+					"slug": "phong-sanh",
+					"label": "Phong Sanh"
+				},
+				{
+					"slug": "wife-and-nai",
+					"label": "Wife And Nai"
+				},
+				{
+					"slug": "nai",
+					"label": "Nai"
+				},
+				{
+					"slug": "fatherhood",
+					"label": "Fatherhood"
+				},
+				{
+					"slug": "english-learning",
+					"label": "English Learning"
+				},
+				{
+					"slug": "family-vignette",
+					"label": "Family Vignette"
+				},
+				{
+					"slug": "vng",
+					"label": "Vng"
+				},
+				{
+					"slug": "vinagame",
+					"label": "Vinagame"
+				},
+				{
+					"slug": "resume",
+					"label": "Resume"
+				},
+				{
+					"slug": "sso",
+					"label": "Sso"
+				},
+				{
+					"slug": "mentorship",
+					"label": "Mentorship"
+				},
+				{
+					"slug": "su-phu",
+					"label": "Su Phu"
+				},
+				{
+					"slug": "emotions",
+					"label": "Emotions"
+				},
+				{
+					"slug": "tran-hoang-phong",
+					"label": "Tran Hoang Phong"
+				},
+				{
+					"slug": "tim-nhanh",
+					"label": "Tim Nhanh"
+				},
+				{
+					"slug": "friendship",
+					"label": "Friendship"
+				},
+				{
+					"slug": "theorycrafting",
+					"label": "Theorycrafting"
+				},
+				{
+					"slug": "xap-xam",
+					"label": "Xap Xam"
+				},
+				{
+					"slug": "strategy",
+					"label": "Strategy"
+				},
+				{
+					"slug": "tet",
+					"label": "Tet"
+				},
+				{
+					"slug": "nguyen-cong-huan",
+					"label": "Nguyen Cong Huan"
+				},
+				{
+					"slug": "nguyen-binh-khiem",
+					"label": "Nguyen Binh Khiem"
+				},
+				{
+					"slug": "childhood-anger",
+					"label": "Childhood Anger"
+				},
+				{
+					"slug": "letter-to-friend",
+					"label": "Letter To Friend"
+				},
+				{
+					"slug": "ma",
+					"label": "Ma"
+				},
+				{
+					"slug": "motorbike",
+					"label": "Motorbike"
+				},
+				{
+					"slug": "papaya",
+					"label": "Papaya"
+				},
+				{
+					"slug": "chi-huong",
+					"label": "Chi Huong"
+				},
+				{
+					"slug": "ctoo",
+					"label": "Ctoo"
+				},
+				{
+					"slug": "thu-gui-thay",
+					"label": "Thu Gui Thay"
+				},
+				{
+					"slug": "llm",
+					"label": "Llm"
+				},
+				{
+					"slug": "programming-craft",
+					"label": "Programming Craft"
+				},
+				{
+					"slug": "ba-xe-om",
+					"label": "Ba Xe Om"
+				},
+				{
+					"slug": "soul-in-software",
+					"label": "Soul In Software"
+				},
+				{
+					"slug": "oasis",
+					"label": "Oasis"
+				},
+				{
+					"slug": "agent",
+					"label": "Agent"
+				},
+				{
+					"slug": "starcraft",
+					"label": "Starcraft"
+				},
+				{
+					"slug": "truancy",
+					"label": "Truancy"
+				},
+				{
+					"slug": "english-tutor",
+					"label": "English Tutor"
+				},
+				{
+					"slug": "cay-dua",
+					"label": "Cay Dua"
+				},
+				{
+					"slug": "mien-tay",
+					"label": "Mien Tay"
+				},
+				{
+					"slug": "plant-catalog",
+					"label": "Plant Catalog"
+				},
+				{
+					"slug": "lop-truong",
+					"label": "Lop Truong"
+				},
+				{
+					"slug": "reunion",
+					"label": "Reunion"
+				},
+				{
+					"slug": "ambition",
+					"label": "Ambition"
+				},
+				{
+					"slug": "friendship-ledger",
+					"label": "Friendship Ledger"
+				}
 			]
 		}
 	],
-
 	"bylines": [
 		{
 			"id": "byline-main",
@@ -121,19 +352,29 @@
 			"displayName": "deathemperor"
 		}
 	],
-
 	"menus": [
 		{
 			"name": "primary",
 			"label": "Primary Navigation",
 			"items": [
-				{ "type": "custom", "label": "Home", "url": "/pensieve/" },
-				{ "type": "custom", "label": "All posts", "url": "/pensieve/posts" },
-				{ "type": "custom", "label": "About", "url": "/pensieve/pages/about" }
+				{
+					"type": "custom",
+					"label": "Home",
+					"url": "/pensieve/"
+				},
+				{
+					"type": "custom",
+					"label": "All posts",
+					"url": "/pensieve/posts"
+				},
+				{
+					"type": "custom",
+					"label": "About",
+					"url": "/pensieve/pages/about"
+				}
 			]
 		}
 	],
-
 	"widgetAreas": [
 		{
 			"name": "sidebar",
@@ -185,7 +426,6 @@
 			]
 		}
 	],
-
 	"content": {
 		"pages": [
 			{
@@ -221,13 +461,12 @@
 		],
 		"posts": [
 			{
-				"id": "placeholder-philosophy",
-				"slug": "on-the-shape-of-an-answer",
+				"id": "99332709d483bccd",
+				"slug": "hoi-luc-7-tuoi-phong-sanh-con-chim",
 				"status": "published",
 				"data": {
-					"title": "On the Shape of an Answer",
-					"excerpt": "A placeholder essay in the philosophy category, used to verify the philosophers-salon theme renders end-to-end.",
-					"language": "en",
+					"title": "Hồi lúc 7 tuổi, phóng sanh con chim",
+					"excerpt": "Cá trong thao cá thích, chim trong lồng chim khổ lắm thì sao?",
 					"content": [
 						{
 							"_type": "block",
@@ -235,25 +474,84 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "An answer is not the end of a question. It is the question held still long enough to be looked at from one angle. Move, and it becomes another question."
+									"text": "Hồi lúc 7 tuổi, tui bày đầu với ông anh đi tìm chim sẻ bắt về nuôi, rồi mua luôn một cái chuồn cho nó. Còn mua thức ăn và đồ đựng nước. Nuôi được ba ngày, bị ông già phát hiện đánh một trận tan tác chim muôn. Vừa đánh hai đứa vừa dạy: hai đứa bây có biết chuyện này là gì không? Nuôi được mấy bầy cá tưởng mày giỏi rồi hả? Nuôi chim tụi bây có biết là quên cho nó uống nước là nó chết không? Cá trong thao cá thích, chim trong lồng chim khổ lắm thì sao?"
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Lần đầu phóng sanh con chim mới thấy ba dạy đúng khi chim vui."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Rồi sau này lớn lên xem phim hay thấy người phương Tây hay cho chim hoang ăn. Tôi lên mạng mua một cái thử xem, ở Việt Nam không ai bán có lẽ người mình thích tự chăm từng em mồ côi cho tốt mỗi ngày nên phải chờ nước ngoài gửi về. Mua ít hạt kê, treo trước hiên nhà."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Ba năm trôi qua, cái lồng đồ ăn chưa có vơi, hạt kê cũng đen hết, lâu lâu nghía thăm xem có giúp được bạn nào chưa. Hoài không thấy ai được giúp. Đến sáng ra, vợ nói có mấy bạn nào đó chui vô lồng đồ ăn bị kẹt. Tôi hỏi bạn nào? Ừa thì mấy bạn chim sẻ chim én đó ba, tụi nó chui vô ăn rồi kẹt mãi mới chui ra được. Thiệt hả? Tôi mừng hết sức kết quả của sự chờ đợi. Bịch kê để đổ thêm cũng bị đem bỏ mất rồi, đi mua vài bịch dự phòng thôi!"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Sự rãnh của nó là cái gì cũng làm, cái gì cũng thử."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "80348a5bffe9e66c"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["philosophy"],
-					"tag": ["essay"]
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"childhood",
+						"ba",
+						"phong-sanh",
+						"wife-and-nai"
+					]
 				}
 			},
 			{
-				"id": "placeholder-science",
-				"slug": "a-rough-measurement",
+				"id": "6319c8ac71eca56a",
+				"slug": "bi-te-luon-la-take-a-fall",
 				"status": "published",
 				"data": {
-					"title": "A Rough Measurement",
-					"excerpt": "Placeholder in the science category to verify the lab-notebook theme.",
-					"language": "en",
+					"title": "Bị té luôn là take a fall",
+					"excerpt": "Bị té luôn là take a fall đó mẹ, con mới bị té á.",
 					"content": [
 						{
 							"_type": "block",
@@ -261,25 +559,51 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "The first measurement is almost always wrong. The value of the first measurement is that it teaches you how to take the second one."
+									"text": "Mẹ cho Nai học tiếng Anh được đâu đó một tháng, một tuần hai buổi. Mỗi ngày học được từ mới, Nai về khoe với ông bà. Nai cũng tự học ở nhà. Nai leo lên xe ba như mọi khi, Nai vấp chân té xuống ghế, Nai hỏi ba “Bị té luôn tiếng Anh là gì vậy ba?”, ba nghĩ “chết bà, bị té dễ thương là gì mạy?”. “Bị té luôn là take a fall nha con”, Nai lập lại, quay qua khoe mẹ: “Bị té luôn là take a fall đó mẹ, con mới bị té á”."
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Trên đoạn đường 100 mét từ nhà ngoại về, Nai đố lái xe tiếng Anh là gì, ba trả lời sành sỏi. Nai bảo ba đố Nai đúng tiếng Anh là gì, Nai trả lời sành sỏi."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "97e90dd7cae2b874"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["science"],
-					"tag": ["notes"]
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"nai",
+						"fatherhood",
+						"english-learning",
+						"family-vignette"
+					]
 				}
 			},
 			{
-				"id": "placeholder-personal",
-				"slug": "the-summer-of-quiet-kitchens",
+				"id": "482cf1915f4a42b9",
+				"slug": "then-i-turned-26",
 				"status": "published",
 				"data": {
-					"title": "The Summer of Quiet Kitchens",
-					"excerpt": "Placeholder in the personal-stories category to verify the campfire theme.",
-					"language": "en",
+					"title": "Then I turned 26",
+					"excerpt": "I joined VinaGame (VNG) in December 19th 2006.",
 					"content": [
 						{
 							"_type": "block",
@@ -287,25 +611,51 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "There was a stretch of months when the kitchen was always quiet. Not empty — quiet. The radio turned low, the window half open, the stove warm from something that had just finished cooking but that nobody remembered making."
+									"text": "I joined VinaGame (VNG) in December 19th 2006. In 2007, I invented the session management mechanism to boost the biggest out-of-game event to thousands of concurrent users, for the most popular game Võ Lâm Truyền Kỳ. In 2008, I co-designed, developed a Passport system that enables 200k monthly registrations. In 2009, I defined, designed, architected a Vietnam-first Single Sign On (SSO) web system to enable cross systems authentication and authorization, boosted game publishing agility to 10+ games a month. Headed the fastest integration ever for a game with Gunny, co-revived the game from ~1k concurrent users with a few millions revenue monthly to 100k+ and 30+ billions VND in revenue, contributing in killing the direct competition from FPT Games."
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Then I turned 26."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "mixed",
+					"source": "facebook",
+					"source_id": "08f92a519953b022"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["personal-stories"],
-					"tag": ["long-read"]
+					"category": [
+						"startups"
+					],
+					"tag": [
+						"vng",
+						"vinagame",
+						"resume",
+						"sso"
+					]
 				}
 			},
 			{
-				"id": "placeholder-genai",
-				"slug": "the-model-as-co-author",
+				"id": "b1ce233c611087f9",
+				"slug": "em-dang-cam-thay-nhu-the-nao",
 				"status": "published",
 				"data": {
-					"title": "The Model as Co-Author",
-					"excerpt": "Placeholder in the generative-ai category to verify the neural-net theme.",
-					"language": "en",
+					"title": "Em đang cảm thấy như thế nào?",
+					"excerpt": "Năm 2026, thứ duy nhất nên nội suy là khi các mô hình ngôn ngữ dùng máy tính. Còn với tôi, tôi phải biết.",
 					"content": [
 						{
 							"_type": "block",
@@ -313,25 +663,106 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "Writing with a language model is a little like writing with someone who has read everything and remembered none of it. You bring the wanting and the shape. It brings the permutations of words that wouldn't have otherwise surfaced."
+									"text": "Tôi bắt đầu năm 2026 với nhiều điều mới lạ, như  mỗi sáng mỗi thức dậy là một ngày mới. Điều kỳ lạ nhất là tôi đã bước được một chân trong giấc mơ thu nhận con trai lớn của sư phụ làm đệ tử. Giấc mơ ít nhất chục năm trước tôi phác thảo lên ngay trong khoảnh khắc thằng bạn nhắc về anh sư phụ là con trai lớn của ảnh có dấu hiệu tự kỷ, khi ngồi nhậu ở quán Lương Hiền hay Hoàng Diệu gì đó. Bản năng gốc của tôi là tâm hồn dành cho những sinh linh cần sự giúp đỡ, như cọng cỏ không tên không ai muốn giữ, cành hoa có mùi ai cũng ghét. Bởi tôi đã mém mất xác vài ba lần rồi, nếu không có những sự giúp đỡ có hay vô tình, mà lần đầu tiên là còn chưa lọt lòng mẹ."
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Đừng hỏi làm sao tôi biết tôi sẽ làm được. Tôi chỉ đơn giản là muốn, rồi phải, thì tin là sẽ. Bằng cách nào thì tính từ từ. Tính hoài không ra kết quả. Thú thật là bí luôn nên chỉ đóng mộc để két sắc. Cho đến một ngày cuối năm, anh em tôi lại gặp nhau trò chuyện, bắt nguồn từ tập tục nhìn lại mỗi năm khi còn làm việc chung mà hình thành luôn văn hoá ngồi uống trà đàm đạo nói chuyện rừng núi biển cả. Rồi khi cơ hội đến khi anh kể về bạn, về cái ngành bạn chọn học, cái vai bạn muốn diễn trên con đường gọi là cống hiến cho xã hội mà thường được gọi vắn tắt là sự nghiệp. May mắn xuất hiện rồi, Hữu Lộc chớp thôi, may mắn là Hữu Lộc, ba nói con muốn gì cũng có người mang lại cho con mà. Thì con lấy. Nói chớ cũng phải thuyết phục anh là cho em đi, em có thảm trải sẵn lâu rồi, có cái thảm em mới thay có tên là trí tuệ nhân tạo nữa nha."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Giờ tạm gọi là em, nhưng khi thời điểm đến sẽ phải xưng hô cùng lúc cháu rồi em. Vợ bảo tới tuổi được làm việc với con của bạn bè rồi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tâm hồn của em đồng điệu với tôi lắm. Cộng với sự chuẩn bị kỹ càng nhiều năm, tôi bắt đầu lại cách dạy. Được bắt đầu dạy trẻ từ trước ba mươi tuổi, các bạn ngày ấy còn chưa ra trường, nên có chút giáo án phòng thân. Càng về sau với bộ giáo án đó tôi gặp nhiều vấn đề nan giải. Không lẽ khả năng thầy của mình chỉ tới đó sao? Ngẫm nghĩ hay là thử học lại với em. Rồi tôi cũng chơi đại: trong giai đoạn kỳ quặc về cảm xúc của sự bùng nổ vừa công nghệ vừa bản thân, tôi phải liên tục hỏi chính mình mày cảm thấy gì; tôi bắt đầu những buổi nhìn lại công việc với em bằng câu hỏi: em đang cảm thấy như thế nào?"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Bắt đầu bằng gọi tên cảm xúc. Rồi mình đi ngược lên kể các câu chuyện dẫn đến cảm xúc đó. Kể luôn điểm bắt đầu của sự việc hoặc hành động. Vì cảm xúc luôn đi đi cùng hành trình suy nghĩ và hành động, vì tất cả kết quả và giá trị đều là cảm xúc."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Như bài hát của thiếu nhi mà Nai hát rất giỏi (gọi tên cảm xúc), cần biết cảm xúc đó là gì, xong rồi hiểu nó, để trân trọng nó, rồi dùng nó để chuyển hoá cho lần hành động tiếp theo. Tích cực là để tạo kiên cường cho khó khăn sắp tới, tiêu cực là để học sự hiệu quả, tập trung, biết là mình chưa biết. Một chuỗi xoay vòng không dừng, như ngày rồi đêm thay phiên nhau đóng vai chính trong hai mươi bốn tiếng."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Mới chỉ một tháng, tôi học được nhiều quá. Cảm giác như cầu thủ bóng chày chuyển từ đánh sang ném banh. Chỉ cần thêm 20 năm tu luyện sẽ giết cả giải đấu. Tôi cám ơn em hai ba lần như biết không bao nhiêu là đủ. Tôi thấy được điểm yếu từ xưa giờ là tập trung vào đầu việc, phân tích quá trình, sau đó phải nội suy ra cảm xúc của mấy em đang muốn che giấu. Năm 2026, thứ duy nhất nên nội suy là khi các mô hình ngôn ngữ dùng máy tính. Còn với tôi, tôi phải biết."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "2bbed35aa92e5d71"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["generative-ai"],
-					"tag": ["essay"]
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"mentorship",
+						"su-phu",
+						"emotions",
+						"nai"
+					]
 				}
 			},
 			{
-				"id": "placeholder-startups",
-				"slug": "the-pitch-that-couldnt-be-pitched",
+				"id": "bbc62c5c2558fea7",
+				"slug": "thang-ban-chi-cot-khieng-vo-thien-duong",
 				"status": "published",
 				"data": {
-					"title": "The Pitch That Couldn't Be Pitched",
-					"excerpt": "Placeholder in the startups category to verify the rocket-science theme.",
-					"language": "en",
+					"title": "Thằng bạn chí cốt khiêng vô thiên đường",
+					"excerpt": "Vậy đó, ngồi một chỗ kiếm tiền không yên, thằng bạn chí cốt khiêng luông vô thiên đường của chính mình.",
 					"content": [
 						{
 							"_type": "block",
@@ -339,25 +770,117 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "The best part of the deck was the slide we never showed. It was the one where the market size was honest, the moat was thin, and the team was three people who had never shipped together before. We left it out. Everyone does."
+									"text": "Tháng 12 năm 2006, tôi ở chung phòng với thằng bạn tên là Trần Hoàng Phong. Biết nó thông qua một thằng chí cốt thời đó, rồi nó cũng học cùng trường chuyên Nguyễn Bỉnh Khiêm nên lên Sài Gòn cũng ở trọ chung ngay khu dân cư trước cổng khám Chí Hòa. Nó đi làm được vài tháng, thấy đi làm vui, học hỏi được nhiều thứ nên khuyên tôi nộp đơn vô cùng chỗ là một công ty công nghệ khởi nghiệp tên Tìm Nhanh hay Kiếm Việc gì đó. Tối nào nó cũng tâm sự, có đêm 3-4h sáng hai thằng nằm tắt đèn không thấy nhau mà nằm nói chuyện hoài."
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nói mãi tôi cũng ừa một cái cho vừa lòng nó: tao hứa với mày là tháng 1 tao sẽ nộp đơn phỏng vấn."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tháng một chưa tới, nó dí tiếp. Cuộc đời tự kiếm sống của tôi chưa viết cái CV nào, gặng quá trời ra được nửa trang A4. Đưa nó nó chửi vài câu bực bội, rồi nó tự viết lại luôn. Nó nộp vào Tìm Nhanh luôn. Ngày 8 tháng 12 năm 2006, tôi đi gặp nhà sáng lập kiêm tổng giám đốc để xin vào công ty. Lần đầu phỏng vấn tôi bị quá tải luôn nhận thức, chỉ nhớ mỗi việc ảnh có dùng tiếng Anh của một người Việt Kiều để trao đổi sau khi tôi nói tôi cũng biết một chút Anh Văn. Rồi nhanh chóng đề nghị một mức lương chưa bằng một nữa số tiền tôi xài cho nữa tháng: Mỗi hai tuần cô bạn của tôi rút tiền tôi kiếm được trong Paypal gửi từ Mỹ về Việt Nam $200, tương đương ba triệu đồng để xài, vị chi là sáu triệu. Ảnh trả: hai triệu rưỡi. Trong lòng như bị xỉ nhục, nhưng vì lời hứa năm xưa với bạn hiền tôi nhận luôn việc."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "11 tháng 12 năm 2006 tôi vào nhận việc. Được biết sẽ báo cáo cho người sau này có biệt danh là Huỳnh hãi hùng, rồi định hướng làm một số thứ gì đó mà tôi cũng không rõ, vậy là tôi tự lấy cuốn sách lậu mới tải được để học về Regular Expression trong lúc rãnh chờ việc. Thằng bạn chăm sóc kỹ mỗi ngày, kéo tôi đi ăn để làm quen với các động nghiệp, cả nhóm của tôi và nhóm hệ thống của nó. Đi ở đường Võ Thị Sáu đối diện công viên Lê Văn Tám - chỗ nhiều tiệm bia ôm, làm tới ngày thứ tư thì sếp nó là anh Phạm Quốc Dũng kể là có mấy đứa lính của ảnh qua công ty mới tên là Viva khỉ gì đó mà bên đó vừa trả lương cao, vừa có cafe gói, mì gói tha hồ. Ảnh nói qua đó làm luôn đi, làm ở đây chi. Rồi kêu gửi ảnh CV hôm bữa nộp vô đây, ảnh nhờ lính ảnh giới thiệu cho."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Thứ 6 ngày 15 tháng 12 năm 2006, tôi gặp anh Lê Thành Trung phỏng vấn ứng tuyển cho vị trí kỹ sư phần mềm cho dự án mạng xã hội cho người Việt. Ảnh nói tôi chỉ biết bề nổi, nhưng vẫn đề nghị mức lương bốn triệu rưỡi - tức gần gấp đôi lương tôi chưa nhận một đồng. Tôi đâu có đắng đo gì để nhận mức đề nghị vẫn thấp hơn tiền xài mỗi tháng."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Thứ ba ngày 19 tháng 12 năm 2006, tôi vào Vinagame. Tưởng chừng có được cơ hội giúp cho Yobanbe không thất bại, ai ngờ lại phải thay thế một anh bên nhóm hỗ trợ kỹ thuật cho game. Thì làm luôn, có biết việc gì là việc gì đâu, công ty gọi lã cũ kia còn chưa nhận việc, nên đâu có lấy lương người ta nằng nặc trả làm chi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Vô công ty thì cũng còn lạ nước lạ cái, thấy ở đây ai cũng vui vẻ hơn bên kia. Tuần nào cũng ăn không trái cây thì cá viên chiên, nhờ vậy mà 12 tháng tôi phục hồi luôn từ 68 lên 80kg. Trong lúc làm quen với mấy công cụ văn phòng, tôi đọc được email có một anh tên Đinh Bá Trực. Nghe quen thuộc vô cùng, đi hỏi bạn bè cho chắc tên thật super admin của GameVN, xác định đúng là ảnh. Nhắn tin ảnh ngay trên cái tool Communication của Microsoft lúc đó để làm quen lại. Chứ tôi trò chuyện đêm khuya với BM từ khi tham gia vào GameVN từ 2002 rồi, cả chị SweetKitty, rồi HungLong này nọ nữa. Rồi có mấy ngày ảnh qua họp về mấy vấn đề của trang web, nạp thẻ, cộng đồng, tìm được cơ hội chào ảnh cái. Ảnh nói ở Vinagame còn có Bunnyforever, newfriend, Lucifer,…toàn mấy anh em chinh chiến với nhau đã nhiều năm (hầu hết là trong thế giới ảo)."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Vậy đó, ngồi một chỗ kiếm tiền không yên, thằng bạn chí cốt khiêng luông vô thiên đường của chính mình. Nó mới đúng cái câu khi ba tôi còn sống hay nói: con chỉ cần ngồi một mình có người mang tiền lại cho, với cái giọng của một ông Nho bói toán Tử Vi cho thằng con trai Út."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "6d29d0beccbe75c7"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["startups"],
-					"tag": ["essay"]
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"tran-hoang-phong",
+						"vng",
+						"tim-nhanh",
+						"friendship"
+					]
 				}
 			},
 			{
-				"id": "placeholder-nature",
-				"slug": "koi-and-the-weight-of-morning",
+				"id": "0e1ebddd8eba0212",
+				"slug": "lap-thuyet-o-quan-cafe-dau-hem",
 				"status": "published",
 				"data": {
-					"title": "Koi and the Weight of Morning",
-					"excerpt": "Placeholder in the nature category to verify the natural-ponds theme.",
-					"language": "en",
+					"title": "Lập thuyết ở quán cafe đầu hẻm",
+					"excerpt": "Cái cách mà mấy chú ngồi đánh bằng lý thuyết rõ ràng là phương pháp lập thuyết (theorycrafting).",
 					"content": [
 						{
 							"_type": "block",
@@ -365,15 +888,1096 @@
 							"children": [
 								{
 									"_type": "span",
-									"text": "At dawn the pond is a mirror nobody has cleaned. The koi come up to break it, not because they are hungry, but because the surface is softer than the depth at this hour, and every fish has a morning in it."
+									"text": "Quán cafe đầu hẻm sáng nào cũng đón mấy cậu, mấy chú mở hàng ngồi tám chuyện yêu nước, thương dân, thiên hạ làm sao cho thái bình. Ba ngày Tết, ngồi bàn dưới nghe lỏm được câu chuyện hôm nay của mấy chú bàn chủ đề tiến lên, xập xám. Đầu hẻm có cái đồn tạm giam, toàn công an rồi dân phòng, không gầy sòng được thì mình đánh bằng lý thuyết. Coi lý thuyết của ai giỏi hơn thì thằng người còn lại."
 								}
-							]
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nếu gọi bài cào là cấp một để làm quen mặt bài, cách tê (Catte) chắc là trung học, vậy thì tiến lên là trung học phổ thông. Chơi được xập xám là vô đại học rồi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi rất thích học cấp một, học giỏi nhất mấy lớp này. Trung học thi thoảng cũng thắng, thua đa số. Cấp ba thì rất thích vì cái món này nó hay lắm khi đủ tay: mỗi quân đều bốn, ai cũng có cơ hội nắm trong tay sức mạnh bằng nhau, tuy vậy chứ đánh thua cả đời cũng chỉ vài lần có đủ mỗi quân một lá. Sự không cân bằng nó mới hay làm sao. 52 lá cũng giúp cho việc phán đoán mỗi tay đang cầm 13 lá gì cũng thú vị. Rồi còn bài binh bố trận trong 13 quân như thế nào để có khi chỉ là không chết trắng, hoặc thắng nhiều nhất có thể, thắng nhiều nhất dù thua ba. Tiến lên hay như vậy thì binh xập xám là đỉnh cao nhất của môn điều khiển 13 quân. Tôi cho là hai môn này ăn đứt Poker ở tính chiến thuật."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cái cách mà mấy chú ngồi đánh bằng lý thuyết rõ ràng là phương pháp lập thuyết (theorycrafting). Điều kiện không cho phép thực hành thì ngồi đánh nhau bằng lý thuyết, cũng là luyện nội công."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi thích học lý thuyết từ mấy bàn cafe. Chứ đánh mấy môn trên trung học cơ sở tôi toàn thua, vì không nhanh nhẹn tính toàn được cục diện trận đấu, nhất là sau trận thứ hai mươi tư hay gì đó. Trí nhớ của tôi giỏi khi nó gắn liền với câu chuyện, sự vật, hay cảm xúc. Phân tích của tôi sâu nên cần một ván bài lớn, kéo dài nhiều năm. Còn lại thì chỉ biết trông cậy vào số phận, may mắn chia đều là công bằng nhất, thua sẽ không thấy mình dở, thắng sẽ thấy số mình đỏ."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nói vậy chứ năm nay chưa được động não đầu xuân với mấy trò sát phạt, toàn là dành thời gian với mấy bạn già lý thuyết AI cho cú cược lớn nhất cuộc đời trong mấy năm tới."
+								}
+							],
+							"markDefs": []
 						}
-					]
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "bf7c625ef3de9ad9"
 				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
 				"taxonomies": {
-					"category": ["nature"],
-					"tag": ["long-read"]
+					"category": [
+						"philosophy"
+					],
+					"tag": [
+						"theorycrafting",
+						"xap-xam",
+						"strategy",
+						"tet"
+					]
+				}
+			},
+			{
+				"id": "2ca0462262cdae21",
+				"slug": "thu-gui-ban-nhu-loi-cam-on",
+				"status": "published",
+				"data": {
+					"title": "Thư gửi bạn, như lời cảm ơn",
+					"excerpt": "Cũng đâu đó 25 năm từ ngày gặp thú dữ, một chặng đường đủ dài để thuần hóa nó.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Thư gửi bạn, như lời cảm ơn."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tháng 9 năm 1999 bắt đầu những bài học đầu tiên của lớp chuyên Lý trường Nguyễn Bỉnh Khiêm. Sự tự hào là học sinh duy nhất của trường Cao Thắng thi đậu vào lớp chuyên không giúp tui thoát khỏi danh sách chót lớp. Vì chót lớp nên tui chỉ biết chơi với các bạn cùng thứ hạng, cạnh tranh vị trí thứ hạng cao nhất cũng vui trong sân chơi riêng của mình. Để rồi cả đời không quên được nhau. Riêng bạn thì luôn là số đầu tiên của tất cả dãy số nguyên dương. Trong quá khứ tui luôn cạnh tranh với cái số này, nhưng nay sân chơi không phải của tui nữa rồi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Bạn cũng được mọi người bình chọn để lãnh đạo lớp chuyên Lý đầu tiên và duy nhất của trường. Cái lớp duy nhất không bị lẫn: chuyên Hóa bị chia 2 lớp, Toán cũng vậy, Anh và Văn lại phải học chung mà tui nhầm lẫn mãi đây là lớp chuyên tiếng Anh Văn. Cái môn không dễ nhai nên chỉ có 26 đứa dám chiu vô học, 17 thằng con trai với 9 đứa con gái. Học hết năm đầu thì có một bạn nghỉ chơi luôn môn Lý. Gì chứ bạn một ngày thì cũng mãi mãi là bạn. Rồi bạn lãnh đạo lớp đặc biệt nhất trường cả ba năm học. Thành tựu thì không phải là lúc nào cũng vẻ vang, nhưng danh và tiếng thì luôn số một."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Thời một khi làm lãnh đạo, không thoát khỏi ánh mắt gièm pha, thị phi thiên hạ. Lãnh đạo của lớp đặc biệt nhất trường Nguyễn Bỉnh Khiêm không giúp gì cho mấy lời đàm tếu đó. Chưa kể bạn là học sinh Nguyễn Bỉnh Khiêm kỳ cựu từ lớp 6 nữa. Con của thầy hiệu trưởng này, hay cô giáo nọ theo tôi chỉ là những lớp áo giấy người đời ép bạn mặc. Sức ép nhiêu đó, vượt qua được mới giúp bạn có sự tự tin cao độ. Chứ nói gì mấy lớp Toán, lớp Hóa tụi nó quá đông, dân số đông nó kéo theo nhiều đứa giỏi quá. Chơi làm sao để nhỏ nhưng không phải thấp nhất, không phải lãnh đạo nào cũng làm được."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Kể công trạng của bạn cho ba năm, nếu kể theo từng ngày đi học thì có 200 cái táo quân cũng không kể hết. Nhiều quá kể không hết, thôi tui chỉ kể một."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Ngày hôm đó (ê, đứa nào nhớ là ngày tháng năm nào thì báo tao ghi lại) tụi mình học lớp thể dục nhưng thường lệ. Tui nhớ thời tiết hôm đó mát mẻ dễ chịu lắm, mấy tiết học thể dục của tụi mình là ở sân thể thao sau trường, được bóng mát của các bạn lớp khác đang ngồi học che chở. Bầu trời miền Tây trong xanh của tụi mình cũng ở đó, mấy cái mương cây cối um tùm xung quanh trường ngày nào cũng đòi vô trường chơi chung cho vui. Bởi, đứa nào cũng mong tới tiết học môn thể dục của thầy. Chờ tới tiết thôi, tới tiết rồi lại mong thầy tới trễ vì ly trà chưa uống xong hay là đang trong cuộc đọa đàm với thầy cô nào đó, để tụi con chơi một chút. Mấy cái khoảnh khắc ngắn ngủi đó của tụi con nó ý nghĩa lắm, đó là những thời điểm kết nối, nơi va chạm xảy ra để thân thiết hơn, để mãi không quên nhau. Rồi thì cái ngày đó có một va chạm mãi không quên được giữa bạn với tui."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Học với nhau một đoạn, bạn biết là khi gọi tên ba má tui là tui biến thành cục đá. Không như các bạn khác phản ứng này kia với tên ba mà mình, một trò vui của học sinh quỹ để nhớ phụ huynh nhau. Chắc hẳn con mắt giỏi của bạn còn biết là cục đá này bên trong đen như than, đỏ như núi lửa. Bạn thủ thỉ với mấy thằng con trai khác trong lớp: mày coi tao chọc thằng này rồi nó sẽ làm vầy với tao nè. Chuẩn bị kĩ càng kế hoạch trong đầu, bạn lại gần hỏi khi tui đang vui vẻ nô đùa với tám bạn gái trong lớp: ê, ba mày là người dân tộc gì mà sao đọc tên lại là Phẹc Phọt gì vậy mậy? (Ba tui tên Phát) Tui ngay lập tức biến một giây thành một tuần, để mọi thứ xung quanh chậm lại, rồi vương móng vuốt cùng nanh nhọn nhảy vồ đến. Như con sư tử tám mươi ký tấn công con linh cẩu trong phim tài liệu thế giới động vật. Con này nó xung lên vì năm đó là năm thứ 8 nó hận ba má nó. Chỉ cần một bàn tay vừa to vừa múp míp của tôi cũng đủ giữ cái cổ của bạn, tay còn lại thay hồ múa vẽ. Mấy bạn trong lớp từ trai đến gái mỗi người cầm một nhúm lông sư tử kéo lại, tui không biết là để làm gì, bao nhiêu đứa thì hãm lại được cuộc vui của tui với bạn? Tới giờ tui còn không hiểu tại sao tụi nó lại ganh tị với trò vui của hai thằng làm gì, một đứa thì nằm trên muốn giết đứa kia, đứa nằm dưới thì cười vui như chưa bao giờ vui hơn trong cuộc đời."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Rồi tui cũng thoát ra, ngồi thở hổn hển. Nước mắt tuôn trào tuồn tuột, răng nghiến không thôi. Sau trận chiến, ai cũng mệt. Khóc không phải vì tức, hay vì ức, mà là vì lần đầu đối diện với con mãnh thú trong tui. Khóc vì sợ, sao nhìn nó ác dữ vậy. Càng sợ hơn khi nhận ra tui với nó ở chung một chuồng."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cũng đâu đó 25 năm từ ngày gặp thú dữ, một chặng đường đủ dài để thuần hóa nó. Hôm nay tôi cưỡi nó tung hoành, bạn ạ. Nhân năm Bính Ngọ, hay gọi nó là ngựa hoang đã thuần. Nhưng nói thiệt với ông, con này của tui nó có hai sừng, chân dê, tay cầm chĩa ba ông ạ. Nếu mà không có ngày hôm đó, chắc nó âm thầm gặm nhấm điều tiêu cực của tui rồi tui bị nó cưỡi ngày nào không hay. Thì làm sao bây giờ đi làm công ty cứu giúp người được. Công đức của ông mới là vô lượng. Cám ơn bạn, Nguyễn Công Huân @[100001481302210:2048:Huan Nguyen]."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "(Nói chứ, cuối năm đi họp lớp về tâm trạng rối bời. Toàn nghĩ súng đạn dao búa. Ai ngờ đợt số siêu vi ập tới, chắc do cơ thể đầu óc đang khởi nghĩa. Sáng mồng một khỏi bịnh mà như chết đi sống lại, mới thấy hoa vui, cỏ cười.)"
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "804c97af40edb3e8"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"nguyen-cong-huan",
+						"nguyen-binh-khiem",
+						"childhood-anger",
+						"letter-to-friend"
+					]
+				}
+			},
+			{
+				"id": "ece2fa7c6db95a54",
+				"slug": "20-nam-chiec-future-neo-ma-mua",
+				"status": "published",
+				"data": {
+					"title": "20 năm chiếc Future Neo má mua",
+					"excerpt": "Văn hoá là những gì diễn ra sau lưng mình, khi không có mình ở đó.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "2026 này là tròn 20 năm tuổi của chiếc xe Future Neo má mua để cấp hành trang đi làm. Ừ thì đi làm cho chục công ty (Papaya đúng thứ mười) cũng 20 năm rồi đó. Từ công ty đầu tiên là Tìm Nhanh đến nay, chiến mã đã quá một trăm ba mươi nghìn cây số. Thương rồi giận cũng không ít lần, có mới nới cũ rồi có cũ nới luôn cái ít cũ cũng có. Vậy mà cũng quay lại với món quà má cho, sao bỏ được. Không bỏ được, phải thương. Thương để còn giữ lại cho thằng con trai, đứa cháu nội cháu ngoại, đứa nào ngoan biết thương nó ông mới giao nhen."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Lòng nói tiếng thương, lời yêu, chứ tui bỏ nó lăn lốc ngoài đường mưa gió. Thì tao với mày cùng trãi nắng mưa tận biên giới, có sao đâu mấy chuyện ông trời này."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Có cái chìa khoá cắm vô nó cũng không muốn mở ra. Ngựa không cương như người không chí hướng, xe không khoá dắt bộ thấy mẹ. Nhìn thì như thằng làm biếng nhớt thây, có cái chìa khoá cũng không lấy vô nổi. Nó như thằng ngu ngơ, không nhớ mỗi chuyện rút chìa đem cất. Cất kĩ quá tìm hoài không ra, ngựa mất luôn cương."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cương phải luôn ở bên ngựa, cần ra trận là nổ máy chạy đi ngay. Sáng nào cũng ra trận đánh giặc, cương nằm sẵn nhảy lên là chiến. Ngày nào cũng đánh ngàn giặc."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Vậy mà thấm thoát hai thập niên ngựa vẫn khoẻ, cương vẫn còn, tướng vẫn đánh mỗi ngày thêm một giặc. Không có cái tình làng nghĩa xóm, ngựa cũng không còn nói chi cương. Không có mấy anh bảo vệ canh xe như giữ ngựa chiến, thì nhìn cái cương mấy ảnh cũng đem cất giùm. Mày đừng có rút chìa khoá ra, ảnh lúc nào cũng để vậy đó, tao giữ giùm ảnh hai ba lần, ảnh cũng cấm đó. Nhiều khi tao thấy ảnh chạy xe vô bãi như đi đánh giặt, đùng đùng nhảy ba bước lên tới lầu hai, nên không kịp rút chìa khoá."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Văn hoá là những gì diễn ra sau lưng mình, khi không có mình ở đó. Như anh ra trận mạc, ở nhà em nuôi mái ấm chờ. Như bà trông cháu, như ông ngoại trông cây, như cô dì cho áo mới.  Tết về là có hoa đào hoa mai, có nồi thịt kho trứng, hạt dưa."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Có tình thương."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "b9a08b05de885774"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"ma",
+						"motorbike",
+						"papaya",
+						"tet"
+					]
+				}
+			},
+			{
+				"id": "9e8790b3714e45a7",
+				"slug": "noi-ngong-cuong-cua-thang-loc",
+				"status": "published",
+				"data": {
+					"title": "Nỗi ngông cuồng của thằng Lộc",
+					"excerpt": "Con gặp bụt được một lần thật diễm phúc.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "04/05/2021 là ngày đầu tiên tôi đi làm ở Papaya. Gặp gỡ trao đổi chục bận với Hùng Co-founder mới chịu nhận nhau. Hùng kêu là sáng thứ ba anh gặp gỡ dàn quản lý của công ty để làm quen trước khi vào công ty. Có chị Trâm Hoàng là COO, anh Khải là head of product, chị Hương là head of claim, Trâm là sale. Có 1 lịch được book 1 tiếng với 1 người tên là Thùy Hương ở Starbucks Gold View. Sáng tôi lại được thông tin là gặp ở Phúc Long Gold View. Lòng chút bối rối với nhiều thông tin trái ngược, trong cảm xúc tràn trề năng lượng lần thứ ba được tham gia startup: không sao, tôi thích trà Mỹ và trà Đại Việt như nhau."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Uống Phúc Long xong, tôi lại phải chạy qua làm ly Hot Greentea Latte Venti quen thuộc bên Starbucks! Vẫn còn 1 người đợi bên này mà có vẻ là chị head of claim. Chắc chắn rồi, công ty làm về giải quyết bồi thường thì người xây dựng công nghệ cần có mối quan hệ mật thiết với trường phòng bồi thường. (Tôi nói dóc đó, bây giờ mới biết điều này chứ ngày đó biết bồi thường là khỉ gì)."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Chị có máy tóc dài muối tiêu, khuôn mặt thật phúc hậu trong bộ trang phục vãi với áo khoác ngoài nhớ không lầm là màu nâu, tay mang bên mình muốn cuốn sổ mà tôi không rõ là có gì cho tôi xem. Chị hỏi thăm làm quen, bắt đầu câu chuyện về tiểu sử của bản thân tôi. Bữa giờ kể với thằng kia hết cả cuộc đời mình, kể lại bằng cách khác cho thú vị. Bỗng mạch tâm sự dẫn dắt đến những người bạn, những người bạn tôi mới quen mấy năm nay nhờ thú chơi cá cảnh, những người bạn quen từ lớp chồi nay vẫn gọi nhau một tiếng thân thương. Tôi nhiều bạn lắm, khắp năm châu bốn bể, toàn bạn bè thương tôi như thể thương thân. Tôi tự hào khoe về cách tôi bạn. Tôi là người gặp ai cũng muốn làm quen, là người mà nếu ai muốn làm quen thì mừng rỡ chào đón. Có lẽ do tuổi nhỏ hay ở nhà một mình, động lực thoát cô đơn giúp mình vui vẻ với mọi người. Tôi bạn ai cũng muốn cho tất cả những gì mình có, và tìm thêm những gì bạn thích để cho. Có thể chỉ là cành hoa, một ngọn cỏ đá gà, hay một trang giấy trắng làm bài kiểm tra. Hoặc nữa trái lê chín ngọt, một ly nước mía, một bịch ya ua, nữa cây đèn cầy chơi trung thu, vài ba viên pháo nhặt được mùa Tết...Ba má nghèo không có gì, lụm ngoài đường viên đá, cũng có thể cho nhau cầm chơi lướt mặt nước. Ba má thoát nghèo, mua hết tụi bây mỗi thằng một cây kem."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cho không sợ mất, tôi khoe tiếp. Sợ mất không cho lại bị mất. Sao tránh được mất. Tới năm lớp 9, có 2 đứa bạn cùng lớp tên là Trần Quốc Việt và Nguyễn Hồng Phươc hay đến nhà vừa học vừa chơi, túi nó ăn cắp của má tôi nhiều triệu tiền, đủ để mua nhà cửa và gửi tiết kiệm. Không muốn tính sổ, chỉ muốn ghi nhớ đó là năm 1998-1999. Lỗi cũng là do tôi dẫn bạn xấu về nhà, lỗi lớn nhất là do tôi tìm được chìa khóa mở tủ tiền của má lấy tiền đi chơi điện tử. Lỗi không phải là do ba tôi bảo anh tôi kêu thợ chìa khóa đến nhà mở tủ làm chìa. Chỉ là lỗi của mình tôi. Má bắt tận tay một ngày tôi mở tủ, bả sụp đổ muốn tự tử luôn. Tôi khóc cùng má, bảo con không dám vậy nữa, má tha cho con đi nha má. Rồi quăng cái chìa khóa tội lỗi vào bồn cầu. Lúc sau bạn thanh mai trúc mã của tôi là Ngọc mới kể là Việt cầm tiền về đưa bạn giữ dùm, vì quá nhiều - gia đình không giữ hết nổi. Tôi buồn quá, bạn trai của Ngọc mới tức rồi nói: mày chỉ cần nói một tiếng tao chém nó cho nó tởn. Tôi nói thôi, kệ nó đi Út ơi. Tao chỉ cần cả đời không trách nó, cả cấp ba không nhìn mặt nó là nhiều hơn bao nhiêu nhát dao."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi quay sang kể chị Hương, sau đó em rất nhiều suy nghĩ. Không biết nên cho hay nên giữ. Em không có muốn giữ lại cho mình. Nhưng mà không dám cho ai vô nhà nữa. Mà cho thì cho ai bây giờ? Em quyết định là cho tiếp chị ơi. Nhỡ em nghĩ người ta xấu, em không cho người ta, cuối cùng người ta không xấu thì em thấy có lỗi lắm. Như câu chuyện về nạn ăn xin ở Sài Gòn, hay giàn cảnh cứ trời mua là đi đường Pastuer sẽ thấy em bé cầm bọc vé số khóc bù lu bù loa. Thì cũng có người này làm nghề ăn xin kiếm sống, còn người kia thì kiếm sống nhờ nghề ăn xin mà. Thì nghĩ thử nếu thu nhập đó là để trả cho ông bà nào đứng sau, thì thu 10 đồng cho mấy ổng bả tụi nó cũng được 1 đồng để ăn cơm. Tụi nó mà không kiếm được đồng nào cho ổng bả, cơm thiêu chan nước lã có khi còn không có để ăn. Cho hết đi, biết khi nào nhận được gì. Cho một ít mới có đứa bạn kể cho nghe thằng kia ăn cắp tiền của nhà ông xây nhà mua đất. Hay chí ít là giờ còn gặp nhau uống ly Cafe ngồi tới 12h khuya không muốn về. Chủ đích trong hành động cho của em còn là phải cho thật nhiều để người ta khi nghĩ đến việc làm điều gì xấu với em cũng tự nghĩ là không đáng: nó tốt vậy không lẽ mình hại nó."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Interesting. Chị nói. Vừa ghi ghi chép chép. \"Hôm nay chị mới thấy một góc nhìn này về bạn và cho\". Tò mò không biết tên tôi đứng cạnh tính từ nào trong quyển sổ sọc màu vàng gián của chị, mãi mê kể tiếp mấy con cá đẻ chỉ để cho mấy năm nay. Cho nhiều tới nghiện chăm cá bột, đẻ được cá hiếm thành thạo lúc nào không hay."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Ánh sáng phát ra từ mắt chị, tôi nhớ mãi. Trong lòng cảm thấy rất vui vì sắp được làm việc cùng chị. Nào ngờ chờ chị hoài mỗi ngày không thấy ở văn phòng, hỏi thằng kia mới biết chị là ai. Trời thần thiên địa! Sao mày không nói anh biết trước! Vậy là bữa đó anh chém gió thành bão trước mặt cựu COO của FWD à! thật là cả gan, ngạo mạn, không biết trời đất!"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nhớ lại còn sợ nỗi ngông cuồng của thằng Lộc."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Rồi sao này mới biết chị không phải COO, mà là CTOO. Một người thật sự giỏi. Nghe cái title tôi thật sự ngưỡng mộ. Một chữ trong đó tôi còn chưa bao giờ được, nói chi cả bốn. Nghĩ CTOO là exceptional, trách nhiệm đôi này mấy ai gánh nổi tròn vai. Rồi anh lên thay thế chị Hương cũng CTOO, nghĩ thêm một người exceptional, mãi cho đến khi gặp một anh mà giờ đang cung cấp dịch vụ cho ảnh cũng là chuyên gia CTOO thì mới biết đây là cái norm của ngành. Thì mới phân tích được cách giao trách nhiệm đôi này là rất hợp lý cho tổ chức. Tôi chỉ hiểu được mấy cái title và trách nhiệm này sau khi làm CTOO được hơn 1 năm."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Sáng sớm đi làm gặp chị như thánh nhân. Gặp một lần chưa được hội ngộ, mãi mong ngày diện kiến được chị lần hai trong đời. Sau này chỉ có cơ hội học từ chị nhờ những lời trích lại của thằng kia. Nghe nó kể những lời chị dạy, hút một hơi thuốc nhìn lên trời ngẫm nghĩ. Con gặp bụt được một lần thật diễm phúc."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "————————————\nBức thư gửi thầy, muốn gửi vào ngày 4/5/2026. Bỗng hôm qua kể cho thầy khác nghe một phần của câu chuyện này, thấy trong lòng bình an thêm bội phần, thấy muốn gửi ngay, nhân dịp Tết về ghé thăm ông bà cha mẹ."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "c772cf509fa67981"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"papaya",
+						"chi-huong",
+						"ctoo",
+						"thu-gui-thay"
+					]
+				}
+			},
+			{
+				"id": "d496405b8b3d4b47",
+				"slug": "het-dat-dung-vo-cho-ky-su-vo-cam",
+				"status": "published",
+				"data": {
+					"title": "Hết đất dụng võ cho kỹ sư vô cảm",
+					"excerpt": "Bây giờ cần bỏ cái hồn của người vào sản phẩm. Đâu phải chỉ bây giờ, luôn phải như vậy. May thay, bây giờ là lựa chọn duy nhất.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Hơn 22 năm viết chữ kiếm sống trên phần mềm, viết chữ nào ra cũng thấy khó quá. Hồi 16 tuổi mới tập tành viết các chữ đầu tiên trong Pascal thấy nặng nề vô cùng, 42 tuổi viết chữ thứ hai ba triệu gì đó thấy ít nặng hơn. Sao cái nghề kỹ sư này lại phải giỏi ngôn ngữ? Đụng vô cái gì cũng phải đặt tên, con chó con nhà hàng xóm cho mang về đặt tên thì thích thú lắm, để yêu thường chăm sóc nó. Cái máy vô tri vô giác đã đành, mấy cái dòng chữ thụt ra thụt vô với hàng trăm ám hiệu phải nhớ, lại phải đặt tên cho nó. Còn hơn cô giáo bắt viết ngay hàng thẳng lối, nắn nót từng dấu, vì chỉ cần thiếu một dấu chấm dấu phẩy, đào bới cả tháng không hiểu tại sao, khách hàng có tiền không lấy được để chữa bệnh lần tiếp theo…"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi không hiểu nổi tại sao phải cực khổ như vậy mới làm được một thứ quan trong như là phần mềm, là các công cụ giúp người. Không cần làm có được không?  Chưa được. Tìm cách dễ nhất để làm ra sản phẩm tốt nhất."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cái nghề này làm cho tụi tui lâu ngày trở thành kỹ sư vô cảm, hay bực bội cáo gắt, nặng hơn là khi có thêm chút tự ái. Tôi nỗ lực lắm mới viết ra được các từ ngữ cho cái máy này, mấy người yêu đơn phương tưởng hay hả, thử yêu cái máy đi! Chưa nói phải yêu cái khô khan của mấy anh đi trước để lại nhen, gọi luôn là hốt shit. Thành ra tôi hay nói vui là: nó lại vô chế độ Chí Phèo, vừa viết vừa chửi. Thôi cũng được, Chí Phèo chửi dữ lắm, rồi hắn cũng yêu nhiều. Hắn sẽ yêu khi hắn hiểu cái máy này chỉ là công cụ để mang tình yêu đến cho một đối tượng là một người khác dùng."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Khó lắm để nhìn thấy ẩn ý đằng sau hành động đẹp và không đẹp."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Hôm qua vậy thôi, nay đã khác rồi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cái tính kêu ngạo, cái tôi to như bánh xe bò, cái sự không trung thành, cái lòng tham của các đồng nghiệp viết chữ kiếm ăn của tôi đã hết đất dụng võ. Không phải tôi không chờ ngày này. Ngày mà những người viết phần mềm bị đẩy vô tình thế của bác xe ôm lừa tôi, một học sinh tỉnh lên thăm mẹ bệnh nặng, để lấy mười ngàn năm 2001. Bác xe ôm tìm cách thu được nhiều nhất với người mình sẽ không gặp lại. Ba tôi cũng chạy xe ôm, ba không lấy tiền bà cụ mỗi sáng qua phà đi chợ. Sự xa xỉ mà cái nghề lập trình được ban tặng là bất công với xã hội. Tôi nhìn nó tương đồng với các cầu thủ được trả lương một trăm nghìn bảng mỗi tuần năm 2000. Juan Mata, Paul Scholes thấy đây là bất công cũng phải nhận. Cái nghề mà cung ít hơn cầu thì vậy."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Hết rồi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Giờ chỉ còn đất cho các bác xe ôm có tình. Xe công nghệ cũng chạy, phụ thôi. Chứ đưa đón con gái lớn của ảnh ngày bốn bận đã hết thời gian. Lâu lâu đi mua giùm ảnh mấy con trùn cho cá ăn, ảnh đi nhậu thì lấy xe chở ảnh về cho an toàn. Có cái tình. Bây giờ cần bỏ cái hồn của người vào sản phẩm. Đâu phải chỉ bây giờ, luôn phải như vậy. May thay, bây giờ là lựa chọn duy nhất. Làm thế nào mà để cái tâm, cái hồn truyền vào thứ vô tri đạt được cảnh giới mà tôi hay nói tục là: dùng phần mềm mà sướng chảy nước *miếng*, thì sẽ thành công."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "2914a5003070e1e2"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"generative-ai"
+					],
+					"tag": [
+						"llm",
+						"programming-craft",
+						"ba-xe-om",
+						"soul-in-software"
+					]
+				}
+			},
+			{
+				"id": "84c1147abf56146b",
+				"slug": "oasis-giac-mo-dat-ten-tu-2002",
+				"status": "published",
+				"data": {
+					"title": "Oasis, giấc mơ đặt tên từ 2002",
+					"excerpt": "Oasis sẽ là nền tảng cung cấp Agent cho các đối tác như là Service-As-A-Software (not a typo, this is a new age of SaaS).",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tháng 5 năm 2002, chuẩn bị thi Tú Tài và Đại Học."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi ngồi uống Café cùng thằng bạn Huỳnh Gia Tài sau khi đánh nhau mệt mỏi cả ngày trong Starcraft. Hỏi nhau về nghề nghiệp tương lai, mày muốn làm gì, tao sẽ ở đâu. Tài học xong 12 nó sẽ đi định cư ở Mỹ. Nếu nhớ không lầm thì nó thi toán Olympic có hạng được tuyển thẳng vào đại học. Còn tôi thì nắm chắc phần rớt đại học. Kẻ được học, không cần thi, lại không học, người muốn học không được học."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tài nó bảo tôi cố gắng lên, chịu khó một chút thì sẽ được thôi. Thua năm nay thì mày thử lại thêm năm sau. Rồi nó chia sẻ giấc mơ sau này sẽ xây dựng một đội quân người máy hùng hậu để thống trị thế giới. Giống như cách nó đã thống trị phong trào Starcraft ở Vĩnh Long và tập cho tôi chơi để thành cặp đôi kẻ tám lạng người nữa cân. Đến đoạn thống trị địa cầu, không ai có thể chống lại, tôi thấy thua rồi nó đã giết hết. Phải có đường thắng nó chứ? Chắc chắn là có! Thua nó nhiều rồi, lật kèo nó cũng nhiều lần rồi, không thể thua được! “Vậy tao sẽ làm hacker, tạo ra một con virus để có thể xâm nhập vào mấy con người máy của mày, giống như tao đã dùng mass Dark Archon với Mind Control để thắng mày nhiều lần! Mà khả năng làm hacker của tao cũng thấp, vậy tao sẽ thuê hacker làm ra con virus. Tao sẽ không nói hacker virus này làm gì, như vậy sẽ không tốn nhiều tiền để thuê hắn”."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Nó thua rồi. Thua 24 năm trước. Thua 24 năm sau. Có anh Zít @[100003320395826:2048:Phuong Bui Minh] cũng thua trên đoạn đường 24 năm này."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Ai biết được software sẽ thống trị thế giới? Ai biết được AI sẽ làm được gì? Chỉ biết nghĩ. Khi lý thuyết đủ vững, chờ đủ ngày lý thuyết sẽ thành hiện thực. Ngày ngày đóng góp, xây dựng để xây dựng ước mơ."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi đặt tên ước mơ là Oasis, ở công ty của tôi tên là Papaya, cùng đồng đội anh em mà tôi gọi là anh em kết nghĩa vườn đào. Oasis sẽ là nền tảng cung cấp Agent cho các đối tác như là Service-As-A-Software (not a typo, this is a new age of SaaS). Oasis sẽ được chăm sóc bởi những con người tận tâm muốn phụng sự, các Agent được sinh ra với một tâm hồn, truyền từ cái tâm của người làm: mang lại giá trị cho khách hàng."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "49340a680d5719ab"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"generative-ai"
+					],
+					"tag": [
+						"oasis",
+						"papaya",
+						"agent",
+						"starcraft"
+					]
+				}
+			},
+			{
+				"id": "462562e27301877e",
+				"slug": "lop-8-tron-hoc-lop-9-hoc-anh-van",
+				"status": "published",
+				"data": {
+					"title": "Lớp 8 trốn học, lớp 9 học Anh Văn",
+					"excerpt": "Kỹ sư phần mềm cần kỹ năng cứng là ngôn ngữ. Tôi đã nhận ra điều này trước khi làm với LLM.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Từ mẫu giáo đến lớp 8 tôi được làm lớp trưởng. Không phải chỉ vì xương to, đầu to, không phải chỉ vì khả năng dẫn đầu, khuynh hướng muốn dẫn đầu. Có thể chỉ vì một số quy tắc ứng xử mà nhà nho giáo ba đã dạy là đủ cho mấy đứa lóc chóc loi choi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Lớp 8 tôi ngủ dậy muộn, lần đầu trễ giờ đi học. Tôi quyết định thay quần áo đi học, có thể vào trễ, không biết sẽ phải xử trí sao. Đắng đo trăm vòng, tối chọn vào quán game quen thuộc. Chơi game đến giờ tan trường thì về. Lần duy nhất trốn học trong đời. Ngày hôm sau lên lớp, lần đầu tiên viết bảng kiểm điểm. Ngày họp lớp tiếp theo, cô giáo trảm chức ngay giữa lớp. Thế giới sụp đổ, nhà vua bị bay đầu."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi chẳng màng việc học làm gì nữa. Lớp trưởng là động lực cuối cùng để giữ năng lực học tập tốt. Tôi cứ cấm đầu vào chơi điện tử."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cuối năm lớp 8, thầy cô tổng kết và chuẩn bị cho năm học lớp 9 khắc nghiệt sắp tới. Cột mốc bản lề đề lớn. Tôi chuẩn bị cho cái chết tiếp theo: mình học dở quá. Má tôi thấy tình hình không ổn, sổ liên lạc cuối năm có môn Anh Văn dưới trung bình. Thi bốn môn chỉ cần một môn dưới 2 điểm là rớt. Môn Anh Văn sẽ giúp con đi bán vé số, con ạ. Má đi tìm thầy cho con, má bán ở chợ kiếm tiền, thiết lập được nhiều mối quan hệ tốt. Má hỏi hàng xóm, tìm được một người thầy chuyên dạy Anh Văn cấp tốc cho người xuất cảnh. Má sang nhà Bác Hai, ở cặp vách hỏi xin cho con được dạy. Bác Hai giúp con tôi, một chữ tình làng nghĩa xóm."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tháng 5 tôi cắp sách vở sang nhà thầy, không biết chuẩn bị gì cho lần đầu học với gia sư. Thầy giảng giáo án 3 tháng hè sẽ bao gồm những gì: là học lại từ đầu vì căn bản của con như đứa trẻ học lớp 5. Mục tiêu là giúp con vượt qua được kỳ thi, to lớn hơn là quá sức của con…Một tuần 3 buổi đến lớp, tôi như bị tra tấn. Mọi năm hè là được đi chơi điện tử không biết đường về, giờ bị kèm một. Sáng đi chơi điện tử, tối học với thầy. Từng giây ngồi trong lớp, tay chân tôi cóng lại, tai tôi bịt kín, mắt tôi nhìn xuống cuốn tập trắng, nghe thầy chỉ con không biết gì. Thầy bắt con nhìn thầy dạy, học cho đàng hoàng, công sức má nuôi con đó. Con khóc thầy đưa khăn cho lau nước mắt, rồi mình học tiếp."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Học sinh lớp 9 được tựu trường sớm để có thêm thời gian học. Gặp gỡ bạn bè, tay bắt mặt mừng. Rồi vào từng tiết học, Văn Toán Lý Hóa Sử Địa. Không biết năm nay sẽ chọn môn thi nào, Anh Văn có tỷ lệ cao sẽ được chọn. Lớp tôi được cô Nga dạy, cô là giáo viên Anh Văn kỳ cựu nhất trường, cô mặc áo dài ngà thật đẹp, máy tóc cô thật dài với cái giọng ấm áp nhẹ nhàng, mơ ước được làm trò của cô từ lâu nay mới được dạy. Vào môn Anh Văn nghe cô dạy, tôi chợt nhận ra…cô dạy mấy chủ đề đơn giản quá! Này thầy tôi đã dạy tới đâu luôn rồi mà còn bắt tôi học. Lúc đó mới nhận ra mình biết nhiều lắm rồi. Quay lại lớp, kể thầy nghe những ngày đi học, con thấy môn Anh Văn bây giờ dễ quá. Thầy giảng cho con nghe thêm được không? Con thích học!"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi là học sinh duy nhất điểm 10 môn Anh Văn trong đợt thi thử. Điểm số Anh Văn cao giúp tôi vào được Nguyễn Bỉnh Khiêm, cũng là môn có điểm số cao vượt trội so với các bạn chuyên Lý cùng lớp. Lớp 12 được tuyên dương trước lớp là người duy nhất làm đúng một câu chia thì khó nhất trong tất cả các lớp cô dạy. Thi Tú Tài không được 10 điểm vì nghe theo lời một cô gái vừa gặp dù mình biết cách làm đúng. Thi môn Văn chọn phân tích thơ được 7 điểm, 3 điểm còn lại là môn tiếng Việt, tốt nghiệp loại giỏi."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cô gái đi rồi, hành trang chỉ có vài chữ. Thi Đại Học chọn Khoa Học Tự Nhiên, không có Anh Văn cứu điểm, rớt cả hai lần. Lần thứ ba dùng môn Anh Văn đề vào trường Sài Gòn Aptech. Trường học 100% bằng sách tiếng Anh. Ngôn ngữ lập trình dùng tiếng Anh viết. Từng biến, hàm, thuật toán, cơ sở dữ liệu, công cụ lập trình đều tiếng Anh."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tôi chọn viết bằng tiếng Việt, dù đầu có thể suy nghĩ bằng tiếng Anh sau 20 năm làm nghề viết tiếng Anh kiếm sống."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Kỹ sư phần mềm cần kỹ năng cứng là ngôn ngữ. Tôi đã nhận ra điều này trước khi làm với LLM, yêu cầu và giúp đỡ mọi người cần trao dồi khả năng ngôn ngữ. Cho chuyên môn của mình, giao tiếp với mọi người xung quanh, giao tiếp với khách hàng, đối tác. Giỏi một ngôn ngữ đủ làm được mọi thứ. Học thêm một ngôn ngữ nữa, mở rộng kiến thức, mọi thứ x2."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "8c819edb49cd731f"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"ma",
+						"truancy",
+						"english-tutor",
+						"nguyen-binh-khiem"
+					]
+				}
+			},
+			{
+				"id": "6567bfb2ff4bc670",
+				"slug": "om-cay-dua-hua-khong-bao-gio-quen",
+				"status": "published",
+				"data": {
+					"title": "Ôm cây dừa, hứa không bao giờ quên",
+					"excerpt": "Hay là mình bảo mình là không bao giờ được quên ký ức này thì sao ta?",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Hồi nhỏ má mới mua miếng đất người ta cho ở tạm xây nhà, anh nhớ anh ra đứng ôm cây dừa anh khoái nhất, trái ngon nhất, kế bên nhà nhất, ngay trước cửa, trái nào mà rụng tao lụm được trước (low hanging fruits hahaha). Ôm cái cây mà giờ đây đã là của mình rồi, nó sẽ mãi là của mình. Chơi với cây dừa không biết làm gì thêm, dừa thì không rụng, rụng chắc chết, coi có trái nào sắp rụng không chuyển qua chỗ khác đứng. Dừa tươi xanh lắm, không rụng. Ôm mãi không còn gì để nhìn, ôm ít thôi người ta nói mình khùng. Quay lưng lại dựa vô cây: hay là mình bảo mình là không bao giờ được quên ký ức này thì sao ta? Ký ức nào? Này thôi nè, đang đứng dựa vào cây dừa. Khó quá, học bài còn quên sao nhớ nỗi cái này? Ủa sao khó? Có mỗi hình dung này mà không được là sao? Như 1 tấm hình là đủ mà. Không cần nhớ cái cây này luôn. 1 hình ảnh này trong đầu thôi xem nhớ tới bao lâu hen."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Vài năm nhớ lại mình có cái gì cần nhớ thì phải. Cái duy nhất mình tự hứa không ai ép như thầy ép học bài, ba ép phải phải phải, má nói này này này, chị nói kia kia kia, anh nói nọ nọ nọ. Được, mình còn nhớ. Cũng được hơn 30 năm gì rồi. Ước chừng thôi, lúc đó chụp tấm hình quên ghi lại ngày tháng năm. Hôm nay vẫn nhớ nè bạn. Nhớ lòng vòng cái nhà cái cây mít, cái cần câu, cái ao tập bơi, mấy cái nhà tự xây, vẫn nhớ cây dừa. Có cây ổi, cây mận, cây lêkima, cây chùm ruột, cây sơ ri, cây hồng quân, cây so đũa, cây bông gòn, cây bình bát, cây nhãn, cây nhãn lồng, cây lúa, cây cỏ đá gà, cây lúa ma, cây mắc cỡ, cây xoài, cây me, cây bông trang trắng, cây bông trang đỏ, cây đa bồ đề, cây táo ta, cây lá cách, cây sung, cây dâu ta, cây dâu tằm, cây cao, cây tre, cây trúc, cây sậy, cây dứa gai, cây dứa, cây khóm, cây gì không biết tên mà củ như nhân sâm, cây ô môi, cây sim, cây súng, cây sậy, cây lao, cây lục bình, cây bèo chuột, cây bèo chân vịt, cây bèo tấm…cây nào cũng có câu chuyện từ khi nó lớn lên tới chết đi hay là ngày chia tay tụi nó năm 11 tuổi….tính viết một ít tên cây, nghĩ lại cây nào cũng đáng được ghi nhận như nhau, không lẽ ghi cả miền Tây?"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Không nhớ tên giờ có Gemini giúp chỉ cho, nếu mô tả được đặc tính, nếu cây nào khó nhớ quá thì Google “các loại cây tuổi thơ miền Tây là ra”…"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Khó hơn thì kêu Coding Agent tạo ra Agent nó làm cho. Nó làm được hết."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Công ty em làm AI cần tuyển dụng nghệ nhân về tạo Agent. Ai thích thì nhắn em nha."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "93ed10c266e45f94"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"ma",
+						"cay-dua",
+						"mien-tay",
+						"plant-catalog"
+					]
+				}
+			},
+			{
+				"id": "77a070da6e04e8ec",
+				"slug": "quan-tu-tra-thu-23-nam-moi-xong",
+				"status": "published",
+				"data": {
+					"title": "Quân tử trả thù 23 năm mới xong",
+					"excerpt": "Tới năm nay các bạn mới cho phép lên chức Lớp Trưởng, trả lại luôn 1 lần 24 năm.",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tham vọng đủ lớn, ấp ủ đủ lâu sẽ gặt hái được thành quả"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Vừa đi học mẫu giáo đã được cô cho làm lớp trưởng, tính luôn 2 năm này thì cuộc đời đi học mình làm thêm 8 năm phổ thông là 10 năm làm lớp trưởng."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Lớp 8 bị sa thải giữa nhiệm kỳ vì trốn học 1 buổi duy nhất trong 12 năm đi học. Lớp 10-11-12 từ trường làng lên trường chuyên, học chỉ mơ không đội sổ chứ không dám nghĩ lãnh đạo lớp. Vẫn luôn tham vọng có ngày nào đó mình lấy lại vai trò lãnh đạo cao nhất của một nhóm đông thành viên."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Quan sát cách hoạt động của thằng lớp trưởng, thấy không chỉ nhân cách mà khả năng lãnh đạo cũng tào lao luôn. Các bạn khác bị sức ảnh hưởng từ ba má nó và các thầy cô khác, khó nhận ra hoặc thấy cũng không làm gì khác. Không tìm được cơ hội lật đổ, thôi thì cho nó biết mày giỏi tất cả môn học nhưng Anh Văn tao chỉ đua với đứa giỏi nhất lớp là phó học tập, chưa tới lượt mày, còn ứng xử với bạn bè thì tao đã có kĩ năng cao từ mẫu giáo rồi. Tao cũng không cho mày cơ hội nói xấu tao, cái gì mày làm không tốt tao cũng không làm, không khéo bị coi là lạm quyền, vượt trách nhiệm. Với đứa con thầy chức to, cô dạy giỏi, không ai xem hành động của tao có chủ đích tốt. Tao chỉ làm cho mọi người những thứ mày không làm. Quá nhiều thứ, mày chỉ biết có lợi cho lớp mình mà đạp lớp khác, có lợi cho thầy cô, có lợi cho trường, có lợi cho mày. Tao biết cách tạo giá trị cho từng người, cho lớp mình, cho lớp kế bên, cho từng thầy cô và trường."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tao tổ chức sinh nhật cho lớp theo tháng hoặc 1 nhóm tháng gần nhau. Kêu gọi mọi người đóng góp, tuỳ khả năng. Tổ chức 8/3 cho các bạn gái. Làm xong mới biết tháng 10 có nhiều sinh nhật nhất, tính ngược lại 9 tháng “À! Thì người ta nói ra giêng anh cưới em mà!” Ngày xưa hết mùa lúa thu đông, ông bà vác gạo qua xin cưới cho con trai."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Học xong lớp 12, xem coi chuyện gì xảy ra. Tôi không muốn nghỉ học, cũng không biết làm sao giữ quan hệ lâu dài. Mỗi năm bạn bè tụ tập, thêm một năm, ít hơn 1 bạn, ít hơn 1 lần gặp. Đến gia đình riêng, có khi chỉ có 3 thằng ngồi nhậu, có lúc có người này, có lúc có người kia, khó mà đủ hết. Mày xuất hiện đúng một lần với người con gái tao đã đơn phương yêu từ lớp 11 đến hết năm đầu sau 12 là hết thảy 3 năm. May là mày không xuất hiện nữa, chứ mày mà đi thường xuyên thì chắc tao không còn bạn cấp 3 nào."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Gần 20 năm sau, 1 năm 1 lần được vài mống. Hỏi thăm đứa này đứa kia đang ở đâu, từ khi ra trường chưa gặp được, năm nào cũng cộng thêm 1 năm vào số năm chưa gặp thằng này, con nhỏ kia…mình cũng muốn gặp nữa, cũng cộng mỗi lần gặp một năm vào số năm chưa gặp bạn này bạn kia… Một ngày nọ bảo lòng nhất định phải sửa tất cả số đó thành 0 mới được!!!"
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Còn cơ hội nào bằng cái ngày chỉ diễn ra một lần trong đời mình: cưới vợ. Đẩy mấy bạn vào cái thế khó từ chối. Không phải chỉ gặp trong đám cưới, lấy lý do để kêu nó xuất hiện là chính."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Làm được vài năm, mấy bạn trao cho thêm chức văn thể mỹ với trách nhiệm kêu gọi mọi người nhậu. Chức nào cũng nhận, tên nó là gì cũng được, kết quả nào giá trị là làm hết. Cho cái gì cũng là sự công nhận."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Làm tốt hơn nữa, mỗi năm thêm một vài bạn. Gặp nhau hỏi là bữa giờ sao mạy, không còn câu 5 năm hay 20 năm hay từ khi ra trường tới giờ tao mới gặp mày đó. (Đứa nào năm nay không đi thì nhận trách nhiệm năm sau cho tao)."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tới năm nay các bạn mới cho phép lên chức Lớp Trưởng, trả lại luôn 1 lần 24 năm. Không có tính 10, 11, 12 nha, mấy năm đó không phải của tao."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Cảm xúc mãn nguyện (satisfaction/fulfillment/accomplishment) nó tràn đầy cho cả 42 năm. Vui từ tối qua còn lâng lâng, thành tựu này mang theo cả cuộc đời được rồi. Muốn mang theo mãi thì các năm sau phải làm tốt hơn nữa."
+								}
+							],
+							"markDefs": []
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Tao tham vọng phụng sự bạn bè, tao không sợ điều thị phi nào hết. Quân tử trà thù mười năm chưa muộn, 23 năm mới xong."
+								}
+							],
+							"markDefs": []
+						}
+					],
+					"language": "vi",
+					"source": "facebook",
+					"source_id": "c5d7b303972bb5e4"
+				},
+				"bylines": [
+					{
+						"byline": "byline-main"
+					}
+				],
+				"taxonomies": {
+					"category": [
+						"personal-stories"
+					],
+					"tag": [
+						"lop-truong",
+						"reunion",
+						"ambition",
+						"friendship-ledger"
+					]
 				}
 			}
 		]
