@@ -224,10 +224,19 @@ const isLoggedIn = !!Astro.locals.user;
 							</a>
 						)
 					}
-					<select class="nav-lang-select" aria-label="Language" id="langSelect">
-						<option value="vi" selected={currentLang === "vi"}>VI</option>
-						<option value="en" selected={currentLang === "en"}>EN</option>
-					</select>
+					<details class="nav-lang">
+						<summary>
+							{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
+						</summary>
+						<div class="nav-dropdown">
+							<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
+								Tiếng Việt
+							</a>
+							<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
+								English
+							</a>
+						</div>
+					</details>
 				</div>
 			</nav>
 		</header>
@@ -612,27 +621,28 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			/* Language toggle */
-			.nav-lang-select {
+			.nav-lang {
+				position: relative;
 				margin-left: auto;
-				font-family: var(--font-mono);
-				font-size: var(--font-size-xs);
-				letter-spacing: 0.04em;
-				color: var(--color-text);
-				background: var(--color-bg);
-				border: 1px solid var(--color-border);
-				border-radius: var(--radius);
-				padding: 4px 8px;
+			}
+
+			.nav-lang > summary {
 				cursor: pointer;
-				transition: border-color var(--transition-fast);
+				list-style: none;
 			}
 
-			.nav-lang-select:hover {
-				border-color: var(--color-text-secondary);
+			.nav-lang > summary::-webkit-details-marker {
+				display: none;
 			}
 
-			.nav-lang-select:focus-visible {
-				outline: none;
-				border-color: var(--color-accent);
+			.nav-lang .nav-dropdown {
+				right: 0;
+				left: auto;
+				min-width: 140px;
+			}
+
+			.nav-lang .nav-dropdown-item[data-active="true"] {
+				color: var(--color-text);
 			}
 
 			/* Categories dropdown */
@@ -1142,12 +1152,12 @@ const isLoggedIn = !!Astro.locals.user;
 			function setLangCookie(lang: string) {
 				document.cookie = `pref_lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
 			}
-			document.getElementById('langSelect')?.addEventListener('change', (e) => {
-				setLangCookie((e.target as HTMLSelectElement).value);
-				location.reload();
-			});
 			document.querySelectorAll<HTMLAnchorElement>('[data-switch-lang]').forEach(a => {
-				a.addEventListener('click', () => setLangCookie(a.dataset.switchLang!));
+				a.addEventListener('click', (e) => {
+					e.preventDefault();
+					setLangCookie(a.dataset.switchLang!);
+					location.reload();
+				});
 			});
 		</script>
 	</body>
