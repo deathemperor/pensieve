@@ -25,12 +25,28 @@ All admin endpoints require authentication. Use the browser (Chrome MCP) to acce
 | POST | `/comments/bulk` | Bulk action: body `{ "ids": [...], "action": "approve"|"spam"|"trash"|"delete" }` |
 | DELETE | `/comments/{id}` | Hard delete (permanent) |
 
-### Workflow
+### Workflow (via wrangler D1)
 
-1. Start by checking counts to see if there are pending comments
-2. List pending comments to review them
-3. For each comment, decide: approve (legitimate), spam (junk), or trash (inappropriate)
-4. Use the admin UI via Chrome if API auth is difficult — navigate to `https://huuloc.com/pensieve/_emdash/admin/comments`
+The admin UI may require browser auth. Use wrangler D1 directly instead:
+
+```bash
+cd ~/death/pensieve
+
+# Count pending comments
+./node_modules/.bin/wrangler d1 execute pensieve-db --remote --command "SELECT status, COUNT(*) as count FROM _emdash_comments GROUP BY status"
+
+# List pending comments
+./node_modules/.bin/wrangler d1 execute pensieve-db --remote --command "SELECT id, author_name, author_email, body, created_at FROM _emdash_comments WHERE status = 'pending' ORDER BY created_at DESC"
+
+# Approve a comment
+./node_modules/.bin/wrangler d1 execute pensieve-db --remote --command "UPDATE _emdash_comments SET status = 'approved' WHERE id = '<COMMENT_ID>'"
+
+# Trash a comment
+./node_modules/.bin/wrangler d1 execute pensieve-db --remote --command "UPDATE _emdash_comments SET status = 'trash' WHERE id = '<COMMENT_ID>'"
+
+# Mark as spam
+./node_modules/.bin/wrangler d1 execute pensieve-db --remote --command "UPDATE _emdash_comments SET status = 'spam' WHERE id = '<COMMENT_ID>'"
+```
 
 ### Comment fields
 
