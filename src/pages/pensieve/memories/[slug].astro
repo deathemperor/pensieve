@@ -155,7 +155,7 @@ const publishDate =
 						bylines.length > 0 && (
 							<div class="meta-block byline-block">
 								<span class="meta-label">
-									{bylines.length === 1 ? "Author" : "Authors"}
+									{postLang === "vi" ? "Ngòi Bút" : "Penned By"}
 								</span>
 								<div class="bylines">
 									{bylines.map((credit) => (
@@ -184,19 +184,19 @@ const publishDate =
 					{
 						publishDate && (
 							<div class="meta-block">
-								<span class="meta-label">Remembered</span>
+								<span class="meta-label">{postLang === "vi" ? "Ghi nhớ" : "Remembered"}</span>
 								<time class="meta-value">{publishDate}</time>
 							</div>
 						)
 					}
 					<div class="meta-block">
-						<span class="meta-label">Reading time</span>
-						<span class="meta-value">{readingTime} min</span>
+						<span class="meta-label">{postLang === "vi" ? "Thời Lượng Phép" : "Spell Duration"}</span>
+						<span class="meta-value">{readingTime} {postLang === "vi" ? "phút" : "min"}</span>
 					</div>
 					{
 						tags.length > 0 && (
 							<div class="meta-block">
-								<span class="meta-label">Tags</span>
+								<span class="meta-label">{postLang === "vi" ? "Bùa Phép" : "Enchantments"}</span>
 								<div class="meta-tags">
 									{tags.map((t) => (
 										<a href={link(`tag/${t.slug}`)} class="meta-tag">
@@ -237,7 +237,7 @@ const publishDate =
 								</>
 							)
 						}
-						<span>{readingTime} min read</span>
+						<span>{readingTime} {postLang === "vi" ? "phút đọc" : "min read"}</span>
 					</div>
 					<h1 class="article-title" {...post.edit.title}>{post.data.title}</h1>
 					{
@@ -305,7 +305,7 @@ const publishDate =
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
 					<CommentForm collection="posts" contentId={post.data.id} />
-					<p class="comments-note">Comments are moderated and may take a moment to appear.</p>
+					<p class="comments-note">{postLang === "vi" ? "Bình luận được kiểm duyệt và có thể mất một lúc để hiển thị." : "Comments are moderated and may take a moment to appear."}</p>
 				</div>
 			</div>
 
@@ -313,7 +313,7 @@ const publishDate =
 			<aside class="article-sidebar">
 				<div class="sidebar-sticky">
 					<nav class="toc" aria-label="Table of contents">
-						<h4 class="toc-title">On this page</h4>
+						<h4 class="toc-title">{postLang === "vi" ? "Mục lục" : "On this page"}</h4>
 						<div class="toc-content" id="toc-content">
 							<!-- Populated by JS -->
 						</div>
@@ -330,7 +330,7 @@ const publishDate =
 		otherPostsWithTags.length > 0 && (
 			<section class="more-posts">
 				<div class="more-inner">
-					<h2 class="more-title">Continue reading</h2>
+					<h2 class="more-title">{postLang === "vi" ? "Đọc tiếp" : "Continue reading"}</h2>
 					<div class="more-grid">
 						{otherPostsWithTags.map(
 							({ post: p, tags: postTags, bylines: postBylines }) => (

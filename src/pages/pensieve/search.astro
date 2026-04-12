@@ -6,7 +6,9 @@ import Base from "../../layouts/Base.astro";
 import PostCard from "../../components/PostCard.astro";
 import { getReadingTime, extractText } from "../../utils/reading-time";
 import { link } from "../../utils/link";
+import { getCurrentLang } from "../../utils/lang";
 
+const isVi = getCurrentLang(Astro) === "vi";
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
 const { entries: allPosts } = await getEmDashCollection("posts");
@@ -28,30 +30,30 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 ---
 
 <Base
-	title={query ? `Search: ${query}` : "Search"}
-	description="Search blog posts"
+	title={query ? `${isVi ? "Tìm" : "Search"}: ${query}` : isVi ? "Tìm kiếm" : "Search"}
+	description={isVi ? "Tìm kiếm bài viết" : "Search blog posts"}
 >
 	<section class="search-page">
-		<h1 class="search-title">Search</h1>
+		<h1 class="search-title">{isVi ? "Tìm kiếm" : "Search"}</h1>
 
 		<form method="get" action={link("search")} class="search-form">
 			<input
 				type="search"
 				name="q"
 				value={query}
-				placeholder="Search posts..."
+				placeholder={isVi ? "Tìm ký ức..." : "Search memories..."}
 				class="search-input"
 				autofocus
 			/>
-			<button type="submit" class="search-button">Search</button>
+			<button type="submit" class="search-button">{isVi ? "Tìm" : "Search"}</button>
 		</form>
 
 		{
 			query && (
 				<p class="search-summary">
 					{results.length === 0
-						? `No results for "${query}"`
-						: `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`}
+						? isVi ? `Không tìm thấy kết quả cho "${query}"` : `No results for "${query}"`
+						: isVi ? `${results.length} kết quả cho "${query}"` : `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`}
 				</p>
 			)
 		}
@@ -73,7 +75,7 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 			)
 		}
 
-		{!query && <p class="search-hint">Enter a search term to find posts.</p>}
+		{!query && <p class="search-hint">{isVi ? "Nhập từ khóa để tìm bài viết." : "Enter a search term to find memories."}</p>}
 	</section>
 </Base>
 

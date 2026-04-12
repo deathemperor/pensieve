@@ -3,42 +3,44 @@ export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
 import { link } from "../../utils/link";
+import { getCurrentLang } from "../../utils/lang";
+const isVi = getCurrentLang(Astro) === "vi";
 
 const techStack = [
 	{
 		name: "Astro",
-		role: "SSR framework",
-		description: "Server-rendered pages, zero client JS by default",
+		role: isVi ? "Framework SSR" : "SSR framework",
+		description: isVi ? "Trang server-rendered, không JS phía client mặc định" : "Server-rendered pages, zero client JS by default",
 		url: "https://astro.build",
 	},
 	{
 		name: "EmDash CMS",
-		role: "Content management",
-		description: "Astro-native CMS with admin UI, comments, plugin system",
+		role: isVi ? "Quản lý nội dung" : "Content management",
+		description: isVi ? "CMS gốc Astro với giao diện quản trị, bình luận, hệ thống plugin" : "Astro-native CMS with admin UI, comments, plugin system",
 		url: "https://emdashcms.com",
 	},
 	{
 		name: "Cloudflare Workers",
-		role: "Hosting & compute",
-		description: "Edge runtime — D1 (SQL), R2 (storage), KV (sessions)",
+		role: isVi ? "Hosting & tính toán" : "Hosting & compute",
+		description: isVi ? "Edge runtime — D1 (SQL), R2 (lưu trữ), KV (session)" : "Edge runtime — D1 (SQL), R2 (storage), KV (sessions)",
 		url: "https://workers.cloudflare.com",
 	},
 	{
 		name: "Resend",
-		role: "Email delivery",
-		description: "Transactional email API for comment notifications",
+		role: isVi ? "Gửi email" : "Email delivery",
+		description: isVi ? "API email giao dịch cho thông báo bình luận" : "Transactional email API for comment notifications",
 		url: "https://resend.com",
 	},
 	{
 		name: "Claude Code",
-		role: "AI pair programmer",
-		description: "Anthropic's CLI agent — built every line of this site",
+		role: isVi ? "Lập trình viên AI" : "AI pair programmer",
+		description: isVi ? "Tác tử CLI của Anthropic — xây dựng mọi dòng code của trang này" : "Anthropic's CLI agent — built every line of this site",
 		url: "https://claude.com/claude-code",
 	},
 	{
 		name: "GitHub Actions",
 		role: "CI/CD",
-		description: "Automated deployment on push to main",
+		description: isVi ? "Triển khai tự động khi push lên main" : "Automated deployment on push to main",
 		url: "https://github.com/features/actions",
 	},
 ];
@@ -46,80 +48,82 @@ const techStack = [
 const agents = [
 	{
 		name: "session-logger",
-		purpose: "Appends structured entries to the build diary after each work session",
+		purpose: isVi ? "Ghi nhật ký xây dựng có cấu trúc sau mỗi phiên làm việc" : "Appends structured entries to the build diary after each work session",
 	},
 	{
 		name: "moderate-comments",
-		purpose: "Lists, approves, spams, trashes, or deletes comments via the EmDash admin API",
+		purpose: isVi ? "Duyệt, phê duyệt, đánh dấu spam, xóa bình luận qua API quản trị EmDash" : "Lists, approves, spams, trashes, or deletes comments via the EmDash admin API",
 	},
 	{
 		name: "Explore",
-		purpose: "Fast codebase exploration — finds files, searches code, answers architecture questions",
+		purpose: isVi ? "Khám phá codebase nhanh — tìm file, tìm kiếm code, trả lời câu hỏi kiến trúc" : "Fast codebase exploration — finds files, searches code, answers architecture questions",
 	},
 	{
 		name: "Plan",
-		purpose: "Designs implementation strategies, identifies critical files, weighs trade-offs",
+		purpose: isVi ? "Thiết kế chiến lược triển khai, xác định file quan trọng, cân nhắc đánh đổi" : "Designs implementation strategies, identifies critical files, weighs trade-offs",
 	},
 ];
 
 const plugins = [
 	{
 		name: "plugin-resend",
-		purpose: "Email delivery via Resend API + comment notification emails",
+		purpose: isVi ? "Gửi email qua Resend API + thông báo bình luận" : "Email delivery via Resend API + comment notification emails",
 	},
 	{
 		name: "plugin-forms",
-		purpose: "Form handling (EmDash built-in)",
+		purpose: isVi ? "Xử lý biểu mẫu (tích hợp EmDash)" : "Form handling (EmDash built-in)",
 	},
 	{
 		name: "plugin-webhook-notifier",
-		purpose: "Webhook notifications on content/media changes",
+		purpose: isVi ? "Thông báo webhook khi nội dung/media thay đổi" : "Webhook notifications on content/media changes",
 	},
 ];
 ---
 
-<Base title="Room of Requirement" description="How this site is built, one Claude Code session at a time" breadcrumbs={[{ label: "Room of Requirement" }]}>
+<Base title="Room of Requirement" description={isVi ? "Trang web này được xây dựng như thế nào, từng phiên Claude Code" : "How this site is built, one Claude Code session at a time"} breadcrumbs={[{ label: "Room of Requirement" }]}>
 	<section class="room-hero">
 		<div class="room-hero-inner">
 			<div class="room-rule" />
-			<span class="room-label">The Build</span>
+			<span class="room-label">{isVi ? "Xây Dựng" : "The Build"}</span>
 			<h1 class="room-title">Room of Requirement</h1>
 			<p class="room-subtitle">
-				This site is built entirely by
+				{isVi ? "Trang web này được xây dựng hoàn toàn bởi" : "This site is built entirely by"}
+				{" "}
 				<a href="https://claude.com/claude-code" class="cc-link">Claude Code</a>,
-				Anthropic's AI coding agent. Every page, plugin, deployment,
-				and configuration was pair-programmed in the terminal.
+				{isVi
+					? " tác tử AI lập trình của Anthropic. Mọi trang, plugin, triển khai và cấu hình đều được lập trình cặp trong terminal."
+					: " Anthropic's AI coding agent. Every page, plugin, deployment, and configuration was pair-programmed in the terminal."}
 			</p>
 			<a href="/room-of-requirement/priori-incantatem" class="diary-link">
-				View build diary &rarr;
+				{isVi ? "Xem nhật ký xây dựng" : "View build diary"} &rarr;
 			</a>
 		</div>
 	</section>
 
 	<section class="room-section">
 		<div class="room-inner">
-			<h2 class="section-heading">What Claude Code Does</h2>
+			<h2 class="section-heading">{isVi ? "Claude Code Làm Gì" : "What Claude Code Does"}</h2>
 			<div class="two-col">
 				<div>
 					<h3 class="subsection-heading cc-does">Claude Code</h3>
 					<ul class="cc-list">
-						<li>All source code — every Astro page, component, plugin, and utility</li>
-						<li>Infrastructure — Cloudflare Workers, D1, R2, KV setup via wrangler</li>
-						<li>CI/CD — GitHub Actions deployment pipeline</li>
-						<li>Plugin development — Resend email provider, Block Kit admin UIs</li>
-						<li>DNS and email routing configuration</li>
-						<li>Architecture planning and technical decisions</li>
-						<li>Git commits and code review</li>
+						<li>{isVi ? "Toàn bộ mã nguồn — mọi trang Astro, component, plugin và utility" : "All source code — every Astro page, component, plugin, and utility"}</li>
+						<li>{isVi ? "Hạ tầng — Cloudflare Workers, D1, R2, KV cài đặt qua wrangler" : "Infrastructure — Cloudflare Workers, D1, R2, KV setup via wrangler"}</li>
+						<li>{isVi ? "CI/CD — Pipeline triển khai GitHub Actions" : "CI/CD — GitHub Actions deployment pipeline"}</li>
+						<li>{isVi ? "Phát triển plugin — Resend email provider, Block Kit admin UI" : "Plugin development — Resend email provider, Block Kit admin UIs"}</li>
+						<li>{isVi ? "Cấu hình DNS và định tuyến email" : "DNS and email routing configuration"}</li>
+						<li>{isVi ? "Lập kế hoạch kiến trúc và quyết định kỹ thuật" : "Architecture planning and technical decisions"}</li>
+						<li>{isVi ? "Git commit và review code" : "Git commits and code review"}</li>
 					</ul>
 				</div>
 				<div>
-					<h3 class="subsection-heading human-does">Human</h3>
+					<h3 class="subsection-heading human-does">{isVi ? "Con Người" : "Human"}</h3>
 					<ul class="cc-list">
-						<li>All written content — posts, narratives, translations</li>
-						<li>Design direction — color choices, layout feedback</li>
-						<li>Product decisions — what to build, what matters</li>
-						<li>Domain registration and account credentials</li>
-						<li>Third-party API keys (Resend, Cloudflare)</li>
+						<li>{isVi ? "Toàn bộ nội dung viết — bài đăng, tự sự, bản dịch" : "All written content — posts, narratives, translations"}</li>
+						<li>{isVi ? "Định hướng thiết kế — chọn màu, phản hồi bố cục" : "Design direction — color choices, layout feedback"}</li>
+						<li>{isVi ? "Quyết định sản phẩm — xây gì, cái gì quan trọng" : "Product decisions — what to build, what matters"}</li>
+						<li>{isVi ? "Đăng ký tên miền và thông tin tài khoản" : "Domain registration and account credentials"}</li>
+						<li>{isVi ? "API key bên thứ ba (Resend, Cloudflare)" : "Third-party API keys (Resend, Cloudflare)"}</li>
 					</ul>
 				</div>
 			</div>
@@ -128,11 +132,11 @@ const plugins = [
 
 	<section class="room-section">
 		<div class="room-inner">
-			<h2 class="section-heading">Architecture</h2>
+			<h2 class="section-heading">{isVi ? "Kiến Trúc" : "Architecture"}</h2>
 			<p class="section-desc">
-				A personal blog running on the edge. Server-rendered Astro pages,
-				EmDash CMS for content, Cloudflare Workers for hosting.
-				All content lives in a D1 SQLite database.
+				{isVi
+					? "Blog cá nhân chạy trên edge. Trang Astro server-rendered, EmDash CMS cho nội dung, Cloudflare Workers cho hosting. Toàn bộ nội dung nằm trong cơ sở dữ liệu D1 SQLite."
+					: "A personal blog running on the edge. Server-rendered Astro pages, EmDash CMS for content, Cloudflare Workers for hosting. All content lives in a D1 SQLite database."}
 			</p>
 			<div class="tech-grid">
 				{techStack.map((t) => (
@@ -148,7 +152,7 @@ const plugins = [
 
 	<section class="room-section">
 		<div class="room-inner">
-			<h2 class="section-heading">Source</h2>
+			<h2 class="section-heading">{isVi ? "Mã Nguồn" : "Source"}</h2>
 			<a href="https://github.com/deathemperor/pensieve" class="repo-card" target="_blank" rel="noopener">
 				<span class="repo-icon">
 					<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
@@ -156,7 +160,7 @@ const plugins = [
 					</svg>
 				</span>
 				<span class="repo-name">deathemperor/pensieve</span>
-				<span class="repo-desc">Open source on GitHub</span>
+				<span class="repo-desc">{isVi ? "Mã nguồn mở trên GitHub" : "Open source on GitHub"}</span>
 			</a>
 		</div>
 	</section>
@@ -167,7 +171,7 @@ const plugins = [
 				<div>
 					<h2 class="section-heading">Subagents</h2>
 					<p class="section-desc">
-						Specialized Claude Code agents for specific tasks.
+						{isVi ? "Các tác tử Claude Code chuyên biệt cho từng nhiệm vụ." : "Specialized Claude Code agents for specific tasks."}
 					</p>
 					<div class="agent-list">
 						{agents.map((a) => (
@@ -181,7 +185,7 @@ const plugins = [
 				<div>
 					<h2 class="section-heading">Plugins</h2>
 					<p class="section-desc">
-						EmDash plugins extending the CMS.
+						{isVi ? "Các plugin EmDash mở rộng CMS." : "EmDash plugins extending the CMS."}
 					</p>
 					<div class="agent-list">
 						{plugins.map((p) => (
