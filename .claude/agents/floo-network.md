@@ -1,5 +1,6 @@
 ---
 name: floo-network
+color: "#e8784d"
 description: Cross-posting agent — publishes content to social platforms (Facebook, LinkedIn, Threads) when a post is published. Requires OAuth tokens configured as wrangler secrets.
 ---
 

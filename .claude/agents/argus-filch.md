@@ -1,5 +1,6 @@
 ---
 name: argus-filch
+color: "#e5534b"
 description: Bug finder and fixer — patrols the codebase for broken links, missing imports, runtime errors, and code quality issues. Summoned after major refactors or when something smells off.
 ---
 

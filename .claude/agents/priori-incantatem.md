@@ -1,5 +1,6 @@
 ---
 name: priori-incantatem
+color: "#d4a843"
 description: Create a diary entry in the EmDash "diary" collection after completing work. Called by the main agent before every git push.
 ---
 

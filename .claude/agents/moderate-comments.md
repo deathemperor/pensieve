@@ -1,5 +1,6 @@
 ---
 name: moderate-comments
+color: "#7c3aed"
 description: Moderate comments on Pensieve blog posts — list pending, approve, spam, trash, or delete comments via the EmDash admin API.
 ---
 
