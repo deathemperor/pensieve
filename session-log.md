@@ -124,4 +124,14 @@ No pending comments. Inbox clean — only the 1 previously trashed test comment.
 ### Admin account
 > create an admin account for me / should allow me to log in using github
 
-EmDash supports GitHub OAuth out of the box via environment variables. No code changes needed. User created a GitHub OAuth App, set `EMDASH_OAUTH_GITHUB_CLIENT_ID` and `EMDASH_OAUTH_GITHUB_CLIENT_SECRET` via `wrangler secret put`. GitHub login now available at the admin UI.
+EmDash supports GitHub OAuth out of the box via environment variables. No code changes needed. User created a GitHub OAuth App, set OAuth secrets via `wrangler secret put`. GitHub login now available at the admin UI.
+
+### Session logger subagent
+> create the session log sub agent for ./pensieve
+
+Created `.claude/agents/session-logger.md` — subagent that appends entries to session-log.md with date headers, blockquoted prompts, and concise summaries.
+
+### Remove EmDash footer
+> remove Powered by EmDash on footer
+
+Replaced "Powered by EmDash" with "© Trương Hữu Lộc" in the Pensieve footer.
