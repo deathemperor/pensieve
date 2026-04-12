@@ -257,8 +257,9 @@ const publishDate =
 								)}
 								{siblingSlug && (
 									<a
-										href={link(`posts/${siblingSlug}?lang=${siblingLang}`)}
+										href={link(`posts/${siblingSlug}`)}
 										class="translation-toggle"
+										data-switch-lang={siblingLang}
 									>
 										{siblingLang === "en"
 											? "Read in English →"
