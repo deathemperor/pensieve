@@ -27,4 +27,24 @@ export default defineConfig({
 		}),
 	],
 	devToolbar: { enabled: false },
+	vite: {
+		// EmDash's sandboxed plugins don't play well with Vite's dep optimizer
+		// in SSR mode — the pre-bundled chunks disappear between page reloads
+		// and we get SQLITE_CORRUPT_VTAB-style MIGHT-NOT-EXIST errors. Excluding
+		// them from optimizeDeps forces Vite to load them fresh each time.
+		optimizeDeps: {
+			exclude: [
+				"@emdash-cms/plugin-forms",
+				"@emdash-cms/plugin-webhook-notifier",
+				"@emdash-cms/cloudflare/sandbox",
+				"@emdash-cms/cloudflare/storage/r2",
+			],
+		},
+		ssr: {
+			noExternal: [
+				"@emdash-cms/plugin-forms",
+				"@emdash-cms/plugin-webhook-notifier",
+			],
+		},
+	},
 });

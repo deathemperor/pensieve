@@ -116,6 +116,19 @@ const isLoggedIn = !!Astro.locals.user;
 			rel="stylesheet"
 		/>
 		<title>{fullTitle}</title>
+		<link rel="icon" type="image/svg+xml" href={link("favicon.svg")} />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title="Pensieve — Tiếng Việt"
+			href={link("rss-vi.xml")}
+		/>
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title="Pensieve — English"
+			href={link("rss-en.xml")}
+		/>
 		<EmDashHead page={pageCtx} />
 		{theme && <ThemeStyles theme={theme} />}
 		<script is:inline>
