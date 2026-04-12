@@ -218,26 +218,29 @@ function formatGHDate(iso: string) {
 					<h3 class="chart-title">Coding eras</h3>
 					<div class="eras-track">
 						<div class="era" style="--era-color: var(--color-muted);">
-							<span class="era-bar" style="flex: 15;" />
+							<span class="era-bar" style="flex: 16;" />
 							<div class="era-info">
 								<span class="era-label">Solo</span>
-								<span class="era-dates">2006 — Jun 2021</span>
+								<span class="era-commits">1,755 commits</span>
+								<span class="era-dates">2006 — Jun 2022</span>
 								<span class="era-note">Manual coding, no AI assist</span>
 							</div>
 						</div>
 						<div class="era" style="--era-color: #7c3aed;">
-							<span class="era-bar" style="flex: 5;" />
+							<span class="era-bar" style="flex: 3.5;" />
 							<div class="era-info">
 								<span class="era-label">GitHub Copilot</span>
-								<span class="era-dates">Jun 2021 — Mar 2026</span>
-								<span class="era-note">AI-assisted coding (preview accepted)</span>
+								<span class="era-commits">8,106 commits</span>
+								<span class="era-dates">Jun 2022 — Jan 2026</span>
+								<span class="era-note">AI-assisted coding (public preview)</span>
 							</div>
 						</div>
 						<div class="era era-current" style="--era-color: #e8784d;">
-							<span class="era-bar" style="flex: 1;" />
+							<span class="era-bar" style="flex: 0.5;" />
 							<div class="era-info">
 								<span class="era-label">Claude Code</span>
-								<span class="era-dates">Apr 2026 — now</span>
+								<span class="era-commits">232 commits</span>
+								<span class="era-dates">Jan 29, 2026 — now</span>
 								<span class="era-note">Zero human code — fully AI-generated</span>
 							</div>
 						</div>
@@ -514,6 +517,14 @@ function formatGHDate(iso: string) {
 		font-size: var(--font-size-sm);
 		font-weight: 600;
 		color: var(--era-color);
+		white-space: nowrap;
+	}
+
+	.era-commits {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-text-secondary);
+		font-weight: 500;
 		white-space: nowrap;
 	}
 
