@@ -125,7 +125,7 @@ function formatDate(date: Date | null | undefined) {
 				>
 					<div class="hero-glow" />
 					<div class="hero-inner">
-						<a href={link(`posts/${featured.post.id}`)} class="hero-link">
+						<a href={link(`memories/${featured.post.id}`)} class="hero-link">
 							<div class="hero-rule" />
 							{featured.categoryLabel && (
 								<span class="hero-category">{featured.categoryLabel}</span>
@@ -185,7 +185,7 @@ function formatDate(date: Date | null | undefined) {
 								{g.posts.slice(0, 3).map((e) => (
 									<li class="group-post">
 										<a
-											href={link(`posts/${e.post.id}`)}
+											href={link(`memories/${e.post.id}`)}
 											class="group-post-link"
 										>
 											<h3 class="group-post-title">

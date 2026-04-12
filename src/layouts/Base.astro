@@ -219,7 +219,6 @@ const isLoggedIn = !!Astro.locals.user;
 								}
 							</div>
 						</details>
-							<a href="/room-of-requirement">Room of Requirement</a>
 					</div>
 					{
 						isLoggedIn && (
@@ -260,7 +259,7 @@ const isLoggedIn = !!Astro.locals.user;
 						<h4 class="footer-heading">Navigate</h4>
 						<ul class="footer-links">
 							<li><a href="/">Home</a></li>
-							<li><a href={link("posts")}>All Posts</a></li>
+							<li><a href={link("memories")}>All Posts</a></li>
 							{
 								pages.slice(0, 3).map((page) => (
 									<li>
