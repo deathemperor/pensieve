@@ -141,5 +141,25 @@ Replaced "Powered by EmDash" with "© Trương Hữu Lộc" in the Pensieve foot
 
 Hook logs raw prompts on every UserPromptSubmit. Session-logger subagent adds clean summaries after work is done. Keeping both — hook for capture, manual subagent call for summaries.
 
-### [2026-04-12 14:32] Prompt
-email to deathemperor@gmail.com
+### Resend email plugin for comment notifications
+> how to get notified of new comments? / extend webhook notifier / create Resend plugin
+
+Explored notification options; discovered EmDash has built-in comment hooks but no email sending on CF Workers. Created `plugins/plugin-resend/` — a local plugin providing email delivery via Resend API and comment:afterCreate notifications to deathemperor@gmail.com. Fixed capability and bun caching issues. Registered in astro.config.mjs, configured Resend (API key, domain verification), committed and pushed (f557003).
+
+### Fix plugin settings page visibility
+> don't see the settings
+
+Investigated missing plugin settings in admin UI. Standard-format EmDash plugins need `adminPages` in descriptor plus a Block Kit `routes.admin` handler (not `settingsSchema`). Added adminPages declaration and implemented a full Block Kit settings page with form for API key, from address, and notification recipient. Committed (ee9b9fa) and pushed.
+
+### Admin URL clarification
+> huuloc.com/pensieve/_emdash/admin got redirected and 404'd
+
+Clarified that the admin UI lives at `huuloc.com/_emdash/admin` (without the /pensieve base path). The /pensieve prefix is only for the blog content routes.
+
+### Set up me@huuloc.com email forwarding
+> create me@huuloc.com that forwards to loctruongh@gmail.com
+
+Set up Cloudflare Email Routing for huuloc.com. Added loctruongh@gmail.com as verified destination via `wrangler email routing addresses create`. Created routing rule me@huuloc.com -> loctruongh@gmail.com via `wrangler email routing rules create`.
+
+### [2026-04-12 21:46] Prompt
+push
