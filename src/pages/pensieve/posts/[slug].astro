@@ -245,27 +245,50 @@ const publishDate =
 							<p class="article-excerpt">{post.data.excerpt}</p>
 						)
 					}
-					{
-						(isTranslation || siblingSlug) && (
-							<div class="translation-strip">
-								{isTranslation && originalLang !== "mixed" && (
-									<span class="translation-note">
-										{postLang === "en"
-											? `Originally written in ${langLabel(originalLang as Lang, "en")}`
-											: `Nguyên bản bằng ${langLabel(originalLang as Lang, "vi")}`}
+					{/* Authorship indicator — HP themed */}
+					<div class={`authorship-banner ${isTranslation ? "authorship-spell" : "authorship-quill"}`}>
+						{isTranslation ? (
+							<>
+								<span class="authorship-icon">&#9733;</span>
+								<div class="authorship-text">
+									<span class="authorship-title">
+										{postLang === "en" ? "Conjured Translation" : "Bản Dịch Phép Thuật"}
 									</span>
-								)}
-								{siblingSlug && (
-									<a
-										href={link(`posts/${siblingSlug}`)}
-										class="translation-toggle"
-										data-switch-lang={siblingLang}
-									>
-										{siblingLang === "en"
-											? "Read in English →"
-											: "Đọc bản tiếng Việt →"}
-									</a>
-								)}
+									<span class="authorship-desc">
+										{postLang === "en"
+											? `Translated from ${langLabel(originalLang as Lang, "en")} by Claude. Original thoughts are entirely the author's.`
+											: `Dịch từ ${langLabel(originalLang as Lang, "vi")} bởi Claude. Mọi suy nghĩ gốc đều là của tác giả.`}
+									</span>
+								</div>
+							</>
+						) : (
+							<>
+								<span class="authorship-icon">&#9998;</span>
+								<div class="authorship-text">
+									<span class="authorship-title">
+										{postLang === "en" ? "Penned by Quill" : "Viết Bằng Ngòi Bút"}
+									</span>
+									<span class="authorship-desc">
+										{postLang === "en"
+											? "Written entirely by human hand. No AI writing, no enchantments — only original thoughts."
+											: "Viết hoàn toàn bằng tay người. Không AI, không phép thuật — chỉ có suy nghĩ nguyên bản."}
+									</span>
+								</div>
+							</>
+						)}
+					</div>
+					{
+						siblingSlug && (
+							<div class="translation-strip">
+								<a
+									href={link(`posts/${siblingSlug}`)}
+									class="translation-toggle"
+									data-switch-lang={siblingLang}
+								>
+									{siblingLang === "en"
+										? "Read in English →"
+										: "Đọc bản tiếng Việt →"}
+								</a>
 							</div>
 						)
 					}
@@ -552,7 +575,69 @@ const publishDate =
 		color: var(--color-text-secondary);
 	}
 
-	/* Translation strip — citation banner + language toggle */
+	/* Authorship banner — HP themed */
+	.authorship-banner {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--spacing-4);
+		padding: var(--spacing-5) var(--spacing-6);
+		border-radius: var(--radius-lg);
+		margin-top: var(--spacing-6);
+	}
+
+	.authorship-quill {
+		background: color-mix(in srgb, #3fb950 8%, var(--color-surface-elevated));
+		border: 1px solid color-mix(in srgb, #3fb950 20%, var(--color-border));
+	}
+
+	.authorship-spell {
+		background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-elevated));
+		border: 1px solid color-mix(in srgb, var(--color-accent) 20%, var(--color-border));
+	}
+
+	.authorship-icon {
+		font-size: 1.5rem;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+
+	.authorship-quill .authorship-icon {
+		color: #3fb950;
+	}
+
+	.authorship-spell .authorship-icon {
+		color: var(--color-accent);
+	}
+
+	.authorship-text {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-1);
+	}
+
+	.authorship-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		letter-spacing: -0.011em;
+	}
+
+	.authorship-quill .authorship-title {
+		color: #3fb950;
+	}
+
+	.authorship-spell .authorship-title {
+		color: var(--color-accent);
+	}
+
+	.authorship-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+	}
+
+	/* Translation strip — language toggle */
 	.translation-strip {
 		display: flex;
 		align-items: center;
