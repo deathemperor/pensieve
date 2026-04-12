@@ -1,5 +1,6 @@
 ---
 name: geminio
+color: "#3fb950"
 description: i18n police — ensures all user-facing text on the site has both English and Vietnamese versions. Summoned after any page or component adds new visible text.
 ---
 
