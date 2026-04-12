@@ -307,6 +307,16 @@ const publishDate =
 					<PortableText value={post.data.content} />
 				</div>
 
+				{/* Lumos — guest like button */}
+				<div class="lumos-section">
+					<button class="lumos-btn" data-post-slug={slug} aria-label="Cast Lumos">
+						<span class="lumos-wand">&#9733;</span>
+						<span class="lumos-label">{postLang === "vi" ? "Lumos" : "Lumos"}</span>
+						<span class="lumos-count" data-lumos-count>—</span>
+					</button>
+					<p class="lumos-hint">{postLang === "vi" ? "Thắp sáng ký ức này" : "Illuminate this memory"}</p>
+				</div>
+
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
 					<CommentForm collection="posts" contentId={post.data.id} />
@@ -464,6 +474,44 @@ const publishDate =
 	}
 
 	initReadingProgress();
+
+	// Lumos — guest like button
+	(function () {
+		const btn = document.querySelector('.lumos-btn') as HTMLButtonElement | null;
+		if (!btn) return;
+		const slug = btn.dataset.postSlug;
+		const countEl = btn.querySelector('[data-lumos-count]') as HTMLElement;
+		const COOKIE = `lumos_${slug}`;
+		const API = '/_emdash/api/plugins/pensieve-engage';
+
+		// Check cookie
+		const hasCookie = document.cookie.includes(COOKIE + '=1');
+		if (hasCookie) btn.classList.add('lumos-cast');
+
+		// Fetch count
+		fetch(`${API}/lumos/count?post=${encodeURIComponent(slug!)}`)
+			.then(r => r.json())
+			.then(d => { if (countEl) countEl.textContent = String(d.count || 0); })
+			.catch(() => {});
+
+		btn.addEventListener('click', () => {
+			if (btn.classList.contains('lumos-cast')) return;
+			fetch(`${API}/lumos/cast`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ postSlug: slug }),
+			})
+				.then(r => r.json())
+				.then(d => {
+					if (d.success || d.alreadyCast) {
+						btn.classList.add('lumos-cast');
+						if (countEl) countEl.textContent = String(d.count);
+						document.cookie = `${COOKIE}=1;path=/;max-age=${60*60*24*365};samesite=lax`;
+					}
+				})
+				.catch(() => {});
+		});
+	})();
 </script>
 
 <style>
@@ -1098,6 +1146,74 @@ const publishDate =
 	}
 
 	/* Comments section */
+	/* Lumos — guest like */
+	.lumos-section {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-10) 0;
+		border-top: 1px solid var(--color-border);
+		border-bottom: 1px solid var(--color-border);
+		margin: var(--spacing-8) 0;
+	}
+
+	.lumos-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		padding: var(--spacing-3) var(--spacing-6);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		color: var(--color-text);
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.lumos-btn:hover {
+		border-color: #f0c75e;
+		box-shadow: 0 0 16px rgba(240, 199, 94, 0.15);
+	}
+
+	.lumos-btn.lumos-cast {
+		border-color: #f0c75e;
+		background: color-mix(in srgb, #f0c75e 10%, var(--color-surface-elevated));
+		box-shadow: 0 0 24px rgba(240, 199, 94, 0.2);
+	}
+
+	.lumos-wand {
+		font-size: 1.25rem;
+		transition: all 0.5s ease;
+	}
+
+	.lumos-cast .lumos-wand {
+		color: #f0c75e;
+		text-shadow: 0 0 8px rgba(240, 199, 94, 0.6);
+		transform: scale(1.2);
+	}
+
+	.lumos-count {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.lumos-cast .lumos-count {
+		color: #f0c75e;
+	}
+
+	.lumos-hint {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		font-style: italic;
+		margin: 0;
+	}
+
 	.article-comments {
 		margin-top: var(--spacing-16);
 		padding-top: var(--spacing-10);

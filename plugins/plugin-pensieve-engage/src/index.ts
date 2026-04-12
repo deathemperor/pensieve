@@ -18,6 +18,9 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 			reading_events: {
 				indexes: ["postSlug", "sessionId", "createdAt"],
 			},
+			lumos: {
+				indexes: ["postSlug", "ipHash"],
+			},
 		},
 		adminPages: [
 			{ path: "/subscribers", label: "Subscribers", icon: "users" },
