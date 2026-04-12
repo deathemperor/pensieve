@@ -278,7 +278,7 @@ export const HOME_HTML = `<!DOCTYPE html>
       <p class="role">Senior software engineer. Bilingual writer. Based in Vietnam.</p>
       <p class="bio">
         At VNG from 2006, building session systems and game publishing platforms.
-        Now at <a href="https://papaya.vn" rel="noopener">Papaya</a>, putting AI agents
+        Now at <a href="https://papaya.asia" rel="noopener">Papaya</a>, putting AI agents
         to work on the craft side of software. Writes long-form in Vietnamese and English —
         mostly about memory, family, fish, and the things worth keeping.
       </p>
