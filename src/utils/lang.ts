@@ -7,10 +7,9 @@
  * differs from the post's `original_language`.
  *
  * Preference order:
- *   1. `?lang=vi` or `?lang=en` in the URL query string
- *   2. `pref_lang` cookie
- *   3. Accept-Language header (from the request)
- *   4. Default: "vi" (most content is originally Vietnamese)
+ *   1. `pref_lang` cookie (set by the dropdown in the nav)
+ *   2. Accept-Language header (from the request)
+ *   3. Default: "vi" (most content is originally Vietnamese)
  */
 
 export type Lang = "vi" | "en";
@@ -22,20 +21,16 @@ export function getCurrentLang(astro: {
 	cookies: { get: (name: string) => { value?: string } | undefined };
 	request: Request;
 }): Lang {
-	// 1. URL query param
-	const queryLang = astro.url.searchParams.get("lang");
-	if (queryLang === "vi" || queryLang === "en") return queryLang;
-
-	// 2. Cookie
+	// 1. Cookie
 	const cookieLang = astro.cookies.get("pref_lang")?.value;
 	if (cookieLang === "vi" || cookieLang === "en") return cookieLang;
 
-	// 3. Accept-Language header
+	// 2. Accept-Language header
 	const accept = astro.request.headers.get("accept-language") || "";
 	if (/^en\b/i.test(accept)) return "en";
 	if (/^vi\b/i.test(accept)) return "vi";
 
-	// 4. Default
+	// 3. Default
 	return DEFAULT_LANG;
 }
 
