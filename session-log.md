@@ -12,3 +12,6 @@ no, t should be in capital! it's my family name! one of the most popular family 
 
 ### [2026-04-13 00:37] Prompt
 /room-of-requirement/priori-incantatem should be at home root with a space. the /room-of-requirement/priori-incantatem also missed logging my original prompts: always write my full original prompts.
+
+### [2026-04-13 00:42] Prompt
+/pensieve/priori-incantatem is not root, root is huuloc.com
