@@ -81,10 +81,28 @@ export default {
 			});
 		}
 
+		// Root-level pages rewritten to Astro's /pensieve/* namespace.
+		// These pages live in src/pages/ but are exposed at huuloc.com root.
+		const rootPages = ["/room-of-requirement", "/Trương", "/trương"];
+		const matchedRoot = rootPages.find(
+			(p) => path === p || path === p + "/" || path.startsWith(p + "/"),
+		);
+		if (matchedRoot) {
+			// Lowercase /trương redirects to canonical /Trương
+			if (path.startsWith("/trương")) {
+				const canonical = path.replace("/trương", "/Trương");
+				return Response.redirect(new URL(canonical, url.origin).href, 301);
+			}
+			const rewritten = new URL(`/pensieve${path}`, url);
+			rewritten.search = url.search;
+			return handler.fetch(
+				new Request(rewritten, request),
+				env,
+				ctx,
+			);
+		}
+
 		// Everything else (mainly /pensieve/*) goes to the Astro handler.
-		// Requests outside /pensieve/ that aren't any of the routes above fall
-		// through to Astro's 404 page — acceptable since we only expect
-		// traffic at /, /pensieve/*, and /favicon.svg.
 		return handler.fetch(request, env, ctx);
 	},
 };
