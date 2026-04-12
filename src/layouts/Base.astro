@@ -120,6 +120,9 @@ const isLoggedIn = !!Astro.locals.user;
 			href={link("rss-en.xml")}
 		/>
 		<EmDashHead page={pageCtx} />
+		{/* Content Signals (contentsignals.org / IETF aipref) */}
+		<meta name="ai-content-declaration" content="site-code:ai-generated; content:human-written" />
+		<meta name="generator" content="Astro + Claude Code" />
 		{theme && <ThemeStyles theme={theme} />}
 		<script is:inline>
 			// Apply theme immediately to prevent flash
