@@ -1,29 +1,30 @@
 import type { APIRoute } from "astro";
 import { getEmDashCollection } from "emdash";
-import { BASE } from "../utils/link";
+import { BASE } from "../../utils/link";
 
-const siteTitle = "Pensieve — Tiếng Việt";
+const siteTitle = "Pensieve";
 const siteDescription =
-	"Long-form thoughts, bản tiếng Việt. Narratives rescued from Facebook, sorted into themed categories.";
+	"long-form thoughts, one theme per topic — sorted into categories each with their own visual theme.";
 
 export const GET: APIRoute = async ({ site, url }) => {
 	const origin = site?.origin ?? url.origin;
-	const basePath = BASE.replace(/\/$/, "");
+	const basePath = BASE.replace(/\/$/, ""); // "/pensieve"
 	const siteUrl = `${origin}${basePath}`;
 
-	const { entries: all } = await getEmDashCollection("posts", {
+	const { entries: posts } = await getEmDashCollection("posts", {
 		orderBy: { published_at: "desc" },
-		limit: 40,
+		limit: 20,
 	});
-	const posts = all.filter((p) => p.data.language === "vi").slice(0, 20);
 
 	const items = posts
 		.map((post) => {
 			if (!post.data.publishedAt) return null;
 			const pubDate = post.data.publishedAt.toUTCString();
+
 			const postUrl = `${siteUrl}/posts/${post.id}`;
 			const title = escapeXml(post.data.title || "Untitled");
 			const description = escapeXml(post.data.excerpt || "");
+
 			return `    <item>
       <title>${title}</title>
       <link>${postUrl}</link>
@@ -41,8 +42,8 @@ export const GET: APIRoute = async ({ site, url }) => {
     <title>${escapeXml(siteTitle)}</title>
     <description>${escapeXml(siteDescription)}</description>
     <link>${siteUrl}/</link>
-    <atom:link href="${siteUrl}/rss-vi.xml" rel="self" type="application/rss+xml"/>
-    <language>vi</language>
+    <atom:link href="${siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
+    <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items}
   </channel>

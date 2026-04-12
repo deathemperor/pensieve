@@ -1,51 +1,22 @@
 import handler from "@astrojs/cloudflare/entrypoints/server";
-import { HOME_HTML, HOME_FAVICON_SVG } from "./home-html";
 export { PluginBridge } from "@emdash-cms/cloudflare/sandbox";
 
 /**
- * Wrap the Astro Worker handler with a few custom routes:
+ * Custom worker wrapping the Astro handler.
  *
- *   /                         → huuloc.com landing page (static HTML)
- *   /favicon.svg              → favicon, shared with Pensieve
- *   /robots.txt               → bare allow-all
- *   /pensieve/m/<sha256>.ext  → proxy to R2 media bucket, 1-year cache
- *   everything else           → Astro (Pensieve at /pensieve/*)
+ * With base: "/" Astro owns the entire domain. The worker only
+ * intercepts routes that need special handling:
+ *   /plant-gallery/*  → static assets (outside Astro)
+ *   /pensieve/m/*     → R2 media proxy, 1-year cache
+ *   /trương           → 301 redirect to canonical /Trương
+ *   everything else   → Astro
  */
 export default {
 	async fetch(request: Request, env: any, ctx: any) {
 		const url = new URL(request.url);
 		const path = url.pathname;
 
-		// Root landing page for huuloc.com/
-		if (path === "/" || path === "") {
-			return new Response(HOME_HTML, {
-				headers: {
-					"Content-Type": "text/html; charset=utf-8",
-					"Cache-Control": "public, max-age=300, s-maxage=3600",
-				},
-			});
-		}
-
-		// Favicon at the domain root (Pensieve serves its own at /pensieve/favicon.svg)
-		if (path === "/favicon.svg" || path === "/favicon.ico") {
-			return new Response(HOME_FAVICON_SVG, {
-				headers: {
-					"Content-Type": "image/svg+xml",
-					"Cache-Control": "public, max-age=86400",
-				},
-			});
-		}
-
-		if (path === "/robots.txt") {
-			return new Response(
-				"User-agent: *\nAllow: /\n\nSitemap: https://huuloc.com/pensieve/rss-en.xml\nSitemap: https://huuloc.com/pensieve/rss-vi.xml\n",
-				{
-					headers: { "Content-Type": "text/plain; charset=utf-8" },
-				},
-			);
-		}
-
-		// Unlisted plant gallery served from dist/client/plant-gallery/*
+		// Plant gallery — static assets outside Astro
 		if (path === "/plant-gallery" || path === "/plant-gallery/") {
 			return env.ASSETS.fetch(
 				new Request(new URL("/plant-gallery/index.html", url), request),
@@ -81,28 +52,13 @@ export default {
 			});
 		}
 
-		// Root-level pages rewritten to Astro's /pensieve/* namespace.
-		// These pages live in src/pages/ but are exposed at huuloc.com root.
-		const rootPages = ["/room-of-requirement", "/Trương", "/trương"];
-		const matchedRoot = rootPages.find(
-			(p) => path === p || path === p + "/" || path.startsWith(p + "/"),
-		);
-		if (matchedRoot) {
-			// Lowercase /trương redirects to canonical /Trương
-			if (path.startsWith("/trương")) {
-				const canonical = path.replace("/trương", "/Trương");
-				return Response.redirect(new URL(canonical, url.origin).href, 301);
-			}
-			const rewritten = new URL(`/pensieve${path}`, url);
-			rewritten.search = url.search;
-			return handler.fetch(
-				new Request(rewritten, request),
-				env,
-				ctx,
-			);
+		// Lowercase /trương → canonical /Trương
+		if (path.startsWith("/tr\u01B0\u01A1ng")) {
+			const canonical = path.replace("/tr\u01B0\u01A1ng", "/Tr\u01B0\u01A1ng");
+			return Response.redirect(new URL(canonical, url.origin).href, 301);
 		}
 
-		// Everything else (mainly /pensieve/*) goes to the Astro handler.
+		// Everything else → Astro
 		return handler.fetch(request, env, ctx);
 	},
 };

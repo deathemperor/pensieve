@@ -106,7 +106,7 @@ const isLoggedIn = !!Astro.locals.user;
 			rel="stylesheet"
 		/>
 		<title>{fullTitle}</title>
-		<link rel="icon" type="image/svg+xml" href={link("favicon.svg")} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link
 			rel="alternate"
 			type="application/rss+xml"
@@ -223,7 +223,7 @@ const isLoggedIn = !!Astro.locals.user;
 					</div>
 					{
 						isLoggedIn && (
-							<a href={link("_emdash/admin")} class="nav-admin">
+							<a href="/_emdash/admin" class="nav-admin">
 								Admin
 							</a>
 						)

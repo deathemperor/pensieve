@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getEmDashCollection } from "emdash";
-import { BASE } from "../utils/link";
+import { BASE } from "../../utils/link";
 
 const siteTitle = "Pensieve — English";
 const siteDescription =
