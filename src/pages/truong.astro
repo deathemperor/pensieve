@@ -1,0 +1,671 @@
+---
+export const prerender = false;
+
+import Base from "../layouts/Base.astro";
+import { link } from "../utils/link";
+
+// GitHub API — unauthenticated (60 req/hr, fine for a personal blog)
+interface GitHubUser {
+	public_repos: number;
+	followers: number;
+	following: number;
+	created_at: string;
+}
+
+interface GitHubEvent {
+	type: string;
+	repo: { name: string };
+	created_at: string;
+	payload: {
+		commits?: { message: string; sha: string }[];
+		action?: string;
+		ref?: string;
+		ref_type?: string;
+	};
+}
+
+interface GitHubRepo {
+	name: string;
+	description: string | null;
+	html_url: string;
+	language: string | null;
+	stargazers_count: number;
+	updated_at: string;
+	fork: boolean;
+}
+
+let ghUser: GitHubUser | null = null;
+let ghEvents: GitHubEvent[] = [];
+let ghRepos: GitHubRepo[] = [];
+
+try {
+	const headers = { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" };
+	const [userRes, eventsRes, reposRes] = await Promise.all([
+		fetch("https://api.github.com/users/deathemperor", { headers }),
+		fetch("https://api.github.com/users/deathemperor/events/public?per_page=30", { headers }),
+		fetch("https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner", { headers }),
+	]);
+	if (userRes.ok) ghUser = await userRes.json();
+	if (eventsRes.ok) ghEvents = await eventsRes.json();
+	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
+} catch {
+	// GitHub API unavailable — render without stats
+}
+
+// Aggregate commit activity from events
+const commitEvents = ghEvents.filter((e) => e.type === "PushEvent");
+const totalRecentCommits = commitEvents.reduce(
+	(sum, e) => sum + (e.payload.commits?.length ?? 0), 0,
+);
+
+// Activity by day of week
+const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const dayActivity = new Array(7).fill(0);
+for (const e of ghEvents) {
+	const day = new Date(e.created_at).getDay();
+	dayActivity[day]++;
+}
+const maxDayActivity = Math.max(...dayActivity, 1);
+
+// Recent activity feed (last 10 meaningful events)
+const activityFeed = ghEvents
+	.filter((e) => ["PushEvent", "CreateEvent", "PullRequestEvent", "IssuesEvent"].includes(e.type))
+	.slice(0, 10)
+	.map((e) => {
+		const repo = e.repo.name.replace("deathemperor/", "");
+		const date = new Date(e.created_at);
+		const timeAgo = formatTimeAgo(date);
+		let action = e.type;
+		if (e.type === "PushEvent") {
+			const count = e.payload.commits?.length ?? 0;
+			action = `${count} commit${count !== 1 ? "s" : ""} to ${repo}`;
+		} else if (e.type === "CreateEvent") {
+			action = `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} in ` : ""}${repo}`;
+		} else if (e.type === "PullRequestEvent") {
+			action = `${e.payload.action} PR in ${repo}`;
+		} else if (e.type === "IssuesEvent") {
+			action = `${e.payload.action} issue in ${repo}`;
+		}
+		return { action, timeAgo, date };
+	});
+
+const langColors: Record<string, string> = {
+	TypeScript: "#3178c6",
+	JavaScript: "#f1e05a",
+	Python: "#3572a5",
+	HTML: "#e34c26",
+	CSS: "#563d7c",
+	Go: "#00add8",
+	Rust: "#dea584",
+	Shell: "#89e051",
+	Astro: "#ff5a03",
+};
+
+function formatTimeAgo(date: Date) {
+	const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+	if (seconds < 60) return "just now";
+	const minutes = Math.floor(seconds / 60);
+	if (minutes < 60) return `${minutes}m ago`;
+	const hours = Math.floor(minutes / 60);
+	if (hours < 24) return `${hours}h ago`;
+	const days = Math.floor(hours / 24);
+	if (days < 7) return `${days}d ago`;
+	return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatGHDate(iso: string) {
+	return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long" });
+}
+---
+
+<Base title="Trương — Pensieve" description="Trương Hữu Lộc — engineer, writer, fishkeeper">
+	<section class="about-hero">
+		<div class="about-hero-inner">
+			<div class="about-rule" />
+			<span class="about-label">About</span>
+			<h1 class="about-title">Trương Hữu Lộc</h1>
+			<p class="about-subtitle">
+				Engineer. Writer. Fishkeeper.
+			</p>
+		</div>
+	</section>
+
+	<section class="about-section">
+		<div class="about-inner">
+			<div class="about-prose">
+				<p>
+					My name means "blessing" in Vietnamese — a thank-you name from parents
+					who once weren't sure they'd keep me. That origin story sits under
+					everything I write.
+				</p>
+				<p>
+					I joined VinaGame (now VNG) in December 2006, where I invented a session
+					management mechanism that ran in production for years. That was the start
+					of two decades of building things in Vietnam's tech scene — from gaming
+					infrastructure to startups to AI.
+				</p>
+				<p>
+					I keep Central American cichlids. I've bred species that had never been
+					bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
+					most hobbyists only see in books. The fish tanks and the code share
+					the same impulse: make something alive, watch it grow, learn what
+					you got wrong.
+				</p>
+				<p>
+					In 2018 I was diagnosed with bipolar disorder, which I think of as
+					<em>hai mùa mưa nắng</em> — two seasons, rain and sun. A mentor told
+					me to write when stuck. Pensieve is where that writing lives now,
+					rescued from years of Facebook scroll.
+				</p>
+				<p>
+					This site is my memoir-in-progress. It's also an experiment:
+					every line of code was written by
+					<a href={link("room-of-requirement")} class="prose-link">Claude Code</a>,
+					Anthropic's AI pair programmer.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading">Elsewhere</h2>
+			<div class="links-row">
+				<a href="https://github.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
+					<svg class="profile-icon" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+					</svg>
+					GitHub
+				</a>
+				<a href="https://linkedin.com/in/deathemperor" class="profile-link" target="_blank" rel="noopener">
+					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+					</svg>
+					LinkedIn
+				</a>
+				<a href="https://facebook.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
+					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+					</svg>
+					Facebook
+				</a>
+				<a href="mailto:me@huuloc.com" class="profile-link">
+					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="2" y="4" width="20" height="16" rx="2" />
+						<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+					</svg>
+					me@huuloc.com
+				</a>
+			</div>
+		</div>
+	</section>
+
+	{ghUser && (
+		<section class="about-section">
+			<div class="about-inner">
+				<h2 class="section-heading">GitHub Activity</h2>
+				<p class="section-desc">
+					Live data from the GitHub API.
+					On GitHub since {formatGHDate(ghUser.created_at)}.
+				</p>
+
+				<div class="gh-stats">
+					<div class="gh-stat">
+						<span class="gh-stat-value">{ghUser.public_repos}</span>
+						<span class="gh-stat-label">repos</span>
+					</div>
+					<div class="gh-stat">
+						<span class="gh-stat-value">{totalRecentCommits}</span>
+						<span class="gh-stat-label">recent commits</span>
+					</div>
+					<div class="gh-stat">
+						<span class="gh-stat-value">{ghUser.followers}</span>
+						<span class="gh-stat-label">followers</span>
+					</div>
+				</div>
+
+				{/* Day-of-week activity chart */}
+				<div class="activity-chart">
+					<h3 class="chart-title">Activity by day</h3>
+					<div class="chart-bars">
+						{dayNames.map((name, i) => (
+							<div class="chart-col">
+								<div class="chart-bar-wrap">
+									<div
+										class="chart-bar"
+										style={`height: ${(dayActivity[i] / maxDayActivity) * 100}%;`}
+									/>
+								</div>
+								<span class="chart-label">{name}</span>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* Recent repos */}
+				{ghRepos.length > 0 && (
+					<div class="repos-section">
+						<h3 class="chart-title">Recent repositories</h3>
+						<div class="repos-grid">
+							{ghRepos.slice(0, 6).map((repo) => (
+								<a href={repo.html_url} class="repo-card" target="_blank" rel="noopener">
+									<span class="repo-name">{repo.name}</span>
+									{repo.description && (
+										<span class="repo-desc">{repo.description}</span>
+									)}
+									<span class="repo-meta">
+										{repo.language && (
+											<span class="repo-lang">
+												<span
+													class="repo-lang-dot"
+													style={`background: ${langColors[repo.language] ?? "var(--color-muted)"};`}
+												/>
+												{repo.language}
+											</span>
+										)}
+										{repo.stargazers_count > 0 && (
+											<span class="repo-stars">
+												&#9733; {repo.stargazers_count}
+											</span>
+										)}
+									</span>
+								</a>
+							))}
+						</div>
+					</div>
+				)}
+
+				{/* Activity feed */}
+				{activityFeed.length > 0 && (
+					<div class="feed-section">
+						<h3 class="chart-title">Recent activity</h3>
+						<div class="feed-list">
+							{activityFeed.map((item) => (
+								<div class="feed-item">
+									<span class="feed-dot" />
+									<span class="feed-action">{item.action}</span>
+									<span class="feed-time">{item.timeAgo}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+		</section>
+	)}
+</Base>
+
+<style>
+	/* Hero */
+	.about-hero {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.about-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-24) var(--spacing-8) var(--spacing-16);
+	}
+
+	.about-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.about-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.about-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-3);
+	}
+
+	.about-subtitle {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin: 0;
+	}
+
+	/* Sections */
+	.about-section {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.about-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8);
+	}
+
+	.section-heading {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		letter-spacing: -0.012em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-2);
+	}
+
+	.section-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-8);
+	}
+
+	/* Prose */
+	.about-prose {
+		max-width: 62ch;
+	}
+
+	.about-prose p {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--spacing-5);
+	}
+
+	.about-prose p:last-child {
+		margin-bottom: 0;
+	}
+
+	.about-prose em {
+		color: var(--color-text);
+		font-style: italic;
+	}
+
+	.prose-link {
+		color: var(--color-accent);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.prose-link:hover {
+		text-decoration: underline;
+	}
+
+	/* Profile links */
+	.links-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-5);
+	}
+
+	.profile-link {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-2) var(--spacing-4);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-text);
+		text-decoration: none;
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.profile-link:hover {
+		border-color: var(--color-accent);
+		transform: translateY(-1px);
+	}
+
+	.profile-icon {
+		flex-shrink: 0;
+		opacity: 0.7;
+	}
+
+	/* GitHub stats */
+	.gh-stats {
+		display: flex;
+		gap: var(--spacing-8);
+		margin-bottom: var(--spacing-10);
+	}
+
+	.gh-stat {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gh-stat-value {
+		font-family: var(--font-display);
+		font-size: var(--font-size-2xl);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.02em;
+	}
+
+	.gh-stat-label {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	/* Activity chart */
+	.activity-chart {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.chart-title {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-4);
+	}
+
+	.chart-bars {
+		display: flex;
+		gap: var(--spacing-2);
+		height: 80px;
+		align-items: flex-end;
+	}
+
+	.chart-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--spacing-2);
+	}
+
+	.chart-bar-wrap {
+		width: 100%;
+		height: 60px;
+		display: flex;
+		align-items: flex-end;
+	}
+
+	.chart-bar {
+		width: 100%;
+		min-height: 2px;
+		background: var(--color-accent);
+		border-radius: 2px 2px 0 0;
+		opacity: 0.7;
+		transition: opacity var(--transition-fast);
+	}
+
+	.chart-col:hover .chart-bar {
+		opacity: 1;
+	}
+
+	.chart-label {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		color: var(--color-muted);
+	}
+
+	/* Repos */
+	.repos-section {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.repos-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--spacing-3);
+	}
+
+	.repo-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-1);
+		padding: var(--spacing-4) var(--spacing-5);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		text-decoration: none;
+		color: inherit;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.repo-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
+	.repo-name {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-accent);
+	}
+
+	.repo-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.repo-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-1);
+	}
+
+	.repo-lang {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-1);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	.repo-lang-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+	}
+
+	.repo-stars {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	/* Activity feed */
+	.feed-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.feed-item {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		padding: var(--spacing-2) 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+	}
+
+	.feed-item:last-child {
+		border-bottom: none;
+	}
+
+	.feed-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--color-accent);
+		flex-shrink: 0;
+		margin-top: 6px;
+	}
+
+	.feed-action {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		flex: 1;
+	}
+
+	.feed-time {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		white-space: nowrap;
+	}
+
+	/* Responsive */
+	@media (max-width: 900px) {
+		.about-hero-inner {
+			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+		}
+
+		.about-inner {
+			padding: var(--spacing-12) var(--spacing-6);
+		}
+
+		.gh-stats {
+			gap: var(--spacing-6);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.about-hero-inner {
+			padding: var(--spacing-12) var(--spacing-5);
+		}
+
+		.about-inner {
+			padding: var(--spacing-10) var(--spacing-5);
+		}
+
+		.gh-stats {
+			flex-wrap: wrap;
+			gap: var(--spacing-4);
+		}
+
+		.links-row {
+			flex-direction: column;
+		}
+	}
+</style>
