@@ -1,6 +1,57 @@
 import { definePlugin } from "emdash";
 import type { PluginContext } from "emdash";
 
+async function buildSettingsPage(ctx: PluginContext) {
+	const fromEmail =
+		(await ctx.kv.get<string>("settings:fromEmail")) ?? "Pensieve <noreply@huuloc.com>";
+	const notifyEmail =
+		(await ctx.kv.get<string>("settings:notifyEmail")) ?? "deathemperor@gmail.com";
+	const hasApiKey = !!(await ctx.kv.get<string>("settings:apiKey"));
+
+	return {
+		blocks: [
+			{ type: "header", text: "Email Settings" },
+			{
+				type: "context",
+				text: "Send emails via Resend. Get an API key at resend.com/api-keys.",
+			},
+			{
+				type: "fields",
+				fields: [
+					{ label: "Status", value: hasApiKey ? "Configured" : "API key required" },
+					{ label: "From", value: fromEmail },
+					{ label: "Comment alerts", value: notifyEmail || "Disabled" },
+				],
+			},
+			{ type: "divider" },
+			{
+				type: "form",
+				block_id: "resend-settings",
+				fields: [
+					{
+						type: "secret_input",
+						action_id: "apiKey",
+						label: "Resend API Key",
+					},
+					{
+						type: "text_input",
+						action_id: "fromEmail",
+						label: "From Address",
+						initial_value: fromEmail,
+					},
+					{
+						type: "text_input",
+						action_id: "notifyEmail",
+						label: "Comment Notification Recipient",
+						initial_value: notifyEmail,
+					},
+				],
+				submit: { label: "Save", action_id: "save_settings" },
+			},
+		],
+	};
+}
+
 export default definePlugin({
 	hooks: {
 		"plugin:install": {
@@ -79,6 +130,40 @@ export default definePlugin({
 					},
 					"resend-email",
 				);
+			},
+		},
+	},
+
+	routes: {
+		admin: {
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const interaction = routeCtx.input;
+
+				if (interaction.type === "page_load" && interaction.page === "/settings") {
+					return buildSettingsPage(ctx);
+				}
+
+				if (
+					interaction.type === "form_submit" &&
+					interaction.action_id === "save_settings"
+				) {
+					const values = interaction.values ?? {};
+					if (typeof values.apiKey === "string" && values.apiKey !== "") {
+						await ctx.kv.set("settings:apiKey", values.apiKey);
+					}
+					if (typeof values.fromEmail === "string") {
+						await ctx.kv.set("settings:fromEmail", values.fromEmail);
+					}
+					if (typeof values.notifyEmail === "string") {
+						await ctx.kv.set("settings:notifyEmail", values.notifyEmail);
+					}
+					return {
+						...(await buildSettingsPage(ctx)),
+						toast: { message: "Settings saved", type: "success" },
+					};
+				}
+
+				return { blocks: [] };
 			},
 		},
 	},
