@@ -8,7 +8,11 @@
 	],
 	"routes": [
 		{
-			"pattern": "huuloc.com/pensieve*",
+			"pattern": "huuloc.com/*",
+			"zone_name": "huuloc.com"
+		},
+		{
+			"pattern": "huuloc.com",
 			"zone_name": "huuloc.com"
 		}
 	],

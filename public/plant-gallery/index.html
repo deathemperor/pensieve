@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plant Gallery - Select to Buy</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; min-height: 100vh; }
+
+  header { position: sticky; top: 0; z-index: 100; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(12px); }
+  header h1 { font-size: 20px; font-weight: 600; }
+  header h1 span { color: #4ade80; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .cart-badge { background: #4ade80; color: #0f0f0f; font-weight: 700; border-radius: 20px; padding: 6px 16px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .cart-badge:hover { background: #22c55e; transform: scale(1.05); }
+  .filter-btns { display: flex; gap: 8px; }
+  .filter-btn { background: #2a2a2a; border: 1px solid #3a3a3a; color: #ccc; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .filter-btn.active { background: #4ade80; color: #0f0f0f; border-color: #4ade80; font-weight: 600; }
+
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; padding: 24px; }
+
+  .card { position: relative; border-radius: 12px; overflow: hidden; background: #1a1a1a; border: 2px solid transparent; cursor: pointer; transition: all 0.25s; }
+  .card:hover { border-color: #3a3a3a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .card.selected { border-color: #4ade80; box-shadow: 0 0 0 1px #4ade80, 0 8px 24px rgba(74,222,128,0.15); }
+
+  .card img, .card video { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; transition: transform 0.3s; background: #000; }
+  .card:hover img, .card:hover video { transform: scale(1.03); }
+  .card-label.video { color: #fbbf24; }
+  .card-label.photo { color: #aaa; }
+
+  .card-check { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .card.selected .card-check { background: #4ade80; border-color: #4ade80; }
+  .card-check svg { width: 16px; height: 16px; opacity: 0; transition: opacity 0.2s; }
+  .card.selected .card-check svg { opacity: 1; }
+
+  .card-label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 500; color: #aaa; }
+  .card-label.full { color: #4ade80; }
+  .card-qty-badge { position: absolute; top: 10px; right: 44px; background: #4ade80; color: #0f0f0f; font-weight: 700; font-size: 12px; padding: 4px 8px; border-radius: 12px; z-index: 2; }
+
+  .card-info { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .card-name { font-size: 13px; color: #999; }
+  .card-size { font-size: 11px; color: #666; }
+
+  /* Lightbox */
+  .lightbox { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); align-items: center; justify-content: center; flex-direction: column; }
+  .lightbox.open { display: flex; }
+  .lightbox img, .lightbox video { max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 8px; display: block; }
+  .lightbox-close { position: absolute; top: 20px; right: 24px; background: none; border: none; color: #fff; font-size: 32px; cursor: pointer; }
+  .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 28px; padding: 12px 16px; cursor: pointer; border-radius: 8px; }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+  .lightbox-nav.prev { left: 20px; }
+  .lightbox-nav.next { right: 20px; }
+  .lightbox-actions { margin-top: 16px; display: flex; gap: 12px; }
+  .lightbox-btn { padding: 8px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
+  .lightbox-select { background: #4ade80; color: #0f0f0f; }
+  .lightbox-select.is-selected { background: #ef4444; color: #fff; }
+  .lightbox-select:hover { transform: scale(1.05); }
+
+  /* Cart Panel */
+  .cart-panel { display: none; position: fixed; right: 0; top: 0; bottom: 0; width: 360px; z-index: 150; background: #1a1a1a; border-left: 1px solid #2a2a2a; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,0.5); }
+  .cart-panel.open { display: flex; }
+  .cart-header { padding: 20px; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; }
+  .cart-header h2 { font-size: 18px; }
+  .cart-close { background: none; border: none; color: #999; font-size: 24px; cursor: pointer; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 12px; }
+  .cart-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; margin-bottom: 8px; background: #222; }
+  .cart-item img, .cart-item video { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; background: #000; flex-shrink: 0; }
+  .cart-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .cart-item-name { font-size: 12px; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .qty-ctrl { display: flex; align-items: center; gap: 4px; background: #111; border-radius: 6px; padding: 2px; width: fit-content; }
+  .qty-btn { width: 22px; height: 22px; border: none; background: #2a2a2a; color: #fff; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .qty-btn:hover { background: #4ade80; color: #0f0f0f; }
+  .qty-input { width: 38px; text-align: center; background: transparent; border: none; color: #fff; font-size: 13px; font-weight: 600; -moz-appearance: textfield; }
+  .qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .cart-item-remove { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 20px; padding: 4px 8px; flex-shrink: 0; align-self: flex-start; }
+  .cart-footer { padding: 16px 20px; border-top: 1px solid #2a2a2a; }
+  .cart-footer p { font-size: 14px; color: #999; margin-bottom: 12px; }
+  .cart-export { width: 100%; padding: 12px; background: #4ade80; color: #0f0f0f; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .cart-export:hover { background: #22c55e; }
+  .cart-empty { text-align: center; color: #666; padding: 40px 20px; font-size: 14px; }
+
+  .overlay { display: none; position: fixed; inset: 0; z-index: 140; background: rgba(0,0,0,0.5); }
+  .overlay.open { display: block; }
+
+  /* Result modal */
+  .result-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+  .result-modal.open { display: flex; }
+  .result-content { background: #1a1a1a; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .result-content h2 { margin-bottom: 16px; color: #4ade80; }
+  .result-content pre { background: #111; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto; white-space: pre-wrap; color: #ccc; }
+  .result-close { margin-top: 16px; padding: 10px 24px; background: #333; color: #fff; border: none; border-radius: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>Plant</span> Gallery</h1>
+  <div class="header-right">
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="photo">Photos</button>
+      <button class="filter-btn" data-filter="video">Videos</button>
+    </div>
+    <div class="cart-badge" id="cartBadge">Cart (0)</div>
+  </div>
+</header>
+
+<div class="gallery" id="gallery"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose">&times;</button>
+  <button class="lightbox-nav prev" id="lbPrev">&lsaquo;</button>
+  <button class="lightbox-nav next" id="lbNext">&rsaquo;</button>
+  <div id="lbMedia"></div>
+  <div class="lightbox-actions">
+    <button class="lightbox-btn lightbox-select" id="lbSelect">Add to Cart</button>
+  </div>
+</div>
+
+<!-- Cart Panel -->
+<div class="overlay" id="overlay"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>Selected Plants</h2>
+    <button class="cart-close" id="cartClose">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <p id="cartCount">0 items selected</p>
+    <button class="cart-export" id="cartExport">Export Selection</button>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="result-modal" id="resultModal">
+  <div class="result-content">
+    <h2>Your Selection</h2>
+    <pre id="resultText"></pre>
+    <button class="result-close" id="resultClose">Close</button>
+  </div>
+</div>
+
+<script>
+const images = [{"file":"plant_00.jpg","type":"photo","size":"139KB"},{"file":"plant_01.jpg","type":"photo","size":"68KB"},{"file":"plant_02.jpg","type":"photo","size":"133KB"},{"file":"plant_03.jpg","type":"photo","size":"117KB"},{"file":"plant_04.jpg","type":"photo","size":"80KB"},{"file":"plant_05.jpg","type":"photo","size":"65KB"},{"file":"plant_06.jpg","type":"photo","size":"70KB"},{"file":"plant_07.jpg","type":"photo","size":"68KB"},{"file":"plant_08.jpg","type":"photo","size":"84KB"},{"file":"plant_09.jpg","type":"photo","size":"100KB"},{"file":"plant_10.jpg","type":"photo","size":"77KB"},{"file":"plant_11.jpg","type":"photo","size":"112KB"},{"file":"plant_12.jpg","type":"photo","size":"80KB"},{"file":"plant_13.jpg","type":"photo","size":"73KB"},{"file":"plant_14.jpg","type":"photo","size":"111KB"},{"file":"plant_15.jpg","type":"photo","size":"87KB"},{"file":"plant_16.jpg","type":"photo","size":"93KB"},{"file":"plant_17.jpg","type":"photo","size":"84KB"},{"file":"plant_18.jpg","type":"photo","size":"73KB"},{"file":"plant_19.jpg","type":"photo","size":"89KB"},{"file":"plant_20.jpg","type":"photo","size":"73KB"},{"file":"plant_21.jpg","type":"photo","size":"112KB"},{"file":"plant_22.jpg","type":"photo","size":"66KB"},{"file":"plant_23.jpg","type":"photo","size":"77KB"},{"file":"plant_24.jpg","type":"photo","size":"93KB"},{"file":"plant_25.jpg","type":"photo","size":"78KB"},{"file":"plant_26.jpg","type":"photo","size":"82KB"},{"file":"plant_27.jpg","type":"photo","size":"75KB"},{"file":"plant_28.jpg","type":"photo","size":"84KB"},{"file":"plant_29.jpg","type":"photo","size":"92KB"},{"file":"plant_30.jpg","type":"photo","size":"69KB"},{"file":"plant_31.jpg","type":"photo","size":"82KB"},{"file":"plant_32.jpg","type":"photo","size":"71KB"},{"file":"plant_33.jpg","type":"photo","size":"107KB"},{"file":"plant_34.jpg","type":"photo","size":"80KB"},{"file":"plant_35.jpg","type":"photo","size":"87KB"},{"file":"plant_36.jpg","type":"photo","size":"93KB"},{"file":"plant_37.jpg","type":"photo","size":"93KB"},{"file":"plant_38.jpg","type":"photo","size":"88KB"},{"file":"plant_39.jpg","type":"photo","size":"109KB"},{"file":"plant_40.jpg","type":"photo","size":"112KB"},{"file":"plant_41.jpg","type":"photo","size":"72KB"},{"file":"plant_42.jpg","type":"photo","size":"67KB"},{"file":"plant_43.jpg","type":"photo","size":"88KB"},{"file":"plant_44.jpg","type":"photo","size":"108KB"},{"file":"plant_45.jpg","type":"photo","size":"74KB"},{"file":"plant_46.jpg","type":"photo","size":"67KB"},{"file":"plant_47.jpg","type":"photo","size":"80KB"},{"file":"plant_48.jpg","type":"photo","size":"123KB"},{"file":"plant_49.jpg","type":"photo","size":"65KB"},{"file":"plant_50.jpg","type":"photo","size":"162KB"},{"file":"plant_51.jpg","type":"photo","size":"118KB"},{"file":"plant_52.jpg","type":"photo","size":"68KB"},{"file":"plant_53.jpg","type":"photo","size":"131KB"},{"file":"plant_54.jpg","type":"photo","size":"69KB"},{"file":"plant_55.jpg","type":"photo","size":"158KB"},{"file":"plant_56.jpg","type":"photo","size":"70KB"},{"file":"plant_57.jpg","type":"photo","size":"83KB"},{"file":"plant_58.jpg","type":"photo","size":"68KB"},{"file":"plant_59.jpg","type":"photo","size":"76KB"},{"file":"plant_60.jpg","type":"photo","size":"69KB"},{"file":"plant_61.jpg","type":"photo","size":"67KB"},{"file":"plant_62.jpg","type":"photo","size":"79KB"},{"file":"plant_63.jpg","type":"photo","size":"160KB"},{"file":"video_01.mp4","type":"video","size":"1.0MB"},{"file":"video_02.mp4","type":"video","size":"1.3MB"},{"file":"video_03.mp4","type":"video","size":"0.7MB"}];
+
+let selected = new Map(); // file -> quantity
+let currentFilter = 'all';
+let lightboxIndex = -1;
+
+function totalQty() {
+  let total = 0;
+  for (const q of selected.values()) total += q;
+  return total;
+}
+
+function filteredImages() {
+  if (currentFilter === 'all') return images;
+  return images.filter(img => img.type === currentFilter);
+}
+
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  const list = filteredImages();
+  gallery.innerHTML = list.map((img, i) => {
+    const isVideo = img.type === 'video';
+    const media = isVideo
+      ? `<video src="${img.file}" muted preload="metadata" playsinline></video>`
+      : `<img src="${img.file}" alt="${img.file}" loading="lazy">`;
+    const qty = selected.get(img.file);
+    const badge = qty ? `<div class="card-qty-badge">×${qty}</div>` : '';
+    return `
+    <div class="card ${selected.has(img.file) ? 'selected' : ''}" data-file="${img.file}" data-index="${i}">
+      <div class="card-label ${isVideo ? 'video' : 'photo'}">${isVideo ? '▶ VIDEO' : 'PHOTO'}</div>
+      <div class="card-check">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0f0f0f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      ${badge}
+      ${media}
+      <div class="card-info">
+        <span class="card-name">${img.file}</span>
+        <span class="card-size">${img.size}</span>
+      </div>
+    </div>
+  `}).join('');
+
+  gallery.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.detail === 2) return; // ignore double click
+      toggleSelect(card.dataset.file);
+    });
+    card.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      openLightbox(parseInt(card.dataset.index));
+    });
+  });
+
+  updateCartBadge();
+}
+
+function toggleSelect(file) {
+  if (selected.has(file)) selected.delete(file);
+  else selected.set(file, 1);
+  renderGallery();
+  updateCartBadge();
+}
+
+function setQty(file, qty) {
+  qty = Math.max(0, Math.floor(qty));
+  if (qty === 0) selected.delete(file);
+  else selected.set(file, qty);
+  renderGallery();
+  updateCartBadge();
+}
+
+function updateCartBadge() {
+  const t = totalQty();
+  document.getElementById('cartBadge').textContent = `Cart (${t})`;
+}
+
+// Lightbox
+function renderLbMedia(item) {
+  const container = document.getElementById('lbMedia');
+  if (item.type === 'video') {
+    container.innerHTML = `<video src="${item.file}" controls autoplay></video>`;
+  } else {
+    container.innerHTML = `<img src="${item.file}" alt="${item.file}">`;
+  }
+}
+
+function openLightbox(index) {
+  const list = filteredImages();
+  lightboxIndex = index;
+  const item = list[index];
+  renderLbMedia(item);
+  document.getElementById('lightbox').classList.add('open');
+  updateLbBtn(item.file);
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lbMedia').innerHTML = '';
+}
+
+function updateLbBtn(file) {
+  const btn = document.getElementById('lbSelect');
+  if (selected.has(file)) {
+    btn.textContent = 'Remove from Cart';
+    btn.classList.add('is-selected');
+  } else {
+    btn.textContent = 'Add to Cart';
+    btn.classList.remove('is-selected');
+  }
+}
+
+document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev').addEventListener('click', () => {
+  const list = filteredImages();
+  lightboxIndex = (lightboxIndex - 1 + list.length) % list.length;
+  renderLbMedia(list[lightboxIndex]);
+  updateLbBtn(list[lightboxIndex].file);
+});
+document.getElementById('lbNext').addEventListener('click', () => {
+  const list = filteredImages();
+  lightboxIndex = (lightboxIndex + 1) % list.length;
+  renderLbMedia(list[lightboxIndex]);
+  updateLbBtn(list[lightboxIndex].file);
+});
+document.getElementById('lbSelect').addEventListener('click', () => {
+  const list = filteredImages();
+  toggleSelect(list[lightboxIndex].file);
+  updateLbBtn(list[lightboxIndex].file);
+});
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') document.getElementById('lbPrev').click();
+  if (e.key === 'ArrowRight') document.getElementById('lbNext').click();
+});
+
+// Filter
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderGallery();
+  });
+});
+
+// Cart Panel
+document.getElementById('cartBadge').addEventListener('click', () => {
+  document.getElementById('cartPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  renderCart();
+});
+function closeCart() {
+  document.getElementById('cartPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('cartClose').addEventListener('click', closeCart);
+document.getElementById('overlay').addEventListener('click', closeCart);
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  if (selected.size === 0) {
+    container.innerHTML = '<div class="cart-empty">No plants selected yet.<br>Click images to add them.</div>';
+  } else {
+    container.innerHTML = Array.from(selected.entries()).map(([file, qty]) => {
+      const isVideo = file.endsWith('.mp4');
+      const thumb = isVideo
+        ? `<video src="${file}" muted preload="metadata"></video>`
+        : `<img src="${file}" alt="">`;
+      return `
+      <div class="cart-item">
+        ${thumb}
+        <div class="cart-item-body">
+          <span class="cart-item-name">${file}</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" data-action="dec" data-file="${file}">−</button>
+            <input class="qty-input" type="number" min="1" value="${qty}" data-file="${file}">
+            <button class="qty-btn" data-action="inc" data-file="${file}">+</button>
+          </div>
+        </div>
+        <button class="cart-item-remove" data-file="${file}">&times;</button>
+      </div>
+    `}).join('');
+    container.querySelectorAll('.cart-item-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selected.delete(btn.dataset.file);
+        renderGallery();
+        renderCart();
+      });
+    });
+    container.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const file = btn.dataset.file;
+        const current = selected.get(file) || 1;
+        const next = btn.dataset.action === 'inc' ? current + 1 : current - 1;
+        setQty(file, next);
+        renderCart();
+      });
+    });
+    container.querySelectorAll('.qty-input').forEach(input => {
+      input.addEventListener('change', () => {
+        setQty(input.dataset.file, parseInt(input.value) || 0);
+        renderCart();
+      });
+    });
+  }
+  const t = totalQty();
+  document.getElementById('cartCount').textContent = `${selected.size} item${selected.size !== 1 ? 's' : ''} · ${t} total`;
+}
+
+// Export
+document.getElementById('cartExport').addEventListener('click', () => {
+  const result = {
+    uniqueItems: selected.size,
+    totalQuantity: totalQty(),
+    items: Array.from(selected.entries()).map(([file, qty]) => ({ file, qty }))
+  };
+  document.getElementById('resultText').textContent = JSON.stringify(result, null, 2);
+  document.getElementById('resultModal').classList.add('open');
+  closeCart();
+});
+document.getElementById('resultClose').addEventListener('click', () => {
+  document.getElementById('resultModal').classList.remove('open');
+});
+
+renderGallery();
+</script>
+</body>
+</html>

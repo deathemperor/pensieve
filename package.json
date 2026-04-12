@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "astro dev",
 		"build": "astro build && bun run build:relocate-assets",
-		"build:relocate-assets": "mkdir -p dist/client/pensieve && find dist/client -mindepth 1 -maxdepth 1 -not -name pensieve -not -name .assetsignore -exec mv {} dist/client/pensieve/ \\;",
+		"build:relocate-assets": "mkdir -p dist/client/pensieve && find dist/client -mindepth 1 -maxdepth 1 -not -name pensieve -not -name .assetsignore -not -name plant-gallery -exec mv {} dist/client/pensieve/ \\;",
 		"preview": "astro preview",
 		"deploy": "bun run build && wrangler deploy",
 		"typecheck": "astro check"
