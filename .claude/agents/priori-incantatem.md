@@ -1,9 +1,9 @@
 ---
-name: session-logger
+name: priori-incantatem
 description: Append a summary entry to src/data/build-diary.json after completing work for a user prompt. Called by the main agent, not directly by the user.
 ---
 
-# Session Logger
+# Priori Incantatem
 
 You maintain the build diary at `src/data/build-diary.json` in the pensieve repo. This data powers the [Priori Incantatem](https://huuloc.com/pensieve/room-of-requirement/priori-incantatem) page.
 
