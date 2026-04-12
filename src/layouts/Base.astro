@@ -1215,6 +1215,58 @@ const isLoggedIn = !!Astro.locals.user;
 				height: 16px;
 			}
 
+			/* Nixie — CC buddy */
+			.nixie {
+				position: fixed;
+				bottom: var(--spacing-5);
+				right: var(--spacing-5);
+				z-index: 90;
+				display: flex;
+				align-items: center;
+				gap: var(--spacing-2);
+				padding: var(--spacing-2) var(--spacing-3);
+				background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+				backdrop-filter: blur(8px);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius-lg);
+				text-decoration: none;
+				color: var(--color-muted);
+				font-family: var(--font-mono);
+				font-size: 11px;
+				transition: all 0.3s ease;
+				opacity: 0.5;
+			}
+
+			.nixie:hover {
+				opacity: 1;
+				border-color: var(--color-accent);
+				color: var(--color-accent);
+				box-shadow: 0 0 16px rgba(94, 106, 210, 0.15);
+			}
+
+			.nixie-wand {
+				width: 16px;
+				height: 16px;
+				transition: transform 0.3s ease;
+			}
+
+			.nixie:hover .nixie-wand {
+				transform: rotate(-15deg);
+			}
+
+			.nixie-label {
+				max-width: 0;
+				overflow: hidden;
+				white-space: nowrap;
+				transition: max-width 0.3s ease, opacity 0.3s ease;
+				opacity: 0;
+			}
+
+			.nixie:hover .nixie-label {
+				max-width: 150px;
+				opacity: 1;
+			}
+
 			@media (max-width: 900px) {
 				.footer-grid {
 					grid-template-columns: 1fr 1fr;
@@ -1366,5 +1418,14 @@ const isLoggedIn = !!Astro.locals.user;
 				});
 			}
 		</script>
+		{/* Nixie — Claude Code house-elf buddy */}
+		<a href="/room-of-requirement" class="nixie" aria-label="Built by Claude Code" title={currentLang === "vi" ? "Được phù phép bởi Claude Code" : "Conjured by Claude Code"}>
+			<svg class="nixie-wand" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+				<line x1="4" y1="20" x2="18" y2="6" />
+				<circle cx="19" cy="5" r="2" fill="currentColor" stroke="none" opacity="0.6" />
+				<circle cx="19" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.3" />
+			</svg>
+			<span class="nixie-label">{currentLang === "vi" ? "Phù phép bởi CC" : "Conjured by CC"}</span>
+		</a>
 	</body>
 </html>
