@@ -1,0 +1,90 @@
+[
+	{
+		"date": "2026-04-10",
+		"title": "Chrome MCP + Plant Gallery",
+		"type": "build",
+		"summary": "Connected Chrome browser via MCP. Downloaded Messenger conversation photos. Built a plant gallery with dark theme, image grid, lightbox, and cart panel.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-10",
+		"title": "Cloudflare infrastructure setup",
+		"type": "deploy",
+		"summary": "Wrangler login, created D1 database (pensieve-db), KV namespace (SESSION), R2 bucket (pensieve-media). Wired bindings into wrangler.jsonc.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-11",
+		"title": "Plant gallery migration + deploy",
+		"type": "deploy",
+		"summary": "Migrated plant gallery to Pensieve. Added quantity controls to cart. Deployed to huuloc.com/plant-gallery/. 68 files uploaded.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "GitHub Actions CI/CD",
+		"type": "build",
+		"summary": "Created .github/workflows/deploy.yml with Node 22, bun, and wrangler-action. Automated deployment on push to main.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "Language chooser + UI polish",
+		"type": "build",
+		"summary": "Replaced VI/EN links with a dropdown menu matching Categories style. Language stored via cookie. Home link changed to root domain.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "Session logging system",
+		"type": "build",
+		"summary": "Created session-log.md and session-logger subagent. Set up UserPromptSubmit hook for automatic prompt capture. Dual system: hook for capture, agent for summaries.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "Comment moderation subagent",
+		"type": "build",
+		"summary": "Created moderate-comments subagent at .claude/agents/moderate-comments.md. Verified EmDash comments work out of the box. Added moderation notice below comment form.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "Resend email provider plugin",
+		"type": "build",
+		"summary": "Created plugins/plugin-resend/ \u2014 provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "Cloudflare Email Routing",
+		"type": "build",
+		"summary": "Enabled Email Routing for huuloc.com. Created me@huuloc.com forwarding to loctruongh@gmail.com via wrangler CLI.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Subscription + engagement analytics",
+		"type": "plan",
+		"summary": "Planned plugin-pensieve-engage: email subscriptions with welcome emails, newsletter dispatch on publish with per-post opt-out, click/open tracking in emails, and reading engagement analytics (scroll depth, reading time, section focus via IntersectionObserver). 5-phase implementation. Single trusted plugin using page:fragments for tracker injection.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Room of Requirement + Priori Incantatem",
+		"type": "build",
+		"summary": "Built the build section (Room of Requirement) with architecture overview, tech stack, and subagents. Created Priori Incantatem \u2014 a timeline diary recording every Claude Code session with model versions.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	}
+]

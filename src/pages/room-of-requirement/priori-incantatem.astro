@@ -1,0 +1,400 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { link } from "../../utils/link";
+import diaryEntries from "../../data/build-diary.json";
+
+interface DiaryEntry {
+	date: string;
+	title: string;
+	type: "build" | "plan" | "fix" | "deploy";
+	summary: string;
+	model: string;
+	claudeCode: string;
+}
+
+const entries = (diaryEntries as DiaryEntry[]).toReversed();
+
+// Group by date
+const grouped = new Map<string, DiaryEntry[]>();
+for (const entry of entries) {
+	const existing = grouped.get(entry.date);
+	if (existing) {
+		existing.push(entry);
+	} else {
+		grouped.set(entry.date, [entry]);
+	}
+}
+
+const typeLabels: Record<string, string> = {
+	build: "Spell Cast",
+	plan: "Prophecy",
+	fix: "Reparo",
+	deploy: "Apparition",
+};
+
+const typeColors: Record<string, string> = {
+	build: "#5e6ad2",
+	plan: "#d4a843",
+	fix: "#e5534b",
+	deploy: "#3fb950",
+};
+
+function formatDate(dateStr: string) {
+	const d = new Date(dateStr + "T00:00:00");
+	return d.toLocaleDateString("en-US", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+
+function formatModel(model: string) {
+	if (model === "unknown") return null;
+	return model
+		.replace("claude-", "")
+		.replace(/-/g, " ")
+		.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+---
+
+<Base title="Priori Incantatem — Pensieve" description="A timeline of every spell cast by Claude Code to build this site">
+	<section class="pi-hero">
+		<div class="pi-hero-inner">
+			<a href={link("room-of-requirement")} class="pi-back">&larr; Room of Requirement</a>
+			<div class="pi-rule" />
+			<span class="pi-label">Build Diary</span>
+			<h1 class="pi-title">Priori Incantatem</h1>
+			<p class="pi-subtitle">
+				Every incantation cast by <a href="https://claude.com/claude-code" class="cc-link">Claude Code</a>
+				to conjure this site into existence. A reverse spell revealing the wand's history.
+			</p>
+			<div class="pi-stats">
+				<span class="pi-stat">
+					<span class="pi-stat-value">{entries.length}</span>
+					<span class="pi-stat-label">spells cast</span>
+				</span>
+				<span class="pi-stat-dot" />
+				<span class="pi-stat">
+					<span class="pi-stat-value">{grouped.size}</span>
+					<span class="pi-stat-label">days</span>
+				</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="timeline-section">
+		<div class="timeline-inner">
+			<div class="timeline-line" />
+			{[...grouped.entries()].map(([date, dayEntries]) => (
+				<div class="day-group">
+					<div class="day-header">
+						<span class="day-dot" />
+						<time class="day-date">{formatDate(date)}</time>
+					</div>
+					<div class="day-entries">
+						{dayEntries.map((entry) => (
+							<article class="entry" style={`--type-color: ${typeColors[entry.type] ?? typeColors.build};`}>
+								<div class="entry-type">
+									<span class="entry-type-dot" />
+									{typeLabels[entry.type] ?? entry.type}
+								</div>
+								<h3 class="entry-title">{entry.title}</h3>
+								<p class="entry-summary">{entry.summary}</p>
+								<div class="entry-meta">
+									{formatModel(entry.model) && (
+										<span class="entry-badge model-badge">{formatModel(entry.model)}</span>
+									)}
+									{entry.claudeCode !== "unknown" && (
+										<span class="entry-badge cc-badge">CC {entry.claudeCode}</span>
+									)}
+								</div>
+							</article>
+						))}
+					</div>
+				</div>
+			))}
+		</div>
+	</section>
+</Base>
+
+<style>
+	/* Hero */
+	.pi-hero {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.pi-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8) var(--spacing-16);
+	}
+
+	.pi-back {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		text-decoration: none;
+		margin-bottom: var(--spacing-8);
+		transition: color var(--transition-fast);
+	}
+
+	.pi-back:hover {
+		color: var(--color-accent);
+	}
+
+	.pi-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.pi-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.pi-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-5);
+		font-style: italic;
+	}
+
+	.pi-subtitle {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		max-width: 55ch;
+		margin: 0 0 var(--spacing-6);
+	}
+
+	.cc-link {
+		color: var(--color-accent);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.cc-link:hover {
+		text-decoration: underline;
+	}
+
+	.pi-stats {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-4);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.pi-stat {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-2);
+	}
+
+	.pi-stat-value {
+		font-weight: 600;
+		color: var(--color-text);
+		font-size: var(--font-size-lg);
+	}
+
+	.pi-stat-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: currentColor;
+		opacity: 0.5;
+	}
+
+	/* Timeline */
+	.timeline-section {
+		padding-bottom: var(--spacing-24);
+	}
+
+	.timeline-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-12) var(--spacing-8);
+		position: relative;
+	}
+
+	.timeline-line {
+		position: absolute;
+		left: calc(var(--spacing-8) + 7px);
+		top: var(--spacing-12);
+		bottom: var(--spacing-12);
+		width: 1px;
+		background: var(--color-border);
+	}
+
+	/* Day group */
+	.day-group {
+		position: relative;
+		margin-bottom: var(--spacing-10);
+	}
+
+	.day-group:last-child {
+		margin-bottom: 0;
+	}
+
+	.day-header {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-4);
+		margin-bottom: var(--spacing-5);
+		position: relative;
+	}
+
+	.day-dot {
+		width: 15px;
+		height: 15px;
+		border-radius: 50%;
+		background: var(--color-bg);
+		border: 2px solid var(--color-accent);
+		flex-shrink: 0;
+		z-index: 1;
+	}
+
+	.day-date {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.011em;
+	}
+
+	/* Entries */
+	.day-entries {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+		padding-left: calc(15px + var(--spacing-4));
+	}
+
+	.entry {
+		--type-color: var(--color-accent);
+		padding: var(--spacing-5);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		border-left: 2px solid var(--type-color);
+		transition: border-color var(--transition-fast);
+	}
+
+	.entry:hover {
+		border-color: color-mix(in srgb, var(--type-color) 50%, var(--color-border));
+		border-left-color: var(--type-color);
+	}
+
+	.entry-type {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--type-color);
+		font-weight: 500;
+		margin-bottom: var(--spacing-2);
+	}
+
+	.entry-type-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--type-color);
+	}
+
+	.entry-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-2);
+		letter-spacing: -0.011em;
+	}
+
+	.entry-summary {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		margin: 0 0 var(--spacing-3);
+	}
+
+	.entry-meta {
+		display: flex;
+		gap: var(--spacing-2);
+		flex-wrap: wrap;
+	}
+
+	.entry-badge {
+		display: inline-block;
+		padding: 1px var(--spacing-2);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		border-radius: 3px;
+		line-height: 1.6;
+	}
+
+	.model-badge {
+		background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+		color: var(--color-accent);
+		border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+	}
+
+	.cc-badge {
+		background: color-mix(in srgb, var(--color-muted) 10%, transparent);
+		color: var(--color-muted);
+		border: 1px solid color-mix(in srgb, var(--color-muted) 15%, transparent);
+	}
+
+	/* Responsive */
+	@media (max-width: 900px) {
+		.pi-hero-inner {
+			padding: var(--spacing-12) var(--spacing-6) var(--spacing-12);
+		}
+
+		.timeline-inner {
+			padding: var(--spacing-10) var(--spacing-6);
+		}
+
+		.timeline-line {
+			left: calc(var(--spacing-6) + 7px);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.pi-hero-inner {
+			padding: var(--spacing-10) var(--spacing-5);
+		}
+
+		.timeline-inner {
+			padding: var(--spacing-8) var(--spacing-5);
+		}
+
+		.timeline-line {
+			left: calc(var(--spacing-5) + 7px);
+		}
+
+		.day-entries {
+			padding-left: calc(15px + var(--spacing-3));
+		}
+	}
+</style>
