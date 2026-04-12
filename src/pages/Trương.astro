@@ -3,6 +3,8 @@ export const prerender = false;
 
 import Base from "../layouts/Base.astro";
 import { link } from "../utils/link";
+import { getCurrentLang } from "../utils/lang";
+const isVi = getCurrentLang(Astro) === "vi";
 
 // GitHub API — unauthenticated (60 req/hr, fine for a personal blog)
 interface GitHubUser {
@@ -65,7 +67,9 @@ const totalRecentCommits = commitEvents.reduce(
 );
 
 // Activity by day of week
-const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const dayNames = isVi
+	? ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+	: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const dayActivity = new Array(7).fill(0);
 for (const e of ghEvents) {
 	const day = new Date(e.created_at).getDay();
@@ -84,13 +88,21 @@ const activityFeed = ghEvents
 		let action = e.type;
 		if (e.type === "PushEvent") {
 			const count = e.payload.commits?.length ?? 0;
-			action = `${count} commit${count !== 1 ? "s" : ""} to ${repo}`;
+			action = isVi
+				? `${count} commit tới ${repo}`
+				: `${count} commit${count !== 1 ? "s" : ""} to ${repo}`;
 		} else if (e.type === "CreateEvent") {
-			action = `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} in ` : ""}${repo}`;
+			action = isVi
+				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} trong ` : ""}${repo}`
+				: `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} in ` : ""}${repo}`;
 		} else if (e.type === "PullRequestEvent") {
-			action = `${e.payload.action} PR in ${repo}`;
+			action = isVi
+				? `${e.payload.action} PR trong ${repo}`
+				: `${e.payload.action} PR in ${repo}`;
 		} else if (e.type === "IssuesEvent") {
-			action = `${e.payload.action} issue in ${repo}`;
+			action = isVi
+				? `${e.payload.action} issue trong ${repo}`
+				: `${e.payload.action} issue in ${repo}`;
 		}
 		return { action, timeAgo, date };
 	});
@@ -109,29 +121,29 @@ const langColors: Record<string, string> = {
 
 function formatTimeAgo(date: Date) {
 	const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-	if (seconds < 60) return "just now";
+	if (seconds < 60) return isVi ? "vừa xong" : "just now";
 	const minutes = Math.floor(seconds / 60);
-	if (minutes < 60) return `${minutes}m ago`;
+	if (minutes < 60) return isVi ? `${minutes} ph trước` : `${minutes}m ago`;
 	const hours = Math.floor(minutes / 60);
-	if (hours < 24) return `${hours}h ago`;
+	if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
 	const days = Math.floor(hours / 24);
-	if (days < 7) return `${days}d ago`;
-	return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+	if (days < 7) return isVi ? `${days} ngày trước` : `${days}d ago`;
+	return date.toLocaleDateString(isVi ? "vi-VN" : "en-US", { month: "short", day: "numeric" });
 }
 
 function formatGHDate(iso: string) {
-	return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long" });
+	return new Date(iso).toLocaleDateString(isVi ? "vi-VN" : "en-US", { year: "numeric", month: "long" });
 }
 ---
 
-<Base title="Trương Hữu Lộc" description="Trương Hữu Lộc — engineer, writer, fishkeeper" breadcrumbs={[{ label: "Trương" }]}>
+<Base title="Trương Hữu Lộc" description={isVi ? "Trương Hữu Lộc — kỹ sư, nhà văn, người nuôi cá" : "Trương Hữu Lộc — engineer, writer, fishkeeper"} breadcrumbs={[{ label: "Trương" }]}>
 	<section class="about-hero">
 		<div class="about-hero-inner">
 			<div class="about-rule" />
-			<span class="about-label">About</span>
+			<span class="about-label">{isVi ? "Giới Thiệu" : "About"}</span>
 			<h1 class="about-title">Trương Hữu Lộc</h1>
 			<p class="about-subtitle">
-				Engineer. Writer. Fishkeeper.
+				{isVi ? "Kỹ sư. Nhà văn. Người nuôi cá." : "Engineer. Writer. Fishkeeper."}
 			</p>
 		</div>
 	</section>
@@ -139,41 +151,73 @@ function formatGHDate(iso: string) {
 	<section class="about-section">
 		<div class="about-inner">
 			<div class="about-prose">
-				<p>
-					My name means "blessing" in Vietnamese — a thank-you name from parents
-					who once weren't sure they'd keep me. That origin story sits under
-					everything I write.
-				</p>
-				<p>
-					I joined VinaGame (now VNG) in December 2006, where I invented a session
-					management mechanism that ran in production for years. That was the start
-					of two decades of building things in Vietnam's tech scene — from gaming
-					infrastructure to startups to AI.
-				</p>
-				<p>
-					I keep Central American cichlids. I've bred species that had never been
-					bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
-					most hobbyists only see in books. The fish tanks and the code share
-					the same impulse: make something alive, watch it grow, learn what
-					you got wrong.
-				</p>
-				<p>
-					A mentor once told me to write when stuck. Pensieve is where that
-					writing lives now, rescued from years of Facebook scroll.
-				</p>
-				<p>
-					This site is my memoir-in-progress. It's also an experiment:
-					every line of code was written by
-					<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
-					Anthropic's AI pair programmer.
-				</p>
+				{isVi ? (
+					<>
+						<p>
+							Tên tôi có nghĩa là 'phúc lộc' trong tiếng Việt — cái tên mang ơn từ cha mẹ,
+							những người từng không chắc sẽ giữ tôi. Câu chuyện gốc đó nằm dưới mọi thứ tôi viết.
+						</p>
+						<p>
+							Tôi gia nhập VinaGame (nay là VNG) tháng 12 năm 2006, nơi tôi phát minh ra cơ chế
+							quản lý session chạy production nhiều năm. Đó là khởi đầu của hai thập kỷ xây dựng
+							trong ngành công nghệ Việt Nam — từ hạ tầng game đến startup đến AI.
+						</p>
+						<p>
+							Tôi nuôi cá rô Trung Mỹ. Tôi đã lai tạo những loài chưa từng được lai tạo ở
+							Việt Nam — cá rô Madagascar, các giống Rô Mỹ mà hầu hết người chơi chỉ thấy
+							trong sách. Bể cá và code chia sẻ cùng một xung lực: tạo ra thứ gì đó sống,
+							nhìn nó lớn lên, học được mình sai ở đâu.
+						</p>
+						<p>
+							Một sư phụ từng bảo tôi viết khi bí. Pensieve là nơi những bài viết đó sống
+							bây giờ, được cứu khỏi dòng cuộn Facebook.
+						</p>
+						<p>
+							Trang này là cuốn hồi ký đang viết dở. Nó cũng là một thí nghiệm: mọi dòng
+							code được viết bởi
+							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
+							lập trình viên AI của Anthropic.
+						</p>
+					</>
+				) : (
+					<>
+						<p>
+							My name means "blessing" in Vietnamese — a thank-you name from parents
+							who once weren't sure they'd keep me. That origin story sits under
+							everything I write.
+						</p>
+						<p>
+							I joined VinaGame (now VNG) in December 2006, where I invented a session
+							management mechanism that ran in production for years. That was the start
+							of two decades of building things in Vietnam's tech scene — from gaming
+							infrastructure to startups to AI.
+						</p>
+						<p>
+							I keep Central American cichlids. I've bred species that had never been
+							bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
+							most hobbyists only see in books. The fish tanks and the code share
+							the same impulse: make something alive, watch it grow, learn what
+							you got wrong.
+						</p>
+						<p>
+							A mentor once told me to write when stuck. Pensieve is where that
+							writing lives now, rescued from years of Facebook scroll.
+						</p>
+						<p>
+							This site is my memoir-in-progress. It's also an experiment:
+							every line of code was written by
+							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
+							Anthropic's AI pair programmer.
+						</p>
+					</>
+				)}
 			</div>
 		</div>
 	</section>
 
 	<section class="about-section">
 		<div class="about-inner">
-			<h2 class="section-heading">Elsewhere</h2>
+			<h2 class="section-heading">{isVi ? "Liên Kết" : "Elsewhere"}</h2>
 			<div class="links-row">
 				<a href="https://github.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
 					<svg class="profile-icon" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
@@ -207,41 +251,41 @@ function formatGHDate(iso: string) {
 	{ghUser && (
 		<section class="about-section">
 			<div class="about-inner">
-				<h2 class="section-heading">GitHub Activity</h2>
+				<h2 class="section-heading">{isVi ? "Hoạt Động GitHub" : "GitHub Activity"}</h2>
 				<p class="section-desc">
-					Live data from the GitHub API.
-					On GitHub since {formatGHDate(ghUser.created_at)}.
+					{isVi ? "Dữ liệu trực tiếp từ GitHub API." : "Live data from the GitHub API."}
+					{isVi ? `Trên GitHub từ ${formatGHDate(ghUser.created_at)}.` : `On GitHub since ${formatGHDate(ghUser.created_at)}.`}
 				</p>
 
 				{/* Coding Eras Timeline */}
 				<div class="eras-timeline">
-					<h3 class="chart-title">Coding eras</h3>
+					<h3 class="chart-title">{isVi ? "Các thời kỳ lập trình" : "Coding eras"}</h3>
 					<div class="eras-track">
 						<div class="era" style="--era-color: var(--color-muted);">
 							<span class="era-bar" style="flex: 16;" />
 							<div class="era-info">
-								<span class="era-label">Solo</span>
-								<span class="era-commits">1,755 commits</span>
-								<span class="era-dates">2006 — Jun 2022</span>
-								<span class="era-note">Manual coding, no AI assist</span>
+								<span class="era-label">{isVi ? "Tự lực" : "Solo"}</span>
+								<span class="era-commits">{isVi ? "1.755 commit" : "1,755 commits"}</span>
+								<span class="era-dates">2006 — {isVi ? "Th6 2022" : "Jun 2022"}</span>
+								<span class="era-note">{isVi ? "Lập trình thủ công, không AI hỗ trợ" : "Manual coding, no AI assist"}</span>
 							</div>
 						</div>
 						<div class="era" style="--era-color: #7c3aed;">
 							<span class="era-bar" style="flex: 3.5;" />
 							<div class="era-info">
 								<span class="era-label">GitHub Copilot</span>
-								<span class="era-commits">8,106 commits</span>
-								<span class="era-dates">Jun 2022 — Jan 2026</span>
-								<span class="era-note">AI-assisted coding (public preview)</span>
+								<span class="era-commits">{isVi ? "8.106 commit" : "8,106 commits"}</span>
+								<span class="era-dates">{isVi ? "Th6 2022 — Th1 2026" : "Jun 2022 — Jan 2026"}</span>
+								<span class="era-note">{isVi ? "Lập trình có AI hỗ trợ (bản xem trước công khai)" : "AI-assisted coding (public preview)"}</span>
 							</div>
 						</div>
 						<div class="era era-current" style="--era-color: #e8784d;">
 							<span class="era-bar" style="flex: 0.5;" />
 							<div class="era-info">
 								<span class="era-label">Claude Code</span>
-								<span class="era-commits">232 commits</span>
-								<span class="era-dates">Jan 29, 2026 — now</span>
-								<span class="era-note">Zero human code — fully AI-generated</span>
+								<span class="era-commits">232 commit{isVi ? "" : "s"}</span>
+								<span class="era-dates">{isVi ? "29 Th1, 2026 — nay" : "Jan 29, 2026 — now"}</span>
+								<span class="era-note">{isVi ? "Không có mã người viết — hoàn toàn do AI tạo" : "Zero human code — fully AI-generated"}</span>
 							</div>
 						</div>
 					</div>
@@ -250,21 +294,21 @@ function formatGHDate(iso: string) {
 				<div class="gh-stats">
 					<div class="gh-stat">
 						<span class="gh-stat-value">{ghUser.public_repos}</span>
-						<span class="gh-stat-label">repos</span>
+						<span class="gh-stat-label">{isVi ? "kho mã" : "repos"}</span>
 					</div>
 					<div class="gh-stat">
 						<span class="gh-stat-value">{totalRecentCommits}</span>
-						<span class="gh-stat-label">recent commits</span>
+						<span class="gh-stat-label">{isVi ? "commit gần đây" : "recent commits"}</span>
 					</div>
 					<div class="gh-stat">
 						<span class="gh-stat-value">{ghUser.followers}</span>
-						<span class="gh-stat-label">followers</span>
+						<span class="gh-stat-label">{isVi ? "người theo dõi" : "followers"}</span>
 					</div>
 				</div>
 
 				{/* Day-of-week activity chart */}
 				<div class="activity-chart">
-					<h3 class="chart-title">Activity by day</h3>
+					<h3 class="chart-title">{isVi ? "Hoạt động theo ngày" : "Activity by day"}</h3>
 					<div class="chart-bars">
 						{dayNames.map((name, i) => (
 							<div class="chart-col">
@@ -283,7 +327,7 @@ function formatGHDate(iso: string) {
 				{/* Recent repos */}
 				{ghRepos.length > 0 && (
 					<div class="repos-section">
-						<h3 class="chart-title">Recent repositories</h3>
+						<h3 class="chart-title">{isVi ? "Kho mã gần đây" : "Recent repositories"}</h3>
 						<div class="repos-grid">
 							{ghRepos.slice(0, 6).map((repo) => (
 								<a href={repo.html_url} class="repo-card" target="_blank" rel="noopener">
@@ -316,7 +360,7 @@ function formatGHDate(iso: string) {
 				{/* Activity feed */}
 				{activityFeed.length > 0 && (
 					<div class="feed-section">
-						<h3 class="chart-title">Recent activity</h3>
+						<h3 class="chart-title">{isVi ? "Hoạt động gần đây" : "Recent activity"}</h3>
 						<div class="feed-list">
 							{activityFeed.map((item) => (
 								<div class="feed-item">

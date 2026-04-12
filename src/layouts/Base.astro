@@ -202,7 +202,7 @@ const isLoggedIn = !!Astro.locals.user;
 					</a>
 					<div class="nav-right">
 						<LiveSearch
-							placeholder="Search..."
+							placeholder={currentLang === "vi" ? "Tìm kiếm..." : "Search..."}
 							class="site-search"
 							inputClass="site-search-input"
 							resultsClass="site-search-results"
@@ -219,11 +219,11 @@ const isLoggedIn = !!Astro.locals.user;
 							}
 							<details class="nav-categories">
 								<summary>
-									Categories <span class="nav-arrow">▾</span>
+									{currentLang === "vi" ? "Danh mục" : "Categories"} <span class="nav-arrow">▾</span>
 								</summary>
 								<div class="nav-dropdown">
 									<a href={link("categories")} class="nav-dropdown-header">
-										All categories →
+										{currentLang === "vi" ? "Tất cả danh mục →" : "All categories →"}
 									</a>
 									{
 										categoryMenuEntries.map((c) => (
@@ -274,13 +274,13 @@ const isLoggedIn = !!Astro.locals.user;
 				<div class="footer-grid">
 					<div class="footer-brand">
 						<a href="/" class="footer-logo">{siteTitle}</a>
-						<p class="footer-tagline">Thoughts, stories, and ideas.</p>
+						<p class="footer-tagline">{currentLang === "vi" ? "Suy nghĩ, câu chuyện, và ý tưởng." : "Thoughts, stories, and ideas."}</p>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">Navigate</h4>
+						<h4 class="footer-heading">{currentLang === "vi" ? "Điều hướng" : "Navigate"}</h4>
 						<ul class="footer-links">
-							<li><a href="/">Home</a></li>
-							<li><a href={link("memories")}>All Posts</a></li>
+							<li><a href="/">{currentLang === "vi" ? "Trang chủ" : "Home"}</a></li>
+							<li><a href={link("memories")}>{currentLang === "vi" ? "Tất cả ký ức" : "All Memories"}</a></li>
 							{
 								pages.slice(0, 3).map((page) => (
 									<li>
@@ -293,7 +293,7 @@ const isLoggedIn = !!Astro.locals.user;
 						</ul>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">Connect</h4>
+						<h4 class="footer-heading">{currentLang === "vi" ? "Kết nối" : "Connect"}</h4>
 						<ul class="footer-links">
 							{
 								menu?.items.map((item) => (
@@ -312,7 +312,7 @@ const isLoggedIn = !!Astro.locals.user;
 									</li>
 								))
 							}
-							<li><a href={link("rss.xml")}>RSS Feed</a></li>
+							<li><a href={link("rss.xml")}>{currentLang === "vi" ? "Nguồn RSS" : "RSS Feed"}</a></li>
 						</ul>
 					</div>
 					<div class="footer-widgets-section">
@@ -320,7 +320,7 @@ const isLoggedIn = !!Astro.locals.user;
 					</div>
 				</div>
 				<div class="footer-categories">
-					<span class="footer-categories-label">Categories</span>
+					<span class="footer-categories-label">{currentLang === "vi" ? "Danh mục" : "Categories"}</span>
 					<div class="footer-categories-cloud">
 						{
 							categoryMenuEntries.map((c) => (

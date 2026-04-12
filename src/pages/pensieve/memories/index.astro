@@ -28,27 +28,29 @@ const postsWithTags = await Promise.all(
 	})
 );
 
+const isVi = (await import("../../../utils/lang")).getCurrentLang(Astro) === "vi";
+
 const formatDate = (date: Date) =>
-	date.toLocaleDateString("en-US", {
+	date.toLocaleDateString(isVi ? "vi-VN" : "en-US", {
 		year: "numeric",
 		month: "long",
 		day: "numeric",
 	});
 ---
 
-<Base title="All Posts" description="Browse all blog posts">
+<Base title={isVi ? "Tất Cả Ký Ức" : "All Memories"} description={isVi ? "Duyệt tất cả bài viết" : "Browse all memories"}>
 	<div class="posts-page">
 		<header class="page-header">
-			<h1 class="page-title">All Posts</h1>
+			<h1 class="page-title">{isVi ? "Tất Cả Ký Ức" : "All Memories"}</h1>
 			<p class="page-description">
 				{posts.length}
-				{posts.length === 1 ? "article" : "articles"}
+				{isVi ? " bài viết" : posts.length === 1 ? " memory" : " memories"}
 			</p>
 		</header>
 
 		{
 			sortedPosts.length === 0 ? (
-				<p class="empty">No posts yet.</p>
+				<p class="empty">{isVi ? "Chưa có bài viết nào." : "No memories yet."}</p>
 			) : (
 				<div class="posts-list">
 					{postsWithTags.map(({ post, tags, bylines }) => (
@@ -86,7 +88,7 @@ const formatDate = (date: Date) =>
 										<time>{formatDate(post.data.publishedAt)}</time>
 									)}
 									{post.data.publishedAt && <span class="meta-dot" />}
-									<span>{getReadingTime(post.data.content)} min read</span>
+									<span>{getReadingTime(post.data.content)} {isVi ? "phút đọc" : "min read"}</span>
 								</div>
 								<h2 class="post-title">{post.data.title}</h2>
 								{post.data.excerpt && (
