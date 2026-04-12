@@ -245,7 +245,7 @@ const publishDate =
 							<p class="article-excerpt">{post.data.excerpt}</p>
 						)
 					}
-					{/* Authorship indicator — HP themed */}
+					{/* Authorship indicator — HP themed, with translation toggle */}
 					<div class={`authorship-banner ${isTranslation ? "authorship-spell" : "authorship-quill"}`}>
 						{isTranslation ? (
 							<>
@@ -276,31 +276,26 @@ const publishDate =
 								</div>
 							</>
 						)}
-					</div>
-					{
-						siblingSlug && (
-							<div class="translation-strip">
-								<a
-									href={link(`memories/${siblingSlug}`)}
-									class="translation-toggle"
-									data-switch-lang={siblingLang}
-								>
-									{(() => {
-										// Is the sibling the original or a translation?
-										const siblingIsOriginal = originalLang === siblingLang;
-										if (siblingLang === "en") {
-											return siblingIsOriginal
-												? "Read the Original Manuscript →"
-												: "Read the Conjured Translation →";
-										}
+						{siblingSlug && (
+							<a
+								href={link(`memories/${siblingSlug}`)}
+								class="authorship-toggle"
+								data-switch-lang={siblingLang}
+							>
+								{(() => {
+									const siblingIsOriginal = originalLang === siblingLang;
+									if (siblingLang === "en") {
 										return siblingIsOriginal
-											? "Đọc Bản Gốc →"
-											: "Đọc Bản Dịch Phép Thuật →";
-									})()}
-								</a>
-							</div>
-						)
-					}
+											? "Read the Original Manuscript →"
+											: "Read the Conjured Translation →";
+									}
+									return siblingIsOriginal
+										? "Đọc Bản Gốc →"
+										: "Đọc Bản Dịch Phép Thuật →";
+								})()}
+							</a>
+						)}
+					</div>
 				</header>
 
 				<div class="article-content">
@@ -644,6 +639,27 @@ const publishDate =
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
 		line-height: var(--leading-relaxed);
+	}
+
+	.authorship-toggle {
+		display: block;
+		margin-top: var(--spacing-3);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		text-decoration: none;
+		transition: opacity var(--transition-fast);
+	}
+
+	.authorship-quill .authorship-toggle {
+		color: #3fb950;
+	}
+
+	.authorship-spell .authorship-toggle {
+		color: var(--color-accent);
+	}
+
+	.authorship-toggle:hover {
+		opacity: 0.7;
 	}
 
 	/* Translation strip — language toggle */
