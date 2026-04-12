@@ -105,3 +105,23 @@ Found 1 pending test comment ("hi" / "me@p.com" / "comment"). Trashed it via wra
 > change lang dropdown to match Categories style / update README / fix session-log format / add social profiles
 
 Changed lang dropdown from `<select>` to `<details>` matching Categories style. Updated README (home page, not just writing space, removed technical details below Development). Fixed session-log.md formatting. Updated moderator agent to use wrangler D1.
+
+### Social links as section on root
+> links to my profile should be a section on root
+
+Added "Elsewhere" section on huuloc.com landing page with GitHub, LinkedIn, Facebook links. Cleaned footer to just copyright.
+
+### Comment moderation notice
+> should note that comments are moderated
+
+Added "Comments are moderated and may take a moment to appear." below the comment form on post pages.
+
+### Run moderator (2nd time)
+> run the moderator
+
+No pending comments. Inbox clean — only the 1 previously trashed test comment.
+
+### Admin account
+> create an admin account for me / should allow me to log in using github
+
+EmDash supports GitHub OAuth out of the box via environment variables. No code changes needed. User created a GitHub OAuth App, set `EMDASH_OAUTH_GITHUB_CLIENT_ID` and `EMDASH_OAUTH_GITHUB_CLIENT_SECRET` via `wrangler secret put`. GitHub login now available at the admin UI.
