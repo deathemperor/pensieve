@@ -76,7 +76,7 @@
 		"title": "Resend email provider plugin",
 		"type": "build",
 		"prompt": "how do I get notified when new comments on pensieve are posted?\nemail to deathemperor@gmail.com\ndon't see the settings",
-		"summary": "Created plugins/plugin-resend/ \u2014 provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
+		"summary": "Created plugins/plugin-resend/ — provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	},
@@ -103,16 +103,16 @@
 		"title": "Room of Requirement + Priori Incantatem",
 		"type": "build",
 		"prompt": "wire to session log. then rebuild session logs into a nice feature to display it so that it can record timeline of building by claude code. the feature should also cite that the site is built using claude code. the logs should attach claude code version and model version so that overtime it records model changes, along with its date as a diary. this is a seperate section of the site. I wanna name it something Harry Potter-ish (as the site is)",
-		"summary": "Built the build section (Room of Requirement) with architecture overview, tech stack, and subagents. Created Priori Incantatem \u2014 a timeline diary recording every Claude Code session with model versions.",
+		"summary": "Built the build section (Room of Requirement) with architecture overview, tech stack, and subagents. Created Priori Incantatem — a timeline diary recording every Claude Code session with model versions.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	},
 	{
 		"date": "2026-04-13",
-		"title": "Tr\u01b0\u01a1ng about page",
+		"title": "Trương about page",
 		"type": "build",
-		"prompt": "build a /tr\u01b0\u01a1ng page. this is my last name. this is my about me, my origin and what I do, should again have links to my profile pages, my github commit stats and histories infographic (real time data)",
-		"summary": "Built about page at /Tr\u01b0\u01a1ng with origin story bio, profile links (GitHub, LinkedIn, Facebook, email), and live GitHub infographic fetched from GitHub API at request time \u2014 stats, activity chart, recent repos grid, and activity feed timeline.",
+		"prompt": "build a /trương page. this is my last name. this is my about me, my origin and what I do, should again have links to my profile pages, my github commit stats and histories infographic (real time data)",
+		"summary": "Built about page at /Trương with origin story bio, profile links (GitHub, LinkedIn, Facebook, email), and live GitHub infographic fetched from GitHub API at request time — stats, activity chart, recent repos grid, and activity feed timeline.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	},
@@ -121,7 +121,7 @@
 		"title": "Content signals + Claude Code attribution + coding eras",
 		"type": "build",
 		"prompt": "make sure the page is SEO and comply with cloudflare https://contentsignals.org/\nalso, add into build section what is done by claude code (all codes are, deployments are, translationg aren't)\nbtw, the git infographics should highlight the moment I switch fully to zero human code and full claude code, hihglight the moment I use github copilot for code assist (use the date the github copilot program accepting preview)",
-		"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Tr\u01b0\u01a1ng page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
+		"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Trương page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	},
@@ -185,6 +185,69 @@
 		"type": "fix",
 		"prompt": "so...you misunderstood a lot. huuloc.com root isn't EmDash, right? only /pensieve\n-_- I still can't access RoR and /truong from huuloc.com content",
 		"summary": "Added Room of Requirement and Trương links to the huuloc.com static landing page. Fixed nav label from 'Build' to 'Room of Requirement'. Updated seed menu to point About to /Trương.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Edge-cache GitHub API + rename priori-incantatem agent",
+		"type": "build",
+		"prompt": "I think allow public access with lot of guest traffics to hit github API is a bad choice. figure out a better way.\nrename session logger sub agent to Priori Incantatem",
+		"summary": "Replaced per-visitor GitHub API calls with Cloudflare edge caching (1hr TTL via cf fetch options). Renamed session-logger agent to priori-incantatem.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Site routes manifest + llms.txt + ai-plugin.json",
+		"type": "build",
+		"prompt": "does Astro has a sitemap (all those stuffs)?\nfind a way! otherwise you will miss updating those SEO/discoverability\nsame as RSS, anythign content related are getting changes and updated. need to automate that",
+		"summary": "Created site-routes.json manifest as single source of truth for SEO. Sitemap reads static pages from manifest + queries EmDash for dynamic content. Added llms.txt and .well-known/ai-plugin.json for AI agent discovery. Updated CLAUDE.md and agents to enforce manifest updates.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Fix translation link redirect + HP-themed toggle",
+		"type": "fix",
+		"prompt": "bug: when accessing https://huuloc.com/pensieve/memories/letting-the-bird-go-and-the-art-of-being-bored then click on the original post, it got redirect to the former. also \"Đọc bản tiếng Việt\" or the same \"English version\" should be renamed to mean AI translated or my original in HP style",
+		"summary": "Fixed data-switch-lang JS handler that reloaded current page instead of navigating to sibling URL. Renamed toggle: 'Read the Original Manuscript' / 'Đọc Bản Gốc' for originals, 'Read the Conjured Translation' / 'Đọc Bản Dịch Phép Thuật' for translations.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Geminio i18n subagent",
+		"type": "build",
+		"prompt": "the website is not multi lang friendly, build a claude code sub agent to do it, name it to HP style that will be summoned to work whenever new texts are added, basicly as a police",
+		"summary": "Created Geminio (Doubling Charm) subagent — i18n police that ensures all user-facing text has both English and Vietnamese versions. Ran full audit: found ~100 hardcoded strings across 12 files.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Combine authorship banner + translation toggle",
+		"type": "fix",
+		"prompt": "these should be combined",
+		"summary": "Merged the separate authorship banner and translation toggle into a single unified block.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Fix coding eras with real GitHub data",
+		"type": "fix",
+		"prompt": "change the GitHub Copilot era to its public preview (that's when I got access). also these lines should have number of commits.\nthis is not true, use my local gh cli to find out the exact date",
+		"summary": "Corrected coding eras from GitHub commit history: Solo 2006-Jun 2022 (1,755 commits), GitHub Copilot Jun 2022-Jan 2026 (8,106 commits, public preview), Claude Code Jan 29 2026-now (232 commits). First Claude Code commit: Jan 29, 2026.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Mandatory diary update before push",
+		"type": "build",
+		"prompt": "diary not got updated automatically, how should it be done?",
+		"summary": "Added blocking rule to CLAUDE.md: priori-incantatem agent must run before every git push. No more forgotten diary entries.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	}
