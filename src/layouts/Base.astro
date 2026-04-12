@@ -219,7 +219,7 @@ const isLoggedIn = !!Astro.locals.user;
 							}
 							<details class="nav-categories">
 								<summary>
-									{currentLang === "vi" ? "Danh mục" : "Categories"} <span class="nav-arrow">▾</span>
+									{currentLang === "vi" ? "Mũ Phân Loại" : "Sorting Hat"} <span class="nav-arrow">▾</span>
 								</summary>
 								<div class="nav-dropdown">
 									<a href={link("categories")} class="nav-dropdown-header">
@@ -320,7 +320,7 @@ const isLoggedIn = !!Astro.locals.user;
 					</div>
 				</div>
 				<div class="footer-categories">
-					<span class="footer-categories-label">{currentLang === "vi" ? "Danh mục" : "Categories"}</span>
+					<span class="footer-categories-label">{currentLang === "vi" ? "Mũ Phân Loại" : "Sorting Hat"}</span>
 					<div class="footer-categories-cloud">
 						{
 							categoryMenuEntries.map((c) => (

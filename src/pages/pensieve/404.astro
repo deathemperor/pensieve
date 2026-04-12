@@ -6,7 +6,7 @@ import { getCurrentLang } from "../../utils/lang";
 const isVi = getCurrentLang(Astro) === "vi";
 ---
 
-<Base title={isVi ? "Không tìm thấy" : "Page not found"}>
+<Base title={isVi ? "Không tìm thấy" : "Page not found"} breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: "404" }]}>
 	<div class="not-found">
 		<h1>404</h1>
 		<p>{isVi ? "Trang bạn tìm không tồn tại." : "The page you're looking for doesn't exist."}</p>

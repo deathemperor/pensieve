@@ -38,7 +38,7 @@ const formatDate = (date: Date) =>
 	});
 ---
 
-<Base title={isVi ? "Tất Cả Ký Ức" : "All Memories"} description={isVi ? "Duyệt tất cả bài viết" : "Browse all memories"}>
+<Base title={isVi ? "Tất Cả Ký Ức" : "All Memories"} description={isVi ? "Duyệt tất cả bài viết" : "Browse all memories"} breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: isVi ? "Ký Ức" : "Memories" }]}>
 	<div class="posts-page">
 		<header class="page-header">
 			<h1 class="page-title">{isVi ? "Tất Cả Ký Ức" : "All Memories"}</h1>

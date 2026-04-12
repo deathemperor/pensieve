@@ -33,8 +33,9 @@ const filteredPosts = await Promise.all(
 ---
 
 <Base
-	title={isVi ? `Bài viết có thẻ ${term.label}` : `Posts tagged "${term.label}"`}
-	description={isVi ? `Tất cả bài viết có thẻ ${term.label}` : `All posts tagged with ${term.label}`}
+	title={isVi ? `Bùa phép: ${term.label}` : `Enchantment: ${term.label}`}
+	description={isVi ? `Tất cả ký ức có bùa phép ${term.label}` : `All memories enchanted with ${term.label}`}
+	breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: isVi ? "Bùa Phép" : "Enchantments" }, { label: term.label }]}
 >
 	<section class="archive-section">
 		<header class="archive-header">
