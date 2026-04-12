@@ -1159,7 +1159,12 @@ const isLoggedIn = !!Astro.locals.user;
 				a.addEventListener('click', (e) => {
 					e.preventDefault();
 					setLangCookie(a.dataset.switchLang!);
-					location.reload();
+					// If link has a real href (not "#"), navigate there; otherwise reload
+					if (a.href && !a.getAttribute('href')?.startsWith('#')) {
+						location.href = a.href;
+					} else {
+						location.reload();
+					}
 				});
 			});
 		</script>

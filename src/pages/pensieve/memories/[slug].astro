@@ -285,9 +285,18 @@ const publishDate =
 									class="translation-toggle"
 									data-switch-lang={siblingLang}
 								>
-									{siblingLang === "en"
-										? "Read in English →"
-										: "Đọc bản tiếng Việt →"}
+									{(() => {
+										// Is the sibling the original or a translation?
+										const siblingIsOriginal = originalLang === siblingLang;
+										if (siblingLang === "en") {
+											return siblingIsOriginal
+												? "Read the Original Manuscript →"
+												: "Read the Conjured Translation →";
+										}
+										return siblingIsOriginal
+											? "Đọc Bản Gốc →"
+											: "Đọc Bản Dịch Phép Thuật →";
+									})()}
 								</a>
 							</div>
 						)
