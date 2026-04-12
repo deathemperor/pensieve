@@ -139,7 +139,7 @@ const isLoggedIn = !!Astro.locals.user;
 		<EmDashBodyStart page={pageCtx} />
 		<header class="site-header">
 			<nav class="nav">
-				<a href={link()} class="site-title">
+				<a href="/" class="site-title">
 					<svg
 						class="site-logomark"
 						width="22"
@@ -194,10 +194,6 @@ const isLoggedIn = !!Astro.locals.user;
 								</a>
 							))
 						}
-						<select class="nav-lang-select" aria-label="Language" id="langSelect">
-							<option value="vi" selected={currentLang === "vi"}>VI</option>
-							<option value="en" selected={currentLang === "en"}>EN</option>
-						</select>
 						<details class="nav-categories">
 							<summary>
 								Categories <span class="nav-arrow">▾</span>
@@ -228,6 +224,10 @@ const isLoggedIn = !!Astro.locals.user;
 							</a>
 						)
 					}
+					<select class="nav-lang-select" aria-label="Language" id="langSelect">
+						<option value="vi" selected={currentLang === "vi"}>VI</option>
+						<option value="en" selected={currentLang === "en"}>EN</option>
+					</select>
 				</div>
 			</nav>
 		</header>
@@ -240,13 +240,13 @@ const isLoggedIn = !!Astro.locals.user;
 			<div class="footer-inner">
 				<div class="footer-grid">
 					<div class="footer-brand">
-						<a href={link()} class="footer-logo">{siteTitle}</a>
+						<a href="/" class="footer-logo">{siteTitle}</a>
 						<p class="footer-tagline">Thoughts, stories, and ideas.</p>
 					</div>
 					<div class="footer-nav">
 						<h4 class="footer-heading">Navigate</h4>
 						<ul class="footer-links">
-							<li><a href={link()}>Home</a></li>
+							<li><a href="/">Home</a></li>
 							<li><a href={link("posts")}>All Posts</a></li>
 							{
 								pages.slice(0, 3).map((page) => (
@@ -613,6 +613,7 @@ const isLoggedIn = !!Astro.locals.user;
 
 			/* Language toggle */
 			.nav-lang-select {
+				margin-left: auto;
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
 				letter-spacing: 0.04em;
