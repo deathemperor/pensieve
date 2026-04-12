@@ -96,9 +96,11 @@ const pills = Object.entries(categoryThemeMap)
 		return { slug, label, accent: t.palette.accent, count };
 	});
 
+const isVi = (await import("../../utils/lang")).getCurrentLang(Astro) === "vi";
+
 function formatDate(date: Date | null | undefined) {
 	if (!date) return null;
-	return date.toLocaleDateString("en-US", {
+	return date.toLocaleDateString(isVi ? "vi-VN" : "en-US", {
 		year: "numeric",
 		month: "short",
 		day: "numeric",
@@ -106,14 +108,14 @@ function formatDate(date: Date | null | undefined) {
 }
 ---
 
-<Base title="Pensieve" description="long-form thoughts, one theme per topic">
+<Base title="Pensieve" description={isVi ? "suy nghĩ dài, mỗi chủ đề một màu" : "long-form thoughts, one theme per topic"}>
 	{
 		!featured ? (
 			<section class="empty-state">
-				<h2>No posts yet</h2>
-				<p>Create your first post in the admin panel.</p>
+				<h2>{isVi ? "Chưa có ký ức nào" : "No memories yet"}</h2>
+				<p>{isVi ? "Tạo bài viết đầu tiên trong trang quản trị." : "Create your first post in the admin panel."}</p>
 				<a href="/_emdash/admin/content/posts/new" class="btn">
-					Create a post
+					{isVi ? "Tạo bài viết" : "Create a post"}
 				</a>
 			</section>
 		) : (
@@ -141,7 +143,7 @@ function formatDate(date: Date | null | undefined) {
 										<span class="meta-dot" />
 									</>
 								)}
-								<span>{getReadingTime(featured.post.data.content)} min read</span>
+								<span>{getReadingTime(featured.post.data.content)} {isVi ? "phút đọc" : "min read"}</span>
 							</div>
 						</a>
 					</div>
@@ -150,7 +152,7 @@ function formatDate(date: Date | null | undefined) {
 				{/* ========== CATEGORY PILLS ========== */}
 				<section class="pills-section">
 					<div class="pills-inner">
-						<span class="pills-label">Browse</span>
+						<span class="pills-label">{isVi ? "Duyệt" : "Browse"}</span>
 						<div class="pills-row">
 							{pills.map((p) => (
 								<a

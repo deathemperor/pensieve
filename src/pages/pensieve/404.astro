@@ -1,13 +1,16 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { link } from "../../utils/link";
+import { getCurrentLang } from "../../utils/lang";
+
+const isVi = getCurrentLang(Astro) === "vi";
 ---
 
-<Base title="Page not found">
+<Base title={isVi ? "Không tìm thấy" : "Page not found"}>
 	<div class="not-found">
 		<h1>404</h1>
-		<p>The page you're looking for doesn't exist.</p>
-		<a href={link()}>Go back home</a>
+		<p>{isVi ? "Trang bạn tìm không tồn tại." : "The page you're looking for doesn't exist."}</p>
+		<a href={link()}>{isVi ? "Về trang chủ" : "Go back home"}</a>
 	</div>
 </Base>
 
