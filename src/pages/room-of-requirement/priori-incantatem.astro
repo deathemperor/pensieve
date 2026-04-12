@@ -9,6 +9,7 @@ interface DiaryEntry {
 	date: string;
 	title: string;
 	type: "build" | "plan" | "fix" | "deploy";
+	prompt: string;
 	summary: string;
 	model: string;
 	claudeCode: string;
@@ -102,6 +103,9 @@ function formatModel(model: string) {
 									{typeLabels[entry.type] ?? entry.type}
 								</div>
 								<h3 class="entry-title">{entry.title}</h3>
+								{entry.prompt && (
+									<blockquote class="entry-prompt">{entry.prompt}</blockquote>
+								)}
 								<p class="entry-summary">{entry.summary}</p>
 								<div class="entry-meta">
 									{formatModel(entry.model) && (
@@ -319,6 +323,17 @@ function formatModel(model: string) {
 		height: 6px;
 		border-radius: 50%;
 		background: var(--type-color);
+	}
+
+	.entry-prompt {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		font-style: italic;
+		margin: 0 0 var(--spacing-2);
+		padding-left: var(--spacing-4);
+		border-left: 2px solid var(--color-border);
+		line-height: var(--leading-relaxed);
 	}
 
 	.entry-title {
