@@ -15,6 +15,9 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 			email_sends: {
 				indexes: ["postSlug", "status", "sentAt"],
 			},
+			reading_events: {
+				indexes: ["postSlug", "sessionId", "createdAt"],
+			},
 		},
 		adminPages: [
 			{ path: "/subscribers", label: "Subscribers", icon: "users" },
