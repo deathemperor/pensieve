@@ -1,0 +1,422 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { link } from "../../utils/link";
+
+const techStack = [
+	{
+		name: "Astro",
+		role: "SSR framework",
+		description: "Server-rendered pages, zero client JS by default",
+		url: "https://astro.build",
+	},
+	{
+		name: "EmDash CMS",
+		role: "Content management",
+		description: "Astro-native CMS with admin UI, comments, plugin system",
+		url: "https://emdashcms.com",
+	},
+	{
+		name: "Cloudflare Workers",
+		role: "Hosting & compute",
+		description: "Edge runtime — D1 (SQL), R2 (storage), KV (sessions)",
+		url: "https://workers.cloudflare.com",
+	},
+	{
+		name: "Resend",
+		role: "Email delivery",
+		description: "Transactional email API for comment notifications",
+		url: "https://resend.com",
+	},
+	{
+		name: "Claude Code",
+		role: "AI pair programmer",
+		description: "Anthropic's CLI agent — built every line of this site",
+		url: "https://claude.com/claude-code",
+	},
+	{
+		name: "GitHub Actions",
+		role: "CI/CD",
+		description: "Automated deployment on push to main",
+		url: "https://github.com/features/actions",
+	},
+];
+
+const agents = [
+	{
+		name: "session-logger",
+		purpose: "Appends structured entries to the build diary after each work session",
+	},
+	{
+		name: "moderate-comments",
+		purpose: "Lists, approves, spams, trashes, or deletes comments via the EmDash admin API",
+	},
+	{
+		name: "Explore",
+		purpose: "Fast codebase exploration — finds files, searches code, answers architecture questions",
+	},
+	{
+		name: "Plan",
+		purpose: "Designs implementation strategies, identifies critical files, weighs trade-offs",
+	},
+];
+
+const plugins = [
+	{
+		name: "plugin-resend",
+		purpose: "Email delivery via Resend API + comment notification emails",
+	},
+	{
+		name: "plugin-forms",
+		purpose: "Form handling (EmDash built-in)",
+	},
+	{
+		name: "plugin-webhook-notifier",
+		purpose: "Webhook notifications on content/media changes",
+	},
+];
+---
+
+<Base title="Room of Requirement — Pensieve" description="How this site is built, one Claude Code session at a time">
+	<section class="room-hero">
+		<div class="room-hero-inner">
+			<div class="room-rule" />
+			<span class="room-label">The Build</span>
+			<h1 class="room-title">Room of Requirement</h1>
+			<p class="room-subtitle">
+				This site is built entirely by
+				<a href="https://claude.com/claude-code" class="cc-link">Claude Code</a>,
+				Anthropic's AI coding agent. Every page, plugin, deployment,
+				and configuration was pair-programmed in the terminal.
+			</p>
+			<a href={link("room-of-requirement/priori-incantatem")} class="diary-link">
+				View build diary &rarr;
+			</a>
+		</div>
+	</section>
+
+	<section class="room-section">
+		<div class="room-inner">
+			<h2 class="section-heading">Architecture</h2>
+			<p class="section-desc">
+				A personal blog running on the edge. Server-rendered Astro pages,
+				EmDash CMS for content, Cloudflare Workers for hosting.
+				All content lives in a D1 SQLite database.
+			</p>
+			<div class="tech-grid">
+				{techStack.map((t) => (
+					<a href={t.url} class="tech-card" target="_blank" rel="noopener">
+						<span class="tech-name">{t.name}</span>
+						<span class="tech-role">{t.role}</span>
+						<span class="tech-desc">{t.description}</span>
+					</a>
+				))}
+			</div>
+		</div>
+	</section>
+
+	<section class="room-section">
+		<div class="room-inner">
+			<h2 class="section-heading">Source</h2>
+			<a href="https://github.com/deathemperor/pensieve" class="repo-card" target="_blank" rel="noopener">
+				<span class="repo-icon">
+					<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+					</svg>
+				</span>
+				<span class="repo-name">deathemperor/pensieve</span>
+				<span class="repo-desc">Open source on GitHub</span>
+			</a>
+		</div>
+	</section>
+
+	<section class="room-section">
+		<div class="room-inner">
+			<div class="two-col">
+				<div>
+					<h2 class="section-heading">Subagents</h2>
+					<p class="section-desc">
+						Specialized Claude Code agents for specific tasks.
+					</p>
+					<div class="agent-list">
+						{agents.map((a) => (
+							<div class="agent-card">
+								<span class="agent-name">{a.name}</span>
+								<span class="agent-purpose">{a.purpose}</span>
+							</div>
+						))}
+					</div>
+				</div>
+				<div>
+					<h2 class="section-heading">Plugins</h2>
+					<p class="section-desc">
+						EmDash plugins extending the CMS.
+					</p>
+					<div class="agent-list">
+						{plugins.map((p) => (
+							<div class="agent-card">
+								<span class="agent-name">{p.name}</span>
+								<span class="agent-purpose">{p.purpose}</span>
+							</div>
+						))}
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+</Base>
+
+<style>
+	.room-hero {
+		position: relative;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.room-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-24) var(--spacing-8) var(--spacing-20);
+	}
+
+	.room-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.room-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.room-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-5);
+	}
+
+	.room-subtitle {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		max-width: 55ch;
+		margin: 0 0 var(--spacing-6);
+	}
+
+	.cc-link {
+		color: var(--color-accent);
+		text-decoration: none;
+		font-weight: 500;
+	}
+
+	.cc-link:hover {
+		text-decoration: underline;
+	}
+
+	.diary-link {
+		display: inline-block;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-accent);
+		text-decoration: none;
+		transition: opacity var(--transition-fast);
+	}
+
+	.diary-link:hover {
+		opacity: 0.8;
+	}
+
+	/* Sections */
+	.room-section {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.room-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8);
+	}
+
+	.section-heading {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		letter-spacing: -0.012em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-2);
+	}
+
+	.section-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-8);
+		max-width: 60ch;
+	}
+
+	/* Tech grid */
+	.tech-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--spacing-4);
+	}
+
+	.tech-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-1);
+		padding: var(--spacing-5);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		text-decoration: none;
+		color: inherit;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.tech-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
+	.tech-name {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+	}
+
+	.tech-role {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-accent);
+	}
+
+	.tech-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+	}
+
+	/* Repo card */
+	.repo-card {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-4);
+		padding: var(--spacing-5) var(--spacing-6);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		text-decoration: none;
+		color: inherit;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.repo-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
+	.repo-icon {
+		color: var(--color-text);
+		flex-shrink: 0;
+	}
+
+	.repo-name {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.repo-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	/* Agents + plugins */
+	.two-col {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--spacing-12);
+	}
+
+	.agent-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+	}
+
+	.agent-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-1);
+		padding: var(--spacing-4) var(--spacing-5);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+	}
+
+	.agent-name {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-text);
+	}
+
+	.agent-purpose {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+	}
+
+	/* Responsive */
+	@media (max-width: 900px) {
+		.room-hero-inner {
+			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+		}
+
+		.room-inner {
+			padding: var(--spacing-12) var(--spacing-6);
+		}
+
+		.two-col {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-10);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.room-hero-inner {
+			padding: var(--spacing-12) var(--spacing-5);
+		}
+
+		.room-inner {
+			padding: var(--spacing-10) var(--spacing-5);
+		}
+
+		.repo-card {
+			flex-wrap: wrap;
+		}
+	}
+</style>
