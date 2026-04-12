@@ -325,6 +325,10 @@ export const HOME_HTML = `<!DOCTYPE html>
       <span class="foot-sep">·</span>
       <a href="https://github.com/deathemperor" rel="noopener">github</a>
       <span class="foot-sep">·</span>
+      <a href="https://www.linkedin.com/in/deathemperor/" rel="noopener">linkedin</a>
+      <span class="foot-sep">·</span>
+      <a href="https://fb.me/deathemperor" rel="noopener">facebook</a>
+      <span class="foot-sep">·</span>
       <a href="/pensieve/">pensieve</a>
     </footer>
   </main>
