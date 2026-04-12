@@ -79,6 +79,21 @@ interface Translation {
 	content_en: string;
 }
 
+/**
+ * Collapse near-duplicate posts into a fingerprint. Loc reposts the same
+ * essay with minor text edits, but the classifier's generated title stays
+ * stable across variants — so we cluster by normalized classifier title,
+ * which is a higher-signal dedupe key than prefix text matching.
+ */
+function fingerprint(classifierTitle: string): string {
+	return classifierTitle
+		.toLowerCase()
+		.replace(/[^\p{L}\p{N}\s]/gu, " ")
+		.replace(/\s+/g, " ")
+		.trim()
+		.slice(0, 80);
+}
+
 interface TranslationBatch {
 	batch: number;
 	startIndex: number;
@@ -163,6 +178,16 @@ function stableEntryId(slug: string, lang: string): string {
 
 // ----- main -----
 
+interface MediaEntry {
+	key: string;
+	filename: string;
+	mimeType: string;
+	size: number;
+	description?: string;
+}
+
+type MediaMap = Record<string, MediaEntry>;
+
 function main() {
 	const root = "/Users/deathemperor/death/pensieve";
 	const longPosts: IngestedPost[] = JSON.parse(
@@ -172,6 +197,15 @@ function main() {
 		readFileSync(`${root}/data/classified.json`, "utf8"),
 	);
 	const seed = JSON.parse(readFileSync(`${root}/seed/seed.json`, "utf8"));
+
+	// Load media map from upload-media.ts (optional — posts without media
+	// just render with no featured image).
+	let mediaMap: MediaMap = {};
+	const mediaMapPath = `${root}/data/media-map.json`;
+	if (existsSync(mediaMapPath)) {
+		mediaMap = JSON.parse(readFileSync(mediaMapPath, "utf8"));
+		console.log(`🖼  Loaded media map: ${Object.keys(mediaMap).length} posts with images`);
+	}
 
 	// Load all translation batches
 	const translationMap = new Map<string, Translation>();
@@ -195,7 +229,7 @@ function main() {
 		post: IngestedPost;
 		translation: Translation;
 	}
-	const merged: Merged[] = [];
+	const allMerged: Merged[] = [];
 	const missing: string[] = [];
 
 	for (const c of classifiedFile.posts) {
@@ -209,7 +243,7 @@ function main() {
 			missing.push(`translation-missing:${c.id}`);
 			continue;
 		}
-		merged.push({ classification: c, post, translation });
+		allMerged.push({ classification: c, post, translation });
 	}
 
 	if (missing.length > 0) {
@@ -217,15 +251,42 @@ function main() {
 		missing.slice(0, 10).forEach((m) => console.warn(`   ${m}`));
 	}
 
+	// Secondary dedup pass — collapse near-duplicate reposts. Use the
+	// classifier's title as the fingerprint since it stays stable across
+	// Loc's edit-and-repost variants. Keep the most-recent (latest
+	// timestamp) variant, since Loc's reposts are usually refinements.
+	const clusters = new Map<string, Merged>();
+	let clusterDrops = 0;
+	for (const m of allMerged) {
+		const fp = fingerprint(m.classification.title);
+		const existing = clusters.get(fp);
+		if (!existing) {
+			clusters.set(fp, m);
+			continue;
+		}
+		clusterDrops++;
+		// Keep the most recent — reposts are usually refinements of the earlier
+		if (m.post.timestamp > existing.post.timestamp) {
+			clusters.set(fp, m);
+		}
+	}
+	const merged = Array.from(clusters.values());
+
 	console.log(`📚 Classified: ${classifiedFile.posts.length}`);
 	console.log(`🌐 Translated: ${translationMap.size}`);
-	console.log(`✅ Merged: ${merged.length}`);
+	console.log(`🔀 Near-duplicates collapsed: ${clusterDrops}`);
+	console.log(`✅ Merged after dedup: ${merged.length}`);
 
 	// Build bilingual seed.content.posts
+	interface FeaturedImage {
+		src: string;
+		alt: string;
+	}
 	interface SeedPost {
 		id: string;
 		slug: string;
 		status: "published";
+		publishedAt: string; // ISO 8601 — from the original Facebook post timestamp
 		data: {
 			title: string;
 			excerpt: string;
@@ -234,6 +295,7 @@ function main() {
 			original_language: "vi" | "en" | "mixed";
 			source: "facebook";
 			source_id: string;
+			featured_image?: FeaturedImage;
 		};
 		bylines: Array<{ byline: string }>;
 		taxonomies: { category: string[]; tag: string[] };
@@ -269,6 +331,26 @@ function main() {
 			.filter(Boolean);
 
 		const origLang = m.translation.originalLanguage;
+		// Use the ORIGINAL Facebook post timestamp as the published date.
+		// (Note: EmDash's seed loader ignores this field — scripts/fix-dates.ts
+		// post-processes data.db to UPDATE published_at from these values.)
+		const publishedAt = new Date(m.post.timestamp * 1000).toISOString();
+
+		// Featured image — look up the media map by original post id (source_id)
+		// and use a Worker-proxied R2 URL under /pensieve/m/<key>
+		const media = mediaMap[m.post.id];
+		const featured_image_vi: FeaturedImage | undefined = media
+			? {
+					src: `/pensieve/m/${media.key}`,
+					alt: media.description || m.translation.title_vi,
+				}
+			: undefined;
+		const featured_image_en: FeaturedImage | undefined = media
+			? {
+					src: `/pensieve/m/${media.key}`,
+					alt: media.description || m.translation.title_en,
+				}
+			: undefined;
 
 		// Vietnamese variant
 		const slugVi = uniqueSlug(slugify(m.translation.title_vi));
@@ -276,6 +358,7 @@ function main() {
 			id: stableEntryId(slugVi, "vi"),
 			slug: slugVi,
 			status: "published",
+			publishedAt,
 			data: {
 				title: m.translation.title_vi,
 				excerpt: m.translation.excerpt_vi,
@@ -284,6 +367,7 @@ function main() {
 				original_language: origLang,
 				source: "facebook",
 				source_id: m.post.id,
+				...(featured_image_vi && { featured_image: featured_image_vi }),
 			},
 			bylines: [{ byline: "byline-main" }],
 			taxonomies: {
@@ -298,6 +382,7 @@ function main() {
 			id: stableEntryId(slugEn, "en"),
 			slug: slugEn,
 			status: "published",
+			publishedAt,
 			data: {
 				title: m.translation.title_en,
 				excerpt: m.translation.excerpt_en,
@@ -306,6 +391,7 @@ function main() {
 				original_language: origLang,
 				source: "facebook",
 				source_id: m.post.id,
+				...(featured_image_en && { featured_image: featured_image_en }),
 			},
 			bylines: [{ byline: "byline-main" }],
 			taxonomies: {

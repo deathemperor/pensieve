@@ -1,81 +1,94 @@
 ---
+export const prerender = false;
+
 import { getEmDashCollection, getEntryTerms } from "emdash";
 import Base from "../layouts/Base.astro";
 import { link } from "../utils/link";
-import { categoryThemeMap } from "../themes/categoryThemes";
+import { categoryThemeMap, type ThemeSlug } from "../themes/categoryThemes";
 import { themes } from "../themes";
+import { getCurrentLang } from "../utils/lang";
 
+const currentLang = getCurrentLang(Astro);
 const { entries: posts, cacheHint } = await getEmDashCollection("posts");
 Astro.cache.set(cacheHint);
 
-// Count posts per category
+// Count posts per category, for the current reader language
 const counts = new Map<string, number>();
 for (const post of posts) {
+	if (post.data.language !== currentLang) continue;
 	const cats = await getEntryTerms("posts", post.data.id, "category");
 	for (const c of cats) {
 		counts.set(c.slug, (counts.get(c.slug) ?? 0) + 1);
 	}
 }
 
-const tiles = Object.entries(categoryThemeMap).map(([slug, themeSlug]) => {
-	const theme = themes[themeSlug];
-	const label = slug
-		.replace(/-/g, " ")
-		.replace(/\b\w/g, (c) => c.toUpperCase());
-	return {
-		slug,
-		label,
-		theme,
-		count: counts.get(slug) ?? 0,
-	};
-});
+// One tile per unique theme (misc shares lab-notebook with science)
+const seen = new Set<ThemeSlug>();
+const tiles = Object.entries(categoryThemeMap)
+	.filter(([, themeSlug]) => {
+		if (seen.has(themeSlug)) return false;
+		seen.add(themeSlug);
+		return true;
+	})
+	.map(([slug, themeSlug]) => {
+		const theme = themes[themeSlug];
+		const label = slug
+			.replace(/-/g, " ")
+			.replace(/\b\w/g, (c) => c.toUpperCase());
+		return {
+			slug,
+			label,
+			theme,
+			count: counts.get(slug) ?? 0,
+		};
+	});
+
+const totalPosts = Array.from(counts.values()).reduce((a, b) => a + b, 0);
 ---
 
 <Base
 	title="Categories"
-	description="Browse pensieve by topic — each category has its own visual world."
+	description="Browse Pensieve by topic."
 >
 	<div class="categories-page">
 		<header class="page-header">
-			<h1 class="page-title">Categories</h1>
+			<p class="page-eyebrow">{totalPosts} posts · {tiles.length} categories</p>
+			<h1 class="page-title">Browse by category</h1>
 			<p class="page-subtitle">
-				Seven rooms. Each one themed to fit what lives inside.
+				{
+					currentLang === "vi"
+						? "Mỗi chủ đề có một màu riêng. Chọn một để bắt đầu."
+						: "Each topic has its own accent color. Pick one to dive in."
+				}
 			</p>
 		</header>
 
-		<div class="tile-grid">
+		<ol class="tile-list">
 			{
 				tiles.map((t) => (
-					<a
-						href={link(`category/${t.slug}`)}
-						class="tile"
-						style={`
-							--tile-bg: ${t.theme.backgroundCSS ?? t.theme.palette.bg};
-							--tile-text: ${t.theme.palette.text};
-							--tile-secondary: ${t.theme.palette.textSecondary};
-							--tile-muted: ${t.theme.palette.muted};
-							--tile-accent: ${t.theme.palette.accent};
-							--tile-display: ${t.theme.fonts.display ?? t.theme.fonts.sans};
-							--tile-sans: ${t.theme.fonts.sans};
-						`}
-						data-empty={t.count === 0}
-					>
-						<div class="tile-rule" />
-						<span class="tile-label-sm">{t.theme.label}</span>
-						<h2 class="tile-category">{t.label}</h2>
-						<p class="tile-tagline">{t.theme.tagline}</p>
-						<div class="tile-footer">
-							<span class="tile-count">
-								{t.count === 0
-									? "No posts yet"
-									: `${t.count} post${t.count === 1 ? "" : "s"}`}
-							</span>
-							<span class="tile-arrow">→</span>
-						</div>
-					</a>
+					<li>
+						<a
+							href={link(`category/${t.slug}`)}
+							class="tile"
+							style={`--accent: ${t.theme.palette.accent};`}
+							data-empty={t.count === 0}
+						>
+							<div class="tile-mark" />
+							<div class="tile-body">
+								<h2 class="tile-name">{t.label}</h2>
+								<p class="tile-tagline">{t.theme.tagline}</p>
+							</div>
+							<div class="tile-meta">
+								<span class="tile-count">
+									{t.count === 0 ? "—" : `${t.count} post${t.count === 1 ? "" : "s"}`}
+								</span>
+								<span class="tile-arrow">→</span>
+							</div>
+						</a>
+					</li>
 				))
 			}
-		</div>
+		</ol>
 	</div>
 </Base>
 
@@ -88,130 +101,122 @@ const tiles = Object.entries(categoryThemeMap).map(([slug, themeSlug]) => {
 
 	.page-header {
 		margin-bottom: var(--spacing-16);
-		text-align: center;
+	}
+
+	.page-eyebrow {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-3);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
 	}
 
 	.page-title {
-		font-size: clamp(var(--font-size-3xl), 5vw, var(--font-size-5xl));
-		font-weight: 700;
-		letter-spacing: -0.02em;
-		margin: 0 0 var(--spacing-3);
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4vw, 3rem);
+		font-weight: var(--font-weight-display, 590);
+		letter-spacing: -0.022em;
+		line-height: 1.1;
+		margin: 0 0 var(--spacing-4);
+		color: var(--color-text);
 	}
 
 	.page-subtitle {
 		font-size: var(--font-size-lg);
-		color: var(--color-muted);
-		max-width: 48ch;
-		margin: 0 auto;
+		color: var(--color-text-secondary);
+		max-width: 52ch;
+		margin: 0;
 	}
 
-	.tile-grid {
+	.tile-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: var(--spacing-6);
+		grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+		gap: var(--spacing-4);
 	}
 
 	.tile {
-		--tile-bg: var(--color-bg-subtle);
-		--tile-text: var(--color-text);
-		--tile-secondary: var(--color-text-secondary);
-		--tile-muted: var(--color-muted);
-		--tile-accent: var(--color-accent);
-		--tile-display: var(--font-sans);
-		--tile-sans: var(--font-sans);
-		display: flex;
-		flex-direction: column;
-		min-height: 260px;
-		padding: var(--spacing-10) var(--spacing-8) var(--spacing-8);
-		background: var(--tile-bg);
-		color: var(--tile-text);
-		font-family: var(--tile-sans);
+		--accent: var(--color-accent);
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: var(--spacing-5);
+		padding: var(--spacing-6) var(--spacing-6);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		text-decoration: none;
-		position: relative;
-		overflow: hidden;
+		color: inherit;
 		transition:
-			transform var(--transition-base),
-			box-shadow var(--transition-base);
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
 	}
 
 	.tile:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--color-border));
+		transform: translateY(-1px);
 	}
 
 	.tile[data-empty="true"] {
-		opacity: 0.72;
+		opacity: 0.5;
 	}
 
-	.tile-rule {
-		width: var(--spacing-12);
-		height: 3px;
-		background: var(--tile-accent);
-		margin-bottom: var(--spacing-6);
+	.tile-mark {
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--accent);
 	}
 
-	.tile-label-sm {
-		display: block;
-		font-size: var(--font-size-xs);
-		text-transform: uppercase;
-		letter-spacing: var(--tracking-wider);
-		color: var(--tile-accent);
-		margin-bottom: var(--spacing-2);
-		font-weight: 600;
+	.tile-body {
+		min-width: 0;
 	}
 
-	.tile-category {
-		font-family: var(--tile-display);
-		font-size: clamp(var(--font-size-2xl), 3vw, var(--font-size-4xl));
-		font-weight: 700;
-		line-height: 1.1;
-		letter-spacing: -0.01em;
-		margin: 0 0 var(--spacing-3);
-		color: var(--tile-text);
+	.tile-name {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display, 590);
+		letter-spacing: -0.015em;
+		line-height: 1.2;
+		margin: 0 0 var(--spacing-1);
+		color: var(--color-text);
 	}
 
 	.tile-tagline {
-		font-family: var(--tile-sans);
-		font-size: var(--font-size-base);
-		line-height: 1.5;
-		color: var(--tile-secondary);
-		font-style: italic;
-		margin: 0 0 var(--spacing-8);
-		flex: 1;
-	}
-
-	.tile-footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
+		font-family: var(--font-sans);
 		font-size: var(--font-size-sm);
-		color: var(--tile-muted);
-		padding-top: var(--spacing-4);
-		border-top: 1px solid color-mix(in srgb, var(--tile-accent) 20%, transparent);
+		color: var(--color-muted);
+		margin: 0;
 	}
 
-	.tile-count {
+	.tile-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
 		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
 	}
 
 	.tile-arrow {
-		font-size: var(--font-size-lg);
-		color: var(--tile-accent);
-		transition: transform var(--transition-fast);
+		color: var(--color-text-secondary);
+		transition: color var(--transition-fast), transform var(--transition-fast);
 	}
 
 	.tile:hover .tile-arrow {
-		transform: translateX(4px);
+		color: var(--accent);
+		transform: translateX(3px);
 	}
 
-	@media (max-width: 600px) {
+	@media (max-width: 700px) {
 		.categories-page {
 			padding: var(--spacing-10) var(--spacing-5) var(--spacing-16);
 		}
 
-		.tile-grid {
+		.tile-list {
 			grid-template-columns: 1fr;
 		}
 	}
