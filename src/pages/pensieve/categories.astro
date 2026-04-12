@@ -9,6 +9,7 @@ import { themes } from "../../themes";
 import { getCurrentLang } from "../../utils/lang";
 
 const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
 const { entries: posts, cacheHint } = await getEmDashCollection("posts");
 Astro.cache.set(cacheHint);
 
@@ -47,16 +48,16 @@ const totalPosts = Array.from(counts.values()).reduce((a, b) => a + b, 0);
 ---
 
 <Base
-	title="Categories"
-	description="Browse Pensieve by topic."
+	title={isVi ? "Danh Mục" : "Categories"}
+	description={isVi ? "Duyệt Pensieve theo chủ đề." : "Browse Pensieve by topic."}
 >
 	<div class="categories-page">
 		<header class="page-header">
-			<p class="page-eyebrow">{totalPosts} posts · {tiles.length} categories</p>
-			<h1 class="page-title">Browse by category</h1>
+			<p class="page-eyebrow">{totalPosts} {isVi ? "bài viết" : "posts"} · {tiles.length} {isVi ? "danh mục" : "categories"}</p>
+			<h1 class="page-title">{isVi ? "Duyệt theo danh mục" : "Browse by category"}</h1>
 			<p class="page-subtitle">
 				{
-					currentLang === "vi"
+					isVi
 						? "Mỗi chủ đề có một màu riêng. Chọn một để bắt đầu."
 						: "Each topic has its own accent color. Pick one to dive in."
 				}
@@ -80,7 +81,7 @@ const totalPosts = Array.from(counts.values()).reduce((a, b) => a + b, 0);
 							</div>
 							<div class="tile-meta">
 								<span class="tile-count">
-									{t.count === 0 ? "—" : `${t.count} post${t.count === 1 ? "" : "s"}`}
+									{t.count === 0 ? "—" : isVi ? `${t.count} bài viết` : `${t.count} post${t.count === 1 ? "" : "s"}`}
 								</span>
 								<span class="tile-arrow">→</span>
 							</div>
