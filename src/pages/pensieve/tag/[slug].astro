@@ -9,6 +9,7 @@ import { link } from "../../../utils/link";
 import { getCurrentLang } from "../../../utils/lang";
 
 const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
 const { slug } = Astro.params;
 const term = slug ? await getTerm("tag", slug) : null;
 
@@ -32,21 +33,21 @@ const filteredPosts = await Promise.all(
 ---
 
 <Base
-	title={`Posts tagged "${term.label}"`}
-	description={`All posts tagged with ${term.label}`}
+	title={isVi ? `Bài viết có thẻ ${term.label}` : `Posts tagged "${term.label}"`}
+	description={isVi ? `Tất cả bài viết có thẻ ${term.label}` : `All posts tagged with ${term.label}`}
 >
 	<section class="archive-section">
 		<header class="archive-header">
-			<span class="archive-label">Tag</span>
+			<span class="archive-label">{isVi ? "Thẻ" : "Tag"}</span>
 			<h1 class="archive-title">#{term.label}</h1>
 			<p class="archive-count">
-				{filteredPosts.length} {filteredPosts.length === 1 ? "post" : "posts"}
+				{filteredPosts.length} {isVi ? "bài viết" : filteredPosts.length === 1 ? "post" : "posts"}
 			</p>
 		</header>
 
 		{
 			filteredPosts.length === 0 ? (
-				<p class="no-posts">No posts with this tag yet.</p>
+				<p class="no-posts">{isVi ? "Chưa có bài viết với thẻ này." : "No posts with this tag yet."}</p>
 			) : (
 				<div class="posts-grid">
 					{filteredPosts.map(({ post, tags }) => (
