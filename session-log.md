@@ -135,3 +135,11 @@ Created `.claude/agents/session-logger.md` — subagent that appends entries to 
 > remove Powered by EmDash on footer
 
 Replaced "Powered by EmDash" with "© Trương Hữu Lộc" in the Pensieve footer.
+
+### Session logging approach
+> when is the session logger called? hooks?
+
+Hook logs raw prompts on every UserPromptSubmit. Session-logger subagent adds clean summaries after work is done. Keeping both — hook for capture, manual subagent call for summaries.
+
+### [2026-04-12 14:32] Prompt
+email to deathemperor@gmail.com
