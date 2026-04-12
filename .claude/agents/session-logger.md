@@ -20,6 +20,7 @@ Read the existing JSON array, then append a new entry object:
   "date": "YYYY-MM-DD",
   "title": "Short descriptive title",
   "type": "build | plan | fix | deploy",
+  "prompt": "The user's full original prompt text, verbatim. If multiple prompts were combined, join with ' / '.",
   "summary": "Concise summary of what was done (1-3 sentences).",
   "model": "claude-opus-4-6",
   "claudeCode": "2.1.104"
@@ -44,3 +45,4 @@ Read the existing JSON array, then append a new entry object:
 - Read the file first to avoid duplicates.
 - The JSON file must remain valid JSON — read the full file, parse, push, write back.
 - Keep summaries under 3 sentences. Use past tense.
+- **CRITICAL**: The `prompt` field must contain the user's full original prompt text, verbatim. Never omit or abbreviate prompts. If multiple prompts were handled together, join them with ` / `.

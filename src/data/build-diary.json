@@ -3,6 +3,7 @@
 		"date": "2026-04-10",
 		"title": "Chrome MCP + Plant Gallery",
 		"type": "build",
+		"prompt": "test chrome mcp / download all images and videos of this conversation / move them here, to ~/death/plant-gallery-v1, then build a web tool for me to view and select as in shopping to buy",
 		"summary": "Connected Chrome browser via MCP. Downloaded Messenger conversation photos. Built a plant gallery with dark theme, image grid, lightbox, and cart panel.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -11,6 +12,7 @@
 		"date": "2026-04-10",
 		"title": "Cloudflare infrastructure setup",
 		"type": "deploy",
+		"prompt": "wrangler login, create D1/KV/R2",
 		"summary": "Wrangler login, created D1 database (pensieve-db), KV namespace (SESSION), R2 bucket (pensieve-media). Wired bindings into wrangler.jsonc.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -19,6 +21,7 @@
 		"date": "2026-04-11",
 		"title": "Plant gallery migration + deploy",
 		"type": "deploy",
+		"prompt": "the cart feature needs a quantity input + migrate to pensieve / deploy",
 		"summary": "Migrated plant gallery to Pensieve. Added quantity controls to cart. Deployed to huuloc.com/plant-gallery/. 68 files uploaded.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -27,6 +30,7 @@
 		"date": "2026-04-12",
 		"title": "GitHub Actions CI/CD",
 		"type": "build",
+		"prompt": "can deployment be done on github?",
 		"summary": "Created .github/workflows/deploy.yml with Node 22, bun, and wrangler-action. Automated deployment on push to main.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -35,6 +39,7 @@
 		"date": "2026-04-12",
 		"title": "Language chooser + UI polish",
 		"type": "build",
+		"prompt": "lang chooser should be a dropdown, use cookies not url params / lang chooser should be on far right / home should be to root",
 		"summary": "Replaced VI/EN links with a dropdown menu matching Categories style. Language stored via cookie. Home link changed to root domain.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -43,6 +48,7 @@
 		"date": "2026-04-12",
 		"title": "Session logging system",
 		"type": "build",
+		"prompt": "logs on the conversations to an md file, always do so / create the session log sub agent for ./pensieve",
 		"summary": "Created session-log.md and session-logger subagent. Set up UserPromptSubmit hook for automatic prompt capture. Dual system: hook for capture, agent for summaries.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -51,7 +57,17 @@
 		"date": "2026-04-12",
 		"title": "Comment moderation subagent",
 		"type": "build",
+		"prompt": "does the comment section work? / build a sub agent for comment moderation / should note that comments are moderated",
 		"summary": "Created moderate-comments subagent at .claude/agents/moderate-comments.md. Verified EmDash comments work out of the box. Added moderation notice below comment form.",
+		"model": "unknown",
+		"claudeCode": "unknown"
+	},
+	{
+		"date": "2026-04-12",
+		"title": "GitHub login for admin",
+		"type": "build",
+		"prompt": "create an admin account for me / should allow me to log in using github",
+		"summary": "Configured EmDash GitHub OAuth. User created a GitHub OAuth App, set secrets via wrangler. GitHub login now available at the admin UI.",
 		"model": "unknown",
 		"claudeCode": "unknown"
 	},
@@ -59,6 +75,7 @@
 		"date": "2026-04-12",
 		"title": "Resend email provider plugin",
 		"type": "build",
+		"prompt": "how do I get notified when new comments on pensieve are posted? / email to deathemperor@gmail.com / don't see the settings",
 		"summary": "Created plugins/plugin-resend/ \u2014 provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -67,6 +84,7 @@
 		"date": "2026-04-12",
 		"title": "Cloudflare Email Routing",
 		"type": "build",
+		"prompt": "now I need to create a me@huuloc.com email that will be sent to my loctruongh@gmail.com account / you do it",
 		"summary": "Enabled Email Routing for huuloc.com. Created me@huuloc.com forwarding to loctruongh@gmail.com via wrangler CLI.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -75,6 +93,7 @@
 		"date": "2026-04-13",
 		"title": "Subscription + engagement analytics",
 		"type": "plan",
+		"prompt": "Build a subscription feature. Posting new posts will have an option to diable sending out. Send a welcome message when subscribed. Build an admin analytics for subscriptions with tracking of clicks from emails. Build an analytics to track reading time, what readers focus on most of each posts, all the advanced engagement analytics.",
 		"summary": "Planned plugin-pensieve-engage: email subscriptions with welcome emails, newsletter dispatch on publish with per-post opt-out, click/open tracking in emails, and reading engagement analytics (scroll depth, reading time, section focus via IntersectionObserver). 5-phase implementation. Single trusted plugin using page:fragments for tracker injection.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -83,15 +102,26 @@
 		"date": "2026-04-13",
 		"title": "Room of Requirement + Priori Incantatem",
 		"type": "build",
+		"prompt": "wire to session log. then rebuild session logs into a nice feature to display it so that it can record timeline of building by claude code. the feature should also cite that the site is built using claude code. the logs should attach claude code version and model version so that overtime it records model changes, along with its date as a diary. this is a seperate section of the site. I wanna name it something Harry Potter-ish (as the site is)",
 		"summary": "Built the build section (Room of Requirement) with architecture overview, tech stack, and subagents. Created Priori Incantatem \u2014 a timeline diary recording every Claude Code session with model versions.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	},
 	{
 		"date": "2026-04-13",
-		"title": "Trương about page",
+		"title": "Tr\u01b0\u01a1ng about page",
 		"type": "build",
-		"summary": "Built about page at /truong with origin story bio, profile links (GitHub, LinkedIn, Facebook, email), and live GitHub infographic fetched from GitHub API at request time — stats, activity chart, recent repos grid, and activity feed timeline.",
+		"prompt": "build a /tr\u01b0\u01a1ng page. this is my last name. this is my about me, my origin and what I do, should again have links to my profile pages, my github commit stats and histories infographic (real time data)",
+		"summary": "Built about page at /Tr\u01b0\u01a1ng with origin story bio, profile links (GitHub, LinkedIn, Facebook, email), and live GitHub infographic fetched from GitHub API at request time \u2014 stats, activity chart, recent repos grid, and activity feed timeline.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Content signals + Claude Code attribution + coding eras",
+		"type": "build",
+		"prompt": "make sure the page is SEO and comply with cloudflare https://contentsignals.org/ / also, add into build section what is done by claude code (all codes are, deployments are, translationg aren't) / btw, the git infographics should highlight the moment I switch fully to zero human code and full claude code, hihglight the moment I use github copilot for code assist (use the date the github copilot program accepting preview)",
+		"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Tr\u01b0\u01a1ng page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
 	}
