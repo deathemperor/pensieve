@@ -57,6 +57,23 @@ async function buildSubscribersPage(ctx: PluginContext) {
 
 export default definePlugin({
 	hooks: {
+		"page:fragments": {
+			handler: async (event: any, ctx: PluginContext) => {
+				if (event.page.kind !== "content") return null;
+				if (event.page.content?.collection !== "posts") return null;
+
+				const postSlug = event.page.content?.slug || event.page.content?.id;
+				const beaconUrl = "/_emdash/api/plugins/pensieve-engage/beacon";
+
+				return {
+					kind: "inline-script",
+					placement: "body:end",
+					code: `(function(){var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var slug=${JSON.stringify(postSlug)};var url=${JSON.stringify(beaconUrl)};var startTime=Date.now();var maxScroll=0;var docH=function(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight};function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`,
+					key: "pensieve-engage-tracker",
+				};
+			},
+		},
+
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
 				await ctx.kv.set("settings:welcomeSubject", "Welcome to Pensieve");
@@ -121,22 +138,43 @@ export default definePlugin({
 				let failed = 0;
 
 				for (const subscriber of activeSubscribers) {
+					const subscriberId = subscriber.id ?? hashEmail(subscriber.email);
 					const unsubscribeUrl = `https://huuloc.com/_emdash/api/plugins/pensieve-engage/unsubscribe?email=${subscriber.email}`;
+
+					// Wrap URLs in the text body with click-tracking redirects
+					const urlRegex = /https?:\/\/[^\s<>"')\]]+/g;
+					const trackedText = [
+						`New memory: ${content.title}`,
+						"",
+						excerpt,
+						"",
+						`Read more: ${postUrl}`,
+						"",
+						"---",
+						`Unsubscribe: ${unsubscribeUrl}`,
+					]
+						.join("\n")
+						.replace(urlRegex, (originalUrl: string) => {
+							return `https://huuloc.com/_emdash/api/plugins/pensieve-engage/click?s=${sendId}&sub=${subscriberId}&url=${encodeURIComponent(originalUrl)}`;
+						});
+
+					// Build HTML body with tracking pixel
+					const trackedHtml = [
+						`<h2>New memory: ${content.title}</h2>`,
+						`<p>${excerpt}</p>`,
+						`<p><a href="https://huuloc.com/_emdash/api/plugins/pensieve-engage/click?s=${sendId}&sub=${subscriberId}&url=${encodeURIComponent(postUrl)}">Read more</a></p>`,
+						`<hr>`,
+						`<p><a href="https://huuloc.com/_emdash/api/plugins/pensieve-engage/click?s=${sendId}&sub=${subscriberId}&url=${encodeURIComponent(unsubscribeUrl)}">Unsubscribe</a></p>`,
+						`<img src="https://huuloc.com/_emdash/api/plugins/pensieve-engage/pixel?s=${sendId}&sub=${subscriberId}" width="1" height="1" alt="" style="display:none" />`,
+					].join("\n");
+
 					try {
 						await ctx.email.send(
 							{
 								to: subscriber.email,
 								subject: `[Pensieve] New memory: ${content.title}`,
-								text: [
-									`New memory: ${content.title}`,
-									"",
-									excerpt,
-									"",
-									`Read more: ${postUrl}`,
-									"",
-									"---",
-									`Unsubscribe: ${unsubscribeUrl}`,
-								].join("\n"),
+								text: trackedText,
+								html: trackedHtml,
 							},
 							"pensieve-engage",
 						);
@@ -269,6 +307,101 @@ export default definePlugin({
 </html>`,
 					{ headers: { "Content-Type": "text/html" } },
 				);
+			},
+		},
+
+		click: {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const url = new URL(routeCtx.request.url);
+				const sendId = url.searchParams.get("s");
+				const subscriberId = url.searchParams.get("sub");
+				const targetUrl = url.searchParams.get("url");
+
+				if (!targetUrl) {
+					return new Response("Missing url parameter", { status: 400 });
+				}
+
+				const userAgent = routeCtx.request.headers.get("user-agent") ?? "";
+				const clickedAt = new Date().toISOString();
+
+				if (sendId) {
+					await ctx.kv.set(`clicks:${sendId}:${Date.now()}`, {
+						subscriberId,
+						url: targetUrl,
+						userAgent,
+						clickedAt,
+					});
+				}
+
+				return new Response(null, {
+					status: 302,
+					headers: { Location: decodeURIComponent(targetUrl) },
+				});
+			},
+		},
+
+		pixel: {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const url = new URL(routeCtx.request.url);
+				const sendId = url.searchParams.get("s");
+				const subscriberId = url.searchParams.get("sub");
+
+				const userAgent = routeCtx.request.headers.get("user-agent") ?? "";
+				const openedAt = new Date().toISOString();
+
+				if (sendId && subscriberId) {
+					await ctx.kv.set(`opens:${sendId}:${subscriberId}`, {
+						openedAt,
+						userAgent,
+					});
+				}
+
+				const gif = new Uint8Array([
+					0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00,
+					0x80, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x21,
+					0xf9, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00,
+					0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44,
+					0x01, 0x00, 0x3b,
+				]);
+
+				return new Response(gif, {
+					headers: {
+						"Content-Type": "image/gif",
+						"Cache-Control": "no-store, no-cache, must-revalidate",
+					},
+				});
+			},
+		},
+
+		beacon: {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				let body: any;
+				try {
+					body = await routeCtx.request.json();
+				} catch {
+					return new Response("Invalid JSON", { status: 400 });
+				}
+
+				const { postSlug, sessionId, eventType, data, t } = body;
+
+				if (!postSlug || !sessionId || !eventType) {
+					return new Response("Missing required fields", { status: 400 });
+				}
+
+				const id = `${sessionId}_${eventType}_${t || Date.now()}`;
+				await ctx.storage.reading_events.put(id, {
+					id,
+					postSlug,
+					sessionId,
+					eventType,
+					data: data || {},
+					createdAt: new Date().toISOString(),
+				});
+
+				return new Response(null, { status: 204 });
 			},
 		},
 

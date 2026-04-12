@@ -62,6 +62,14 @@ const agents = [
 		name: "Plan",
 		purpose: isVi ? "Thiết kế chiến lược triển khai, xác định file quan trọng, cân nhắc đánh đổi" : "Designs implementation strategies, identifies critical files, weighs trade-offs",
 	},
+	{
+		name: "geminio",
+		purpose: isVi ? "Cảnh sát i18n — đảm bảo mọi text đều có song ngữ EN/VI" : "i18n police — ensures all text has bilingual EN/VI versions",
+	},
+	{
+		name: "argus-filch",
+		purpose: isVi ? "Tìm lỗi và sửa — tuần tra codebase tìm link hỏng, import thiếu, lỗi runtime" : "Bug finder — patrols codebase for broken links, missing imports, runtime errors",
+	},
 ];
 
 const plugins = [
@@ -76,6 +84,10 @@ const plugins = [
 	{
 		name: "plugin-webhook-notifier",
 		purpose: isVi ? "Thông báo webhook khi nội dung/media thay đổi" : "Webhook notifications on content/media changes",
+	},
+	{
+		name: "plugin-pensieve-engage",
+		purpose: isVi ? "Đăng ký email, gửi bản tin, theo dõi click, phân tích đọc" : "Email subscriptions, newsletter dispatch, click tracking, reading analytics",
 	},
 ];
 ---

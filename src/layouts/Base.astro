@@ -151,9 +151,27 @@ const isLoggedIn = !!Astro.locals.user;
 						<>
 							<span class="breadcrumb-sep">/</span>
 							{crumb.href ? (
-								<a href={crumb.href} class="breadcrumb-link">{crumb.label}</a>
+								<a href={crumb.href} class={`breadcrumb-link${crumb.label === "Pensieve" ? " breadcrumb-pensieve" : ""}`}>
+									{crumb.label === "Pensieve" && (
+										<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+											<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+											<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+											<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" />
+										</svg>
+									)}
+									{crumb.label}
+								</a>
 							) : (
-								<span class="breadcrumb-current">{crumb.label}</span>
+								<span class={`breadcrumb-current${crumb.label === "Pensieve" ? " breadcrumb-pensieve" : ""}`}>
+									{crumb.label === "Pensieve" && (
+										<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+											<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+											<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+											<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" />
+										</svg>
+									)}
+									{crumb.label}
+								</span>
 							)}
 						</>
 					))}
@@ -630,6 +648,16 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.breadcrumb-current {
 				color: var(--color-text);
+			}
+
+			.breadcrumb-pensieve {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.35em;
+			}
+
+			.breadcrumb-logomark {
+				flex-shrink: 0;
 			}
 
 			.nav {
