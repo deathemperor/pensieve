@@ -317,6 +317,17 @@ const publishDate =
 					<p class="lumos-hint">{postLang === "vi" ? "Thắp sáng ký ức này" : "Illuminate this memory"}</p>
 				</div>
 
+				{/* Owl Post — subscribe form */}
+				<div class="owlpost-section">
+					<h3 class="owlpost-title">{postLang === "vi" ? "Cú Bưu Điện" : "Owl Post"}</h3>
+					<p class="owlpost-desc">{postLang === "vi" ? "Nhận ký ức mới qua email. Không spam, không phép thuật đen." : "Receive new memories by owl. No spam, no dark magic."}</p>
+					<form class="owlpost-form" data-subscribe-form>
+						<input type="email" name="email" required placeholder={postLang === "vi" ? "email của bạn" : "your@email.com"} class="owlpost-input" />
+						<button type="submit" class="owlpost-btn">{postLang === "vi" ? "Đăng ký" : "Subscribe"}</button>
+					</form>
+					<p class="owlpost-status" data-subscribe-status></p>
+				</div>
+
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
 					<CommentForm collection="posts" contentId={post.data.id} />
@@ -474,6 +485,40 @@ const publishDate =
 	}
 
 	initReadingProgress();
+
+	// Owl Post — subscribe form
+	(function () {
+		const form = document.querySelector('[data-subscribe-form]') as HTMLFormElement | null;
+		if (!form) return;
+		const status = document.querySelector('[data-subscribe-status]') as HTMLElement;
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const email = (form.querySelector('input[name=email]') as HTMLInputElement).value;
+			status.textContent = '';
+			status.className = 'owlpost-status';
+			try {
+				const res = await fetch('/_emdash/api/plugins/pensieve-engage/subscribe', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ email }),
+				});
+				const data = await res.json();
+				if (data.success) {
+					status.textContent = document.documentElement.lang === 'vi'
+						? 'Cú đã bay! Kiểm tra email chào mừng.'
+						: 'Owl dispatched! Check for your welcome letter.';
+					status.classList.add('success');
+					form.reset();
+				} else {
+					status.textContent = data.error || 'Something went wrong';
+					status.classList.add('error');
+				}
+			} catch {
+				status.textContent = 'Failed to send owl';
+				status.classList.add('error');
+			}
+		});
+	})();
 
 	// Lumos — guest like button
 	(function () {
@@ -1212,6 +1257,86 @@ const publishDate =
 		color: var(--color-muted);
 		font-style: italic;
 		margin: 0;
+	}
+
+	/* Owl Post — subscribe */
+	.owlpost-section {
+		padding: var(--spacing-10) 0;
+		border-top: 1px solid var(--color-border);
+		margin-top: var(--spacing-6);
+		text-align: center;
+	}
+
+	.owlpost-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-2);
+		letter-spacing: -0.012em;
+	}
+
+	.owlpost-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-5);
+		font-style: italic;
+	}
+
+	.owlpost-form {
+		display: flex;
+		gap: var(--spacing-2);
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.owlpost-input {
+		flex: 1;
+		padding: var(--spacing-2) var(--spacing-4);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
+	}
+
+	.owlpost-input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+	}
+
+	.owlpost-btn {
+		padding: var(--spacing-2) var(--spacing-5);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+		border: none;
+		border-radius: var(--radius);
+		cursor: pointer;
+		transition: opacity var(--transition-fast);
+	}
+
+	.owlpost-btn:hover {
+		opacity: 0.9;
+	}
+
+	.owlpost-status {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		margin: var(--spacing-3) 0 0;
+		min-height: 1.2em;
+	}
+
+	.owlpost-status.success {
+		color: #3fb950;
+	}
+
+	.owlpost-status.error {
+		color: #e5534b;
 	}
 
 	.article-comments {

@@ -344,6 +344,17 @@ const isLoggedIn = !!Astro.locals.user;
 						<WidgetArea name="footer" />
 					</div>
 				</div>
+				{!breadcrumbs && (
+					<div class="footer-subscribe">
+						<h4 class="footer-heading">{currentLang === "vi" ? "Cú Bưu Điện" : "Owl Post"}</h4>
+						<p class="footer-subscribe-desc">{currentLang === "vi" ? "Nhận ký ức mới qua email" : "New memories delivered by owl"}</p>
+						<form class="footer-subscribe-form" data-footer-subscribe>
+							<input type="email" name="email" required placeholder={currentLang === "vi" ? "email của bạn" : "your\@email.com"} class="footer-subscribe-input" />
+							<button type="submit" class="footer-subscribe-btn">{currentLang === "vi" ? "Gửi" : "Send"}</button>
+						</form>
+						<p class="footer-subscribe-status" data-footer-subscribe-status></p>
+					</div>
+				)}
 				<div class="footer-categories">
 					<span class="footer-categories-label">{currentLang === "vi" ? "Mũ Phân Loại" : "Sorting Hat"}</span>
 					<div class="footer-categories-cloud">
@@ -840,6 +851,59 @@ const isLoggedIn = !!Astro.locals.user;
 				flex-shrink: 0;
 			}
 
+			/* Footer subscribe (Owl Post) */
+			.footer-subscribe {
+				padding: var(--spacing-6) 0;
+				border-top: 1px solid var(--color-border);
+				text-align: center;
+			}
+
+			.footer-subscribe-desc {
+				font-size: var(--font-size-xs);
+				color: var(--color-muted);
+				font-style: italic;
+				margin: var(--spacing-1) 0 var(--spacing-4);
+			}
+
+			.footer-subscribe-form {
+				display: flex;
+				gap: var(--spacing-2);
+				max-width: 340px;
+				margin: 0 auto;
+			}
+
+			.footer-subscribe-input {
+				flex: 1;
+				padding: var(--spacing-2) var(--spacing-3);
+				font-size: var(--font-size-sm);
+				background: var(--color-bg);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius);
+				color: var(--color-text);
+			}
+
+			.footer-subscribe-input:focus {
+				outline: none;
+				border-color: var(--color-accent);
+			}
+
+			.footer-subscribe-btn {
+				padding: var(--spacing-2) var(--spacing-4);
+				font-size: var(--font-size-sm);
+				font-weight: 500;
+				background: var(--color-accent);
+				color: var(--color-on-accent);
+				border: none;
+				border-radius: var(--radius);
+				cursor: pointer;
+			}
+
+			.footer-subscribe-status {
+				font-size: var(--font-size-xs);
+				margin: var(--spacing-2) 0 0;
+				min-height: 1em;
+			}
+
 			/* Footer categories cloud */
 			.footer-categories {
 				display: flex;
@@ -1268,6 +1332,37 @@ const isLoggedIn = !!Astro.locals.user;
 					}
 				});
 			});
+
+			// Owl Post — footer subscribe form
+			const fForm = document.querySelector('[data-footer-subscribe]') as HTMLFormElement | null;
+			if (fForm) {
+				const fStatus = document.querySelector('[data-footer-subscribe-status]') as HTMLElement;
+				fForm.addEventListener('submit', async (e) => {
+					e.preventDefault();
+					const email = (fForm.querySelector('input[name=email]') as HTMLInputElement).value;
+					fStatus.textContent = '';
+					fStatus.style.color = '';
+					try {
+						const res = await fetch('/_emdash/api/plugins/pensieve-engage/subscribe', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ email }),
+						});
+						const data = await res.json();
+						if (data.success) {
+							fStatus.textContent = '🦉 Owl dispatched!';
+							fStatus.style.color = '#3fb950';
+							fForm.reset();
+						} else {
+							fStatus.textContent = data.error || 'Something went wrong';
+							fStatus.style.color = '#e5534b';
+						}
+					} catch {
+						fStatus.textContent = 'Failed to send owl';
+						fStatus.style.color = '#e5534b';
+					}
+				});
+			}
 		</script>
 	</body>
 </html>
