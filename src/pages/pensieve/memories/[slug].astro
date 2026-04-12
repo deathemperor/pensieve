@@ -510,11 +510,12 @@ const publishDate =
 					status.classList.add('success');
 					form.reset();
 				} else {
-					status.textContent = data.error || 'Something went wrong';
+					const fallback = document.documentElement.lang === 'vi' ? 'Có lỗi xảy ra' : 'Something went wrong';
+					status.textContent = data.error || fallback;
 					status.classList.add('error');
 				}
 			} catch {
-				status.textContent = 'Failed to send owl';
+				status.textContent = document.documentElement.lang === 'vi' ? 'Không gửi được cú' : 'Failed to send owl';
 				status.classList.add('error');
 			}
 		});

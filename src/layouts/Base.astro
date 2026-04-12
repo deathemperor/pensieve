@@ -1349,16 +1349,18 @@ const isLoggedIn = !!Astro.locals.user;
 							body: JSON.stringify({ email }),
 						});
 						const data = await res.json();
+						const isVi = document.documentElement.lang === 'vi';
 						if (data.success) {
-							fStatus.textContent = '🦉 Owl dispatched!';
+							fStatus.textContent = isVi ? 'Cú đã bay!' : 'Owl dispatched!';
 							fStatus.style.color = '#3fb950';
 							fForm.reset();
 						} else {
-							fStatus.textContent = data.error || 'Something went wrong';
+							fStatus.textContent = data.error || (isVi ? 'Có lỗi xảy ra' : 'Something went wrong');
 							fStatus.style.color = '#e5534b';
 						}
 					} catch {
-						fStatus.textContent = 'Failed to send owl';
+						const isVi = document.documentElement.lang === 'vi';
+						fStatus.textContent = isVi ? 'Không gửi được cú' : 'Failed to send owl';
 						fStatus.style.color = '#e5534b';
 					}
 				});
