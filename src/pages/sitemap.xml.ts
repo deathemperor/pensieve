@@ -1,38 +1,35 @@
 import type { APIRoute } from "astro";
 import { getEmDashCollection } from "emdash";
+import siteRoutes from "../data/site-routes.json";
 
 export const GET: APIRoute = async () => {
-	const { entries: posts } = await getEmDashCollection("posts");
-	const { entries: pages } = await getEmDashCollection("pages");
-
 	const site = "https://huuloc.com";
 
-	const staticPages = [
-		{ loc: `${site}/`, priority: "1.0" },
-		{ loc: `${site}/pensieve/`, priority: "0.9" },
-		{ loc: `${site}/pensieve/categories`, priority: "0.6" },
-		{ loc: `${site}/room-of-requirement`, priority: "0.7" },
-		{ loc: `${site}/room-of-requirement/priori-incantatem`, priority: "0.7" },
-		{ loc: `${site}/${encodeURIComponent("Trương")}`, priority: "0.8" },
-	];
+	// Static pages from manifest
+	const staticEntries = siteRoutes.static.map((r) => ({
+		loc: `${site}${r.path}`,
+		priority: r.priority,
+	}));
 
-	const postEntries = posts
-		.filter((p) => p.data.status === "published")
-		.map((p) => ({
-			loc: `${site}/pensieve/memories/${p.id}`,
-			lastmod: p.data.updatedAt?.toISOString() ?? p.data.publishedAt?.toISOString(),
-			priority: "0.7",
-		}));
+	// Dynamic content from EmDash database (automated, like RSS)
+	const collectionEntries = await Promise.all(
+		Object.entries(siteRoutes.collections).map(async ([name, config]) => {
+			try {
+				const { entries } = await getEmDashCollection(name);
+				return entries
+					.filter((e) => e.data.status === "published")
+					.map((e) => ({
+						loc: `${site}${config.basePath}/${e.id}`,
+						lastmod: e.data.updatedAt?.toISOString() ?? e.data.publishedAt?.toISOString(),
+						priority: config.priority,
+					}));
+			} catch {
+				return [];
+			}
+		}),
+	);
 
-	const pageEntries = pages
-		.filter((p) => p.data.status === "published")
-		.map((p) => ({
-			loc: `${site}/pensieve/pages/${p.id}`,
-			lastmod: p.data.updatedAt?.toISOString(),
-			priority: "0.5",
-		}));
-
-	const allEntries = [...staticPages, ...postEntries, ...pageEntries];
+	const allEntries = [...staticEntries, ...collectionEntries.flat()];
 
 	const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
