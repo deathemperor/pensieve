@@ -1,0 +1,607 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection, getEntryTerms } from "emdash";
+import Base from "../../layouts/Base.astro";
+import { getReadingTime } from "../../utils/reading-time";
+import { link } from "../../utils/link";
+import { categoryThemeMap, type ThemeSlug } from "../../themes/categoryThemes";
+import { themes } from "../../themes";
+import { getCurrentLang } from "../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const { entries: allPosts, cacheHint } = await getEmDashCollection("posts");
+Astro.cache.set(cacheHint);
+
+// Filter to only the current language variants of each post
+const posts = allPosts.filter((p) => p.data.language === currentLang);
+
+const sortedPosts = posts.toSorted((a, b) => {
+	const dateA = a.data.publishedAt?.getTime() ?? 0;
+	const dateB = b.data.publishedAt?.getTime() ?? 0;
+	return dateB - dateA;
+});
+
+interface EnrichedPost {
+	post: (typeof sortedPosts)[number];
+	categorySlug: string | null;
+	categoryLabel: string | null;
+	themeSlug: ThemeSlug | null;
+}
+
+async function enrich(post: (typeof sortedPosts)[number]): Promise<EnrichedPost> {
+	const cats = await getEntryTerms("posts", post.data.id, "category");
+	const categorySlug = cats[0]?.slug ?? null;
+	const themeSlug: ThemeSlug | null = categorySlug
+		? (categoryThemeMap[categorySlug] ?? null)
+		: null;
+	return {
+		post,
+		categorySlug,
+		categoryLabel: cats[0]?.label ?? null,
+		themeSlug,
+	};
+}
+
+const enriched = await Promise.all(sortedPosts.map(enrich));
+const featured = enriched[0] ?? null;
+const featuredTheme = featured?.themeSlug ? themes[featured.themeSlug] : null;
+const featuredAccent = featuredTheme?.palette.accent ?? "#5e6ad2";
+
+// Group by category
+const groupsMap = new Map<
+	string,
+	{ slug: string; label: string; themeSlug: ThemeSlug; accent: string; tagline: string; posts: EnrichedPost[]; latestTs: number }
+>();
+
+for (const e of enriched) {
+	if (!e.categorySlug || !e.themeSlug) continue;
+	const t = themes[e.themeSlug];
+	const existing = groupsMap.get(e.categorySlug);
+	const ts = e.post.data.publishedAt?.getTime() ?? 0;
+	if (existing) {
+		existing.posts.push(e);
+		if (ts > existing.latestTs) existing.latestTs = ts;
+	} else {
+		groupsMap.set(e.categorySlug, {
+			slug: e.categorySlug,
+			label: e.categoryLabel ?? e.categorySlug,
+			themeSlug: e.themeSlug,
+			accent: t.palette.accent,
+			tagline: t.tagline,
+			posts: [e],
+			latestTs: ts,
+		});
+	}
+}
+
+const groups = Array.from(groupsMap.values()).sort(
+	(a, b) => b.latestTs - a.latestTs,
+);
+
+// Pills: one per unique theme (dedupe so misc doesn't repeat lab-notebook)
+const seenThemes = new Set<string>();
+const pills = Object.entries(categoryThemeMap)
+	.filter(([, themeSlug]) => {
+		if (seenThemes.has(themeSlug)) return false;
+		seenThemes.add(themeSlug);
+		return true;
+	})
+	.map(([slug, themeSlug]) => {
+		const t = themes[themeSlug];
+		const count = groupsMap.get(slug)?.posts.length ?? 0;
+		const label = slug
+			.replace(/-/g, " ")
+			.replace(/\b\w/g, (c) => c.toUpperCase());
+		return { slug, label, accent: t.palette.accent, count };
+	});
+
+function formatDate(date: Date | null | undefined) {
+	if (!date) return null;
+	return date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	});
+}
+---
+
+<Base title="Pensieve" description="long-form thoughts, one theme per topic">
+	{
+		!featured ? (
+			<section class="empty-state">
+				<h2>No posts yet</h2>
+				<p>Create your first post in the admin panel.</p>
+				<a href="/_emdash/admin/content/posts/new" class="btn">
+					Create a post
+				</a>
+			</section>
+		) : (
+			<>
+				{/* ========== HERO ========== */}
+				<section
+					class="hero"
+					style={`--accent: ${featuredAccent};`}
+				>
+					<div class="hero-glow" />
+					<div class="hero-inner">
+						<a href={link(`posts/${featured.post.id}`)} class="hero-link">
+							<div class="hero-rule" />
+							{featured.categoryLabel && (
+								<span class="hero-category">{featured.categoryLabel}</span>
+							)}
+							<h1 class="hero-title">{featured.post.data.title}</h1>
+							{featured.post.data.excerpt && (
+								<p class="hero-excerpt">{featured.post.data.excerpt}</p>
+							)}
+							<div class="hero-meta">
+								{featured.post.data.publishedAt && (
+									<>
+										<time>{formatDate(featured.post.data.publishedAt)}</time>
+										<span class="meta-dot" />
+									</>
+								)}
+								<span>{getReadingTime(featured.post.data.content)} min read</span>
+							</div>
+						</a>
+					</div>
+				</section>
+
+				{/* ========== CATEGORY PILLS ========== */}
+				<section class="pills-section">
+					<div class="pills-inner">
+						<span class="pills-label">Browse</span>
+						<div class="pills-row">
+							{pills.map((p) => (
+								<a
+									href={link(`category/${p.slug}`)}
+									class="pill"
+									data-empty={p.count === 0}
+									style={`--accent: ${p.accent};`}
+								>
+									<span class="pill-dot" />
+									<span class="pill-label">{p.label}</span>
+									{p.count > 0 && <span class="pill-count">{p.count}</span>}
+								</a>
+							))}
+						</div>
+					</div>
+				</section>
+
+				{/* ========== GROUPED SECTIONS ========== */}
+				<div class="groups">
+					{groups.map((g) => (
+						<section class="group" style={`--accent: ${g.accent};`}>
+							<header class="group-header">
+								<div class="group-heading">
+									<h2 class="group-category">{g.label}</h2>
+									<span class="group-tagline">{g.tagline}</span>
+								</div>
+								<a href={link(`category/${g.slug}`)} class="group-link">
+									All {g.posts.length} →
+								</a>
+							</header>
+							<ol class="group-posts">
+								{g.posts.slice(0, 3).map((e) => (
+									<li class="group-post">
+										<a
+											href={link(`posts/${e.post.id}`)}
+											class="group-post-link"
+										>
+											<h3 class="group-post-title">
+												{e.post.data.title}
+											</h3>
+											{e.post.data.excerpt && (
+												<p class="group-post-excerpt">
+													{e.post.data.excerpt}
+												</p>
+											)}
+											<div class="group-post-meta">
+												{e.post.data.publishedAt && (
+													<time>
+														{formatDate(e.post.data.publishedAt)}
+													</time>
+												)}
+												<span class="meta-dot" />
+												<span>
+													{getReadingTime(e.post.data.content)} min
+												</span>
+											</div>
+										</a>
+									</li>
+								))}
+							</ol>
+						</section>
+					))}
+				</div>
+			</>
+		)
+	}
+</Base>
+
+<style>
+	/* ============ HERO ============ */
+	.hero {
+		--accent: var(--color-accent);
+		position: relative;
+		overflow: hidden;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.hero-glow {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			ellipse 800px 400px at 75% 0%,
+			color-mix(in srgb, var(--accent) 18%, transparent),
+			transparent 70%
+		);
+		pointer-events: none;
+	}
+
+	.hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-24) var(--spacing-8) var(--spacing-20);
+		position: relative;
+	}
+
+	.hero-link {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.hero-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.hero-category {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		color: var(--color-text-secondary);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.hero-category::before {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--accent);
+	}
+
+	.hero-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		margin: 0 0 var(--spacing-5);
+		color: var(--color-text);
+		max-width: 22ch;
+		transition: color var(--transition-fast);
+	}
+
+	.hero-link:hover .hero-title {
+		color: var(--color-text-secondary);
+	}
+
+	.hero-excerpt {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--spacing-6);
+		max-width: 58ch;
+	}
+
+	.hero-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		font-size: var(--font-size-sm);
+		font-family: var(--font-mono);
+		color: var(--color-muted);
+	}
+
+	.meta-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: currentColor;
+		opacity: 0.5;
+	}
+
+	/* ============ PILLS ============ */
+	.pills-section {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.pills-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-6) var(--spacing-8);
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-6);
+		flex-wrap: wrap;
+	}
+
+	.pills-label {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	.pills-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+	}
+
+	.pill {
+		--accent: var(--color-accent);
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: var(--spacing-2) var(--spacing-3);
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-text);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		text-decoration: none;
+		transition:
+			border-color var(--transition-fast),
+			background var(--transition-fast);
+	}
+
+	.pill:hover {
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 8%, transparent);
+	}
+
+	.pill[data-empty="true"] {
+		opacity: 0.45;
+	}
+
+	.pill-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--accent);
+		flex-shrink: 0;
+	}
+
+	.pill-count {
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		font-family: var(--font-mono);
+	}
+
+	/* ============ GROUPS ============ */
+	.groups {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8) var(--spacing-24);
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-16);
+	}
+
+	.group {
+		--accent: var(--color-accent);
+	}
+
+	.group-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: var(--spacing-4);
+		margin-bottom: var(--spacing-8);
+		padding-bottom: var(--spacing-4);
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.group-heading {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		min-width: 0;
+	}
+
+	.group-category {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.012em;
+		margin: 0;
+	}
+
+	.group-category::before {
+		content: "";
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var(--accent);
+	}
+
+	.group-tagline {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.group-link {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		text-decoration: none;
+		white-space: nowrap;
+		transition: color var(--transition-fast);
+	}
+
+	.group-link:hover {
+		color: var(--accent);
+	}
+
+	.group-posts {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: var(--spacing-4);
+	}
+
+	.group-post {
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.group-post:hover {
+		border-color: color-mix(in srgb, var(--accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
+	.group-post-link {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+		padding: var(--spacing-5) var(--spacing-5) var(--spacing-4);
+	}
+
+	.group-post-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		line-height: 1.35;
+		letter-spacing: -0.011em;
+		margin: 0 0 var(--spacing-2);
+		color: var(--color-text);
+		transition: color var(--transition-fast);
+	}
+
+	.group-post-excerpt {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		margin: 0 0 var(--spacing-3);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.group-post-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	/* ============ EMPTY STATE ============ */
+	.empty-state {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--spacing-3);
+		text-align: center;
+		padding: var(--spacing-20) var(--spacing-6);
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.empty-state h2 {
+		font-family: var(--font-display);
+		font-size: var(--font-size-2xl);
+		font-weight: 600;
+	}
+
+	.empty-state p {
+		color: var(--color-muted);
+	}
+
+	.btn {
+		display: inline-block;
+		margin-top: var(--spacing-4);
+		padding: var(--spacing-3) var(--spacing-6);
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+		text-decoration: none;
+		border-radius: var(--radius);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+	}
+
+	/* ============ RESPONSIVE ============ */
+	@media (max-width: 900px) {
+		.hero-inner {
+			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+		}
+
+		.groups {
+			padding: var(--spacing-12) var(--spacing-6) var(--spacing-16);
+			gap: var(--spacing-12);
+		}
+
+		.pills-inner {
+			padding: var(--spacing-5) var(--spacing-6);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.hero-inner {
+			padding: var(--spacing-12) var(--spacing-5);
+		}
+
+		.hero-title {
+			font-size: clamp(1.75rem, 8vw, 2.5rem);
+			max-width: 100%;
+		}
+
+		.hero-excerpt {
+			font-size: var(--font-size-base);
+		}
+
+		.group-header {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.group-heading {
+			flex-direction: column;
+			gap: var(--spacing-1);
+		}
+
+		.groups {
+			padding: var(--spacing-10) var(--spacing-5);
+			gap: var(--spacing-10);
+		}
+	}
+</style>

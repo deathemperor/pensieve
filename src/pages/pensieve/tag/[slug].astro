@@ -2,25 +2,22 @@
 export const prerender = false;
 
 import { getTerm, getEmDashCollection, getEntryTerms } from "emdash";
-import Base from "../../layouts/Base.astro";
-import PostCard from "../../components/PostCard.astro";
-import { getReadingTime } from "../../utils/reading-time";
-import { themeForCategory } from "../../themes/categoryThemes";
-import { link } from "../../utils/link";
-import { getCurrentLang } from "../../utils/lang";
+import Base from "../../../layouts/Base.astro";
+import PostCard from "../../../components/PostCard.astro";
+import { getReadingTime } from "../../../utils/reading-time";
+import { link } from "../../../utils/link";
+import { getCurrentLang } from "../../../utils/lang";
 
 const currentLang = getCurrentLang(Astro);
 const { slug } = Astro.params;
-const term = slug ? await getTerm("category", slug) : null;
+const term = slug ? await getTerm("tag", slug) : null;
 
 if (!term) {
 	return Astro.redirect(link("404"));
 }
 
-const theme = themeForCategory(term.slug);
-
 const { entries: allPosts } = await getEmDashCollection("posts", {
-	where: { category: term.slug },
+	where: { tag: term.slug },
 	orderBy: { published_at: "desc" },
 });
 const posts = allPosts.filter((p) => p.data.language === currentLang);
@@ -35,17 +32,13 @@ const filteredPosts = await Promise.all(
 ---
 
 <Base
-	title={`${term.label} posts`}
-	description={`All posts in ${term.label}`}
-	theme={theme}
+	title={`Posts tagged "${term.label}"`}
+	description={`All posts tagged with ${term.label}`}
 >
 	<section class="archive-section">
 		<header class="archive-header">
-			<span class="archive-label">
-				<span class="archive-dot" />
-				Category
-			</span>
-			<h1 class="archive-title">{term.label}</h1>
+			<span class="archive-label">Tag</span>
+			<h1 class="archive-title">#{term.label}</h1>
 			<p class="archive-count">
 				{filteredPosts.length} {filteredPosts.length === 1 ? "post" : "posts"}
 			</p>
@@ -53,7 +46,7 @@ const filteredPosts = await Promise.all(
 
 		{
 			filteredPosts.length === 0 ? (
-				<p class="no-posts">No posts in this category yet.</p>
+				<p class="no-posts">No posts with this tag yet.</p>
 			) : (
 				<div class="posts-grid">
 					{filteredPosts.map(({ post, tags }) => (
@@ -65,8 +58,6 @@ const filteredPosts = await Promise.all(
 							date={post.data.publishedAt ?? undefined}
 							readingTime={getReadingTime(post.data.content)}
 							tags={tags.map((t) => ({ slug: t.slug, label: t.label }))}
-							themeSlug={theme ? (theme.slug as any) : null}
-							categoryLabel={term.label}
 						/>
 					))}
 				</div>
@@ -89,9 +80,7 @@ const filteredPosts = await Promise.all(
 	}
 
 	.archive-label {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--spacing-2);
+		display: block;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		font-weight: 500;
@@ -99,13 +88,6 @@ const filteredPosts = await Promise.all(
 		text-transform: uppercase;
 		letter-spacing: var(--tracking-wider);
 		margin: 0 0 var(--spacing-3);
-	}
-
-	.archive-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: var(--color-accent);
 	}
 
 	.archive-title {
@@ -133,7 +115,6 @@ const filteredPosts = await Promise.all(
 
 	.no-posts {
 		color: var(--color-muted);
-		font-family: var(--font-sans);
 	}
 
 	@media (max-width: 700px) {

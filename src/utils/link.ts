@@ -1,17 +1,17 @@
-// Astro's import.meta.env.BASE_URL can be either "/pensieve" or "/pensieve/"
-// depending on how `base` is declared. Normalize to always end with a slash so
-// concatenation with a path segment is safe.
-const RAW_BASE = import.meta.env.BASE_URL || "/";
-export const BASE = RAW_BASE.endsWith("/") ? RAW_BASE : RAW_BASE + "/";
+// Blog pages always live under /pensieve/, regardless of Astro's base config.
+// Root-level pages (Room of Requirement, Trương) use absolute paths directly.
+const PENSIEVE_BASE = "/pensieve/";
+
+export const BASE = PENSIEVE_BASE;
 
 export function link(path: string = ""): string {
 	const clean = path.replace(/^\//, "");
-	return BASE + clean;
+	return PENSIEVE_BASE + clean;
 }
 
 export function absoluteLink(origin: string, path: string = ""): string {
 	const cleanOrigin = origin.replace(/\/$/, "");
-	const base = BASE.replace(/\/$/, "");
+	const base = PENSIEVE_BASE.replace(/\/$/, "");
 	const clean = path.replace(/^\//, "");
 	return clean ? `${cleanOrigin}${base}/${clean}` : `${cleanOrigin}${base}/`;
 }
