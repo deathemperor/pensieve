@@ -9,7 +9,7 @@ import emdash from "emdash/astro";
 
 export default defineConfig({
 	site: "https://huuloc.com",
-	base: "/pensieve",
+	base: "/",
 	output: "server",
 	adapter: cloudflare(),
 	image: {
