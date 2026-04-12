@@ -55,6 +55,142 @@ async function buildSubscribersPage(ctx: PluginContext) {
 	};
 }
 
+async function buildSubscriberStatsWidget(ctx: PluginContext) {
+	const allSubscribers = await ctx.storage.subscribers.query({});
+	const items = allSubscribers.items ?? allSubscribers ?? [];
+
+	const total = items.length;
+	const active = items.filter((s: any) => s.status === "active").length;
+	const unsubscribed = items.filter((s: any) => s.status === "unsubscribed").length;
+
+	return {
+		blocks: [
+			{
+				type: "fields",
+				fields: [
+					{ label: "Total", value: String(total) },
+					{ label: "Active", value: String(active) },
+					{ label: "Unsubscribed", value: String(unsubscribed) },
+				],
+			},
+		],
+	};
+}
+
+async function buildSendsPage(ctx: PluginContext) {
+	const allSends = await ctx.storage.email_sends.query({});
+	const items = (allSends.items ?? allSends ?? []) as any[];
+
+	items.sort((a: any, b: any) => {
+		const aTime = a.sentAt || a.completedAt || a.startedAt || "";
+		const bTime = b.sentAt || b.completedAt || b.startedAt || "";
+		return bTime.localeCompare(aTime);
+	});
+
+	const totalSends = items.length;
+	const totalDelivered = items.reduce((sum: number, s: any) => sum + (s.sent || 0), 0);
+
+	const rows = items.map((s: any) => ({
+		cells: [
+			s.slug || s.postSlug || "—",
+			String(s.subscriberCount ?? 0),
+			s.status || "—",
+			s.completedAt || s.startedAt || "—",
+		],
+	}));
+
+	return {
+		blocks: [
+			{ type: "header", text: "Email Sends" },
+			{
+				type: "fields",
+				fields: [
+					{ label: "Total Sends", value: String(totalSends) },
+					{ label: "Total Delivered", value: String(totalDelivered) },
+				],
+			},
+			{ type: "divider" },
+			{
+				type: "table",
+				columns: ["Post", "Subscribers", "Status", "Sent At"],
+				rows,
+			},
+		],
+	};
+}
+
+async function buildAnalyticsPage(ctx: PluginContext) {
+	const allEvents = await ctx.storage.reading_events.query({});
+	const items = (allEvents.items ?? allEvents ?? []) as any[];
+
+	const totalPageviews = items.filter((e: any) => e.eventType === "pageview").length;
+	const uniqueSessions = new Set(items.map((e: any) => e.sessionId)).size;
+
+	// Aggregate by postSlug
+	const byPost = new Map<string, { pageviews: number; scrollDepths: number[]; readingTimes: number[] }>();
+
+	for (const event of items) {
+		const slug = event.postSlug || "unknown";
+		if (!byPost.has(slug)) {
+			byPost.set(slug, { pageviews: 0, scrollDepths: [], readingTimes: [] });
+		}
+		const agg = byPost.get(slug)!;
+
+		if (event.eventType === "pageview") {
+			agg.pageviews++;
+		}
+
+		if (event.eventType === "leave" && event.data) {
+			if (typeof event.data.scrollDepth === "number") {
+				agg.scrollDepths.push(event.data.scrollDepth);
+			}
+			if (typeof event.data.readingTimeMs === "number") {
+				agg.readingTimes.push(event.data.readingTimeMs);
+			}
+		}
+	}
+
+	const rows = Array.from(byPost.entries())
+		.sort((a, b) => b[1].pageviews - a[1].pageviews)
+		.map(([slug, agg]) => {
+			const avgScroll = agg.scrollDepths.length > 0
+				? Math.round(agg.scrollDepths.reduce((a, b) => a + b, 0) / agg.scrollDepths.length)
+				: 0;
+			const avgReadingMs = agg.readingTimes.length > 0
+				? Math.round(agg.readingTimes.reduce((a, b) => a + b, 0) / agg.readingTimes.length)
+				: 0;
+			const avgReadingSec = Math.round(avgReadingMs / 1000);
+
+			return {
+				cells: [
+					slug,
+					String(agg.pageviews),
+					`${avgScroll}%`,
+					`${avgReadingSec}s`,
+				],
+			};
+		});
+
+	return {
+		blocks: [
+			{ type: "header", text: "Reading Analytics" },
+			{
+				type: "fields",
+				fields: [
+					{ label: "Total Pageviews", value: String(totalPageviews) },
+					{ label: "Unique Sessions", value: String(uniqueSessions) },
+				],
+			},
+			{ type: "divider" },
+			{
+				type: "table",
+				columns: ["Post", "Pageviews", "Avg Scroll Depth", "Avg Reading Time"],
+				rows,
+			},
+		],
+	};
+}
+
 export default definePlugin({
 	hooks: {
 		"page:fragments": {
@@ -409,10 +545,25 @@ export default definePlugin({
 			handler: async (routeCtx: any, ctx: PluginContext) => {
 				const interaction = routeCtx.input;
 
+				// Widget handlers
+				if (interaction.type === "page_load" && interaction.page === "widget:subscriber-stats") {
+					return buildSubscriberStatsWidget(ctx);
+				}
+
+				// Page handlers
 				if (interaction.type === "page_load" && interaction.page === "/subscribers") {
 					return buildSubscribersPage(ctx);
 				}
 
+				if (interaction.type === "page_load" && interaction.page === "/sends") {
+					return buildSendsPage(ctx);
+				}
+
+				if (interaction.type === "page_load" && interaction.page === "/analytics") {
+					return buildAnalyticsPage(ctx);
+				}
+
+				// Action handlers
 				if (
 					interaction.type === "block_action" &&
 					interaction.action_id === "delete_subscriber"
