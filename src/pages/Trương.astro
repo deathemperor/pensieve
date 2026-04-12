@@ -6,9 +6,14 @@ import { link } from "../utils/link";
 import { getCurrentLang } from "../utils/lang";
 const isVi = getCurrentLang(Astro) === "vi";
 
-// GitHub API — unauthenticated (60 req/hr, fine for a personal blog)
+// GitHub API — authenticated when GITHUB_TOKEN is set (5000 req/hr),
+// falls back to unauthenticated (60 req/hr) otherwise.
+const ghToken = import.meta.env.GITHUB_TOKEN;
+
 interface GitHubUser {
 	public_repos: number;
+	total_private_repos?: number;
+	owned_private_repos?: number;
 	followers: number;
 	following: number;
 	created_at: string;
@@ -34,6 +39,7 @@ interface GitHubRepo {
 	stargazers_count: number;
 	updated_at: string;
 	fork: boolean;
+	private: boolean;
 }
 
 let ghUser: GitHubUser | null = null;
@@ -42,16 +48,33 @@ let ghRepos: GitHubRepo[] = [];
 
 // Cache GitHub API responses at Cloudflare's edge (1 hour).
 // Visitors never hit GitHub directly — only one request per hour per edge PoP.
+const ghHeaders: Record<string, string> = {
+	"User-Agent": "pensieve-site",
+	Accept: "application/vnd.github.v3+json",
+};
+if (ghToken) ghHeaders.Authorization = `Bearer ${ghToken}`;
+
 const ghFetchOpts = {
-	headers: { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" },
+	headers: ghHeaders,
 	cf: { cacheTtl: 3600, cacheEverything: true },
 } as RequestInit;
 
+// When authenticated, /user returns private repo counts; /events (no /public) includes private activity
+const userEndpoint = ghToken
+	? "https://api.github.com/user"
+	: "https://api.github.com/users/deathemperor";
+const eventsEndpoint = ghToken
+	? "https://api.github.com/users/deathemperor/events?per_page=30"
+	: "https://api.github.com/users/deathemperor/events/public?per_page=30";
+const reposEndpoint = ghToken
+	? "https://api.github.com/user/repos?sort=pushed&per_page=10&affiliation=owner"
+	: "https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner";
+
 try {
 	const [userRes, eventsRes, reposRes] = await Promise.all([
-		fetch("https://api.github.com/users/deathemperor", ghFetchOpts),
-		fetch("https://api.github.com/users/deathemperor/events/public?per_page=30", ghFetchOpts),
-		fetch("https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner", ghFetchOpts),
+		fetch(userEndpoint, ghFetchOpts),
+		fetch(eventsEndpoint, ghFetchOpts),
+		fetch(reposEndpoint, ghFetchOpts),
 	]);
 	if (userRes.ok) ghUser = await userRes.json();
 	if (eventsRes.ok) ghEvents = await eventsRes.json();
@@ -63,7 +86,7 @@ try {
 // Aggregate commit activity from events
 const commitEvents = ghEvents.filter((e) => e.type === "PushEvent");
 const totalRecentCommits = commitEvents.reduce(
-	(sum, e) => sum + (e.payload.commits?.length ?? 0), 0,
+	(sum, e) => sum + (e.payload.commits?.length || 1), 0,
 );
 
 // Activity by day of week
@@ -82,27 +105,31 @@ const activityFeed = ghEvents
 	.filter((e) => ["PushEvent", "CreateEvent", "PullRequestEvent", "IssuesEvent"].includes(e.type))
 	.slice(0, 10)
 	.map((e) => {
-		const repo = e.repo.name.replace("deathemperor/", "");
+		// Check if this event is from a private repo (not in public repos list)
+		const repoFullName = e.repo.name;
+		const repo = repoFullName.replace("deathemperor/", "");
+		const isPrivateRepo = ghToken && !ghRepos.some((r) => !r.private && r.name === repo);
+		const displayRepo = isPrivateRepo ? (isVi ? "kho riêng" : "private repo") : repo;
 		const date = new Date(e.created_at);
 		const timeAgo = formatTimeAgo(date);
 		let action = e.type;
 		if (e.type === "PushEvent") {
-			const count = e.payload.commits?.length ?? 0;
+			const count = e.payload.commits?.length || 1;
 			action = isVi
-				? `${count} commit tới ${repo}`
-				: `${count} commit${count !== 1 ? "s" : ""} to ${repo}`;
+				? `${count} commit tới ${displayRepo}`
+				: `${count} commit${count !== 1 ? "s" : ""} to ${displayRepo}`;
 		} else if (e.type === "CreateEvent") {
 			action = isVi
-				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} trong ` : ""}${repo}`
-				: `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref ? `${e.payload.ref} in ` : ""}${repo}`;
+				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} trong ` : ""}${displayRepo}`
+				: `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} in ` : ""}${displayRepo}`;
 		} else if (e.type === "PullRequestEvent") {
 			action = isVi
-				? `${e.payload.action} PR trong ${repo}`
-				: `${e.payload.action} PR in ${repo}`;
+				? `${e.payload.action} PR trong ${displayRepo}`
+				: `${e.payload.action} PR in ${displayRepo}`;
 		} else if (e.type === "IssuesEvent") {
 			action = isVi
-				? `${e.payload.action} issue trong ${repo}`
-				: `${e.payload.action} issue in ${repo}`;
+				? `${e.payload.action} issue trong ${displayRepo}`
+				: `${e.payload.action} issue in ${displayRepo}`;
 		}
 		return { action, timeAgo, date };
 	});
@@ -299,7 +326,7 @@ function formatGHDate(iso: string) {
 
 				<div class="gh-stats">
 					<div class="gh-stat">
-						<span class="gh-stat-value">{ghUser.public_repos}</span>
+						<span class="gh-stat-value">{ghUser.public_repos + (ghUser.owned_private_repos ?? 0)}</span>
 						<span class="gh-stat-label">{isVi ? "kho mã" : "repos"}</span>
 					</div>
 					<div class="gh-stat">
@@ -331,11 +358,11 @@ function formatGHDate(iso: string) {
 				</div>
 
 				{/* Recent repos */}
-				{ghRepos.length > 0 && (
+				{ghRepos.filter((r) => !r.private).length > 0 && (
 					<div class="repos-section">
 						<h3 class="chart-title">{isVi ? "Kho mã gần đây" : "Recent repositories"}</h3>
 						<div class="repos-grid">
-							{ghRepos.slice(0, 6).map((repo) => (
+							{ghRepos.filter((r) => !r.private).slice(0, 6).map((repo) => (
 								<a href={repo.html_url} class="repo-card" target="_blank" rel="noopener">
 									<span class="repo-name">{repo.name}</span>
 									{repo.description && (

@@ -154,34 +154,37 @@ const isLoggedIn = !!Astro.locals.user;
 						</svg>
 						huuloc.com
 					</a>
-					{breadcrumbs.map((crumb) => (
-						<>
-							<span class="breadcrumb-sep">/</span>
-							{crumb.href ? (
-								<a href={crumb.href} class={`breadcrumb-link${crumb.label === "Pensieve" ? " breadcrumb-pensieve" : ""}`}>
-									{crumb.label === "Pensieve" && (
-										<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-											<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-											<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-											<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" />
-										</svg>
-									)}
-									{crumb.label}
-								</a>
-							) : (
-								<span class={`breadcrumb-current${crumb.label === "Pensieve" ? " breadcrumb-pensieve" : ""}`}>
-									{crumb.label === "Pensieve" && (
-										<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-											<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-											<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-											<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" />
-										</svg>
-									)}
-									{crumb.label}
-								</span>
-							)}
-						</>
-					))}
+					{breadcrumbs.map((crumb) => {
+						const hasIcon = ["Pensieve", "Room of Requirement"].includes(crumb.label);
+						const icon = crumb.label === "Pensieve" ? (
+							<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+								<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+								<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+								<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" />
+							</svg>
+						) : crumb.label === "Room of Requirement" ? (
+							<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+								<path d="M9 28 V10 Q16 2 23 10 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+								<circle cx="20" cy="18" r="1.5" fill="currentColor" />
+							</svg>
+						) : null;
+						return (
+							<>
+								<span class="breadcrumb-sep">/</span>
+								{crumb.href ? (
+									<a href={crumb.href} class={`breadcrumb-link${hasIcon ? " breadcrumb-with-icon" : ""}`}>
+										{icon}
+										{crumb.label}
+									</a>
+								) : (
+									<span class={`breadcrumb-current${hasIcon ? " breadcrumb-with-icon" : ""}`}>
+										{icon}
+										{crumb.label}
+									</span>
+								)}
+							</>
+						);
+					})}
 				</nav>
 			</header>
 		) : (
@@ -671,7 +674,7 @@ const isLoggedIn = !!Astro.locals.user;
 				color: var(--color-text);
 			}
 
-			.breadcrumb-pensieve {
+			.breadcrumb-with-icon {
 				display: inline-flex;
 				align-items: center;
 				gap: 0.35em;
