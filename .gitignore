@@ -8,3 +8,7 @@ data.db
 # local state, never commit
 .dev.vars
 data/
+
+# macOS
+.DS_Store
+**/.DS_Store
