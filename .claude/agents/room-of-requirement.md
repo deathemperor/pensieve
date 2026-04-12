@@ -32,9 +32,15 @@ Each entry: `{ name, purpose }`
 ### "What Claude Code Does" section
 Two columns in the HTML: what Claude Code does vs what humans do. Update if the division of labor changes.
 
+### Site routes manifest
+When a new page is added to the site, also update `src/data/site-routes.json`:
+- Add to `static` array: `{ "path": "/new-page", "title": "Page Title", "priority": "0.7" }`
+- The sitemap, llms.txt, and ai-plugin.json all read from this manifest.
+
 ## Rules
 
 - Read the current file first to avoid duplicates.
 - Keep descriptions concise (one line).
 - Don't remove entries unless the technology/agent was actually removed.
 - Match the existing style — no emojis, terse descriptions.
+- **Always update `src/data/site-routes.json` when adding new pages.**

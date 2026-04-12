@@ -1,0 +1,19 @@
+{
+	"static": [
+		{ "path": "/", "title": "Trương Hữu Lộc", "priority": "1.0" },
+		{ "path": "/pensieve/", "title": "Pensieve", "priority": "0.9" },
+		{ "path": "/pensieve/categories", "title": "Categories", "priority": "0.6" },
+		{ "path": "/room-of-requirement", "title": "Room of Requirement", "priority": "0.7" },
+		{ "path": "/room-of-requirement/priori-incantatem", "title": "Priori Incantatem", "priority": "0.7" },
+		{ "path": "/Trương", "title": "Trương Hữu Lộc — About", "priority": "0.8" }
+	],
+	"feeds": [
+		{ "path": "/pensieve/rss.xml", "title": "RSS — All" },
+		{ "path": "/pensieve/rss-en.xml", "title": "RSS — English" },
+		{ "path": "/pensieve/rss-vi.xml", "title": "RSS — Vietnamese" }
+	],
+	"collections": {
+		"posts": { "basePath": "/pensieve/memories", "priority": "0.7" },
+		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" }
+	}
+}
