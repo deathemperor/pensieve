@@ -38,14 +38,18 @@ let ghUser: GitHubUser | null = null;
 let ghEvents: GitHubEvent[] = [];
 let ghRepos: GitHubRepo[] = [];
 
+// Cache GitHub API responses at Cloudflare's edge (1 hour).
+// Visitors never hit GitHub directly — only one request per hour per edge PoP.
+const ghFetchOpts = {
+	headers: { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" },
+	cf: { cacheTtl: 3600, cacheEverything: true },
+} as RequestInit;
+
 try {
-	const ghToken = import.meta.env.GITHUB_TOKEN ?? "";
-	const headers: Record<string, string> = { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" };
-	if (ghToken) headers["Authorization"] = `Bearer ${ghToken}`;
 	const [userRes, eventsRes, reposRes] = await Promise.all([
-		fetch("https://api.github.com/users/deathemperor", { headers }),
-		fetch("https://api.github.com/users/deathemperor/events/public?per_page=30", { headers }),
-		fetch("https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner", { headers }),
+		fetch("https://api.github.com/users/deathemperor", ghFetchOpts),
+		fetch("https://api.github.com/users/deathemperor/events/public?per_page=30", ghFetchOpts),
+		fetch("https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner", ghFetchOpts),
 	]);
 	if (userRes.ok) ghUser = await userRes.json();
 	if (eventsRes.ok) ghEvents = await eventsRes.json();
