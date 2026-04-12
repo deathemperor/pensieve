@@ -48,8 +48,9 @@ const totalPosts = Array.from(counts.values()).reduce((a, b) => a + b, 0);
 ---
 
 <Base
-	title={isVi ? "Danh Mục" : "Categories"}
+	title={isVi ? "Danh Mục" : "Sorting Hat"}
 	description={isVi ? "Duyệt Pensieve theo chủ đề." : "Browse Pensieve by topic."}
+	breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: isVi ? "Danh Mục" : "Sorting Hat" }]}
 >
 	<div class="categories-page">
 		<header class="page-header">

@@ -29,7 +29,7 @@ function matchesQuery(post: (typeof allPosts)[0], q: string): boolean {
 const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 ---
 
-<Base
+<Base breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: isVi ? "Tìm kiếm" : "Search" }]}
 	title={query ? `${isVi ? "Tìm" : "Search"}: ${query}` : isVi ? "Tìm kiếm" : "Search"}
 	description={isVi ? "Tìm kiếm bài viết" : "Search blog posts"}
 >
