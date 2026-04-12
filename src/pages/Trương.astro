@@ -209,6 +209,37 @@ function formatGHDate(iso: string) {
 					On GitHub since {formatGHDate(ghUser.created_at)}.
 				</p>
 
+				{/* Coding Eras Timeline */}
+				<div class="eras-timeline">
+					<h3 class="chart-title">Coding eras</h3>
+					<div class="eras-track">
+						<div class="era" style="--era-color: var(--color-muted);">
+							<span class="era-bar" style="flex: 15;" />
+							<div class="era-info">
+								<span class="era-label">Solo</span>
+								<span class="era-dates">2006 — Jun 2021</span>
+								<span class="era-note">Manual coding, no AI assist</span>
+							</div>
+						</div>
+						<div class="era" style="--era-color: #7c3aed;">
+							<span class="era-bar" style="flex: 5;" />
+							<div class="era-info">
+								<span class="era-label">GitHub Copilot</span>
+								<span class="era-dates">Jun 2021 — Mar 2026</span>
+								<span class="era-note">AI-assisted coding (preview accepted)</span>
+							</div>
+						</div>
+						<div class="era era-current" style="--era-color: #e8784d;">
+							<span class="era-bar" style="flex: 1;" />
+							<div class="era-info">
+								<span class="era-label">Claude Code</span>
+								<span class="era-dates">Apr 2026 — now</span>
+								<span class="era-note">Zero human code — fully AI-generated</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
 				<div class="gh-stats">
 					<div class="gh-stat">
 						<span class="gh-stat-value">{ghUser.public_repos}</span>
@@ -435,6 +466,65 @@ function formatGHDate(iso: string) {
 	.profile-icon {
 		flex-shrink: 0;
 		opacity: 0.7;
+	}
+
+	/* Coding eras */
+	.eras-timeline {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.eras-track {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+	}
+
+	.era {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-4);
+	}
+
+	.era-bar {
+		height: 6px;
+		background: var(--era-color);
+		border-radius: 3px;
+		opacity: 0.5;
+		min-width: 20px;
+	}
+
+	.era-current .era-bar {
+		opacity: 1;
+		box-shadow: 0 0 8px color-mix(in srgb, var(--era-color) 40%, transparent);
+	}
+
+	.era-info {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		flex-shrink: 0;
+	}
+
+	.era-label {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--era-color);
+		white-space: nowrap;
+	}
+
+	.era-dates {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+		white-space: nowrap;
+	}
+
+	.era-note {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		white-space: nowrap;
 	}
 
 	/* GitHub stats */

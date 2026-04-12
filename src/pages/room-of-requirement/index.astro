@@ -98,6 +98,36 @@ const plugins = [
 
 	<section class="room-section">
 		<div class="room-inner">
+			<h2 class="section-heading">What Claude Code Does</h2>
+			<div class="two-col">
+				<div>
+					<h3 class="subsection-heading cc-does">Claude Code</h3>
+					<ul class="cc-list">
+						<li>All source code — every Astro page, component, plugin, and utility</li>
+						<li>Infrastructure — Cloudflare Workers, D1, R2, KV setup via wrangler</li>
+						<li>CI/CD — GitHub Actions deployment pipeline</li>
+						<li>Plugin development — Resend email provider, Block Kit admin UIs</li>
+						<li>DNS and email routing configuration</li>
+						<li>Architecture planning and technical decisions</li>
+						<li>Git commits and code review</li>
+					</ul>
+				</div>
+				<div>
+					<h3 class="subsection-heading human-does">Human</h3>
+					<ul class="cc-list">
+						<li>All written content — posts, narratives, translations</li>
+						<li>Design direction — color choices, layout feedback</li>
+						<li>Product decisions — what to build, what matters</li>
+						<li>Domain registration and account credentials</li>
+						<li>Third-party API keys (Resend, Cloudflare)</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="room-section">
+		<div class="room-inner">
 			<h2 class="section-heading">Architecture</h2>
 			<p class="section-desc">
 				A personal blog running on the edge. Server-rendered Astro pages,
@@ -214,6 +244,68 @@ const plugins = [
 		color: var(--color-text-secondary);
 		max-width: 55ch;
 		margin: 0 0 var(--spacing-6);
+	}
+
+	.subsection-heading {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		margin: 0 0 var(--spacing-3);
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-2);
+	}
+
+	.subsection-heading::before {
+		content: "";
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+	}
+
+	.cc-does::before {
+		background: var(--color-accent);
+	}
+
+	.cc-does {
+		color: var(--color-accent);
+	}
+
+	.human-does::before {
+		background: #3fb950;
+	}
+
+	.human-does {
+		color: #3fb950;
+	}
+
+	.cc-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-2);
+	}
+
+	.cc-list li {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		padding-left: var(--spacing-4);
+		position: relative;
+	}
+
+	.cc-list li::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 9px;
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: var(--color-muted);
 	}
 
 	.cc-link {
