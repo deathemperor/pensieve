@@ -39,7 +39,9 @@ let ghEvents: GitHubEvent[] = [];
 let ghRepos: GitHubRepo[] = [];
 
 try {
-	const headers = { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" };
+	const ghToken = import.meta.env.GITHUB_TOKEN ?? "";
+	const headers: Record<string, string> = { "User-Agent": "pensieve-site", Accept: "application/vnd.github.v3+json" };
+	if (ghToken) headers["Authorization"] = `Bearer ${ghToken}`;
 	const [userRes, eventsRes, reposRes] = await Promise.all([
 		fetch("https://api.github.com/users/deathemperor", { headers }),
 		fetch("https://api.github.com/users/deathemperor/events/public?per_page=30", { headers }),
