@@ -14,6 +14,20 @@ import type { Theme } from "../themes/types";
 import { link } from "../utils/link";
 import { allThemes } from "../themes";
 import { categoryThemeMap } from "../themes/categoryThemes";
+import { getCurrentLang, otherLang } from "../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const flipLang = otherLang(currentLang);
+// Persist the chosen language whenever ?lang= is present so subsequent
+// navigations without the param honour the preference.
+const queryLang = Astro.url.searchParams.get("lang");
+if (queryLang === "vi" || queryLang === "en") {
+	Astro.cookies.set("pref_lang", queryLang, {
+		path: "/",
+		maxAge: 60 * 60 * 24 * 365,
+		sameSite: "lax",
+	});
+}
 
 interface Props {
 	title: string;
@@ -29,7 +43,7 @@ interface Props {
 	content?: { collection: string; id: string; slug?: string | null };
 	/** Optional per-category visual theme. Re-themes the whole page. */
 	theme?: Theme | null;
-	/** Load all theme Google Font families — for pages that render multiple themes (home, /categories). */
+	/** Deprecated — kept as a no-op for callers. All themes share one font stack now. */
 	loadAllThemeFonts?: boolean;
 }
 
@@ -45,22 +59,8 @@ const {
 	author,
 	content,
 	theme = null,
-	loadAllThemeFonts = false,
 } = Astro.props;
-const siteTitle = "pensieve";
-
-// For the home + /categories pages we load every theme's google fonts stylesheet
-// so themed hero/section/tile elements can actually render in the right typeface.
-// display=swap keeps paint fast; the browser falls back while fetching.
-const allThemeFontHrefs = loadAllThemeFonts
-	? Array.from(
-			new Set(
-				allThemes
-					.map((t) => t.fonts.googleFontsHref)
-					.filter(Boolean) as string[],
-			),
-		)
-	: [];
+const siteTitle = "Pensieve";
 
 // Nav menu: primary items from seed + a hardcoded Categories link
 const categoryMenuEntries = Object.entries(categoryThemeMap).map(([slug, themeSlug]) => {
@@ -111,19 +111,10 @@ const isLoggedIn = !!Astro.locals.user;
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		{
-			!theme && (
-				<link
-					href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;500&display=swap"
-					rel="stylesheet"
-				/>
-			)
-		}
-		{
-			allThemeFontHrefs.map((href) => (
-				<link rel="stylesheet" href={href} />
-			))
-		}
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap"
+			rel="stylesheet"
+		/>
 		<title>{fullTitle}</title>
 		<EmDashHead page={pageCtx} />
 		{theme && <ThemeStyles theme={theme} />}
@@ -145,7 +136,35 @@ const isLoggedIn = !!Astro.locals.user;
 		<EmDashBodyStart page={pageCtx} />
 		<header class="site-header">
 			<nav class="nav">
-				<a href={link()} class="site-title">{siteTitle}</a>
+				<a href={link()} class="site-title">
+					<svg
+						class="site-logomark"
+						width="22"
+						height="22"
+						viewBox="0 0 22 22"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						aria-hidden="true"
+					>
+						<circle
+							cx="11"
+							cy="11"
+							r="10"
+							stroke="currentColor"
+							stroke-width="1.5"
+						></circle>
+						<circle
+							cx="11"
+							cy="11"
+							r="5.5"
+							stroke="currentColor"
+							stroke-width="1.25"
+							opacity="0.6"
+						></circle>
+						<circle cx="11" cy="11" r="1.5" fill="currentColor"></circle>
+					</svg>
+					<span>{siteTitle}</span>
+				</a>
 				<div class="nav-right">
 					<LiveSearch
 						placeholder="Search..."
@@ -163,6 +182,23 @@ const isLoggedIn = !!Astro.locals.user;
 								</a>
 							))
 						}
+						<div class="nav-lang" role="group" aria-label="Language">
+							<a
+								href={`?lang=vi`}
+								class="nav-lang-btn"
+								data-active={currentLang === "vi"}
+							>
+								VI
+							</a>
+							<span class="nav-lang-sep">·</span>
+							<a
+								href={`?lang=en`}
+								class="nav-lang-btn"
+								data-active={currentLang === "en"}
+							>
+								EN
+							</a>
+						</div>
 						<details class="nav-categories">
 							<summary>
 								Categories <span class="nav-arrow">▾</span>
@@ -445,149 +481,16 @@ const isLoggedIn = !!Astro.locals.user;
 				padding: 0;
 			}
 
+			/* All design tokens (colors, type, spacing, layout) live in
+			   src/styles/theme.css. This block only adds EmDash-specific
+			   search component overrides that need to read those vars. */
 			:root {
-				/* Colors - Light mode (default) */
-				--color-bg: #ffffff;
-				--color-bg-subtle: #fafafa;
-				--color-text: #1a1a1a;
-				--color-text-secondary: #525252;
-				--color-muted: #8b8b8b;
-				--color-border: #e5e5e5;
-				--color-border-subtle: #f0f0f0;
-				--color-surface: #f7f7f7;
-				--color-accent: #0066cc;
-				--color-accent-hover: #0052a3;
-				--color-on-accent: white;
-				--color-accent-ring: color-mix(
-					in srgb,
-					var(--color-accent) 25%,
-					transparent
-				);
-
-				/* EmDash search theming */
 				--emdash-search-bg: var(--color-bg);
 				--emdash-search-text: var(--color-text);
 				--emdash-search-muted: var(--color-muted);
 				--emdash-search-border: var(--color-border);
 				--emdash-search-hover: var(--color-surface);
 				--emdash-search-highlight: var(--color-text);
-
-				/* Typography */
-				--font-sans:
-					"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-					sans-serif;
-				--font-mono:
-					"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-
-				/* Type scale - more refined */
-				--font-size-xs: 0.8125rem;
-				--font-size-sm: 0.875rem;
-				--font-size-base: 1rem;
-				--font-size-lg: 1.125rem;
-				--font-size-xl: 1.25rem;
-				--font-size-2xl: 1.5rem;
-				--font-size-3xl: 2rem;
-				--font-size-4xl: 2.5rem;
-				--font-size-5xl: 3.5rem;
-
-				/* Line heights */
-				--leading-tight: 1.15;
-				--leading-snug: 1.3;
-				--leading-normal: 1.5;
-				--leading-relaxed: 1.7;
-
-				/* Spacing - more generous */
-				--spacing-1: 0.25rem;
-				--spacing-2: 0.5rem;
-				--spacing-3: 0.75rem;
-				--spacing-4: 1rem;
-				--spacing-5: 1.25rem;
-				--spacing-6: 1.5rem;
-				--spacing-8: 2rem;
-				--spacing-10: 2.5rem;
-				--spacing-12: 3rem;
-				--spacing-16: 4rem;
-				--spacing-20: 5rem;
-				--spacing-24: 6rem;
-
-				/* Legacy spacing aliases */
-				--spacing-xs: var(--spacing-1);
-				--spacing-sm: var(--spacing-2);
-				--spacing-md: var(--spacing-4);
-				--spacing-lg: var(--spacing-6);
-				--spacing-xl: var(--spacing-8);
-				--spacing-2xl: var(--spacing-12);
-				--spacing-3xl: var(--spacing-16);
-
-				/* Layout - wider for three-column */
-				--content-width: 680px;
-				--wide-width: 1200px;
-				--max-width: var(--content-width);
-				--gutter-width: 200px;
-				--radius: 4px;
-				--radius-lg: 8px;
-
-				/* Transitions */
-				--transition-fast: 120ms ease;
-				--transition-base: 180ms ease;
-
-				/* Nav */
-				--nav-height: 64px;
-
-				/* Search */
-				--search-input-width: 180px;
-
-				/* Article layout */
-				--meta-col-width: 180px;
-
-				/* Avatar sizes */
-				--avatar-size-xs: 18px;
-				--avatar-size-sm: 20px;
-				--avatar-size-md: 24px;
-				--avatar-size-lg: 32px;
-
-				/* Letter spacing */
-				--tracking-tight: -0.03em;
-				--tracking-snug: -0.02em;
-				--tracking-wide: 0.06em;
-				--tracking-wider: 0.08em;
-
-				/* Tag pill */
-				--tag-padding-y: 2px;
-
-				/* Shadows */
-				--shadow-dropdown: 0 8px 30px rgba(0, 0, 0, 0.12);
-				--shadow-btn-active: 0 1px 2px rgba(0, 0, 0, 0.05);
-			}
-
-			/* Dark mode via system preference (when no explicit class) */
-			@media (prefers-color-scheme: dark) {
-				:root:not(.light) {
-					--color-bg: #0d0d0d;
-					--color-bg-subtle: #141414;
-					--color-text: #ededed;
-					--color-text-secondary: #a0a0a0;
-					--color-muted: #6b6b6b;
-					--color-border: #2a2a2a;
-					--color-border-subtle: #1f1f1f;
-					--color-surface: #181818;
-					--color-accent: #4d9fff;
-					--color-accent-hover: #6eb0ff;
-				}
-			}
-
-			/* Explicit dark mode */
-			:root.dark {
-				--color-bg: #0d0d0d;
-				--color-bg-subtle: #141414;
-				--color-text: #ededed;
-				--color-text-secondary: #a0a0a0;
-				--color-muted: #6b6b6b;
-				--color-border: #2a2a2a;
-				--color-border-subtle: #1f1f1f;
-				--color-surface: #181818;
-				--color-accent: #4d9fff;
-				--color-accent-hover: #6eb0ff;
 			}
 
 			html {
@@ -666,15 +569,25 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.site-title {
-				font-size: var(--font-size-lg);
-				font-weight: 600;
+				display: inline-flex;
+				align-items: center;
+				gap: var(--spacing-2);
+				font-family: var(--font-display);
+				font-size: var(--font-size-base);
+				font-weight: var(--font-weight-display, 590);
 				color: var(--color-text);
 				text-decoration: none;
-				letter-spacing: var(--tracking-snug);
+				letter-spacing: -0.015em;
+				transition: color var(--transition-fast);
 			}
 
 			.site-title:hover {
-				color: var(--color-accent);
+				color: var(--color-text-secondary);
+			}
+
+			.site-logomark {
+				flex-shrink: 0;
+				color: var(--color-text);
 			}
 
 			.nav-right {
@@ -697,6 +610,36 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.nav-links a:hover {
 				color: var(--color-accent);
+			}
+
+			/* Language toggle */
+			.nav-lang {
+				display: inline-flex;
+				align-items: center;
+				gap: 6px;
+				font-family: var(--font-mono);
+				font-size: var(--font-size-xs);
+				letter-spacing: 0.04em;
+			}
+
+			.nav-lang-btn {
+				color: var(--color-muted);
+				text-decoration: none;
+				padding: 2px 4px;
+				transition: color var(--transition-fast);
+			}
+
+			.nav-lang-btn:hover {
+				color: var(--color-text-secondary);
+			}
+
+			.nav-lang-btn[data-active="true"] {
+				color: var(--color-text);
+			}
+
+			.nav-lang-sep {
+				color: var(--color-muted);
+				opacity: 0.4;
 			}
 
 			/* Categories dropdown */

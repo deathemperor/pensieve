@@ -2,33 +2,29 @@
 /**
  * scripts/import-d1.ts
  *
- * Fold classified narratives into seed/seed.json so they become real content
- * the next time `emdash seed seed/seed.json` runs. This script is idempotent
- * and deliberately stays out of the database — the shell recipe at the
- * bottom of this file handles applying the seed to local + remote D1.
+ * Fold classified + translated narratives into seed/seed.json so the next
+ * `emdash seed seed/seed.json` run creates the full bilingual content set.
  *
- * Input files:
- *   data/long-posts.json      — ingest output (IngestedPost[])
- *   data/classified.json      — classifier output ({posts: Classification[]})
- *   seed/seed.json            — EmDash seed, will be updated in place
+ * For each classified post we emit TWO content entries: one in Vietnamese
+ * and one in English, linked by a shared `source_id` and carrying an
+ * `original_language` marker so the post page can show a "Originally written
+ * in X" citation banner on the translated variant.
  *
- * What it does:
- *   1. Merges post text + classification metadata by id
- *   2. Dedupes pairs the classifier flagged as near-duplicates (same title)
- *      keeping the longest-text variant
- *   3. Converts raw post text into Portable Text blocks (paragraph splits)
- *   4. Generates ASCII slugs (with diacritic stripping) from Loc's titles
- *   5. Replaces seed.json `content.posts` with the new real entries
+ * Inputs:
+ *   data/long-posts.json          — ingest output (IngestedPost[])
+ *   data/classified.json          — classifier output ({posts: Classification[]})
+ *   data/translations-batch-{1..5}.json  — bilingual translations per post
+ *   seed/seed.json                — EmDash seed, updated in place
  *
- * Shell recipe to push to remote D1:
+ * Shell recipe to push after running this:
  *   bun run scripts/import-d1.ts
  *   rm -f data.db data.db-shm data.db-wal
  *   ./node_modules/.bin/emdash seed seed/seed.json
- *   sqlite3 data.db .dump > /tmp/pensieve-dump.sql
- *   # [see scripts/apply-to-remote.sh for the cleanup recipe]
+ *   bash scripts/apply-to-remote.sh
+ *   ./node_modules/.bin/wrangler deploy
  */
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 
 // ----- types -----
@@ -67,8 +63,28 @@ interface Classification {
 interface ClassifiedFile {
 	generatedAt: string;
 	tasteProfileUsed: boolean;
+	corpusVersion?: string;
 	count: number;
 	posts: Classification[];
+}
+
+interface Translation {
+	id: string;
+	originalLanguage: "vi" | "en" | "mixed";
+	title_vi: string;
+	title_en: string;
+	excerpt_vi: string;
+	excerpt_en: string;
+	content_vi: string;
+	content_en: string;
+}
+
+interface TranslationBatch {
+	batch: number;
+	startIndex: number;
+	endIndex: number;
+	count: number;
+	posts: Translation[];
 }
 
 interface PortableTextSpan {
@@ -115,7 +131,7 @@ function slugify(title: string): string {
 	return (
 		ascii
 			.toLowerCase()
-			.replace(/[^a-z0-9\s-]/g, "") // drop punctuation
+			.replace(/[^a-z0-9\s-]/g, "")
 			.trim()
 			.replace(/\s+/g, "-")
 			.replace(/-+/g, "-")
@@ -123,15 +139,7 @@ function slugify(title: string): string {
 	);
 }
 
-/**
- * Convert raw post text into Portable Text blocks. Paragraphs split on blank
- * lines OR on " | " sequences (Facebook edit history uses pipe-separated
- * runs). Single newlines inside a paragraph become soft breaks within the
- * same span (Portable Text doesn't have a dedicated line break block in
- * EmDash's default schema, so we preserve them as text).
- */
 function textToPortableText(text: string): PortableTextBlock[] {
-	// Normalize: treat " | " as paragraph breaks (FB edit history artifact)
 	const normalized = text.replace(/\s*\|\s*\|\s*/g, "\n\n").replace(/\s*\|\s*/g, "\n\n");
 	const paragraphs = normalized
 		.split(/\n{2,}/)
@@ -146,9 +154,9 @@ function textToPortableText(text: string): PortableTextBlock[] {
 	}));
 }
 
-function stableEntryId(slug: string, timestamp: number): string {
+function stableEntryId(slug: string, lang: string): string {
 	return createHash("sha1")
-		.update(`${slug}|${timestamp}`)
+		.update(`${slug}|${lang}`)
 		.digest("hex")
 		.slice(0, 16);
 }
@@ -165,61 +173,91 @@ function main() {
 	);
 	const seed = JSON.parse(readFileSync(`${root}/seed/seed.json`, "utf8"));
 
+	// Load all translation batches
+	const translationMap = new Map<string, Translation>();
+	for (let i = 1; i <= 5; i++) {
+		const path = `${root}/data/translations-batch-${i}.json`;
+		if (!existsSync(path)) {
+			console.warn(`⚠️  Missing translation batch ${i} at ${path}`);
+			continue;
+		}
+		const batch: TranslationBatch = JSON.parse(readFileSync(path, "utf8"));
+		for (const t of batch.posts) {
+			translationMap.set(t.id, t);
+		}
+	}
+
 	const postsById = new Map(longPosts.map((p) => [p.id, p]));
 
-	// ---- merge: classification + original text ----
-	const merged: Array<{
+	// Merge: classification + original text + translation
+	interface Merged {
 		classification: Classification;
 		post: IngestedPost;
-	}> = [];
+		translation: Translation;
+	}
+	const merged: Merged[] = [];
+	const missing: string[] = [];
 
 	for (const c of classifiedFile.posts) {
 		const post = postsById.get(c.id);
+		const translation = translationMap.get(c.id);
 		if (!post) {
-			console.warn(`⚠️  Classified post ${c.id} not found in long-posts.json`);
+			missing.push(`post-missing:${c.id}`);
 			continue;
 		}
-		merged.push({ classification: c, post });
+		if (!translation) {
+			missing.push(`translation-missing:${c.id}`);
+			continue;
+		}
+		merged.push({ classification: c, post, translation });
 	}
 
-	// ---- dedupe by (category, slugified title) — the classifier sometimes
-	//       sees two near-identical variants and tags them the same way ----
-	const bySlug = new Map<
-		string,
-		{ classification: Classification; post: IngestedPost }
-	>();
-	let dedupeCollisions = 0;
+	if (missing.length > 0) {
+		console.warn(`⚠️  ${missing.length} posts dropped due to missing data:`);
+		missing.slice(0, 10).forEach((m) => console.warn(`   ${m}`));
+	}
+
+	console.log(`📚 Classified: ${classifiedFile.posts.length}`);
+	console.log(`🌐 Translated: ${translationMap.size}`);
+	console.log(`✅ Merged: ${merged.length}`);
+
+	// Build bilingual seed.content.posts
+	interface SeedPost {
+		id: string;
+		slug: string;
+		status: "published";
+		data: {
+			title: string;
+			excerpt: string;
+			content: PortableTextBlock[];
+			language: "vi" | "en";
+			original_language: "vi" | "en" | "mixed";
+			source: "facebook";
+			source_id: string;
+		};
+		bylines: Array<{ byline: string }>;
+		taxonomies: { category: string[]; tag: string[] };
+	}
+
+	const seedPosts: SeedPost[] = [];
+	const usedSlugs = new Set<string>();
+
+	function uniqueSlug(base: string): string {
+		let s = base;
+		let n = 1;
+		while (usedSlugs.has(s)) {
+			s = `${base}-${n}`;
+			n++;
+		}
+		usedSlugs.add(s);
+		return s;
+	}
+
+	// Sort by timestamp descending so the newest posts are first
+	merged.sort((a, b) => b.post.timestamp - a.post.timestamp);
 
 	for (const m of merged) {
-		const slug = slugify(m.classification.title);
-		const key = `${m.classification.category}::${slug}`;
-		const existing = bySlug.get(key);
-		if (!existing) {
-			bySlug.set(key, m);
-			continue;
-		}
-		dedupeCollisions++;
-		// Keep the longer-text variant
-		if (m.post.charCount > existing.post.charCount) {
-			bySlug.set(key, m);
-		}
-	}
-
-	const finalPosts = Array.from(bySlug.values()).sort(
-		(a, b) => b.post.timestamp - a.post.timestamp,
-	);
-
-	console.log(`📚 Merged: ${merged.length} classified posts`);
-	console.log(`🔀 Deduped collisions: ${dedupeCollisions}`);
-	console.log(`✅ Final unique posts: ${finalPosts.length}`);
-
-	// ---- build seed.json content.posts entries ----
-	const seedPosts = finalPosts.map(({ classification, post }) => {
-		const slug = slugify(classification.title);
-		const id = stableEntryId(slug, post.timestamp);
-
-		// Normalize tags: lowercase-hyphenated, <=24 chars
-		const tags = (classification.tags || [])
+		const tags = (m.classification.tags || [])
 			.map((t) =>
 				stripDiacritics(t)
 					.toLowerCase()
@@ -230,32 +268,58 @@ function main() {
 			)
 			.filter(Boolean);
 
-		return {
-			id,
-			slug,
-			status: "published" as const,
+		const origLang = m.translation.originalLanguage;
+
+		// Vietnamese variant
+		const slugVi = uniqueSlug(slugify(m.translation.title_vi));
+		seedPosts.push({
+			id: stableEntryId(slugVi, "vi"),
+			slug: slugVi,
+			status: "published",
 			data: {
-				title: classification.title,
-				excerpt: classification.excerpt,
-				content: textToPortableText(post.text),
-				language: post.language,
+				title: m.translation.title_vi,
+				excerpt: m.translation.excerpt_vi,
+				content: textToPortableText(m.translation.content_vi),
+				language: "vi",
+				original_language: origLang,
 				source: "facebook",
-				source_id: post.id,
+				source_id: m.post.id,
 			},
 			bylines: [{ byline: "byline-main" }],
 			taxonomies: {
-				category: [classification.category],
+				category: [m.classification.category],
 				tag: tags,
 			},
-		};
-	});
+		});
 
-	// ---- merge new tag terms into seed.json taxonomies ----
+		// English variant
+		const slugEn = uniqueSlug(slugify(m.translation.title_en));
+		seedPosts.push({
+			id: stableEntryId(slugEn, "en"),
+			slug: slugEn,
+			status: "published",
+			data: {
+				title: m.translation.title_en,
+				excerpt: m.translation.excerpt_en,
+				content: textToPortableText(m.translation.content_en),
+				language: "en",
+				original_language: origLang,
+				source: "facebook",
+				source_id: m.post.id,
+			},
+			bylines: [{ byline: "byline-main" }],
+			taxonomies: {
+				category: [m.classification.category],
+				tag: tags,
+			},
+		});
+	}
+
+	// Collect and register tag terms
 	const allTags = new Set<string>();
 	for (const p of seedPosts) {
 		for (const t of p.taxonomies.tag) allTags.add(t);
 	}
-
 	const tagTaxonomy = seed.taxonomies.find(
 		(t: { name: string }) => t.name === "tag",
 	);
@@ -275,41 +339,40 @@ function main() {
 		}
 	}
 
-	// ---- replace seed.json content.posts ----
+	// Replace seed.content.posts
 	seed.content.posts = seedPosts;
 
 	writeFileSync(`${root}/seed/seed.json`, JSON.stringify(seed, null, "\t"));
 
-	console.log("");
-	console.log("✨ Updated seed/seed.json");
-	console.log(`   - content.posts: ${seedPosts.length}`);
-	console.log(`   - new tag terms added: ${allTags.size}`);
-	console.log("");
-	console.log("📋 Category breakdown:");
+	// ---- summary ----
 	const byCat: Record<string, number> = {};
+	const byLang: Record<string, number> = { vi: 0, en: 0 };
 	for (const p of seedPosts) {
 		const cat = p.taxonomies.category[0];
 		byCat[cat] = (byCat[cat] || 0) + 1;
+		byLang[p.data.language]++;
 	}
+
+	console.log("");
+	console.log("✨ Updated seed/seed.json");
+	console.log(`   - content.posts: ${seedPosts.length} (${merged.length} × 2 languages)`);
+	console.log(`   - new tag terms added: ${allTags.size}`);
+	console.log("");
+	console.log("🗣️  Language breakdown:");
+	console.log(`   vi: ${byLang.vi}`);
+	console.log(`   en: ${byLang.en}`);
+	console.log("");
+	console.log("📋 Category breakdown (per language, ×2 total):");
 	for (const [cat, n] of Object.entries(byCat).sort(
 		(a, b) => b[1] - a[1],
 	)) {
 		console.log(`   ${cat}: ${n}`);
 	}
 	console.log("");
-	console.log("🪓 Next steps (run manually):");
-	console.log("");
-	console.log("   # Wipe local DB and re-seed with real content");
-	console.log(
-		"   rm -f data.db data.db-shm data.db-wal && ./node_modules/.bin/emdash seed seed/seed.json",
-	);
-	console.log("");
-	console.log("   # Dump local and push to remote D1");
-	console.log(
-		"   sqlite3 data.db .dump > /tmp/pensieve-content.sql && bash scripts/apply-to-remote.sh",
-	);
-	console.log("");
-	console.log("   # Deploy (if wrangler config or code changed)");
+	console.log("🪓 Next steps:");
+	console.log("   rm -f data.db data.db-shm data.db-wal");
+	console.log("   ./node_modules/.bin/emdash seed seed/seed.json");
+	console.log("   bash scripts/apply-to-remote.sh");
 	console.log("   ./node_modules/.bin/wrangler deploy");
 }
 

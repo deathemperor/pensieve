@@ -1,4 +1,6 @@
 ---
+export const prerender = false;
+
 import {
 	getEmDashEntry,
 	getEmDashCollection,
@@ -17,6 +19,7 @@ import PostCard from "../../components/PostCard.astro";
 import { getReadingTime } from "../../utils/reading-time";
 import { themeForFirstCategory } from "../../themes/categoryThemes";
 import { link } from "../../utils/link";
+import { otherLang, langLabel, type Lang } from "../../utils/lang";
 
 const { slug } = Astro.params;
 
@@ -57,7 +60,7 @@ const featuredImageUrl = getImageUrl(post.data.featured_image);
 
 // Generate SEO meta from content
 const seo = getSeoMeta(post, {
-	siteTitle: "pensieve",
+	siteTitle: "Pensieve",
 	siteUrl: Astro.url.origin,
 	path: link(`posts/${slug}`),
 	defaultOgImage: featuredImageUrl,
@@ -70,6 +73,25 @@ const tags = await getEntryTerms("posts", post.data.id, "tag");
 // Get categories — drives the per-category visual theme
 const categories = await getEntryTerms("posts", post.data.id, "category");
 const theme = themeForFirstCategory(categories.map((c) => c.slug));
+
+// Look up the sibling variant in the other language for the translation
+// toggle + the "Originally in X" citation banner.
+const postLang = (post.data.language as Lang | undefined) ?? "en";
+const originalLang = (post.data.original_language as Lang | "mixed" | undefined) ?? postLang;
+const isTranslation =
+	originalLang !== "mixed" && originalLang !== postLang;
+const siblingLang = otherLang(postLang);
+
+let siblingSlug: string | null = null;
+if (post.data.source_id) {
+	const { entries: allPosts } = await getEmDashCollection("posts");
+	const sibling = allPosts.find(
+		(p) =>
+			p.data.source_id === post.data.source_id &&
+			p.data.language === siblingLang,
+	);
+	if (sibling) siblingSlug = sibling.id;
+}
 
 // Bylines are already hydrated by getEmDashEntry
 const bylines = post.data.bylines ?? [];
@@ -221,6 +243,29 @@ const publishDate =
 					{
 						post.data.excerpt && (
 							<p class="article-excerpt">{post.data.excerpt}</p>
+						)
+					}
+					{
+						(isTranslation || siblingSlug) && (
+							<div class="translation-strip">
+								{isTranslation && originalLang !== "mixed" && (
+									<span class="translation-note">
+										{postLang === "en"
+											? `Originally written in ${langLabel(originalLang as Lang, "en")}`
+											: `Nguyên bản bằng ${langLabel(originalLang as Lang, "vi")}`}
+									</span>
+								)}
+								{siblingSlug && (
+									<a
+										href={link(`posts/${siblingSlug}?lang=${siblingLang}`)}
+										class="translation-toggle"
+									>
+										{siblingLang === "en"
+											? "Read in English →"
+											: "Đọc bản tiếng Việt →"}
+									</a>
+								)}
+							</div>
 						)
 					}
 				</header>
@@ -503,6 +548,36 @@ const publishDate =
 		font-size: var(--font-size-xl);
 		line-height: var(--leading-relaxed);
 		color: var(--color-text-secondary);
+	}
+
+	/* Translation strip — citation banner + language toggle */
+	.translation-strip {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-4);
+		flex-wrap: wrap;
+		margin-top: var(--spacing-6);
+		padding: var(--spacing-3) var(--spacing-4);
+		background: var(--color-surface-elevated, var(--color-surface));
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+	}
+
+	.translation-note {
+		color: var(--color-muted);
+	}
+
+	.translation-toggle {
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		transition: color var(--transition-fast);
+		margin-left: auto;
+	}
+
+	.translation-toggle:hover {
+		color: var(--color-text);
 	}
 
 	/* Article content typography */
