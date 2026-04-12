@@ -1,10 +1,16 @@
 ---
 export const prerender = false;
 
+import { getEmDashCollection } from "emdash";
 import Base from "../../layouts/Base.astro";
 import { link } from "../../utils/link";
 import { getCurrentLang } from "../../utils/lang";
-import diaryEntries from "../../data/build-diary.json";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { entries: diaryRaw, cacheHint } = await getEmDashCollection("diary");
+Astro.cache.set(cacheHint);
 
 interface DiaryEntry {
 	date: string;
@@ -14,12 +20,32 @@ interface DiaryEntry {
 	summary: string;
 	model: string;
 	claudeCode: string;
+	inputTokens: number;
+	outputTokens: number;
+	cacheRead: number;
+	cost: number;
 }
 
-const lang = getCurrentLang(Astro);
-const isVi = lang === "vi";
-
-const entries = (diaryEntries as DiaryEntry[]).toReversed();
+const entries: DiaryEntry[] = diaryRaw
+	.filter((e) => e.data.status === "published")
+	.sort((a, b) => {
+		const da = a.data.date ?? "";
+		const db = b.data.date ?? "";
+		return db.localeCompare(da) || b.data.title.localeCompare(a.data.title);
+	})
+	.map((e) => ({
+		date: e.data.date ?? "",
+		title: e.data.title,
+		type: (e.data.entry_type ?? "build") as DiaryEntry["type"],
+		prompt: e.data.prompt ?? "",
+		summary: e.data.summary ?? "",
+		model: e.data.model ?? "unknown",
+		claudeCode: e.data.claude_code ?? "unknown",
+		inputTokens: e.data.input_tokens ?? 0,
+		outputTokens: e.data.output_tokens ?? 0,
+		cacheRead: e.data.cache_read ?? 0,
+		cost: e.data.cost ?? 0,
+	}));
 
 // Group by date
 const grouped = new Map<string, DiaryEntry[]>();
@@ -31,6 +57,9 @@ for (const entry of entries) {
 		grouped.set(entry.date, [entry]);
 	}
 }
+
+const totalTokens = entries.reduce((sum, e) => sum + e.inputTokens + e.outputTokens, 0);
+const totalCost = entries.reduce((sum, e) => sum + e.cost, 0);
 
 const typeLabels: Record<string, Record<string, string>> = {
 	en: { build: "Spell Cast", plan: "Prophecy", fix: "Reparo", deploy: "Apparition" },
@@ -86,6 +115,24 @@ function formatModel(model: string) {
 					<span class="pi-stat-value">{grouped.size}</span>
 					<span class="pi-stat-label">{isVi ? "ngày" : "days"}</span>
 				</span>
+				{totalTokens > 0 && (
+					<>
+						<span class="pi-stat-dot" />
+						<span class="pi-stat">
+							<span class="pi-stat-value">{totalTokens >= 1_000_000 ? `${(totalTokens / 1_000_000).toFixed(1)}M` : `${(totalTokens / 1000).toFixed(0)}K`}</span>
+							<span class="pi-stat-label">tokens</span>
+						</span>
+					</>
+				)}
+				{totalCost > 0 && (
+					<>
+						<span class="pi-stat-dot" />
+						<span class="pi-stat">
+							<span class="pi-stat-value">${`$${(totalCost / 100).toFixed(2)}`}</span>
+							<span class="pi-stat-label">{isVi ? "chi phí" : "cost"}</span>
+						</span>
+					</>
+				)}
 			</div>
 		</div>
 	</section>
@@ -121,6 +168,14 @@ function formatModel(model: string) {
 									)}
 									{entry.claudeCode !== "unknown" && (
 										<span class="entry-badge cc-badge">CC {entry.claudeCode}</span>
+									)}
+									{(entry.inputTokens + entry.outputTokens) > 0 && (
+										<span class="entry-badge token-badge">
+											{((entry.inputTokens + entry.outputTokens) / 1000).toFixed(1)}K tokens
+										</span>
+									)}
+									{entry.cost > 0 && (
+										<span class="entry-badge cost-badge">${`$${(entry.cost / 100).toFixed(2)}`}</span>
 									)}
 								</div>
 							</article>
@@ -386,6 +441,18 @@ function formatModel(model: string) {
 		background: color-mix(in srgb, var(--color-muted) 10%, transparent);
 		color: var(--color-muted);
 		border: 1px solid color-mix(in srgb, var(--color-muted) 15%, transparent);
+	}
+
+	.token-badge {
+		background: color-mix(in srgb, #3fb950 10%, transparent);
+		color: #3fb950;
+		border: 1px solid color-mix(in srgb, #3fb950 18%, transparent);
+	}
+
+	.cost-badge {
+		background: color-mix(in srgb, #d4a843 10%, transparent);
+		color: #d4a843;
+		border: 1px solid color-mix(in srgb, #d4a843 18%, transparent);
 	}
 
 	/* Responsive */
