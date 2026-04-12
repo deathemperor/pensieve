@@ -228,6 +228,26 @@ export const HOME_HTML = `<!DOCTYPE html>
   }
 
   /* Footer */
+  .links-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .link-item {
+    font-size: 0.9375rem;
+    color: var(--secondary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+    transition: color 120ms ease, border-color 120ms ease;
+  }
+
+  .link-item:hover {
+    color: var(--text);
+    border-color: var(--secondary);
+  }
+
   .foot {
     margin-top: auto;
     padding-top: 3rem;
@@ -320,16 +340,17 @@ export const HOME_HTML = `<!DOCTYPE html>
       </ul>
     </section>
 
+    <section class="section">
+      <span class="section-label">Elsewhere</span>
+      <div class="links-row">
+        <a href="https://github.com/deathemperor" rel="noopener" class="link-item">GitHub</a>
+        <a href="https://www.linkedin.com/in/deathemperor/" rel="noopener" class="link-item">LinkedIn</a>
+        <a href="https://fb.me/deathemperor" rel="noopener" class="link-item">Facebook</a>
+      </div>
+    </section>
+
     <footer class="foot">
       <span>© Trương Hữu Lộc</span>
-      <span class="foot-sep">·</span>
-      <a href="https://github.com/deathemperor" rel="noopener">github</a>
-      <span class="foot-sep">·</span>
-      <a href="https://www.linkedin.com/in/deathemperor/" rel="noopener">linkedin</a>
-      <span class="foot-sep">·</span>
-      <a href="https://fb.me/deathemperor" rel="noopener">facebook</a>
-      <span class="foot-sep">·</span>
-      <a href="/pensieve/">pensieve</a>
     </footer>
   </main>
 </body>
