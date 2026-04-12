@@ -36,3 +36,7 @@ Agent skills are in `.agents/skills/`. Load them when working on specific tasks:
 - `entry.id` is the slug (for URLs). `entry.data.id` is the database ULID (for API calls like `getEntryTerms`).
 - Always call `Astro.cache.set(cacheHint)` on pages that query content.
 - Taxonomy names in queries must match the seed's `"name"` field exactly (e.g., `"category"` not `"categories"`).
+- **When adding new pages**: update `src/data/site-routes.json`. The sitemap, llms.txt, and ai-plugin.json all read from it. Content from EmDash collections is automated.
+- **Before every `git push`**: run the `priori-incantatem` subagent to update `src/data/build-diary.json` with the session's work. This is MANDATORY — never push without updating the diary first.
+- Blog posts are at `/pensieve/memories/[slug]` (not `/posts/`). The collection name in EmDash is still "posts" but the URL path is "memories".
+- Root-level pages (Room of Requirement, Trương) use absolute paths, not `link()`. The `link()` helper always prepends `/pensieve/`.
