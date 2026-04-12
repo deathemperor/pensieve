@@ -7,21 +7,16 @@
 			stroke-linecap: round;
 			stroke-linejoin: round;
 		}
-		.fill {
-			fill: #08090a;
-		}
 		@media (prefers-color-scheme: dark) {
 			.mark {
 				stroke: #f7f8f8;
 			}
-			.fill {
-				fill: #f7f8f8;
-			}
 		}
 	</style>
-	<!-- Stone basin: rim ellipse + curved bowl walls -->
-	<ellipse cx="16" cy="10.5" rx="11" ry="2.75" class="mark" />
-	<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" class="mark" />
-	<!-- Liquid surface with a single ripple dot -->
-	<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" class="fill" />
+	<!-- Stem -->
+	<path d="M16 28 C16 22 15 18 16 13" class="mark" />
+	<!-- Left leaf -->
+	<path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" class="mark" />
+	<!-- Right leaf -->
+	<path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" class="mark" />
 </svg>

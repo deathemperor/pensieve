@@ -579,5 +579,57 @@ export default definePlugin({
 				return { blocks: [] };
 			},
 		},
+
+		// Lumos — guest like button
+		"lumos/cast": {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const { postSlug } = routeCtx.input as { postSlug?: string };
+				if (!postSlug) return { error: "Missing postSlug" };
+
+				// IP hash for spam prevention
+				const ip = routeCtx.request.headers.get("cf-connecting-ip") || routeCtx.request.headers.get("x-forwarded-for") || "unknown";
+				let ipHash = 0;
+				for (let i = 0; i < ip.length; i++) {
+					ipHash = ((ipHash << 5) - ipHash + ip.charCodeAt(i)) | 0;
+				}
+				const ipKey = `ip_${Math.abs(ipHash).toString(36)}`;
+
+				// Check if already liked by this IP
+				const existing = await ctx.storage.lumos!.query({
+					where: { postSlug, ipHash: ipKey },
+					limit: 1,
+				});
+
+				if (existing.items.length > 0) {
+					// Already liked — return current count
+					const total = await ctx.storage.lumos!.count({ postSlug });
+					return { success: false, alreadyCast: true, count: total };
+				}
+
+				// Cast Lumos
+				const id = `lumos_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+				await ctx.storage.lumos!.put(id, {
+					postSlug,
+					ipHash: ipKey,
+					castAt: new Date().toISOString(),
+				});
+
+				const total = await ctx.storage.lumos!.count({ postSlug });
+				return { success: true, count: total };
+			},
+		},
+
+		"lumos/count": {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const url = new URL(routeCtx.request.url);
+				const postSlug = url.searchParams.get("post");
+				if (!postSlug) return { count: 0 };
+
+				const total = await ctx.storage.lumos!.count({ postSlug });
+				return { count: total };
+			},
+		},
 	},
 });

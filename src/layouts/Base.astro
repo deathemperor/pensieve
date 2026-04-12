@@ -146,7 +146,14 @@ const isLoggedIn = !!Astro.locals.user;
 		{breadcrumbs ? (
 			<header class="site-header breadcrumb-header">
 				<nav class="breadcrumb-nav">
-					<a href="/" class="breadcrumb-home">huuloc.com</a>
+					<a href="/" class="breadcrumb-home">
+						<svg class="breadcrumb-logomark" width="14" height="14" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+							<path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" />
+							<path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						huuloc.com
+					</a>
 					{breadcrumbs.map((crumb) => (
 						<>
 							<span class="breadcrumb-sep">/</span>
@@ -622,6 +629,9 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.breadcrumb-home {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.35em;
 				color: var(--color-muted);
 				text-decoration: none;
 				transition: color var(--transition-fast);
