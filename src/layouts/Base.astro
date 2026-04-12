@@ -154,27 +154,36 @@ const isLoggedIn = !!Astro.locals.user;
 						class="site-logomark"
 						width="22"
 						height="22"
-						viewBox="0 0 22 22"
-						fill="none"
+						viewBox="0 0 32 32"
 						xmlns="http://www.w3.org/2000/svg"
 						aria-hidden="true"
 					>
-						<circle
-							cx="11"
-							cy="11"
-							r="10"
+						<ellipse
+							cx="16"
+							cy="10.5"
+							rx="11"
+							ry="2.75"
+							fill="none"
 							stroke="currentColor"
-							stroke-width="1.5"
-						></circle>
-						<circle
-							cx="11"
-							cy="11"
-							r="5.5"
+							stroke-width="2.25"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						></ellipse>
+						<path
+							d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5"
+							fill="none"
 							stroke="currentColor"
-							stroke-width="1.25"
-							opacity="0.6"
-						></circle>
-						<circle cx="11" cy="11" r="1.5" fill="currentColor"></circle>
+							stroke-width="2.25"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						></path>
+						<ellipse
+							cx="16"
+							cy="10.5"
+							rx="4.5"
+							ry="1.1"
+							fill="currentColor"
+						></ellipse>
 					</svg>
 					<span>{siteTitle}</span>
 				</a>
