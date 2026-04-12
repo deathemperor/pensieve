@@ -66,6 +66,106 @@ export default definePlugin({
 				);
 			},
 		},
+
+		"content:afterSave": {
+			priority: 200,
+			errorPolicy: "continue",
+			handler: async (event: any, ctx: PluginContext) => {
+				const { collection, content } = event;
+
+				if (collection !== "posts" || content.status !== "published") {
+					return;
+				}
+
+				if (content.notify_subscribers === false) {
+					ctx.log.info(`Newsletter skipped for "${content.title}" — notify_subscribers is false`);
+					return;
+				}
+
+				const slug = content.slug || content.id;
+				const sentKey = `state:sent:${slug}`;
+				const alreadySent = await ctx.kv.get(sentKey);
+
+				if (alreadySent) {
+					ctx.log.info(`Newsletter already sent for "${content.title}", skipping`);
+					return;
+				}
+
+				const allSubscribers = await ctx.storage.subscribers.query({});
+				const items = allSubscribers.items ?? allSubscribers ?? [];
+				const activeSubscribers = items.filter((s: any) => s.status === "active");
+
+				if (activeSubscribers.length === 0) {
+					ctx.log.info(`No active subscribers, skipping newsletter for "${content.title}"`);
+					return;
+				}
+
+				const sendId = `send_${slug}_${Date.now()}`;
+				await ctx.storage.email_sends.put(sendId, {
+					id: sendId,
+					slug,
+					title: content.title,
+					status: "sending",
+					subscriberCount: activeSubscribers.length,
+					startedAt: new Date().toISOString(),
+				});
+
+				const postUrl = `https://huuloc.com/pensieve/memories/${slug}`;
+				const excerpt =
+					content.excerpt ||
+					(typeof content.content === "string"
+						? content.content.slice(0, 200)
+						: content.title);
+
+				let sent = 0;
+				let failed = 0;
+
+				for (const subscriber of activeSubscribers) {
+					const unsubscribeUrl = `https://huuloc.com/_emdash/api/plugins/pensieve-engage/unsubscribe?email=${subscriber.email}`;
+					try {
+						await ctx.email.send(
+							{
+								to: subscriber.email,
+								subject: `[Pensieve] New memory: ${content.title}`,
+								text: [
+									`New memory: ${content.title}`,
+									"",
+									excerpt,
+									"",
+									`Read more: ${postUrl}`,
+									"",
+									"---",
+									`Unsubscribe: ${unsubscribeUrl}`,
+								].join("\n"),
+							},
+							"pensieve-engage",
+						);
+						sent++;
+					} catch (err) {
+						failed++;
+						ctx.log.info(`Failed to send newsletter to ${subscriber.email}: ${err}`);
+					}
+				}
+
+				await ctx.storage.email_sends.put(sendId, {
+					id: sendId,
+					slug,
+					title: content.title,
+					status: "completed",
+					subscriberCount: activeSubscribers.length,
+					sent,
+					failed,
+					startedAt: new Date().toISOString(),
+					completedAt: new Date().toISOString(),
+				});
+
+				await ctx.kv.set(sentKey, new Date().toISOString());
+
+				ctx.log.info(
+					`Newsletter for "${content.title}" completed: ${sent} sent, ${failed} failed`,
+				);
+			},
+		},
 	},
 
 	routes: {
