@@ -124,5 +124,68 @@
 		"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Tr\u01b0\u01a1ng page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Avada Kedavra: base refactor from /pensieve to /",
+		"type": "build",
+		"prompt": "is it refactor EmDash to huuloc.com? so that it's easier for you to work on in the future / Avada Kedavra",
+		"summary": "Refactored Astro base from /pensieve to /. Moved blog pages to src/pages/pensieve/ to preserve URLs. Converted static landing page to Astro page. Simplified worker — removed URL rewriting hack. Root-level pages (Room of Requirement, Trương) now native Astro routes.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Fix broken CSS after base refactor",
+		"type": "fix",
+		"prompt": "not only that page doesn't have the activity, its css is broken now",
+		"summary": "Removed build:relocate-assets script that moved /_astro/* to /pensieve/_astro/. With base: '/', assets must stay at root or CSS/JS links break.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "HP-themed authorship banners on posts",
+		"type": "build",
+		"prompt": "I think when original contents is being view or AI translationed, a big nice indicator should be shown. Without this or too small an indicator, people will misunderstand that all writtings are AI's in this LLM era. Must make user aware this in a big way. indicator should be in Harry Potter's style too.",
+		"summary": "Added prominent authorship banners on every post. 'Penned by Quill' (green) for original human-written content. 'Conjured Translation' (accent) for Claude-translated posts. Bilingual EN/VI. Each banner explicitly states whether content is human or AI-translated.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Vietnamese Priori Incantatem + RoR subagent",
+		"type": "build",
+		"prompt": "Build Diary should be Vietnamese friendly too. while you're doing that, cite that the translations are done by Claude / create a RoR sub agent so that it's summoned when new tech are applied.",
+		"summary": "Added Vietnamese support to Priori Incantatem (dates, type labels: Phép Thuật, Lời Tiên Tri, Reparo, Hiện Hình). Created room-of-requirement subagent for updating tech/plugins/agents on the build page.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "GitHub token for API rate limits",
+		"type": "build",
+		"prompt": "sure",
+		"summary": "Added GITHUB_TOKEN support to Trương page for higher GitHub API rate limits (60 → 5,000 req/hr). Token set via wrangler secret.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Remove bipolar mention from Trương page",
+		"type": "fix",
+		"prompt": "Remove the bipolar disorder on about page, nice of you guessing it out. I did diagnos myself with that but I am not, I have my latest understanding what it is that I'll write about.",
+		"summary": "Removed presumptive bipolar disorder mention from the about page. That's the author's story to tell.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
+	},
+	{
+		"date": "2026-04-13",
+		"title": "Root landing page links + nav fixes",
+		"type": "fix",
+		"prompt": "so...you misunderstood a lot. huuloc.com root isn't EmDash, right? only /pensieve / -_- I still can't access RoR and /truong from huuloc.com content",
+		"summary": "Added Room of Requirement and Trương links to the huuloc.com static landing page. Fixed nav label from 'Build' to 'Room of Requirement'. Updated seed menu to point About to /Trương.",
+		"model": "claude-opus-4-6",
+		"claudeCode": "2.1.104"
 	}
 ]
