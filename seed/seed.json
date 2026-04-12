@@ -1350,7 +1350,7 @@
 				{
 					"type": "custom",
 					"label": "All posts",
-					"url": "/pensieve/posts"
+					"url": "/pensieve/memories"
 				},
 				{
 					"type": "custom",
