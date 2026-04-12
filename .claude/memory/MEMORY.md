@@ -1,0 +1,7 @@
+- [User identity](user_identity.md) — Trương Hữu Lộc ("Loc"), deathemperor on GitHub, senior engineer (ex-VNG 2006+), bilingual VN/EN, domain huuloc.com on Cloudflare
+- [Pensieve project overview](project_pensieve.md) — personal blog on EmDash + Cloudflare Workers, sourced from long-form Facebook narratives; site live at huuloc.com/pensieve
+- [Pensieve corpus taste notes](project_pensieve_taste_notes.md) — 5 non-obvious themes from full-corpus synthesis: fish-keeping is dominant, origin-story spine, mental-health "hai mùa mưa nắng" frame, repost habit, 2026 memoir sprint
+- [Pensieve build decisions](feedback_pensieve_decisions.md) — locked-in choices: Workers+D1+R2+KV native, VN+EN mixed, per-category themes (site-wide EmDash constraint), huuloc.com/pensieve path routing
+- [Handling design critiques on pensieve](feedback_design_critique.md) — when Loc says "looks bad" assume it's about COLORS not layout; ask for references before iterating
+- [Pensieve visual system (Linear-influenced)](feedback_pensieve_visual_system.md) — locked palette: one dark canvas site-wide, Inter Tight headings, 6 specific accent hex per category, no per-theme backgrounds or fonts
+- [EmDash CMS reference](reference_emdash.md) — Cloudflare's Astro-based CMS v0.1 (April 2026), bootstrap/bindings/theming facts and source links
