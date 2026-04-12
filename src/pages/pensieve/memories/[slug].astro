@@ -135,6 +135,7 @@ const publishDate =
 	modifiedTime={post.data.updatedAt.toISOString()}
 	content={{ collection: "posts", id: post.data.id, slug }}
 	theme={theme}
+	breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: postLang === "vi" ? "Ký Ức" : "Memories", href: "/pensieve/memories" }, { label: post.data.title }]}
 >
 	<article class="article">
 		{/* Hero: Full-width featured image */}

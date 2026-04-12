@@ -108,7 +108,7 @@ function formatDate(date: Date | null | undefined) {
 }
 ---
 
-<Base title="Pensieve" description={isVi ? "suy nghĩ dài, mỗi chủ đề một màu" : "long-form thoughts, one theme per topic"}>
+<Base title="Pensieve" breadcrumbs={[{ label: "Pensieve" }]} description={isVi ? "suy nghĩ dài, mỗi chủ đề một màu" : "long-form thoughts, one theme per topic"}>
 	{
 		!featured ? (
 			<section class="empty-state">
