@@ -35,6 +35,8 @@ interface Props {
 	theme?: Theme | null;
 	/** Deprecated — kept as a no-op for callers. All themes share one font stack now. */
 	loadAllThemeFonts?: boolean;
+	/** Root-level pages: show breadcrumb instead of Pensieve nav */
+	breadcrumbs?: { label: string; href?: string }[];
 }
 
 const {
@@ -49,6 +51,7 @@ const {
 	author,
 	content,
 	theme = null,
+	breadcrumbs,
 } = Astro.props;
 const siteTitle = "Pensieve";
 
@@ -140,109 +143,127 @@ const isLoggedIn = !!Astro.locals.user;
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
-		<header class="site-header">
-			<nav class="nav">
-				<a href="/" class="site-title">
-					<svg
-						class="site-logomark"
-						width="22"
-						height="22"
-						viewBox="0 0 32 32"
-						xmlns="http://www.w3.org/2000/svg"
-						aria-hidden="true"
-					>
-						<ellipse
-							cx="16"
-							cy="10.5"
-							rx="11"
-							ry="2.75"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2.25"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						></ellipse>
-						<path
-							d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5"
-							fill="none"
-							stroke="currentColor"
-							stroke-width="2.25"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						></path>
-						<ellipse
-							cx="16"
-							cy="10.5"
-							rx="4.5"
-							ry="1.1"
-							fill="currentColor"
-						></ellipse>
-					</svg>
-					<span>{siteTitle}</span>
-				</a>
-				<div class="nav-right">
-					<LiveSearch
-						placeholder="Search..."
-						class="site-search"
-						inputClass="site-search-input"
-						resultsClass="site-search-results"
-						resultClass="site-search-result"
-						collections={["posts", "pages"]}
-					/>
-					<div class="nav-links">
+		{breadcrumbs ? (
+			<header class="site-header breadcrumb-header">
+				<nav class="breadcrumb-nav">
+					<a href="/" class="breadcrumb-home">huuloc.com</a>
+					{breadcrumbs.map((crumb) => (
+						<>
+							<span class="breadcrumb-sep">/</span>
+							{crumb.href ? (
+								<a href={crumb.href} class="breadcrumb-link">{crumb.label}</a>
+							) : (
+								<span class="breadcrumb-current">{crumb.label}</span>
+							)}
+						</>
+					))}
+				</nav>
+			</header>
+		) : (
+			<header class="site-header">
+				<nav class="nav">
+					<a href="/" class="site-title">
+						<svg
+							class="site-logomark"
+							width="22"
+							height="22"
+							viewBox="0 0 32 32"
+							xmlns="http://www.w3.org/2000/svg"
+							aria-hidden="true"
+						>
+							<ellipse
+								cx="16"
+								cy="10.5"
+								rx="11"
+								ry="2.75"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.25"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							></ellipse>
+							<path
+								d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.25"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							></path>
+							<ellipse
+								cx="16"
+								cy="10.5"
+								rx="4.5"
+								ry="1.1"
+								fill="currentColor"
+							></ellipse>
+						</svg>
+						<span>{siteTitle}</span>
+					</a>
+					<div class="nav-right">
+						<LiveSearch
+							placeholder="Search..."
+							class="site-search"
+							inputClass="site-search-input"
+							resultsClass="site-search-results"
+							resultClass="site-search-result"
+							collections={["posts", "pages"]}
+						/>
+						<div class="nav-links">
+							{
+								menu?.items.map((item) => (
+									<a href={item.url} target={item.target}>
+										{item.label}
+									</a>
+								))
+							}
+							<details class="nav-categories">
+								<summary>
+									Categories <span class="nav-arrow">▾</span>
+								</summary>
+								<div class="nav-dropdown">
+									<a href={link("categories")} class="nav-dropdown-header">
+										All categories →
+									</a>
+									{
+										categoryMenuEntries.map((c) => (
+											<a
+												href={link(`category/${c.categorySlug}`)}
+												class="nav-dropdown-item"
+												style={`--cat-accent: ${c.accent};`}
+											>
+												<span class="nav-dot" />
+												{c.label}
+											</a>
+										))
+									}
+								</div>
+							</details>
+						</div>
 						{
-							menu?.items.map((item) => (
-								<a href={item.url} target={item.target}>
-									{item.label}
+							isLoggedIn && (
+								<a href="/_emdash/admin" class="nav-admin">
+									Admin
 								</a>
-							))
+							)
 						}
-						<details class="nav-categories">
+						<details class="nav-lang">
 							<summary>
-								Categories <span class="nav-arrow">▾</span>
+								{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
 							</summary>
 							<div class="nav-dropdown">
-								<a href={link("categories")} class="nav-dropdown-header">
-									All categories →
+								<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
+									Tiếng Việt
 								</a>
-								{
-									categoryMenuEntries.map((c) => (
-										<a
-											href={link(`category/${c.categorySlug}`)}
-											class="nav-dropdown-item"
-											style={`--cat-accent: ${c.accent};`}
-										>
-											<span class="nav-dot" />
-											{c.label}
-										</a>
-									))
-								}
+								<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
+									English
+								</a>
 							</div>
 						</details>
 					</div>
-					{
-						isLoggedIn && (
-							<a href="/_emdash/admin" class="nav-admin">
-								Admin
-							</a>
-						)
-					}
-					<details class="nav-lang">
-						<summary>
-							{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
-						</summary>
-						<div class="nav-dropdown">
-							<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
-								Tiếng Việt
-							</a>
-							<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
-								English
-							</a>
-						</div>
-					</details>
-				</div>
-			</nav>
-		</header>
+				</nav>
+			</header>
+		)}
 
 		<main>
 			<slot />
@@ -567,6 +588,48 @@ const isLoggedIn = !!Astro.locals.user;
 				backdrop-filter: blur(12px);
 				-webkit-backdrop-filter: blur(12px);
 				border-bottom: 1px solid var(--color-border-subtle);
+			}
+
+			/* Breadcrumb header for root-level pages */
+			.breadcrumb-nav {
+				max-width: var(--wide-width);
+				margin: 0 auto;
+				padding: var(--spacing-4) var(--spacing-8);
+				display: flex;
+				align-items: center;
+				gap: var(--spacing-2);
+				font-family: var(--font-mono);
+				font-size: var(--font-size-xs);
+				height: var(--nav-height);
+			}
+
+			.breadcrumb-home {
+				color: var(--color-muted);
+				text-decoration: none;
+				transition: color var(--transition-fast);
+			}
+
+			.breadcrumb-home:hover {
+				color: var(--color-text);
+			}
+
+			.breadcrumb-sep {
+				color: var(--color-muted);
+				opacity: 0.4;
+			}
+
+			.breadcrumb-link {
+				color: var(--color-muted);
+				text-decoration: none;
+				transition: color var(--transition-fast);
+			}
+
+			.breadcrumb-link:hover {
+				color: var(--color-text);
+			}
+
+			.breadcrumb-current {
+				color: var(--color-text);
 			}
 
 			.nav {
