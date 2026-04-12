@@ -18,16 +18,6 @@ import { getCurrentLang, otherLang } from "../utils/lang";
 
 const currentLang = getCurrentLang(Astro);
 const flipLang = otherLang(currentLang);
-// Persist the chosen language whenever ?lang= is present so subsequent
-// navigations without the param honour the preference.
-const queryLang = Astro.url.searchParams.get("lang");
-if (queryLang === "vi" || queryLang === "en") {
-	Astro.cookies.set("pref_lang", queryLang, {
-		path: "/",
-		maxAge: 60 * 60 * 24 * 365,
-		sameSite: "lax",
-	});
-}
 
 interface Props {
 	title: string;
@@ -204,23 +194,10 @@ const isLoggedIn = !!Astro.locals.user;
 								</a>
 							))
 						}
-						<div class="nav-lang" role="group" aria-label="Language">
-							<a
-								href={`?lang=vi`}
-								class="nav-lang-btn"
-								data-active={currentLang === "vi"}
-							>
-								VI
-							</a>
-							<span class="nav-lang-sep">·</span>
-							<a
-								href={`?lang=en`}
-								class="nav-lang-btn"
-								data-active={currentLang === "en"}
-							>
-								EN
-							</a>
-						</div>
+						<select class="nav-lang-select" aria-label="Language" id="langSelect">
+							<option value="vi" selected={currentLang === "vi"}>VI</option>
+							<option value="en" selected={currentLang === "en"}>EN</option>
+						</select>
 						<details class="nav-categories">
 							<summary>
 								Categories <span class="nav-arrow">▾</span>
@@ -635,33 +612,26 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			/* Language toggle */
-			.nav-lang {
-				display: inline-flex;
-				align-items: center;
-				gap: 6px;
+			.nav-lang-select {
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
 				letter-spacing: 0.04em;
-			}
-
-			.nav-lang-btn {
-				color: var(--color-muted);
-				text-decoration: none;
-				padding: 2px 4px;
-				transition: color var(--transition-fast);
-			}
-
-			.nav-lang-btn:hover {
-				color: var(--color-text-secondary);
-			}
-
-			.nav-lang-btn[data-active="true"] {
 				color: var(--color-text);
+				background: var(--color-bg);
+				border: 1px solid var(--color-border);
+				border-radius: var(--radius);
+				padding: 4px 8px;
+				cursor: pointer;
+				transition: border-color var(--transition-fast);
 			}
 
-			.nav-lang-sep {
-				color: var(--color-muted);
-				opacity: 0.4;
+			.nav-lang-select:hover {
+				border-color: var(--color-text-secondary);
+			}
+
+			.nav-lang-select:focus-visible {
+				outline: none;
+				border-color: var(--color-accent);
 			}
 
 			/* Categories dropdown */
@@ -1167,5 +1137,17 @@ const isLoggedIn = !!Astro.locals.user;
 			});
 		</script>
 		<EmDashBodyEnd page={pageCtx} />
+		<script>
+			function setLangCookie(lang: string) {
+				document.cookie = `pref_lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
+			}
+			document.getElementById('langSelect')?.addEventListener('change', (e) => {
+				setLangCookie((e.target as HTMLSelectElement).value);
+				location.reload();
+			});
+			document.querySelectorAll<HTMLAnchorElement>('[data-switch-lang]').forEach(a => {
+				a.addEventListener('click', () => setLangCookie(a.dataset.switchLang!));
+			});
+		</script>
 	</body>
 </html>
