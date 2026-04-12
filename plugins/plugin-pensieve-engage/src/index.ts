@@ -21,6 +21,11 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 		},
 		adminPages: [
 			{ path: "/subscribers", label: "Subscribers", icon: "users" },
+			{ path: "/sends", label: "Sends", icon: "mail" },
+			{ path: "/analytics", label: "Analytics", icon: "chart" },
+		],
+		adminWidgets: [
+			{ id: "subscriber-stats", title: "Subscribers", size: "third" },
 		],
 	};
 }
