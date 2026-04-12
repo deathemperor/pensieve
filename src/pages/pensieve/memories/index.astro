@@ -53,7 +53,7 @@ const formatDate = (date: Date) =>
 				<div class="posts-list">
 					{postsWithTags.map(({ post, tags, bylines }) => (
 						<article class="post-item">
-							<a href={link(`posts/${post.id}`)} class="post-link">
+							<a href={link(`memories/${post.id}`)} class="post-link">
 								<div class="post-meta">
 									{bylines.length > 0 && (
 										<>

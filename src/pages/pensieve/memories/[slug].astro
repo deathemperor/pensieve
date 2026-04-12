@@ -62,7 +62,7 @@ const featuredImageUrl = getImageUrl(post.data.featured_image);
 const seo = getSeoMeta(post, {
 	siteTitle: "Pensieve",
 	siteUrl: Astro.url.origin,
-	path: link(`posts/${slug}`),
+	path: link(`memories/${slug}`),
 	defaultOgImage: featuredImageUrl,
 });
 
@@ -281,7 +281,7 @@ const publishDate =
 						siblingSlug && (
 							<div class="translation-strip">
 								<a
-									href={link(`posts/${siblingSlug}`)}
+									href={link(`memories/${siblingSlug}`)}
 									class="translation-toggle"
 									data-switch-lang={siblingLang}
 								>
@@ -334,7 +334,7 @@ const publishDate =
 									title={p.data.title}
 									excerpt={p.data.excerpt}
 									featuredImage={p.data.featured_image}
-									href={link(`posts/${p.id}`)}
+									href={link(`memories/${p.id}`)}
 									date={p.data.publishedAt ?? undefined}
 									readingTime={getReadingTime(p.data.content)}
 									tags={postTags.map((t) => ({ slug: t.slug, label: t.label }))}
