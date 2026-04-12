@@ -1,5 +1,6 @@
 ---
 name: room-of-requirement
+color: "#5e6ad2"
 description: Update the Room of Requirement page when new technologies, plugins, subagents, or architectural changes are applied. Called by the main agent after infrastructure changes.
 ---
 
