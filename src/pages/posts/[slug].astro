@@ -278,6 +278,7 @@ const publishDate =
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
 					<CommentForm collection="posts" contentId={post.data.id} />
+					<p class="comments-note">Comments are moderated and may take a moment to appear.</p>
 				</div>
 			</div>
 
@@ -969,6 +970,12 @@ const publishDate =
 	.article-comments :global(.ec-comment-form-submit) {
 		background: var(--color-accent) !important;
 		color: var(--color-on-accent) !important;
+	}
+
+	.comments-note {
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin-top: var(--spacing-4);
 	}
 
 	/* More posts section */
