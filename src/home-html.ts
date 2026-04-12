@@ -323,19 +323,33 @@ export const HOME_HTML = `<!DOCTYPE html>
           </a>
         </li>
         <li>
-          <div class="project" data-dim="true" aria-disabled="true">
+          <a href="/room-of-requirement" class="project">
             <div>
               <div class="project-head">
-                <h2 class="project-name">More, soon</h2>
-                <span class="project-meta">TBD</span>
+                <h2 class="project-name">Room of Requirement</h2>
+                <span class="project-meta">Build diary</span>
               </div>
               <p class="project-desc">
-                Other projects — notebooks, tools, experiments — will live under
-                huuloc.com as they're ready. Nothing public yet.
+                How this site is built — architecture, tech stack, and
+                Priori Incantatem: a timeline of every Claude Code session.
               </p>
             </div>
-            <span class="project-arrow">·</span>
-          </div>
+            <span class="project-arrow">→</span>
+          </a>
+        </li>
+        <li>
+          <a href="/Trương" class="project">
+            <div>
+              <div class="project-head">
+                <h2 class="project-name">Trương</h2>
+                <span class="project-meta">About</span>
+              </div>
+              <p class="project-desc">
+                Origin story, profile links, and live GitHub activity.
+              </p>
+            </div>
+            <span class="project-arrow">→</span>
+          </a>
         </li>
       </ul>
     </section>
