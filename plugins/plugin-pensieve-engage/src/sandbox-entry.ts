@@ -126,11 +126,23 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 	const totalPageviews = items.filter((e: any) => e.eventType === "pageview").length;
 	const uniqueSessions = new Set(items.map((e: any) => e.sessionId)).size;
 
-	// Aggregate by postSlug
+	// Lumos (likes) data
+	const allLumos = await ctx.storage.lumos!.query({});
+	const lumosItems = (allLumos.items ?? allLumos ?? []) as any[];
+	const totalLumos = lumosItems.length;
+
+	// Lumos by post
+	const lumosByPost = new Map<string, number>();
+	for (const like of lumosItems) {
+		const slug = like.data?.postSlug || like.postSlug || "unknown";
+		lumosByPost.set(slug, (lumosByPost.get(slug) || 0) + 1);
+	}
+
+	// Aggregate reading events by postSlug
 	const byPost = new Map<string, { pageviews: number; scrollDepths: number[]; readingTimes: number[] }>();
 
 	for (const event of items) {
-		const slug = event.postSlug || "unknown";
+		const slug = event.postSlug || (event.data?.postSlug) || "unknown";
 		if (!byPost.has(slug)) {
 			byPost.set(slug, { pageviews: 0, scrollDepths: [], readingTimes: [] });
 		}
@@ -150,9 +162,13 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 		}
 	}
 
-	const rows = Array.from(byPost.entries())
-		.sort((a, b) => b[1].pageviews - a[1].pageviews)
-		.map(([slug, agg]) => {
+	// Merge all known post slugs
+	const allSlugs = new Set([...byPost.keys(), ...lumosByPost.keys()]);
+
+	const rows = Array.from(allSlugs)
+		.map((slug) => {
+			const agg = byPost.get(slug) || { pageviews: 0, scrollDepths: [], readingTimes: [] };
+			const lumos = lumosByPost.get(slug) || 0;
 			const avgScroll = agg.scrollDepths.length > 0
 				? Math.round(agg.scrollDepths.reduce((a, b) => a + b, 0) / agg.scrollDepths.length)
 				: 0;
@@ -162,14 +178,18 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 			const avgReadingSec = Math.round(avgReadingMs / 1000);
 
 			return {
+				slug,
+				pageviews: agg.pageviews,
 				cells: [
 					slug,
 					String(agg.pageviews),
 					`${avgScroll}%`,
 					`${avgReadingSec}s`,
+					String(lumos),
 				],
 			};
-		});
+		})
+		.sort((a, b) => b.pageviews - a.pageviews);
 
 	return {
 		blocks: [
@@ -179,12 +199,13 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 				fields: [
 					{ label: "Total Pageviews", value: String(totalPageviews) },
 					{ label: "Unique Sessions", value: String(uniqueSessions) },
+					{ label: "Total Lumos", value: String(totalLumos) },
 				],
 			},
 			{ type: "divider" },
 			{
 				type: "table",
-				columns: ["Post", "Pageviews", "Avg Scroll Depth", "Avg Reading Time"],
+				columns: ["Post", "Pageviews", "Avg Scroll", "Avg Read Time", "Lumos"],
 				rows,
 			},
 		],
