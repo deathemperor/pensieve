@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getEmDashCollection } from "emdash";
 import { BASE } from "../utils/link";
 
-const siteTitle = "pensieve";
+const siteTitle = "Pensieve";
 const siteDescription =
 	"long-form thoughts, one theme per topic — sorted into categories each with their own visual theme.";
 
