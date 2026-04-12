@@ -138,6 +138,7 @@ const publishDate =
 	breadcrumbs={[{ label: "Pensieve", href: "/pensieve/" }, { label: postLang === "vi" ? "Ký Ức" : "Memories", href: "/pensieve/memories" }, { label: post.data.title }]}
 >
 	<article class="article">
+		<div class="reading-progress"></div>
 		{/* Hero: Full-width featured image */}
 		{
 			post.data.featured_image && (
@@ -418,7 +419,64 @@ const publishDate =
 	</script>
 </Base>
 
+<script>
+	function initReadingProgress() {
+		const bar = document.querySelector('.reading-progress') as HTMLElement | null;
+		const content = document.querySelector('.article-content') as HTMLElement | null;
+		if (!bar || !content) return;
+
+		let ticking = false;
+
+		function updateProgress() {
+			const rect = content!.getBoundingClientRect();
+			const contentTop = rect.top + window.scrollY;
+			const contentHeight = content!.offsetHeight;
+			const viewportHeight = window.innerHeight;
+			const scrollY = window.scrollY;
+
+			// Progress: 0 when top of content reaches top of viewport,
+			// 1 when bottom of content reaches top of viewport
+			const scrollable = contentHeight - viewportHeight;
+			if (scrollable <= 0) {
+				bar!.style.width = '100%';
+				return;
+			}
+
+			const progress = Math.min(
+				Math.max((scrollY - contentTop) / scrollable, 0),
+				1
+			);
+			bar!.style.width = `${progress * 100}%`;
+			ticking = false;
+		}
+
+		window.addEventListener('scroll', () => {
+			if (!ticking) {
+				requestAnimationFrame(updateProgress);
+				ticking = true;
+			}
+		}, { passive: true });
+
+		updateProgress();
+	}
+
+	initReadingProgress();
+</script>
+
 <style>
+	/* Reading progress bar */
+	.reading-progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 200;
+		width: 0;
+		height: 3px;
+		background: var(--color-accent);
+		transition: width 0.15s ease-out;
+		pointer-events: none;
+	}
+
 	/* Article container */
 	.article {
 		max-width: var(--wide-width);

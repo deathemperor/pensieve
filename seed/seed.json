@@ -65,6 +65,11 @@
 					"slug": "original_language",
 					"label": "Original Language",
 					"type": "string"
+				},
+				{
+					"slug": "notify_subscribers",
+					"label": "Notify Subscribers",
+					"type": "boolean"
 				}
 			]
 		},
