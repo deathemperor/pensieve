@@ -92,6 +92,76 @@
 					"searchable": true
 				}
 			]
+		},
+		{
+			"slug": "diary",
+			"label": "Build Diary",
+			"labelSingular": "Diary Entry",
+			"supports": [
+				"search"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "date",
+					"label": "Date",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "entry_type",
+					"label": "Type",
+					"type": "string",
+					"required": true
+				},
+				{
+					"slug": "prompt",
+					"label": "Prompt",
+					"type": "text"
+				},
+				{
+					"slug": "summary",
+					"label": "Summary",
+					"type": "text",
+					"searchable": true
+				},
+				{
+					"slug": "model",
+					"label": "Model",
+					"type": "string"
+				},
+				{
+					"slug": "claude_code",
+					"label": "Claude Code Version",
+					"type": "string"
+				},
+				{
+					"slug": "input_tokens",
+					"label": "Input Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "output_tokens",
+					"label": "Output Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "cache_read",
+					"label": "Cache Read Tokens",
+					"type": "integer"
+				},
+				{
+					"slug": "cost",
+					"label": "Cost (USD cents)",
+					"type": "integer"
+				}
+			]
 		}
 	],
 	"taxonomies": [
@@ -26944,6 +27014,540 @@
 						"culture",
 						"snark"
 					]
+				}
+			}
+		],
+		"diary": [
+			{
+				"id": "2026-04-10-chrome-mcp-plant-gallery",
+				"slug": "2026-04-10-chrome-mcp-plant-gallery",
+				"status": "published",
+				"publishedAt": "2026-04-10T00:00:00.000Z",
+				"data": {
+					"title": "Chrome MCP + Plant Gallery",
+					"date": "2026-04-10",
+					"entry_type": "build",
+					"prompt": "test chrome mcp\ndownload all images and videos of this conversation\nmove them here, to ~/death/plant-gallery-v1, then build a web tool for me to view and select as in shopping to buy",
+					"summary": "Connected Chrome browser via MCP. Downloaded Messenger conversation photos. Built a plant gallery with dark theme, image grid, lightbox, and cart panel.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-10-cloudflare-infrastructure-setup",
+				"slug": "2026-04-10-cloudflare-infrastructure-setup",
+				"status": "published",
+				"publishedAt": "2026-04-10T00:00:00.000Z",
+				"data": {
+					"title": "Cloudflare infrastructure setup",
+					"date": "2026-04-10",
+					"entry_type": "deploy",
+					"prompt": "wrangler login, create D1/KV/R2",
+					"summary": "Wrangler login, created D1 database (pensieve-db), KV namespace (SESSION), R2 bucket (pensieve-media). Wired bindings into wrangler.jsonc.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-11-plant-gallery-migration-deploy",
+				"slug": "2026-04-11-plant-gallery-migration-deploy",
+				"status": "published",
+				"publishedAt": "2026-04-11T00:00:00.000Z",
+				"data": {
+					"title": "Plant gallery migration + deploy",
+					"date": "2026-04-11",
+					"entry_type": "deploy",
+					"prompt": "the cart feature needs a quantity input + migrate to pensieve\ndeploy",
+					"summary": "Migrated plant gallery to Pensieve. Added quantity controls to cart. Deployed to huuloc.com/plant-gallery/. 68 files uploaded.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-github-actions-cicd",
+				"slug": "2026-04-12-github-actions-cicd",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "GitHub Actions CI/CD",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "can deployment be done on github?",
+					"summary": "Created .github/workflows/deploy.yml with Node 22, bun, and wrangler-action. Automated deployment on push to main.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-language-chooser-ui-polish",
+				"slug": "2026-04-12-language-chooser-ui-polish",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "Language chooser + UI polish",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "lang chooser should be a dropdown, use cookies not url params\nlang chooser should be on far right\nhome should be to root",
+					"summary": "Replaced VI/EN links with a dropdown menu matching Categories style. Language stored via cookie. Home link changed to root domain.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-session-logging-system",
+				"slug": "2026-04-12-session-logging-system",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "Session logging system",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "logs on the conversations to an md file, always do so\ncreate the session log sub agent for ./pensieve",
+					"summary": "Created session-log.md and session-logger subagent. Set up UserPromptSubmit hook for automatic prompt capture. Dual system: hook for capture, agent for summaries.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-comment-moderation-subagent",
+				"slug": "2026-04-12-comment-moderation-subagent",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "Comment moderation subagent",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "does the comment section work?\nbuild a sub agent for comment moderation\nshould note that comments are moderated",
+					"summary": "Created moderate-comments subagent at .claude/agents/moderate-comments.md. Verified EmDash comments work out of the box. Added moderation notice below comment form.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-github-login-for-admin",
+				"slug": "2026-04-12-github-login-for-admin",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "GitHub login for admin",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "create an admin account for me\nshould allow me to log in using github",
+					"summary": "Configured EmDash GitHub OAuth. User created a GitHub OAuth App, set secrets via wrangler. GitHub login now available at the admin UI.",
+					"model": "unknown",
+					"claude_code": "unknown",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-resend-email-provider-plugin",
+				"slug": "2026-04-12-resend-email-provider-plugin",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "Resend email provider plugin",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "how do I get notified when new comments on pensieve are posted?\nemail to deathemperor@gmail.com\ndon't see the settings",
+					"summary": "Created plugins/plugin-resend/ — provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-12-cloudflare-email-routing",
+				"slug": "2026-04-12-cloudflare-email-routing",
+				"status": "published",
+				"publishedAt": "2026-04-12T00:00:00.000Z",
+				"data": {
+					"title": "Cloudflare Email Routing",
+					"date": "2026-04-12",
+					"entry_type": "build",
+					"prompt": "now I need to create a me@huuloc.com email that will be sent to my loctruongh@gmail.com account\nyou do it",
+					"summary": "Enabled Email Routing for huuloc.com. Created me@huuloc.com forwarding to loctruongh@gmail.com via wrangler CLI.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-subscription-engagement-analytics",
+				"slug": "2026-04-13-subscription-engagement-analytics",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Subscription + engagement analytics",
+					"date": "2026-04-13",
+					"entry_type": "plan",
+					"prompt": "Build a subscription feature. Posting new posts will have an option to diable sending out. Send a welcome message when subscribed. Build an admin analytics for subscriptions with tracking of clicks from emails. Build an analytics to track reading time, what readers focus on most of each posts, all the advanced engagement analytics.",
+					"summary": "Planned plugin-pensieve-engage: email subscriptions with welcome emails, newsletter dispatch on publish with per-post opt-out, click/open tracking in emails, and reading engagement analytics (scroll depth, reading time, section focus via IntersectionObserver). 5-phase implementation. Single trusted plugin using page:fragments for tracker injection.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-room-of-requirement-priori-incantatem",
+				"slug": "2026-04-13-room-of-requirement-priori-incantatem",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Room of Requirement + Priori Incantatem",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "wire to session log. then rebuild session logs into a nice feature to display it so that it can record timeline of building by claude code. the feature should also cite that the site is built using claude code. the logs should attach claude code version and model version so that overtime it records model changes, along with its date as a diary. this is a seperate section of the site. I wanna name it something Harry Potter-ish (as the site is)",
+					"summary": "Built the build section (Room of Requirement) with architecture overview, tech stack, and subagents. Created Priori Incantatem — a timeline diary recording every Claude Code session with model versions.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-trng-about-page",
+				"slug": "2026-04-13-trng-about-page",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Trương about page",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "build a /trương page. this is my last name. this is my about me, my origin and what I do, should again have links to my profile pages, my github commit stats and histories infographic (real time data)",
+					"summary": "Built about page at /Trương with origin story bio, profile links (GitHub, LinkedIn, Facebook, email), and live GitHub infographic fetched from GitHub API at request time — stats, activity chart, recent repos grid, and activity feed timeline.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-content-signals-claude-code-attribution-coding-era",
+				"slug": "2026-04-13-content-signals-claude-code-attribution-coding-era",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Content signals + Claude Code attribution + coding eras",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "make sure the page is SEO and comply with cloudflare https://contentsignals.org/\nalso, add into build section what is done by claude code (all codes are, deployments are, translationg aren't)\nbtw, the git infographics should highlight the moment I switch fully to zero human code and full claude code, hihglight the moment I use github copilot for code assist (use the date the github copilot program accepting preview)",
+					"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Trương page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-avada-kedavra-base-refactor-from-pensieve-to",
+				"slug": "2026-04-13-avada-kedavra-base-refactor-from-pensieve-to",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Avada Kedavra: base refactor from /pensieve to /",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "is it refactor EmDash to huuloc.com? so that it's easier for you to work on in the future\nAvada Kedavra",
+					"summary": "Refactored Astro base from /pensieve to /. Moved blog pages to src/pages/pensieve/ to preserve URLs. Converted static landing page to Astro page. Simplified worker — removed URL rewriting hack. Root-level pages (Room of Requirement, Trương) now native Astro routes.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-fix-broken-css-after-base-refactor",
+				"slug": "2026-04-13-fix-broken-css-after-base-refactor",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Fix broken CSS after base refactor",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "not only that page doesn't have the activity, its css is broken now",
+					"summary": "Removed build:relocate-assets script that moved /_astro/* to /pensieve/_astro/. With base: '/', assets must stay at root or CSS/JS links break.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-hp-themed-authorship-banners-on-posts",
+				"slug": "2026-04-13-hp-themed-authorship-banners-on-posts",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "HP-themed authorship banners on posts",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "I think when original contents is being view or AI translationed, a big nice indicator should be shown. Without this or too small an indicator, people will misunderstand that all writtings are AI's in this LLM era. Must make user aware this in a big way. indicator should be in Harry Potter's style too.",
+					"summary": "Added prominent authorship banners on every post. 'Penned by Quill' (green) for original human-written content. 'Conjured Translation' (accent) for Claude-translated posts. Bilingual EN/VI. Each banner explicitly states whether content is human or AI-translated.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-vietnamese-priori-incantatem-ror-subagent",
+				"slug": "2026-04-13-vietnamese-priori-incantatem-ror-subagent",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Vietnamese Priori Incantatem + RoR subagent",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "Build Diary should be Vietnamese friendly too. while you're doing that, cite that the translations are done by Claude\ncreate a RoR sub agent so that it's summoned when new tech are applied.",
+					"summary": "Added Vietnamese support to Priori Incantatem (dates, type labels: Phép Thuật, Lời Tiên Tri, Reparo, Hiện Hình). Created room-of-requirement subagent for updating tech/plugins/agents on the build page.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-github-token-for-api-rate-limits",
+				"slug": "2026-04-13-github-token-for-api-rate-limits",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "GitHub token for API rate limits",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "sure",
+					"summary": "Added GITHUB_TOKEN support to Trương page for higher GitHub API rate limits (60 → 5,000 req/hr). Token set via wrangler secret.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-remove-bipolar-mention-from-trng-page",
+				"slug": "2026-04-13-remove-bipolar-mention-from-trng-page",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Remove bipolar mention from Trương page",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "Remove the bipolar disorder on about page, nice of you guessing it out. I did diagnos myself with that but I am not, I have my latest understanding what it is that I'll write about.",
+					"summary": "Removed presumptive bipolar disorder mention from the about page. That's the author's story to tell.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-root-landing-page-links-nav-fixes",
+				"slug": "2026-04-13-root-landing-page-links-nav-fixes",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Root landing page links + nav fixes",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "so...you misunderstood a lot. huuloc.com root isn't EmDash, right? only /pensieve\n-_- I still can't access RoR and /truong from huuloc.com content",
+					"summary": "Added Room of Requirement and Trương links to the huuloc.com static landing page. Fixed nav label from 'Build' to 'Room of Requirement'. Updated seed menu to point About to /Trương.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-edge-cache-github-api-rename-priori-incantatem-age",
+				"slug": "2026-04-13-edge-cache-github-api-rename-priori-incantatem-age",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Edge-cache GitHub API + rename priori-incantatem agent",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "I think allow public access with lot of guest traffics to hit github API is a bad choice. figure out a better way.\nrename session logger sub agent to Priori Incantatem",
+					"summary": "Replaced per-visitor GitHub API calls with Cloudflare edge caching (1hr TTL via cf fetch options). Renamed session-logger agent to priori-incantatem.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-site-routes-manifest-llmstxt-ai-pluginjson",
+				"slug": "2026-04-13-site-routes-manifest-llmstxt-ai-pluginjson",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Site routes manifest + llms.txt + ai-plugin.json",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "does Astro has a sitemap (all those stuffs)?\nfind a way! otherwise you will miss updating those SEO/discoverability\nsame as RSS, anythign content related are getting changes and updated. need to automate that",
+					"summary": "Created site-routes.json manifest as single source of truth for SEO. Sitemap reads static pages from manifest + queries EmDash for dynamic content. Added llms.txt and .well-known/ai-plugin.json for AI agent discovery. Updated CLAUDE.md and agents to enforce manifest updates.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-fix-translation-link-redirect-hp-themed-toggle",
+				"slug": "2026-04-13-fix-translation-link-redirect-hp-themed-toggle",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Fix translation link redirect + HP-themed toggle",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "bug: when accessing https://huuloc.com/pensieve/memories/letting-the-bird-go-and-the-art-of-being-bored then click on the original post, it got redirect to the former. also \"Đọc bản tiếng Việt\" or the same \"English version\" should be renamed to mean AI translated or my original in HP style",
+					"summary": "Fixed data-switch-lang JS handler that reloaded current page instead of navigating to sibling URL. Renamed toggle: 'Read the Original Manuscript' / 'Đọc Bản Gốc' for originals, 'Read the Conjured Translation' / 'Đọc Bản Dịch Phép Thuật' for translations.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-geminio-i18n-subagent",
+				"slug": "2026-04-13-geminio-i18n-subagent",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Geminio i18n subagent",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "the website is not multi lang friendly, build a claude code sub agent to do it, name it to HP style that will be summoned to work whenever new texts are added, basicly as a police",
+					"summary": "Created Geminio (Doubling Charm) subagent — i18n police that ensures all user-facing text has both English and Vietnamese versions. Ran full audit: found ~100 hardcoded strings across 12 files.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-combine-authorship-banner-translation-toggle",
+				"slug": "2026-04-13-combine-authorship-banner-translation-toggle",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Combine authorship banner + translation toggle",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "these should be combined",
+					"summary": "Merged the separate authorship banner and translation toggle into a single unified block.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-fix-coding-eras-with-real-github-data",
+				"slug": "2026-04-13-fix-coding-eras-with-real-github-data",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Fix coding eras with real GitHub data",
+					"date": "2026-04-13",
+					"entry_type": "fix",
+					"prompt": "change the GitHub Copilot era to its public preview (that's when I got access). also these lines should have number of commits.\nthis is not true, use my local gh cli to find out the exact date",
+					"summary": "Corrected coding eras from GitHub commit history: Solo 2006-Jun 2022 (1,755 commits), GitHub Copilot Jun 2022-Jan 2026 (8,106 commits, public preview), Claude Code Jan 29 2026-now (232 commits). First Claude Code commit: Jan 29, 2026.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
+				}
+			},
+			{
+				"id": "2026-04-13-mandatory-diary-update-before-push",
+				"slug": "2026-04-13-mandatory-diary-update-before-push",
+				"status": "published",
+				"publishedAt": "2026-04-13T00:00:00.000Z",
+				"data": {
+					"title": "Mandatory diary update before push",
+					"date": "2026-04-13",
+					"entry_type": "build",
+					"prompt": "diary not got updated automatically, how should it be done?",
+					"summary": "Added blocking rule to CLAUDE.md: priori-incantatem agent must run before every git push. No more forgotten diary entries.",
+					"model": "claude-opus-4-6",
+					"claude_code": "2.1.104",
+					"input_tokens": 0,
+					"output_tokens": 0,
+					"cache_read": 0,
+					"cost": 0
 				}
 			}
 		]
