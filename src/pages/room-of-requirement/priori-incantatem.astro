@@ -63,10 +63,9 @@ function formatModel(model: string) {
 }
 ---
 
-<Base title={isVi ? "Priori Incantatem — Nhật Ký Xây Dựng" : "Priori Incantatem — Build Diary"} description={isVi ? "Dòng thời gian mỗi phép thuật Claude Code thực hiện để xây dựng trang web này" : "A timeline of every spell cast by Claude Code to build this site"}>
+<Base title={isVi ? "Priori Incantatem — Nhật Ký Xây Dựng" : "Priori Incantatem — Build Diary"} description={isVi ? "Dòng thời gian mỗi phép thuật Claude Code thực hiện để xây dựng trang web này" : "A timeline of every spell cast by Claude Code to build this site"} breadcrumbs={[{ label: "Room of Requirement", href: "/room-of-requirement" }, { label: "Priori Incantatem" }]}>
 	<section class="pi-hero">
 		<div class="pi-hero-inner">
-			<a href="/room-of-requirement" class="pi-back">&larr; Room of Requirement</a>
 			<div class="pi-rule" />
 			<span class="pi-label">{isVi ? "Nhật Ký Xây Dựng" : "Build Diary"}</span>
 			<h1 class="pi-title">Priori Incantatem</h1>
