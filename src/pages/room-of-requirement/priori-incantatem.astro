@@ -109,7 +109,11 @@ function formatModel(model: string) {
 								</div>
 								<h3 class="entry-title">{entry.title}</h3>
 								{entry.prompt && (
-									<blockquote class="entry-prompt">{entry.prompt}</blockquote>
+									<blockquote class="entry-prompt">
+										{entry.prompt.split("\n").map((line, i) => (
+											<>{i > 0 && <br />}{line}</>
+										))}
+									</blockquote>
 								)}
 								<p class="entry-summary">{entry.summary}</p>
 								<div class="entry-meta">

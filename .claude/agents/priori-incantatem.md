@@ -45,4 +45,5 @@ Read the existing JSON array, then append a new entry object:
 - Read the file first to avoid duplicates.
 - The JSON file must remain valid JSON — read the full file, parse, push, write back.
 - Keep summaries under 3 sentences. Use past tense.
+- **CRITICAL**: The `prompt` field must contain the user's full original prompt text, verbatim. Never omit or abbreviate. If multiple prompts were handled together, join with `\n` (newline) — one prompt per line, in chronological order.
 - **CRITICAL**: The `prompt` field must contain the user's full original prompt text, verbatim. Never omit or abbreviate prompts. If multiple prompts were handled together, join them with ` / `.

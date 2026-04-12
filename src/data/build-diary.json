@@ -3,7 +3,7 @@
 		"date": "2026-04-10",
 		"title": "Chrome MCP + Plant Gallery",
 		"type": "build",
-		"prompt": "test chrome mcp / download all images and videos of this conversation / move them here, to ~/death/plant-gallery-v1, then build a web tool for me to view and select as in shopping to buy",
+		"prompt": "test chrome mcp\ndownload all images and videos of this conversation\nmove them here, to ~/death/plant-gallery-v1, then build a web tool for me to view and select as in shopping to buy",
 		"summary": "Connected Chrome browser via MCP. Downloaded Messenger conversation photos. Built a plant gallery with dark theme, image grid, lightbox, and cart panel.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -21,7 +21,7 @@
 		"date": "2026-04-11",
 		"title": "Plant gallery migration + deploy",
 		"type": "deploy",
-		"prompt": "the cart feature needs a quantity input + migrate to pensieve / deploy",
+		"prompt": "the cart feature needs a quantity input + migrate to pensieve\ndeploy",
 		"summary": "Migrated plant gallery to Pensieve. Added quantity controls to cart. Deployed to huuloc.com/plant-gallery/. 68 files uploaded.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -39,7 +39,7 @@
 		"date": "2026-04-12",
 		"title": "Language chooser + UI polish",
 		"type": "build",
-		"prompt": "lang chooser should be a dropdown, use cookies not url params / lang chooser should be on far right / home should be to root",
+		"prompt": "lang chooser should be a dropdown, use cookies not url params\nlang chooser should be on far right\nhome should be to root",
 		"summary": "Replaced VI/EN links with a dropdown menu matching Categories style. Language stored via cookie. Home link changed to root domain.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -48,7 +48,7 @@
 		"date": "2026-04-12",
 		"title": "Session logging system",
 		"type": "build",
-		"prompt": "logs on the conversations to an md file, always do so / create the session log sub agent for ./pensieve",
+		"prompt": "logs on the conversations to an md file, always do so\ncreate the session log sub agent for ./pensieve",
 		"summary": "Created session-log.md and session-logger subagent. Set up UserPromptSubmit hook for automatic prompt capture. Dual system: hook for capture, agent for summaries.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -57,7 +57,7 @@
 		"date": "2026-04-12",
 		"title": "Comment moderation subagent",
 		"type": "build",
-		"prompt": "does the comment section work? / build a sub agent for comment moderation / should note that comments are moderated",
+		"prompt": "does the comment section work?\nbuild a sub agent for comment moderation\nshould note that comments are moderated",
 		"summary": "Created moderate-comments subagent at .claude/agents/moderate-comments.md. Verified EmDash comments work out of the box. Added moderation notice below comment form.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -66,7 +66,7 @@
 		"date": "2026-04-12",
 		"title": "GitHub login for admin",
 		"type": "build",
-		"prompt": "create an admin account for me / should allow me to log in using github",
+		"prompt": "create an admin account for me\nshould allow me to log in using github",
 		"summary": "Configured EmDash GitHub OAuth. User created a GitHub OAuth App, set secrets via wrangler. GitHub login now available at the admin UI.",
 		"model": "unknown",
 		"claudeCode": "unknown"
@@ -75,7 +75,7 @@
 		"date": "2026-04-12",
 		"title": "Resend email provider plugin",
 		"type": "build",
-		"prompt": "how do I get notified when new comments on pensieve are posted? / email to deathemperor@gmail.com / don't see the settings",
+		"prompt": "how do I get notified when new comments on pensieve are posted?\nemail to deathemperor@gmail.com\ndon't see the settings",
 		"summary": "Created plugins/plugin-resend/ \u2014 provides email delivery via Resend API and sends notifications on new comments. Fixed capability requirements and Block Kit admin settings page.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -84,7 +84,7 @@
 		"date": "2026-04-12",
 		"title": "Cloudflare Email Routing",
 		"type": "build",
-		"prompt": "now I need to create a me@huuloc.com email that will be sent to my loctruongh@gmail.com account / you do it",
+		"prompt": "now I need to create a me@huuloc.com email that will be sent to my loctruongh@gmail.com account\nyou do it",
 		"summary": "Enabled Email Routing for huuloc.com. Created me@huuloc.com forwarding to loctruongh@gmail.com via wrangler CLI.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -120,7 +120,7 @@
 		"date": "2026-04-13",
 		"title": "Content signals + Claude Code attribution + coding eras",
 		"type": "build",
-		"prompt": "make sure the page is SEO and comply with cloudflare https://contentsignals.org/ / also, add into build section what is done by claude code (all codes are, deployments are, translationg aren't) / btw, the git infographics should highlight the moment I switch fully to zero human code and full claude code, hihglight the moment I use github copilot for code assist (use the date the github copilot program accepting preview)",
+		"prompt": "make sure the page is SEO and comply with cloudflare https://contentsignals.org/\nalso, add into build section what is done by claude code (all codes are, deployments are, translationg aren't)\nbtw, the git infographics should highlight the moment I switch fully to zero human code and full claude code, hihglight the moment I use github copilot for code assist (use the date the github copilot program accepting preview)",
 		"summary": "Added content signals meta tags (contentsignals.org). Added 'What Claude Code Does' section to Room of Requirement. Added coding eras timeline to Tr\u01b0\u01a1ng page: Solo (2006-2021), GitHub Copilot (2021-2026), Claude Code (Apr 2026-now, zero human code).",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -129,7 +129,7 @@
 		"date": "2026-04-13",
 		"title": "Avada Kedavra: base refactor from /pensieve to /",
 		"type": "build",
-		"prompt": "is it refactor EmDash to huuloc.com? so that it's easier for you to work on in the future / Avada Kedavra",
+		"prompt": "is it refactor EmDash to huuloc.com? so that it's easier for you to work on in the future\nAvada Kedavra",
 		"summary": "Refactored Astro base from /pensieve to /. Moved blog pages to src/pages/pensieve/ to preserve URLs. Converted static landing page to Astro page. Simplified worker — removed URL rewriting hack. Root-level pages (Room of Requirement, Trương) now native Astro routes.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -156,7 +156,7 @@
 		"date": "2026-04-13",
 		"title": "Vietnamese Priori Incantatem + RoR subagent",
 		"type": "build",
-		"prompt": "Build Diary should be Vietnamese friendly too. while you're doing that, cite that the translations are done by Claude / create a RoR sub agent so that it's summoned when new tech are applied.",
+		"prompt": "Build Diary should be Vietnamese friendly too. while you're doing that, cite that the translations are done by Claude\ncreate a RoR sub agent so that it's summoned when new tech are applied.",
 		"summary": "Added Vietnamese support to Priori Incantatem (dates, type labels: Phép Thuật, Lời Tiên Tri, Reparo, Hiện Hình). Created room-of-requirement subagent for updating tech/plugins/agents on the build page.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
@@ -183,7 +183,7 @@
 		"date": "2026-04-13",
 		"title": "Root landing page links + nav fixes",
 		"type": "fix",
-		"prompt": "so...you misunderstood a lot. huuloc.com root isn't EmDash, right? only /pensieve / -_- I still can't access RoR and /truong from huuloc.com content",
+		"prompt": "so...you misunderstood a lot. huuloc.com root isn't EmDash, right? only /pensieve\n-_- I still can't access RoR and /truong from huuloc.com content",
 		"summary": "Added Room of Requirement and Trương links to the huuloc.com static landing page. Fixed nav label from 'Build' to 'Room of Requirement'. Updated seed menu to point About to /Trương.",
 		"model": "claude-opus-4-6",
 		"claudeCode": "2.1.104"
