@@ -181,9 +181,9 @@ const plugins = [
 		<div class="room-inner">
 			<div class="two-col">
 				<div>
-					<h2 class="section-heading">Subagents</h2>
+					<h2 class="section-heading">{isVi ? "Gia Tinh" : "House-Elves"}</h2>
 					<p class="section-desc">
-						{isVi ? "Các tác tử Claude Code chuyên biệt cho từng nhiệm vụ." : "Specialized Claude Code agents for specific tasks."}
+						{isVi ? "Các gia tinh trung thành, mỗi vị gắn với một nhiệm vụ." : "Loyal house-elves, each bound to a specific duty."}
 					</p>
 					<div class="agent-list">
 						{agents.map((a) => (

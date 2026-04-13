@@ -4,7 +4,7 @@ import { BASE } from "../../utils/link";
 
 const siteTitle = "Pensieve";
 const siteDescription =
-	"long-form thoughts, one theme per topic — sorted into categories each with their own visual theme.";
+	"Memories extracted from the Pensieve, sorted by the Sorting Hat.";
 
 export const GET: APIRoute = async ({ site, url }) => {
 	const origin = site?.origin ?? url.origin;

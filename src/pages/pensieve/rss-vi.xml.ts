@@ -4,7 +4,7 @@ import { BASE } from "../../utils/link";
 
 const siteTitle = "Pensieve — Tiếng Việt";
 const siteDescription =
-	"Long-form thoughts, bản tiếng Việt. Narratives rescued from Facebook, sorted into themed categories.";
+	"Ký ức được rút từ Pensieve, phân loại bởi Mũ Phân Loại.";
 
 export const GET: APIRoute = async ({ site, url }) => {
 	const origin = site?.origin ?? url.origin;
