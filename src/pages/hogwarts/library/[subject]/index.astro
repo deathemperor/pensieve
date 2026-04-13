@@ -46,21 +46,21 @@ const difficultyLabels: Record<string, { en: string; vi: string }> = {
 ---
 
 <Base
-	title={`${term.name} — ${isVi ? "Thư Viện" : "The Library"} — Pensieve`}
+	title={`${term.label} — ${isVi ? "Thư Viện" : "The Library"} — Pensieve`}
 	description={isVi
-		? `${sortedLessons.length} bài học về ${term.name}`
-		: `${sortedLessons.length} lessons on ${term.name}`}
+		? `${sortedLessons.length} bài học về ${term.label}`
+		: `${sortedLessons.length} lessons on ${term.label}`}
 	breadcrumbs={[
 		{ label: "Hogwarts", href: "/" },
 		{ label: isVi ? "Thư Viện" : "The Library", href: "/hogwarts/library/" },
-		{ label: term.name },
+		{ label: term.label },
 	]}
 >
 	<section class="subject-hero">
 		<div class="subject-hero-inner">
 			<div class="room-rule" />
 			<span class="room-label">{isVi ? "Thư Viện" : "The Library"}</span>
-			<h1 class="room-title">{term.name}</h1>
+			<h1 class="room-title">{term.label}</h1>
 			<p class="lesson-count-tag">
 				{sortedLessons.length}{" "}
 				{isVi
