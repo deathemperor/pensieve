@@ -60,8 +60,17 @@ for (const entry of entries) {
 	}
 }
 
-const totalTokens = entries.reduce((sum, e) => sum + e.inputTokens + e.outputTokens, 0);
+const totalInput = entries.reduce((sum, e) => sum + e.inputTokens, 0);
+const totalOutput = entries.reduce((sum, e) => sum + e.outputTokens, 0);
+const totalCache = entries.reduce((sum, e) => sum + e.cacheRead, 0);
+const totalTokens = totalInput + totalOutput;
 const totalCost = entries.reduce((sum, e) => sum + e.cost, 0);
+
+function formatTokens(n: number) {
+	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+	if (n >= 1_000) return `${(n / 1000).toFixed(0)}K`;
+	return String(n);
+}
 
 // Per-type counts
 const typeCounts = entries.reduce((acc, e) => {
@@ -125,25 +134,43 @@ function formatModel(model: string) {
 					<span class="pi-stat-value">{grouped.size}</span>
 					<span class="pi-stat-label">{isVi ? "ngày" : "days"}</span>
 				</span>
-				{totalTokens > 0 && (
-					<>
-						<span class="pi-stat-dot" />
-						<span class="pi-stat">
-							<span class="pi-stat-value">{totalTokens >= 1_000_000 ? `${(totalTokens / 1_000_000).toFixed(1)}M` : `${(totalTokens / 1000).toFixed(0)}K`}</span>
-							<span class="pi-stat-label">tokens</span>
-						</span>
-					</>
-				)}
 				{totalCost > 0 && (
 					<>
 						<span class="pi-stat-dot" />
 						<span class="pi-stat">
-							<span class="pi-stat-value">${`$${(totalCost / 100).toFixed(2)}`}</span>
+							<span class="pi-stat-value">{`$${(totalCost / 100).toFixed(2)}`}</span>
 							<span class="pi-stat-label">{isVi ? "chi phí" : "cost"}</span>
 						</span>
 					</>
 				)}
 			</div>
+			{totalTokens > 0 && (
+				<div class="pi-token-summary">
+					<span class="pi-token-stat">
+						<span class="pi-token-value">{formatTokens(totalInput)}</span>
+						<span class="pi-token-label">input</span>
+					</span>
+					<span class="pi-token-sep">+</span>
+					<span class="pi-token-stat">
+						<span class="pi-token-value">{formatTokens(totalOutput)}</span>
+						<span class="pi-token-label">output</span>
+					</span>
+					{totalCache > 0 && (
+						<>
+							<span class="pi-token-sep">+</span>
+							<span class="pi-token-stat">
+								<span class="pi-token-value">{formatTokens(totalCache)}</span>
+								<span class="pi-token-label">cache</span>
+							</span>
+						</>
+					)}
+					<span class="pi-token-sep">=</span>
+					<span class="pi-token-stat">
+						<span class="pi-token-value pi-token-total">{formatTokens(totalInput + totalOutput + totalCache)}</span>
+						<span class="pi-token-label">{isVi ? "tổng token" : "total tokens"}</span>
+					</span>
+				</div>
+			)}
 			<div class="pi-type-summary">
 				{(["build", "plan", "ultraplan", "fix", "deploy"] as const).map((type) => {
 					const count = typeCounts[type];
@@ -314,6 +341,42 @@ function formatModel(model: string) {
 		border-radius: 50%;
 		background: currentColor;
 		opacity: 0.5;
+	}
+
+	.pi-token-summary {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-4);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+	}
+
+	.pi-token-stat {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-1);
+	}
+
+	.pi-token-value {
+		font-weight: 600;
+		color: var(--color-text-secondary);
+	}
+
+	.pi-token-total {
+		color: var(--color-text);
+	}
+
+	.pi-token-label {
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	.pi-token-sep {
+		color: var(--color-muted);
+		opacity: 0.4;
+		font-size: var(--font-size-xs);
 	}
 
 	.pi-type-summary {
