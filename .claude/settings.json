@@ -21,6 +21,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-stop-diary.sh"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {
