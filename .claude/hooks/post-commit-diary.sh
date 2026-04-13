@@ -105,4 +105,3 @@ npx wrangler d1 execute pensieve-db --remote --command \
 rm -f "$PROMPTS"
 
 exit 0
-# Insights persist across commits
