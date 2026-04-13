@@ -10,6 +10,6 @@ REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 [ -z "$DETAILS" ] && exit 0
 
 mkdir -p "$REPO_ROOT/.session"
-echo "{\"ts\":\"$TIMESTAMP\",\"title\":$(echo "$TITLE" | jq -Rs .),\"details\":$(echo "$DETAILS" | jq -Rs .)}" >> "$REPO_ROOT/.session/plans.jsonl"
+echo "{\"ts\":\"$TIMESTAMP\",\"title\":$(jq -n --arg v "$TITLE" '$v'),\"details\":$(jq -n --arg v "$DETAILS" '$v')}" >> "$REPO_ROOT/.session/plans.jsonl"
 
 exit 0

@@ -28,9 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-commit-diary.sh",
-            "if": "Bash(git commit*)",
-            "async": true
+            "command": ".claude/hooks/post-commit-diary.sh"
           }
         ]
       }
