@@ -20,100 +20,7 @@ Astro.cache.set(cacheHint);
 const slides = Array.isArray(lesson.data.slides) ? lesson.data.slides : [];
 const title = lesson.data.title ?? "Lesson";
 const description = lesson.data.description ?? "";
-
-function renderSlide(slide: any, idx: number): string {
-	const layout = slide.layout ?? "text-left-image-right";
-	const hasNotes = slide.speaker_notes;
-	const notes = hasNotes
-		? `<aside class="notes">${escapeHtml(slide.speaker_notes)}</aside>`
-		: "";
-
-	const keyTakeaway = slide.key_takeaway
-		? `<div class="key-takeaway"><span class="takeaway-label">Key takeaway</span><span class="takeaway-text">${escapeHtml(slide.key_takeaway)}</span></div>`
-		: "";
-
-	const interaction = slide.interaction
-		? `<div class="interaction-prompt">${escapeHtml(slide.interaction)}</div>`
-		: "";
-
-	function renderFragments(items: any[]): string {
-		if (!items || !items.length) return "";
-		return items
-			.map((f) => `<li class="fragment">${escapeHtml(typeof f === "string" ? f : f.text ?? String(f))}</li>`)
-			.join("\n");
-	}
-
-	if (layout === "title-only") {
-		return `<section>
-  <h2>${escapeHtml(slide.title ?? "")}</h2>
-  ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
-  ${keyTakeaway}${interaction}${notes}
-</section>`;
-	}
-
-	if (layout === "quote") {
-		return `<section>
-  <blockquote class="slide-quote">
-    <p>${escapeHtml(slide.title ?? "")}</p>
-    ${slide.body ? `<footer>— ${escapeHtml(slide.body)}</footer>` : ""}
-  </blockquote>
-  ${keyTakeaway}${interaction}${notes}
-</section>`;
-	}
-
-	if (layout === "image-full") {
-		const imgSrc = slide.image?.src ?? slide.image ?? "";
-		const imgAlt = slide.image?.alt ?? "";
-		return `<section data-background-image="${escapeHtml(imgSrc)}" data-background-size="cover" data-background-position="center">
-  <div class="image-full-overlay">
-    ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
-    ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
-  </div>
-  ${keyTakeaway}${interaction}${notes}
-</section>`;
-	}
-
-	if (layout === "two-column") {
-		const frags = Array.isArray(slide.fragments) ? slide.fragments : [];
-		const half = Math.ceil(frags.length / 2);
-		const leftFrags = frags.slice(0, half);
-		const rightFrags = frags.slice(half);
-		return `<section>
-  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
-  <div class="two-col">
-    <ul>${renderFragments(leftFrags)}</ul>
-    <ul>${renderFragments(rightFrags)}</ul>
-  </div>
-  ${keyTakeaway}${interaction}${notes}
-</section>`;
-	}
-
-	if (layout === "code") {
-		const lang = slide.code_lang ?? "";
-		return `<section>
-  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
-  <pre><code class="language-${lang}" data-trim data-noescape>${escapeHtml(slide.body ?? "")}</code></pre>
-  ${keyTakeaway}${interaction}${notes}
-</section>`;
-	}
-
-	// Default: text-left-image-right
-	const imgSrc = slide.image?.src ?? slide.image ?? "";
-	const imgAlt = slide.image?.alt ?? slide.title ?? "";
-	const frags = Array.isArray(slide.fragments) ? slide.fragments : [];
-	return `<section>
-  <div class="slide-split">
-    <div class="slide-left">
-      ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
-      ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
-      ${frags.length ? `<ul>${renderFragments(frags)}</ul>` : ""}
-      ${keyTakeaway}${interaction}
-    </div>
-    ${imgSrc ? `<div class="slide-right"><img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(imgAlt)}" /></div>` : ""}
-  </div>
-  ${notes}
-</section>`;
-}
+const totalSlides = slides.length;
 
 function escapeHtml(str: string): string {
 	return String(str)
@@ -122,6 +29,137 @@ function escapeHtml(str: string): string {
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&#39;");
+}
+
+function renderParagraphs(text: string): string {
+	return text.split(/\n\n+/).map(p => `<p>${escapeHtml(p)}</p>`).join("\n");
+}
+
+function renderFragments(items: any[]): string {
+	if (!items || !items.length) return "";
+	return items
+		.map((f) => `<li class="fragment">${escapeHtml(typeof f === "string" ? f : f.text ?? String(f))}</li>`)
+		.join("\n");
+}
+
+function renderSlide(slide: any, idx: number): string {
+	const layout = slide.layout ?? "text-left-image-right";
+	const notes = slide.speaker_notes
+		? `<aside class="notes">${escapeHtml(slide.speaker_notes)}</aside>`
+		: "";
+
+	const keyTakeaway = slide.key_takeaway
+		? `<div class="key-takeaway fragment"><span class="takeaway-icon">★</span><span class="takeaway-text">${escapeHtml(slide.key_takeaway)}</span></div>`
+		: "";
+
+	const interaction = slide.interaction
+		? `<div class="interaction-prompt fragment"><span class="interaction-icon">💬</span>${escapeHtml(slide.interaction)}</div>`
+		: "";
+
+	const bgColor = slide.bg_color ? ` data-background-color="${escapeHtml(slide.bg_color)}"` : "";
+	const bgImage = slide.bg_image ? ` data-background-image="${escapeHtml(slide.bg_image)}" data-background-size="cover"` : "";
+	const hasImage = slide.image?.src;
+	const hasVideo = slide.video_url;
+	const frags = Array.isArray(slide.fragments) ? slide.fragments : [];
+	const slideNum = idx + 1;
+
+	if (layout === "title-only") {
+		return `<section class="layout-title"${bgColor}${bgImage}>
+  <div class="title-content">
+    <div class="title-accent"></div>
+    <h1>${escapeHtml(slide.title ?? "")}</h1>
+    ${slide.body ? `<p class="title-subtitle">${escapeHtml(slide.body)}</p>` : ""}
+    ${frags.length ? `<ul class="title-fragments">${renderFragments(frags)}</ul>` : ""}
+  </div>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "quote") {
+		return `<section class="layout-quote"${bgColor}>
+  <div class="quote-container">
+    <div class="quote-mark">"</div>
+    <blockquote>${escapeHtml(slide.title ?? "")}</blockquote>
+    ${slide.body ? `<cite>${escapeHtml(slide.body)}</cite>` : ""}
+  </div>
+  ${keyTakeaway}${notes}
+</section>`;
+	}
+
+	if (layout === "image-full") {
+		return `<section class="layout-image-full"${bgColor}${bgImage}${!slide.bg_image ? ' data-background-color="#1a1a2e"' : ""}>
+  <div class="image-full-content">
+    ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+    ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
+  </div>
+  ${notes}
+</section>`;
+	}
+
+	if (layout === "two-column") {
+		const half = Math.ceil(frags.length / 2);
+		const leftFrags = frags.slice(0, half);
+		const rightFrags = frags.slice(half);
+		return `<section class="layout-two-col"${bgColor}>
+  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+  ${slide.body ? `<p class="two-col-subtitle">${escapeHtml(slide.body)}</p>` : ""}
+  <div class="two-col-grid">
+    <div class="two-col-panel">
+      <ul>${renderFragments(leftFrags)}</ul>
+    </div>
+    <div class="two-col-divider"></div>
+    <div class="two-col-panel">
+      <ul>${renderFragments(rightFrags)}</ul>
+    </div>
+  </div>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "code") {
+		return `<section class="layout-code"${bgColor}>
+  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+  <pre><code data-trim data-noescape>${escapeHtml(slide.body ?? "")}</code></pre>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	// Default: text-left-image-right
+	// When no image: full-width text with decorative side element
+	if (hasImage || hasVideo) {
+		return `<section class="layout-split"${bgColor}>
+  <div class="split-grid">
+    <div class="split-text">
+      ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+      ${slide.body ? renderParagraphs(slide.body) : ""}
+      ${frags.length ? `<ul>${renderFragments(frags)}</ul>` : ""}
+      ${keyTakeaway}${interaction}
+    </div>
+    <div class="split-visual">
+      ${hasImage ? `<img src="${escapeHtml(slide.image.src)}" alt="${escapeHtml(slide.image.alt ?? "")}" />` : ""}
+      ${hasVideo ? `<iframe src="${escapeHtml(slide.video_url)}" allow="autoplay; encrypted-media" allowfullscreen></iframe>` : ""}
+    </div>
+  </div>
+  ${notes}
+</section>`;
+	}
+
+	// No image — use decorative layout
+	return `<section class="layout-narrative"${bgColor}>
+  <div class="narrative-grid">
+    <div class="narrative-accent">
+      <div class="narrative-line"></div>
+      <span class="narrative-num">${String(slideNum).padStart(2, "0")}</span>
+    </div>
+    <div class="narrative-content">
+      ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+      ${slide.body ? renderParagraphs(slide.body) : ""}
+      ${frags.length ? `<ul>${renderFragments(frags)}</ul>` : ""}
+      ${keyTakeaway}${interaction}
+    </div>
+  </div>
+  ${notes}
+</section>`;
 }
 
 const renderedSlides = slides.map((s: any, i: number) => renderSlide(s, i)).join("\n");
@@ -135,276 +173,339 @@ const renderedSlides = slides.map((s: any, i: number) => renderSlide(s, i)).join
 	<title>{title}</title>
 	<meta name="description" content={description} />
 
-	<!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-	<link
-		href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-		rel="stylesheet"
-	/>
+	<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
-	<!-- Reveal.js -->
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
-	/>
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
-		id="theme"
-	/>
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
-	/>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme" />
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css" />
 
 	<style>
-		/* ─── Reset & Pensieve canvas ──────────────────────────────── */
 		:root {
 			--bg: #0d1117;
 			--text: #e6edf3;
-			--text-secondary: #8b949e;
+			--text-dim: #c9d1d9;
+			--text-muted: #8b949e;
 			--accent: #7c3aed;
 			--accent-light: #a78bfa;
+			--accent-glow: rgba(124, 58, 237, 0.15);
 			--border: rgba(255, 255, 255, 0.08);
-			--surface: rgba(255, 255, 255, 0.04);
+			--surface: rgba(255, 255, 255, 0.03);
+			--surface-hover: rgba(255, 255, 255, 0.06);
+			--gold: #d4a843;
 			--green: #3fb950;
+			--red: #e5534b;
 			--font-display: "Inter Tight", sans-serif;
 			--font-sans: "Inter", sans-serif;
 			--font-mono: "JetBrains Mono", monospace;
 		}
 
-		.reveal-viewport {
-			background: var(--bg);
-		}
+		.reveal-viewport { background: var(--bg); }
+		.reveal { font-family: var(--font-sans); font-size: 1.4rem; color: var(--text); }
 
-		.reveal {
-			font-family: var(--font-sans);
-			font-size: 1.5rem;
-			color: var(--text);
-		}
-
-		/* ─── Headings ─────────────────────────────────────────────── */
-		.reveal h1,
-		.reveal h2,
-		.reveal h3 {
+		/* ─── Typography ──────────────────────────────────── */
+		.reveal h1, .reveal h2, .reveal h3 {
 			font-family: var(--font-display);
 			font-weight: 700;
 			letter-spacing: -0.022em;
-			line-height: 1.1;
+			line-height: 1.15;
 			color: var(--text);
 			text-transform: none;
 			text-shadow: none;
-			margin-bottom: 0.75rem;
+			margin: 0 0 0.6rem;
 		}
-
-		.reveal h1 { font-size: 2.4rem; }
-		.reveal h2 { font-size: 1.8rem; }
-		.reveal h3 { font-size: 1.4rem; }
-
-		/* ─── Body text ────────────────────────────────────────────── */
+		.reveal h1 { font-size: 2.6rem; }
+		.reveal h2 { font-size: 1.7rem; }
 		.reveal p {
 			font-family: var(--font-sans);
-			color: var(--text-secondary);
-			line-height: 1.65;
-			margin-bottom: 0.75rem;
+			font-weight: 400;
+			color: var(--text-dim);
+			line-height: 1.7;
+			margin: 0 0 0.6rem;
+			font-size: 0.85em;
 		}
-
-		/* ─── Lists ────────────────────────────────────────────────── */
-		.reveal ul,
-		.reveal ol {
-			list-style: none;
-			padding: 0;
-			margin: 0;
-			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
-		}
-
+		.reveal ul, .reveal ol { list-style: none; padding: 0; margin: 0; }
 		.reveal li {
 			font-family: var(--font-sans);
-			font-size: 0.9em;
-			color: var(--text-secondary);
-			line-height: 1.5;
+			font-size: 0.82em;
+			color: var(--text-dim);
+			line-height: 1.6;
 			padding-left: 1.25rem;
 			position: relative;
+			margin-bottom: 0.35rem;
 		}
-
 		.reveal li::before {
 			content: "";
 			position: absolute;
 			left: 0;
-			top: 0.55em;
+			top: 0.6em;
 			width: 5px;
 			height: 5px;
 			border-radius: 50%;
 			background: var(--accent);
 		}
 
-		/* ─── Slide layouts ────────────────────────────────────────── */
-		.slide-split {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 2.5rem;
-			align-items: center;
-			width: 100%;
-			height: 100%;
-		}
-
-		.slide-left {
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-			text-align: left;
-		}
-
-		.slide-right {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		.slide-right img {
-			max-width: 100%;
-			max-height: 65vh;
-			object-fit: contain;
-			border-radius: 8px;
-			border: 1px solid var(--border);
-		}
-
-		/* ─── Two-column layout ────────────────────────────────────── */
-		.two-col {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 2rem;
-			text-align: left;
-			margin-top: 1rem;
-		}
-
-		/* ─── Quote layout ─────────────────────────────────────────── */
-		.slide-quote {
-			margin: 0 auto;
-			max-width: 75%;
-			text-align: center;
-			padding: 2rem;
-			border-left: none;
-			background: var(--surface);
-			border: 1px solid var(--border);
-			border-radius: 12px;
-		}
-
-		.slide-quote p {
-			font-family: var(--font-display);
-			font-size: 1.4rem;
-			font-weight: 600;
-			color: var(--text);
-			line-height: 1.4;
-			font-style: italic;
-			margin-bottom: 1rem;
-		}
-
-		.slide-quote footer {
-			font-family: var(--font-mono);
-			font-size: 0.75rem;
-			color: var(--text-secondary);
-			letter-spacing: 0.04em;
-		}
-
-		/* ─── Image-full overlay ───────────────────────────────────── */
-		.image-full-overlay {
-			background: rgba(13, 17, 23, 0.75);
-			backdrop-filter: blur(2px);
-			border-radius: 8px;
-			padding: 1.5rem 2rem;
-			display: inline-block;
-			max-width: 60%;
-		}
-
-		.image-full-overlay h2 {
-			color: var(--text) !important;
-		}
-
-		/* ─── Key takeaway ─────────────────────────────────────────── */
-		.key-takeaway {
-			display: flex;
-			align-items: baseline;
-			gap: 0.75rem;
-			margin-top: 1.25rem;
-			padding: 0.75rem 1rem;
-			background: color-mix(in srgb, var(--accent) 12%, transparent);
-			border-left: 3px solid var(--accent);
-			border-radius: 0 6px 6px 0;
-			text-align: left;
-		}
-
-		.takeaway-label {
-			font-family: var(--font-mono);
-			font-size: 0.65em;
-			font-weight: 600;
-			text-transform: uppercase;
-			letter-spacing: 0.08em;
-			color: var(--accent-light);
-			flex-shrink: 0;
-		}
-
-		.takeaway-text {
-			font-family: var(--font-sans);
-			font-size: 0.8em;
-			color: var(--text);
-			line-height: 1.5;
-		}
-
-		/* ─── Interaction prompt ───────────────────────────────────── */
-		.interaction-prompt {
-			margin-top: 1rem;
-			padding: 0.75rem 1rem;
-			background: color-mix(in srgb, var(--green) 10%, transparent);
-			border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
-			border-radius: 6px;
-			font-family: var(--font-sans);
-			font-size: 0.8em;
-			color: var(--green);
-			text-align: left;
-		}
-
-		/* ─── Code blocks ──────────────────────────────────────────── */
-		.reveal pre {
-			width: 100%;
-			box-shadow: none;
-			border-radius: 8px;
-			border: 1px solid var(--border);
-			margin: 0.5rem 0;
-		}
-
-		.reveal pre code {
-			font-family: var(--font-mono);
-			font-size: 0.78em;
-			line-height: 1.6;
-			padding: 1.25rem 1.5rem;
-			max-height: 55vh;
-		}
-
-		/* ─── Section alignment ────────────────────────────────────── */
+		/* ─── Section base ────────────────────────────────── */
 		.reveal .slides section {
-			display: flex;
+			display: flex !important;
 			flex-direction: column;
 			justify-content: center;
 			align-items: flex-start;
 			text-align: left;
 			height: 100%;
-			padding: 0 1rem;
+			padding: 2rem 3.5rem;
 		}
 
-		.reveal .slides section:has(.slide-split),
-		.reveal .slides section:has(.slide-quote) {
+		/* ─── LAYOUT: Title ───────────────────────────────── */
+		.layout-title {
+			align-items: center !important;
+			text-align: center !important;
+		}
+		.title-content {
+			display: flex;
+			flex-direction: column;
 			align-items: center;
+			gap: 0.5rem;
 		}
-
-		.reveal .slides section:has(.slide-quote) {
+		.title-accent {
+			width: 40px;
+			height: 3px;
+			background: var(--accent);
+			margin-bottom: 1rem;
+			border-radius: 2px;
+		}
+		.title-subtitle {
+			max-width: 65%;
+			color: var(--text-muted) !important;
+			font-size: 0.85em !important;
+		}
+		.title-fragments {
+			margin-top: 1.5rem;
 			text-align: center;
 		}
+		.title-fragments li::before { display: none; }
+		.title-fragments li {
+			padding-left: 0;
+			font-size: 0.9em;
+			color: var(--text-dim);
+		}
 
-		/* ─── Back link ────────────────────────────────────────────── */
+		/* ─── LAYOUT: Quote ───────────────────────────────── */
+		.layout-quote {
+			align-items: center !important;
+			text-align: center !important;
+		}
+		.quote-container {
+			max-width: 70%;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
+		}
+		.quote-mark {
+			font-size: 4rem;
+			line-height: 1;
+			color: var(--accent);
+			font-family: var(--font-display);
+		}
+		.quote-container blockquote {
+			border: none;
+			padding: 0;
+			margin: 0;
+			background: none;
+			box-shadow: none;
+			font-family: var(--font-display);
+			font-size: 1.5rem;
+			font-weight: 500;
+			font-style: italic;
+			color: var(--text);
+			line-height: 1.4;
+		}
+		.quote-container cite {
+			font-family: var(--font-mono);
+			font-size: 0.7rem;
+			color: var(--text-muted);
+			letter-spacing: 0.05em;
+			font-style: normal;
+		}
+
+		/* ─── LAYOUT: Narrative (text-only, no image) ─────── */
+		.narrative-grid {
+			display: grid;
+			grid-template-columns: 60px 1fr;
+			gap: 2rem;
+			width: 100%;
+			max-width: 800px;
+		}
+		.narrative-accent {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 0.75rem;
+			padding-top: 0.3rem;
+		}
+		.narrative-line {
+			width: 2px;
+			flex: 1;
+			min-height: 40px;
+			background: linear-gradient(to bottom, var(--accent), transparent);
+			border-radius: 1px;
+		}
+		.narrative-num {
+			font-family: var(--font-mono);
+			font-size: 0.7rem;
+			color: var(--accent-light);
+			letter-spacing: 0.08em;
+		}
+		.narrative-content {
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+		}
+
+		/* ─── LAYOUT: Split (with image/video) ────────────── */
+		.split-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 2.5rem;
+			align-items: center;
+			width: 100%;
+		}
+		.split-text {
+			display: flex;
+			flex-direction: column;
+			gap: 0.4rem;
+		}
+		.split-visual {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+		.split-visual img {
+			max-width: 100%;
+			max-height: 60vh;
+			object-fit: contain;
+			border-radius: 8px;
+			border: 1px solid var(--border);
+		}
+		.split-visual iframe {
+			width: 100%;
+			aspect-ratio: 16/9;
+			border: none;
+			border-radius: 8px;
+		}
+
+		/* ─── LAYOUT: Two Column ──────────────────────────── */
+		.layout-two-col { align-items: center !important; }
+		.two-col-subtitle { color: var(--text-muted) !important; font-size: 0.8em !important; }
+		.two-col-grid {
+			display: grid;
+			grid-template-columns: 1fr auto 1fr;
+			gap: 1.5rem;
+			width: 100%;
+			margin-top: 1rem;
+		}
+		.two-col-panel {
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 1.25rem 1.5rem;
+		}
+		.two-col-divider {
+			width: 1px;
+			background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+		}
+
+		/* ─── LAYOUT: Image Full ──────────────────────────── */
+		.layout-image-full {
+			align-items: flex-end !important;
+			justify-content: flex-start !important;
+		}
+		.image-full-content {
+			background: rgba(13, 17, 23, 0.8);
+			backdrop-filter: blur(4px);
+			border-radius: 10px;
+			padding: 1.5rem 2rem;
+			max-width: 60%;
+			border: 1px solid var(--border);
+		}
+		.image-full-content h2 { text-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+
+		/* ─── LAYOUT: Code ────────────────────────────────── */
+		.reveal pre {
+			width: 100%;
+			box-shadow: none;
+			border-radius: 10px;
+			border: 1px solid var(--border);
+			margin: 0.5rem 0;
+			background: rgba(22, 27, 34, 0.8);
+		}
+		.reveal pre code {
+			font-family: var(--font-mono);
+			font-size: 0.72em;
+			line-height: 1.7;
+			padding: 1.25rem 1.5rem;
+			max-height: 55vh;
+		}
+
+		/* ─── Key Takeaway ────────────────────────────────── */
+		.key-takeaway {
+			display: flex;
+			align-items: baseline;
+			gap: 0.6rem;
+			margin-top: 1rem;
+			padding: 0.65rem 1rem;
+			background: var(--accent-glow);
+			border-left: 3px solid var(--accent);
+			border-radius: 0 8px 8px 0;
+			text-align: left;
+		}
+		.takeaway-icon {
+			color: var(--accent-light);
+			font-size: 0.75em;
+			flex-shrink: 0;
+		}
+		.takeaway-text {
+			font-family: var(--font-sans);
+			font-size: 0.75em;
+			color: var(--text);
+			line-height: 1.5;
+			font-weight: 500;
+		}
+
+		/* ─── Interaction Prompt ──────────────────────────── */
+		.interaction-prompt {
+			margin-top: 0.75rem;
+			padding: 0.6rem 1rem;
+			background: rgba(63, 185, 80, 0.08);
+			border: 1px solid rgba(63, 185, 80, 0.2);
+			border-radius: 8px;
+			font-family: var(--font-sans);
+			font-size: 0.75em;
+			color: var(--green);
+			text-align: left;
+			display: flex;
+			align-items: baseline;
+			gap: 0.5rem;
+		}
+		.interaction-icon { font-size: 0.9em; flex-shrink: 0; }
+
+		/* ─── Controls ────────────────────────────────────── */
+		.reveal .controls { color: var(--accent); }
+		.reveal .progress { color: var(--accent); height: 3px; }
+		.reveal .slide-number {
+			font-family: var(--font-mono);
+			font-size: 0.65rem;
+			background: transparent;
+			color: var(--text-muted);
+		}
+
+		/* ─── Fragments ───────────────────────────────────── */
+		.reveal .fragment { opacity: 0.12; transition: opacity 0.3s ease; }
+		.reveal .fragment.visible { opacity: 1; }
+
+		/* ─── Back link ───────────────────────────────────── */
 		.back-link {
 			position: fixed;
 			top: 1rem;
@@ -414,53 +515,24 @@ const renderedSlides = slides.map((s: any, i: number) => renderSlide(s, i)).join
 			align-items: center;
 			gap: 6px;
 			font-family: var(--font-mono);
-			font-size: 0.75rem;
-			color: rgba(230, 237, 243, 0.5);
+			font-size: 0.7rem;
+			color: rgba(230, 237, 243, 0.4);
 			text-decoration: none;
 			padding: 5px 10px;
 			background: rgba(13, 17, 23, 0.7);
 			border: 1px solid var(--border);
 			border-radius: 6px;
 			backdrop-filter: blur(8px);
-			transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+			transition: color 0.15s, border-color 0.15s;
 		}
-
 		.back-link:hover {
 			color: var(--accent-light);
-			border-color: color-mix(in srgb, var(--accent) 50%, transparent);
-		}
-
-		/* ─── Controls / progress overrides ───────────────────────── */
-		.reveal .controls {
-			color: var(--accent);
-		}
-
-		.reveal .progress {
-			color: var(--accent);
-			height: 3px;
-		}
-
-		.reveal .slide-number {
-			font-family: var(--font-mono);
-			font-size: 0.7rem;
-			background: transparent;
-			color: var(--text-secondary);
-		}
-
-		/* ─── Fragments ────────────────────────────────────────────── */
-		.reveal .fragment {
-			opacity: 0.15;
-		}
-
-		.reveal .fragment.visible {
-			opacity: 1;
+			border-color: rgba(124, 58, 237, 0.4);
 		}
 	</style>
 </head>
 <body>
-	<a href={`/hogwarts/library/${subject}/`} class="back-link">
-		&larr; {subject}
-	</a>
+	<a href={`/hogwarts/library/${subject}/`} class="back-link">← back</a>
 
 	<div class="reveal">
 		<div class="slides">
@@ -468,19 +540,9 @@ const renderedSlides = slides.map((s: any, i: number) => renderSlide(s, i)).join
 		</div>
 	</div>
 
-	<!-- Reveal.js scripts -->
-	<script
-		is:inline
-		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"
-	></script>
-	<script
-		is:inline
-		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"
-	></script>
-	<script
-		is:inline
-		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"
-	></script>
+	<script is:inline src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+	<script is:inline src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+	<script is:inline src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
 
 	<script is:inline>
 		Reveal.initialize({
