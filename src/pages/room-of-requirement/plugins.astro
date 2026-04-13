@@ -1,0 +1,67 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+
+const isVi = getCurrentLang(Astro) === "vi";
+
+const plugins = [
+  {
+    name: "plugin-resend",
+    purpose: isVi ? "Gửi email qua Resend API + thông báo bình luận" : "Email delivery via Resend API + comment notification emails",
+  },
+  {
+    name: "plugin-forms",
+    purpose: isVi ? "Xử lý biểu mẫu (tích hợp EmDash)" : "Form handling (EmDash built-in)",
+  },
+  {
+    name: "plugin-webhook-notifier",
+    purpose: isVi ? "Thông báo webhook khi nội dung/media thay đổi" : "Webhook notifications on content/media changes",
+  },
+  {
+    name: "plugin-pensieve-engage",
+    purpose: isVi ? "Đăng ký email, gửi bản tin, theo dõi click, phân tích đọc" : "Email subscriptions, newsletter dispatch, click tracking, reading analytics",
+  },
+];
+---
+
+<Base
+  title="Plugins"
+  description={isVi ? "Các plugin EmDash mở rộng CMS" : "EmDash plugins extending the CMS"}
+  breadcrumbs={[
+    { label: "Room of Requirement", href: "/room-of-requirement" },
+    { label: "Plugins" },
+  ]}
+>
+  <section class="pl-page">
+    <div class="pl-inner">
+      <h1 class="pl-title">Plugins</h1>
+      <p class="pl-desc">
+        {isVi ? "Các plugin EmDash mở rộng CMS." : "EmDash plugins extending the CMS."}
+      </p>
+      <p class="pl-count">{plugins.length} plugins</p>
+      <div class="pl-list">
+        {plugins.map((p) => (
+          <div class="pl-card">
+            <span class="pl-name">{p.name}</span>
+            <span class="pl-purpose">{p.purpose}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .pl-page { border-bottom: 1px solid var(--color-border); }
+  .pl-inner { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-16) var(--spacing-8); }
+  .pl-title { font-family: var(--font-display); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: var(--font-weight-display); letter-spacing: -0.02em; color: var(--color-text); margin: 0 0 var(--spacing-2); }
+  .pl-desc { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-muted); margin: 0 0 var(--spacing-2); }
+  .pl-count { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0 0 var(--spacing-8); }
+  .pl-list { display: flex; flex-direction: column; gap: var(--spacing-3); }
+  .pl-card { display: flex; flex-direction: column; gap: var(--spacing-1); padding: var(--spacing-4) var(--spacing-5); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
+  .pl-name { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text); }
+  .pl-purpose { font-family: var(--font-sans); font-size: var(--font-size-xs); color: var(--color-text-secondary); line-height: var(--leading-relaxed); }
+  @media (max-width: 600px) { .pl-inner { padding: var(--spacing-10) var(--spacing-5); } }
+</style>
