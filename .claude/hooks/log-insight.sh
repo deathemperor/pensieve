@@ -8,6 +8,6 @@ REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 [ -z "$INSIGHT" ] && exit 0
 
 mkdir -p "$REPO_ROOT/.session"
-echo "{\"ts\":\"$TIMESTAMP\",\"insight\":$(echo "$INSIGHT" | jq -Rs .)}" >> "$REPO_ROOT/.session/insights.jsonl"
+echo "{\"ts\":\"$TIMESTAMP\",\"insight\":$(jq -n --arg v "$INSIGHT" '$v')}" >> "$REPO_ROOT/.session/insights.jsonl"
 
 exit 0
