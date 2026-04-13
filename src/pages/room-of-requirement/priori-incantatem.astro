@@ -140,12 +140,14 @@ function formatModel(model: string) {
 	<section class="timeline-section">
 		<div class="timeline-inner">
 			<div class="timeline-line" />
-			{[...grouped.entries()].map(([date, dayEntries]) => (
-				<div class="day-group">
-					<div class="day-header">
+			{[...grouped.entries()].map(([date, dayEntries], i) => (
+				<details class="day-group" open={i === 0}>
+					<summary class="day-header">
 						<span class="day-dot" />
 						<time class="day-date">{formatDate(date)}</time>
-					</div>
+						<span class="day-count">{dayEntries.length}</span>
+						<span class="day-chevron" />
+					</summary>
 					<div class="day-entries">
 						{dayEntries.map((entry) => (
 							<article class="entry" style={`--type-color: ${typeColors[entry.type] ?? typeColors.build};`}>
@@ -181,7 +183,7 @@ function formatModel(model: string) {
 							</article>
 						))}
 					</div>
-				</div>
+				</details>
 			))}
 		</div>
 	</section>
@@ -327,6 +329,59 @@ function formatModel(model: string) {
 		gap: var(--spacing-4);
 		margin-bottom: var(--spacing-5);
 		position: relative;
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+	}
+
+	.day-header::-webkit-details-marker {
+		display: none;
+	}
+
+	.day-header::marker {
+		display: none;
+		content: "";
+	}
+
+	.day-count {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+		background: color-mix(in srgb, var(--color-muted) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-muted) 15%, transparent);
+		padding: 0 var(--spacing-2);
+		border-radius: 3px;
+		line-height: 1.6;
+	}
+
+	.day-chevron {
+		width: 16px;
+		height: 16px;
+		margin-left: auto;
+		position: relative;
+		flex-shrink: 0;
+	}
+
+	.day-chevron::before {
+		content: "";
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 6px;
+		height: 6px;
+		border-right: 1.5px solid var(--color-muted);
+		border-bottom: 1.5px solid var(--color-muted);
+		transform: translate(-50%, -65%) rotate(45deg);
+		transition: transform var(--transition-fast);
+	}
+
+	.day-group[open] > .day-chevron::before,
+	.day-group[open] > .day-header .day-chevron::before {
+		transform: translate(-50%, -35%) rotate(-135deg);
+	}
+
+	.day-group:not([open]) > .day-header {
+		margin-bottom: 0;
 	}
 
 	.day-dot {
