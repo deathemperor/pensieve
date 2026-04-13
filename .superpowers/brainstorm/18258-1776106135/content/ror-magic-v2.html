@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #8b949e; margin-bottom: 32px; }
+
+  .demos { display: flex; flex-direction: column; gap: 40px; max-width: 700px; margin: 0 auto; }
+
+  .demo-section { display: flex; flex-direction: column; gap: 12px; }
+  .demo-label { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .demo-desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .demo-tech { font-size: 11px; color: #484f58; font-family: monospace; margin-top: 4px; }
+
+  .demo-stage { background: #0d1117; border: 1px solid #21262d; border-radius: 12px; padding: 32px; display: flex; justify-content: center; align-items: center; min-height: 160px; position: relative; overflow: hidden; }
+
+  /* ── A: Wand Trace Door ── */
+  .door-panel {
+    width: 200px; height: 90px; background: #161b22; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    transform-origin: left center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+    perspective: 800px;
+  }
+  .door-panel-inner {
+    font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 2; pointer-events: none;
+  }
+  /* Trace border - draws around the panel */
+  .door-panel::before {
+    content: ''; position: absolute; inset: 0; border-radius: 8px;
+    border: 2px solid transparent;
+    background: linear-gradient(#161b22, #161b22) padding-box,
+                conic-gradient(from 0deg, transparent 0%, #58a6ff 0%, #7c3aed 25%, #d4a843 50%, transparent 50%) border-box;
+    opacity: 0; transition: opacity 0.2s;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; -webkit-mask-composite: xor;
+  }
+  .door-panel.tracing::before {
+    animation: traceReveal 0.8s ease-out forwards;
+  }
+  @keyframes traceReveal {
+    0% { opacity: 1; background: linear-gradient(#161b22, #161b22) padding-box, conic-gradient(from 0deg, #58a6ff 0%, transparent 0%) border-box; }
+    25% { background: linear-gradient(#161b22, #161b22) padding-box, conic-gradient(from 0deg, #58a6ff 0%, #7c3aed 25%, transparent 25%) border-box; }
+    50% { background: linear-gradient(#161b22, #161b22) padding-box, conic-gradient(from 0deg, #58a6ff 0%, #7c3aed 25%, #d4a843 50%, transparent 50%) border-box; }
+    75% { background: linear-gradient(#161b22, #161b22) padding-box, conic-gradient(from 0deg, #58a6ff 0%, #7c3aed 25%, #d4a843 50%, #58a6ff 75%, transparent 75%) border-box; }
+    100% { opacity: 1; background: linear-gradient(#161b22, #161b22) padding-box, conic-gradient(from 0deg, #58a6ff, #7c3aed, #d4a843, #58a6ff) border-box; }
+  }
+  /* Glow behind */
+  .door-panel.tracing::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 12px;
+    background: conic-gradient(from 0deg, rgba(88,166,255,0.15), rgba(124,58,237,0.15), rgba(212,168,67,0.15), rgba(88,166,255,0.15));
+    filter: blur(8px); z-index: -1;
+    animation: glowIn 0.8s ease-out forwards;
+  }
+  @keyframes glowIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .door-panel.opening {
+    animation: doorSwing 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes doorSwing {
+    0% { transform: perspective(800px) rotateY(0deg); }
+    100% { transform: perspective(800px) rotateY(-95deg); opacity: 0.3; }
+  }
+
+  /* The "room" behind the door */
+  .door-room {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s 0.5s;
+    background: radial-gradient(ellipse at center, rgba(88,166,255,0.06) 0%, transparent 70%);
+  }
+  .door-room.visible { opacity: 1; }
+  .door-room-content {
+    font-size: 14px; color: #58a6ff; font-weight: 600; letter-spacing: -0.02em;
+  }
+
+  /* ── B: Pensieve Dive ── */
+  .pensieve-panel {
+    width: 200px; height: 90px; background: #161b22; border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .pensieve-panel-inner { font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 2; transition: all 0.4s; }
+
+  .pensieve-panel.diving {
+    animation: pensieveDive 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes pensieveDive {
+    0% { transform: scale(1); border-color: #21262d; }
+    20% { transform: scale(1.02); border-color: #58a6ff; box-shadow: 0 0 20px rgba(88,166,255,0.2), inset 0 0 20px rgba(88,166,255,0.05); }
+    40% { transform: scale(1.02); }
+    60% { transform: scale(0.95) translateY(4px); }
+    80% { transform: scale(0.3) translateY(20px); opacity: 0.4; filter: blur(2px); }
+    100% { transform: scale(0) translateY(40px); opacity: 0; filter: blur(8px); }
+  }
+
+  /* Ripple rings */
+  .pensieve-ripple {
+    position: absolute; border-radius: 50%; border: 1px solid rgba(88,166,255,0.3);
+    pointer-events: none; animation: rippleOut 1s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0% { width: 20px; height: 20px; opacity: 0.8; transform: translate(-50%, -50%); }
+    100% { width: 300px; height: 300px; opacity: 0; transform: translate(-50%, -50%); }
+  }
+
+  /* Memory surface */
+  .pensieve-surface {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(88,166,255,0.4), rgba(124,58,237,0.4), rgba(88,166,255,0.4), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .pensieve-panel.diving .pensieve-surface { opacity: 1; animation: surfaceShimmer 0.8s ease-in-out; }
+  @keyframes surfaceShimmer { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+
+  /* Destination text */
+  .pensieve-dest {
+    position: absolute; font-size: 14px; color: #58a6ff; font-weight: 600;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: -0.02em;
+  }
+  .pensieve-dest.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── C: Map Ink Reveal ── */
+  .map-panel {
+    width: 200px; height: 90px; background: #161b22; border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-panel-inner { font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 2; }
+
+  .map-reveal {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at var(--cx, 50%) var(--cy, 50%), rgba(88,166,255,0.15) 0%, transparent 0%);
+    transition: background 0.8s ease-out;
+  }
+  .map-reveal.active {
+    background: radial-gradient(circle at var(--cx, 50%) var(--cy, 50%), rgba(88,166,255,0.15) 100%, transparent 100%);
+  }
+
+  /* Ink lines that draw in */
+  .map-ink {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  }
+  .map-ink.visible { animation: inkFadeIn 0.6s ease-out 0.2s forwards; }
+  @keyframes inkFadeIn { to { opacity: 1; } }
+
+  .map-ink-line {
+    position: absolute; background: rgba(88,166,255,0.2); transform-origin: left;
+  }
+
+  .ink-h1 { left: 15%; right: 60%; top: 25%; height: 1px; animation: inkDraw 0.4s ease-out 0.3s both; }
+  .ink-h2 { left: 15%; right: 30%; top: 40%; height: 1px; animation: inkDraw 0.5s ease-out 0.4s both; }
+  .ink-h3 { left: 15%; right: 45%; top: 55%; height: 1px; animation: inkDraw 0.4s ease-out 0.5s both; }
+  .ink-h4 { left: 15%; right: 50%; top: 70%; height: 1px; animation: inkDraw 0.3s ease-out 0.6s both; }
+  .ink-dot { width: 4px; height: 4px; border-radius: 50%; background: #58a6ff; left: 10%; top: 24%; animation: inkDot 0.2s ease-out 0.25s both; }
+  .ink-dot2 { width: 4px; height: 4px; border-radius: 50%; background: #7c3aed; left: 10%; top: 39%; animation: inkDot 0.2s ease-out 0.35s both; }
+  .ink-dot3 { width: 4px; height: 4px; border-radius: 50%; background: #d4a843; left: 10%; top: 54%; animation: inkDot 0.2s ease-out 0.45s both; }
+
+  @keyframes inkDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes inkDot { from { transform: scale(0); } to { transform: scale(1); } }
+
+  .vote-bar {
+    display: flex; gap: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid #21262d;
+    justify-content: center;
+  }
+  .vote-btn {
+    padding: 8px 20px; border-radius: 6px; border: 1px solid #21262d; background: #161b22;
+    color: #e6edf3; font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .vote-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+  .vote-btn.selected { border-color: #58a6ff; background: rgba(88,166,255,0.1); color: #58a6ff; }
+</style>
+</head>
+<body>
+<h2>Magical Click Transitions — Take 2</h2>
+<p class="subtitle">Click each demo to see the animation. Click again to reset.</p>
+
+<div class="demos">
+
+  <!-- A: Wand Trace Door -->
+  <div class="demo-section">
+    <div class="demo-label">A — Wand Trace Door</div>
+    <div class="demo-desc">A golden trace draws around the panel border (wand movement), then the panel swings open like a 3D door on a hinge, revealing the sub-page behind it.</div>
+    <div class="demo-stage" id="stageA">
+      <div class="door-panel" id="doorPanel" onclick="demoA()">
+        <div class="door-panel-inner">Task Observatory &rarr;</div>
+      </div>
+      <div class="door-room" id="doorRoom">
+        <div class="door-room-content">Task Observatory</div>
+      </div>
+    </div>
+    <div class="demo-tech">CSS perspective + rotateY + conic-gradient border trace. View Transitions for actual navigation.</div>
+  </div>
+
+  <!-- B: Pensieve Dive -->
+  <div class="demo-section">
+    <div class="demo-label">B — Pensieve Dive</div>
+    <div class="demo-desc">The panel pulses with energy, then <strong>shrinks and sinks</strong> — like plunging your face into the pensieve basin. Concentric ripples emanate from where it was. The sub-page surfaces from below.</div>
+    <div class="demo-stage" id="stageB">
+      <div class="pensieve-panel" id="pensievePanel" onclick="demoB()">
+        <div class="pensieve-panel-inner" id="pensieveInner">Restricted Section &rarr;</div>
+        <div class="pensieve-surface"></div>
+      </div>
+      <div class="pensieve-dest" id="pensieveDest">The Restricted Section</div>
+    </div>
+    <div class="demo-tech">CSS scale + blur + translateY. Ripple rings via JS-spawned elements. View Transitions for actual navigation.</div>
+  </div>
+
+  <!-- C: Map Ink Reveal -->
+  <div class="demo-section">
+    <div class="demo-label">C — Marauder's Map Ink</div>
+    <div class="demo-desc">Ink spreads from the click point across the panel, revealing the sub-page content as hand-drawn lines and dots that sketch themselves in. "I solemnly swear that I am up to no good."</div>
+    <div class="demo-stage" id="stageC">
+      <div class="map-panel" id="mapPanel" onclick="demoC(event)">
+        <div class="map-panel-inner" id="mapInner">House-Elves &rarr;</div>
+        <div class="map-reveal" id="mapReveal"></div>
+        <div class="map-ink" id="mapInk">
+          <div class="map-ink-line ink-dot"></div>
+          <div class="map-ink-line ink-h1"></div>
+          <div class="map-ink-line ink-dot2"></div>
+          <div class="map-ink-line ink-h2"></div>
+          <div class="map-ink-line ink-dot3"></div>
+          <div class="map-ink-line ink-h3"></div>
+          <div class="map-ink-line ink-h4"></div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-tech">CSS radial-gradient expand + clip-path lines. Ink draws via transform: scaleX animation.</div>
+  </div>
+
+</div>
+
+<script>
+let aActive = false, bActive = false, cActive = false;
+
+function demoA() {
+  const panel = document.getElementById('doorPanel');
+  const room = document.getElementById('doorRoom');
+  if (aActive) {
+    panel.classList.remove('tracing', 'opening');
+    room.classList.remove('visible');
+    aActive = false;
+    return;
+  }
+  aActive = true;
+  panel.classList.add('tracing');
+  setTimeout(() => {
+    panel.classList.add('opening');
+    setTimeout(() => room.classList.add('visible'), 400);
+  }, 800);
+}
+
+function demoB() {
+  const panel = document.getElementById('pensievePanel');
+  const dest = document.getElementById('pensieveDest');
+  const stage = document.getElementById('stageB');
+  if (bActive) {
+    panel.classList.remove('diving');
+    panel.style.display = '';
+    dest.classList.remove('visible');
+    stage.querySelectorAll('.pensieve-ripple').forEach(r => r.remove());
+    bActive = false;
+    return;
+  }
+  bActive = true;
+  // Spawn ripples
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const ripple = document.createElement('div');
+      ripple.className = 'pensieve-ripple';
+      ripple.style.left = '50%';
+      ripple.style.top = '50%';
+      stage.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 1000);
+    }, i * 200 + 400);
+  }
+  panel.classList.add('diving');
+  setTimeout(() => {
+    dest.classList.add('visible');
+  }, 900);
+}
+
+function demoC(e) {
+  const panel = document.getElementById('mapPanel');
+  const reveal = document.getElementById('mapReveal');
+  const ink = document.getElementById('mapInk');
+  const inner = document.getElementById('mapInner');
+  if (cActive) {
+    reveal.classList.remove('active');
+    ink.classList.remove('visible');
+    inner.style.opacity = '';
+    cActive = false;
+    return;
+  }
+  cActive = true;
+  const rect = panel.getBoundingClientRect();
+  const cx = ((e.clientX - rect.left) / rect.width * 100) + '%';
+  const cy = ((e.clientY - rect.top) / rect.height * 100) + '%';
+  reveal.style.setProperty('--cx', cx);
+  reveal.style.setProperty('--cy', cy);
+  reveal.classList.add('active');
+  inner.style.opacity = '0';
+  setTimeout(() => ink.classList.add('visible'), 300);
+}
+</script>
+</body>
+</html>
