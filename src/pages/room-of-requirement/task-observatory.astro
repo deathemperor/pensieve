@@ -3,22 +3,25 @@ export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
 import { getCurrentLang } from "../../utils/lang";
+import { env } from "cloudflare:workers";
 
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";
 
 // Query tasks from D1 directly
-const db = Astro.locals.runtime?.env?.DB;
+const db = env.DB;
 let tasks: any[] = [];
 
 if (db) {
-  const result = await db.prepare(
-    "SELECT * FROM tasks ORDER BY created_at DESC"
-  ).all();
-  tasks = result.results ?? [];
+  try {
+    const result = await db.prepare(
+      "SELECT * FROM tasks ORDER BY created_at DESC"
+    ).all();
+    tasks = result.results ?? [];
+  } catch {
+    // Table may not exist yet in local dev
+  }
 }
-
-Astro.cache.set({ maxAge: 60, sMaxAge: 120 });
 
 // HP system metadata
 const hpSystems = [
