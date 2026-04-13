@@ -14,6 +14,7 @@ Astro.cache.set(cacheHint);
 
 interface DiaryEntry {
 	date: string;
+	createdAt: string;
 	title: string;
 	type: "build" | "plan" | "fix" | "deploy";
 	prompt: string;
@@ -35,6 +36,7 @@ const entries: DiaryEntry[] = diaryRaw
 	})
 	.map((e) => ({
 		date: e.data.date ?? "",
+		createdAt: e.data.created_at ?? "",
 		title: e.data.title,
 		type: (e.data.entry_type ?? "build") as DiaryEntry["type"],
 		prompt: e.data.prompt ?? "",
@@ -155,7 +157,7 @@ function formatModel(model: string) {
 								<div class="entry-type">
 									<span class="entry-type-dot" />
 									{typeLabels[lang]?.[entry.type] ?? entry.type}
-									<time class="entry-date">{entry.date}</time>
+									<time class="entry-date">{entry.createdAt ? new Date(entry.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : entry.date}</time>
 								</div>
 								<h3 class="entry-title">{entry.title}</h3>
 								{entry.prompt && (
