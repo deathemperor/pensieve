@@ -70,24 +70,51 @@ const reposEndpoint = ghToken
 	? "https://api.github.com/user/repos?sort=pushed&per_page=10&affiliation=owner"
 	: "https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner";
 
+// GraphQL query for accurate commit count (last 30 days, all repos)
+let recentCommitCount = 0;
+
 try {
-	const [userRes, eventsRes, reposRes] = await Promise.all([
+	const fetches: Promise<Response>[] = [
 		fetch(userEndpoint, ghFetchOpts),
 		fetch(eventsEndpoint, ghFetchOpts),
 		fetch(reposEndpoint, ghFetchOpts),
-	]);
+	];
+	// GraphQL for commit stats (requires auth)
+	if (ghToken) {
+		const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+		fetches.push(
+			fetch("https://api.github.com/graphql", {
+				method: "POST",
+				headers: { ...ghHeaders, "Content-Type": "application/json" },
+				body: JSON.stringify({
+					query: `{ viewer { contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } } }`,
+				}),
+				cf: { cacheTtl: 3600, cacheEverything: true },
+			} as RequestInit),
+		);
+	}
+	const results = await Promise.all(fetches);
+	const [userRes, eventsRes, reposRes] = results;
 	if (userRes.ok) ghUser = await userRes.json();
 	if (eventsRes.ok) ghEvents = await eventsRes.json();
 	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
+	if (results[3]?.ok) {
+		const gql = await results[3].json();
+		const cc = gql?.data?.viewer?.contributionsCollection;
+		recentCommitCount = (cc?.totalCommitContributions ?? 0) + (cc?.restrictedContributionsCount ?? 0);
+	}
 } catch {
 	// GitHub API unavailable — render without stats
 }
 
-// Aggregate commit activity from events
+// Fallback: count push events if GraphQL unavailable
 const commitEvents = ghEvents.filter((e) => e.type === "PushEvent");
-const totalRecentCommits = commitEvents.reduce(
-	(sum, e) => sum + (e.payload.commits?.length || 1), 0,
-);
+if (!recentCommitCount) {
+	const hasCommitDetails = commitEvents.some((e) => e.payload.commits && e.payload.commits.length > 0);
+	recentCommitCount = hasCommitDetails
+		? commitEvents.reduce((sum, e) => sum + (e.payload.commits?.length ?? 0), 0)
+		: commitEvents.length;
+}
 
 // Activity by day of week
 const dayNames = isVi
@@ -114,10 +141,16 @@ const activityFeed = ghEvents
 		const timeAgo = formatTimeAgo(date);
 		let action = e.type;
 		if (e.type === "PushEvent") {
-			const count = e.payload.commits?.length || 1;
-			action = isVi
-				? `${count} commit tới ${displayRepo}`
-				: `${count} commit${count !== 1 ? "s" : ""} to ${displayRepo}`;
+			const commits = e.payload.commits;
+			if (commits && commits.length > 0) {
+				action = isVi
+					? `${commits.length} commit tới ${displayRepo}`
+					: `${commits.length} commit${commits.length !== 1 ? "s" : ""} to ${displayRepo}`;
+			} else {
+				action = isVi
+					? `đẩy mã tới ${displayRepo}`
+					: `pushed to ${displayRepo}`;
+			}
 		} else if (e.type === "CreateEvent") {
 			action = isVi
 				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} trong ` : ""}${displayRepo}`
@@ -330,8 +363,8 @@ function formatGHDate(iso: string) {
 						<span class="gh-stat-label">{isVi ? "kho mã" : "repos"}</span>
 					</div>
 					<div class="gh-stat">
-						<span class="gh-stat-value">{totalRecentCommits}</span>
-						<span class="gh-stat-label">{isVi ? "commit gần đây" : "recent commits"}</span>
+						<span class="gh-stat-value">{recentCommitCount}</span>
+						<span class="gh-stat-label">{isVi ? "commit 30 ngày" : "commits (30d)"}</span>
 					</div>
 					<div class="gh-stat">
 						<span class="gh-stat-value">{ghUser.followers}</span>
