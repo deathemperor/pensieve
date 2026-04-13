@@ -29,9 +29,9 @@ interface DiaryEntry {
 const entries: DiaryEntry[] = diaryRaw
 	.filter((e) => e.data.status === "published")
 	.sort((a, b) => {
-		const da = a.data.date ?? "";
-		const db = b.data.date ?? "";
-		return db.localeCompare(da) || b.data.title.localeCompare(a.data.title);
+		const da = a.data.published_at ?? a.data.created_at ?? "";
+		const db = b.data.published_at ?? b.data.created_at ?? "";
+		return db.localeCompare(da);
 	})
 	.map((e) => ({
 		date: e.data.date ?? "",
@@ -87,6 +87,7 @@ function formatModel(model: string) {
 	if (model === "unknown") return null;
 	return model
 		.replace("claude-", "")
+		.replace(/-(\d+)-(\d+)/, " $1.$2")
 		.replace(/-/g, " ")
 		.replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -154,6 +155,7 @@ function formatModel(model: string) {
 								<div class="entry-type">
 									<span class="entry-type-dot" />
 									{typeLabels[lang]?.[entry.type] ?? entry.type}
+									<time class="entry-date">{entry.date}</time>
 								</div>
 								<h3 class="entry-title">{entry.title}</h3>
 								{entry.prompt && (
@@ -441,6 +443,12 @@ function formatModel(model: string) {
 		height: 6px;
 		border-radius: 50%;
 		background: var(--type-color);
+	}
+
+	.entry-date {
+		margin-left: auto;
+		color: var(--color-muted);
+		font-weight: 400;
 	}
 
 	.entry-prompt {
