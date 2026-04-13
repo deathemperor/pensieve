@@ -542,6 +542,8 @@ const publishDate =
 
 		btn.addEventListener('click', () => {
 			if (btn.classList.contains('lumos-cast')) return;
+			window.SpellSounds?.lumos();
+			spawnSparkles(btn);
 			fetch(`${API}/lumos/cast`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -557,6 +559,24 @@ const publishDate =
 				})
 				.catch(() => {});
 		});
+
+		function spawnSparkles(el: HTMLElement) {
+			const rect = el.getBoundingClientRect();
+			const cx = rect.left + rect.width / 2;
+			const cy = rect.top + rect.height / 2;
+			for (let i = 0; i < 8; i++) {
+				const dot = document.createElement('span');
+				dot.className = 'lumos-sparkle';
+				const angle = (Math.PI * 2 * i) / 8;
+				const dist = 24 + Math.random() * 18;
+				dot.style.setProperty('--sx', `${Math.cos(angle) * dist}px`);
+				dot.style.setProperty('--sy', `${Math.sin(angle) * dist}px`);
+				dot.style.left = `${cx}px`;
+				dot.style.top = `${cy}px`;
+				document.body.appendChild(dot);
+				dot.addEventListener('animationend', () => dot.remove());
+			}
+		}
 	})();
 </script>
 
@@ -1258,6 +1278,24 @@ const publishDate =
 		color: var(--color-muted);
 		font-style: italic;
 		margin: 0;
+	}
+
+	/* Lumos sparkle burst */
+	@keyframes lumos-burst {
+		0% { transform: translate(0, 0) scale(1); opacity: 1; }
+		100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+	}
+
+	:global(.lumos-sparkle) {
+		position: fixed;
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: #f0c75e;
+		box-shadow: 0 0 6px 2px rgba(240, 199, 94, 0.6);
+		pointer-events: none;
+		z-index: 9999;
+		animation: lumos-burst 0.6s ease-out forwards;
 	}
 
 	/* Owl Post — subscribe */
