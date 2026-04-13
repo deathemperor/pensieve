@@ -24,7 +24,7 @@ Generate a ULID for the `id` field (use `Date.now().toString(36) + Math.random()
 |-------|------|-------------|
 | `title` | string | Short descriptive title |
 | `date` | string | `YYYY-MM-DD` |
-| `entry_type` | string | `build`, `plan`, `fix`, or `deploy` |
+| `entry_type` | string | `build`, `plan`, `ultraplan`, `fix`, or `deploy` |
 | `prompt` | text | User's full original prompt(s), verbatim. One per line (`\n` separated) |
 | `summary` | text | Concise summary (1-3 sentences, past tense) |
 | `model` | string | Model ID (e.g., `claude-opus-4-6`) |
