@@ -93,6 +93,27 @@ export const prerender = false;
     </section>
 
     <section class="section">
+      <span class="section-label">Hogwarts</span>
+      <ul class="project-list">
+        <li>
+          <span class="project project-coming">
+            <div>
+              <div class="project-head">
+                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28 V12 L16 4 L24 12 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><line x1="16" y1="4" x2="16" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" /><rect x="13" y="18" width="6" height="6" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Schools &amp; Universities</h2>
+                <span class="project-meta">Coming soon</span>
+              </div>
+              <p class="project-desc">
+                Lessons, courses, and knowledge from academic journeys
+                — a space for teaching and learning.
+              </p>
+            </div>
+            <span class="project-arrow coming-badge">soon</span>
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
       <span class="section-label">Beyond the Gates</span>
       <div class="links-row">
         <a href="https://github.com/deathemperor" rel="noopener" class="link-item">GitHub</a>
@@ -279,6 +300,24 @@ export const prerender = false;
   .project:hover .project-arrow {
     color: var(--text);
     transform: translateX(2px);
+  }
+
+  .project-coming {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  .project-coming:hover {
+    border-color: var(--border);
+    transform: none;
+  }
+
+  .coming-badge {
+    font-family: var(--mono);
+    font-size: 0.6875rem;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
   }
 
   .links-row {
