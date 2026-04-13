@@ -24,9 +24,3 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 76a40ad2c8728384bdf1f2102b7237fd
-
-      - name: Seed production database
-        if: success()
-        env:
-          EMDASH_TOKEN: ${{ secrets.EMDASH_TOKEN }}
-        run: npx emdash seed seed/seed.json --url https://huuloc.com --token "$EMDASH_TOKEN" --on-conflict skip
