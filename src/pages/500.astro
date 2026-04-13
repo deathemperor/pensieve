@@ -1,0 +1,77 @@
+---
+import Base from "../layouts/Base.astro";
+import { getCurrentLang } from "../utils/lang";
+
+export const prerender = false;
+
+const isVi = getCurrentLang(Astro) === "vi";
+---
+
+<Base title={isVi ? "Lỗi máy chủ" : "Server error"} breadcrumbs={[{ label: "Dark Arts" }]}>
+	<div class="error-page error-500">
+		<div class="dark-mark-glow">
+			<svg class="error-icon" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<!-- Skull -->
+				<ellipse cx="60" cy="38" rx="20" ry="22" stroke="#8b1a1a" stroke-width="2.5" fill="none" />
+				<!-- Eye sockets -->
+				<ellipse cx="52" cy="34" rx="5" ry="6" stroke="#8b1a1a" stroke-width="2" fill="none" />
+				<ellipse cx="68" cy="34" rx="5" ry="6" stroke="#8b1a1a" stroke-width="2" fill="none" />
+				<!-- Nose -->
+				<path d="M58 44 L60 48 L62 44" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" fill="none" />
+				<!-- Jaw line / teeth hint -->
+				<line x1="50" y1="52" x2="70" y2="52" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" />
+				<line x1="55" y1="52" x2="55" y2="56" stroke="#8b1a1a" stroke-width="1" />
+				<line x1="60" y1="52" x2="60" y2="57" stroke="#8b1a1a" stroke-width="1" />
+				<line x1="65" y1="52" x2="65" y2="56" stroke="#8b1a1a" stroke-width="1" />
+				<!-- Snake emerging from skull mouth, coiling downward -->
+				<path d="M60 57 C56 64, 68 68, 62 76 C56 84, 72 88, 64 96 C58 102, 70 106, 66 110" stroke="#8b1a1a" stroke-width="2.5" stroke-linecap="round" fill="none" />
+				<!-- Snake tongue -->
+				<path d="M66 110 L70 114 M66 110 L62 114" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" />
+			</svg>
+		</div>
+		<h1>500</h1>
+		<p class="spell-name">Avada Kedavra!</p>
+		<p>{isVi ? "Chúa Tể Bóng Tối đã hạ sát trang này." : "The Dark Lord has struck down this page."}</p>
+		<a href="/">{isVi ? "Chạy trốn về nơi an toàn" : "Flee to safety"}</a>
+	</div>
+</Base>
+
+<style>
+	.error-page {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+	}
+
+	.error-500 .dark-mark-glow {
+		display: inline-block;
+		filter: drop-shadow(0 0 12px rgba(139, 26, 26, 0.4)) drop-shadow(0 0 24px rgba(139, 26, 26, 0.2));
+		margin-bottom: var(--spacing-4);
+	}
+
+	.error-icon {
+		width: 120px;
+		height: 120px;
+	}
+
+	.error-page h1 {
+		font-size: var(--font-size-5xl);
+		margin-bottom: var(--spacing-1);
+		color: var(--color-border);
+	}
+
+	.error-page .spell-name {
+		font-style: italic;
+		color: #8b1a1a;
+		font-size: var(--font-size-xl);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.error-page p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.error-page a {
+		color: var(--color-text);
+	}
+</style>

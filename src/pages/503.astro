@@ -1,0 +1,64 @@
+---
+import Base from "../layouts/Base.astro";
+import { getCurrentLang } from "../utils/lang";
+
+export const prerender = false;
+
+const isVi = getCurrentLang(Astro) === "vi";
+---
+
+<Base title={isVi ? "Dịch vụ không khả dụng" : "Service unavailable"} breadcrumbs={[{ label: "Dark Arts" }]}>
+	<div class="error-page">
+		<svg class="error-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<!-- Hypnotic eye -->
+			<ellipse cx="40" cy="40" rx="26" ry="16" stroke="#8b1a1a" stroke-width="2.5" fill="none" />
+			<circle cx="40" cy="40" r="8" stroke="#8b1a1a" stroke-width="2" fill="none" />
+			<circle cx="40" cy="40" r="3" fill="#8b1a1a" />
+			<!-- Puppet strings descending from above -->
+			<line x1="20" y1="4" x2="28" y2="24" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+			<line x1="40" y1="2" x2="40" y2="24" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+			<line x1="60" y1="4" x2="52" y2="24" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+			<!-- Control bar at top -->
+			<line x1="16" y1="4" x2="64" y2="4" stroke="#8b1a1a" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+		</svg>
+		<h1>503</h1>
+		<p class="spell-name">Imperio!</p>
+		<p>{isVi ? "Máy chủ đang bị Chúa Tể Bóng Tối điều khiển." : "The server is under the Dark Lord's control."}</p>
+		<a href="/">{isVi ? "Cố gắng chống cự" : "Try to resist"}</a>
+	</div>
+</Base>
+
+<style>
+	.error-page {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+	}
+
+	.error-icon {
+		width: 80px;
+		height: 80px;
+		margin-bottom: var(--spacing-4);
+	}
+
+	.error-page h1 {
+		font-size: var(--font-size-5xl);
+		margin-bottom: var(--spacing-1);
+		color: var(--color-border);
+	}
+
+	.error-page .spell-name {
+		font-style: italic;
+		color: #8b1a1a;
+		font-size: var(--font-size-lg);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.error-page p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.error-page a {
+		color: var(--color-text);
+	}
+</style>

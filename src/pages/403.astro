@@ -1,0 +1,62 @@
+---
+import Base from "../layouts/Base.astro";
+import { getCurrentLang } from "../utils/lang";
+
+export const prerender = false;
+
+const isVi = getCurrentLang(Astro) === "vi";
+---
+
+<Base title={isVi ? "Cấm truy cập" : "Forbidden"} breadcrumbs={[{ label: "Dark Arts" }]}>
+	<div class="error-page">
+		<svg class="error-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<!-- Shield outline -->
+			<path d="M40 8 L16 22 L16 44 C16 58, 28 70, 40 74 C52 70, 64 58, 64 44 L64 22 Z" stroke="#8b1a1a" stroke-width="2.5" fill="none" />
+			<!-- Crack / barrier lines across shield -->
+			<path d="M28 32 L52 32" stroke="#8b1a1a" stroke-width="2" stroke-linecap="round" />
+			<path d="M24 42 L56 42" stroke="#8b1a1a" stroke-width="2" stroke-linecap="round" />
+			<path d="M28 52 L52 52" stroke="#8b1a1a" stroke-width="2" stroke-linecap="round" />
+			<!-- Diagonal crack -->
+			<path d="M34 24 L38 36 L42 28 L46 40 L50 32" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6" />
+		</svg>
+		<h1>403</h1>
+		<p class="spell-name">Protego Totalum!</p>
+		<p>{isVi ? "Phép thuật bóng tối ngăn cấm bạn vào." : "Dark enchantments forbid you from entering."}</p>
+		<a href="/">{isVi ? "Rút lui về sân" : "Retreat to the grounds"}</a>
+	</div>
+</Base>
+
+<style>
+	.error-page {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+	}
+
+	.error-icon {
+		width: 80px;
+		height: 80px;
+		margin-bottom: var(--spacing-4);
+	}
+
+	.error-page h1 {
+		font-size: var(--font-size-5xl);
+		margin-bottom: var(--spacing-1);
+		color: var(--color-border);
+	}
+
+	.error-page .spell-name {
+		font-style: italic;
+		color: #8b1a1a;
+		font-size: var(--font-size-lg);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.error-page p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.error-page a {
+		color: var(--color-text);
+	}
+</style>
