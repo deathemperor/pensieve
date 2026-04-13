@@ -52,26 +52,24 @@ export default {
 			});
 		}
 
-		// EmDash admin content list with limit=100 exceeds Worker CPU time
-		// when there are 200+ posts (SEO + byline hydration is O(n)).
+		// EmDash admin content list with limit=100 exceeds Worker CPU time.
 		// Cap at 50 to stay within limits.
 		if (path.startsWith("/_emdash/api/content/") && !path.includes("/trash")) {
-			const limit = url.searchParams.get("limit");
-			if (limit && parseInt(limit) > 50) {
+			const origLimit = url.searchParams.get("limit");
+			if (origLimit && parseInt(origLimit) > 50) {
 				url.searchParams.set("limit", "50");
-				const newHeaders = new Headers();
-				for (const [k, v] of request.headers.entries()) {
-					newHeaders.set(k, v);
-				}
-				return handler.fetch(
-					new Request(url.toString(), {
-						method: request.method,
-						headers: newHeaders,
-						redirect: request.redirect,
-					}),
+				const resp = await handler.fetch(
+					new Request(url, request),
 					env,
 					ctx,
 				);
+				return new Response(resp.body, {
+					status: resp.status,
+					headers: {
+						...Object.fromEntries(resp.headers.entries()),
+						"X-Limit-Rewritten": `${origLimit}->50`,
+					},
+				});
 			}
 		}
 
