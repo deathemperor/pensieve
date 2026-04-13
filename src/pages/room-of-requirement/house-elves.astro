@@ -1,0 +1,77 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+
+const isVi = getCurrentLang(Astro) === "vi";
+
+const agents = [
+  {
+    name: "session-logger",
+    purpose: isVi ? "Ghi nhật ký xây dựng có cấu trúc sau mỗi phiên làm việc" : "Appends structured entries to the build diary after each work session",
+  },
+  {
+    name: "moderate-comments",
+    purpose: isVi ? "Duyệt, phê duyệt, đánh dấu spam, xóa bình luận qua API quản trị EmDash" : "Lists, approves, spams, trashes, or deletes comments via the EmDash admin API",
+  },
+  {
+    name: "Explore",
+    purpose: isVi ? "Khám phá codebase nhanh — tìm file, tìm kiếm code, trả lời câu hỏi kiến trúc" : "Fast codebase exploration — finds files, searches code, answers architecture questions",
+  },
+  {
+    name: "Plan",
+    purpose: isVi ? "Thiết kế chiến lược triển khai, xác định file quan trọng, cân nhắc đánh đổi" : "Designs implementation strategies, identifies critical files, weighs trade-offs",
+  },
+  {
+    name: "geminio",
+    purpose: isVi ? "Cảnh sát i18n — đảm bảo mọi text đều có song ngữ EN/VI" : "i18n police — ensures all text has bilingual EN/VI versions",
+  },
+  {
+    name: "argus-filch",
+    purpose: isVi ? "Tìm lỗi và sửa — tuần tra codebase tìm link hỏng, import thiếu, lỗi runtime" : "Bug finder — patrols codebase for broken links, missing imports, runtime errors",
+  },
+];
+---
+
+<Base
+  title={isVi ? "Gia Tinh" : "House-Elves"}
+  description={isVi ? "Các tác tử AI gắn với nhiệm vụ cụ thể" : "AI agents bound to specific duties"}
+  breadcrumbs={[
+    { label: "Room of Requirement", href: "/room-of-requirement" },
+    { label: isVi ? "Gia Tinh" : "House-Elves" },
+  ]}
+>
+  <section class="he-page">
+    <div class="he-inner">
+      <h1 class="he-title">{isVi ? "Gia Tinh" : "House-Elves"}</h1>
+      <p class="he-desc">
+        {isVi
+          ? "Các gia tinh trung thành, mỗi vị gắn với một nhiệm vụ."
+          : "Loyal house-elves, each bound to a specific duty."}
+      </p>
+      <p class="he-count">{agents.length} {isVi ? "tác tử" : "agents"}</p>
+      <div class="he-list">
+        {agents.map((a) => (
+          <div class="he-card">
+            <span class="he-name">{a.name}</span>
+            <span class="he-purpose">{a.purpose}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .he-page { border-bottom: 1px solid var(--color-border); }
+  .he-inner { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-16) var(--spacing-8); }
+  .he-title { font-family: var(--font-display); font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: var(--font-weight-display); letter-spacing: -0.02em; color: var(--color-text); margin: 0 0 var(--spacing-2); }
+  .he-desc { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-muted); margin: 0 0 var(--spacing-2); }
+  .he-count { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0 0 var(--spacing-8); }
+  .he-list { display: flex; flex-direction: column; gap: var(--spacing-3); }
+  .he-card { display: flex; flex-direction: column; gap: var(--spacing-1); padding: var(--spacing-4) var(--spacing-5); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
+  .he-name { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text); }
+  .he-purpose { font-family: var(--font-sans); font-size: var(--font-size-xs); color: var(--color-text-secondary); line-height: var(--leading-relaxed); }
+  @media (max-width: 600px) { .he-inner { padding: var(--spacing-10) var(--spacing-5); } }
+</style>
