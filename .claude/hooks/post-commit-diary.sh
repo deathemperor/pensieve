@@ -3,11 +3,11 @@
 # No agent dispatch. No instructions. Just does it.
 
 INPUT=$(cat)
-COMMAND=$(echo "$INPUT" | jq -r '.stdout // empty' 2>/dev/null)
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-# Only process successful commits with Claude attribution
-echo "$COMMAND" | grep -q "Co-Authored-By: Claude" || exit 0
+# Only process commits with Claude attribution (check the actual commit, not stdout)
+FULL_MSG=$(git -C "$REPO_ROOT" log -1 --format="%B" 2>/dev/null)
+echo "$FULL_MSG" | grep -q "Co-Authored-By: Claude" || exit 0
 
 PROMPTS="$REPO_ROOT/.session/prompts.jsonl"
 INSIGHTS="$REPO_ROOT/.session/insights.jsonl"
