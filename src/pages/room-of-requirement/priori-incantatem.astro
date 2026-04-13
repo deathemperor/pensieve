@@ -176,11 +176,11 @@ function formatModel(model: string) {
 					const count = typeCounts[type];
 					if (!count) return null;
 					return (
-						<span class="pi-type-chip" style={`--chip-color: ${typeColors[type]};`}>
+						<button class="pi-type-chip" data-filter={type} style={`--chip-color: ${typeColors[type]};`}>
 							<span class="pi-type-chip-dot" />
 							{typeLabels[lang]?.[type] ?? type}
 							<span class="pi-type-chip-count">{count}</span>
-						</span>
+						</button>
 					);
 				})}
 			</div>
@@ -200,7 +200,7 @@ function formatModel(model: string) {
 					</summary>
 					<div class="day-entries">
 						{dayEntries.map((entry) => (
-							<article class="entry" style={`--type-color: ${typeColors[entry.type] ?? typeColors.build};`}>
+							<article class="entry" data-type={entry.type} style={`--type-color: ${typeColors[entry.type] ?? typeColors.build};`}>
 								<div class="entry-type">
 									<span class="entry-type-dot" />
 									{typeLabels[lang]?.[entry.type] ?? entry.type}
@@ -399,6 +399,12 @@ function formatModel(model: string) {
 		border: 1px solid color-mix(in srgb, var(--chip-color) 20%, transparent);
 		border-radius: var(--radius-full, 9999px);
 		line-height: 1.6;
+		cursor: pointer;
+		transition: background var(--transition-fast), outline-color var(--transition-fast);
+	}
+
+	.pi-type-chip:hover {
+		background: color-mix(in srgb, var(--chip-color) 18%, transparent);
 	}
 
 	.pi-type-chip-dot {
@@ -668,4 +674,65 @@ function formatModel(model: string) {
 			padding-left: calc(15px + var(--spacing-3));
 		}
 	}
+
+	/* Filter active state */
+	.pi-type-chip[aria-pressed="true"] {
+		outline: 1.5px solid var(--chip-color);
+		outline-offset: 1px;
+		background: color-mix(in srgb, var(--chip-color) 20%, transparent);
+	}
+
+	.entry[hidden] {
+		display: none;
+	}
+
+	.day-group[hidden] {
+		display: none;
+	}
 </style>
+
+<script is:inline>
+(function () {
+	const chips = document.querySelectorAll('[data-filter]');
+	const entries = document.querySelectorAll('.entry[data-type]');
+	const dayGroups = document.querySelectorAll('details.day-group');
+	const totalEl = document.querySelector('.pi-stat-value');
+	const totalCount = entries.length;
+	let activeFilter = null;
+
+	chips.forEach(chip => {
+		chip.addEventListener('click', () => {
+			const type = chip.dataset.filter;
+
+			if (activeFilter === type) {
+				// Deselect — show all
+				activeFilter = null;
+				chips.forEach(c => c.setAttribute('aria-pressed', 'false'));
+				entries.forEach(e => e.hidden = false);
+				dayGroups.forEach(g => {
+					g.hidden = false;
+					g.open = g === dayGroups[0];
+				});
+				if (totalEl) totalEl.textContent = String(totalCount);
+			} else {
+				// Select filter
+				activeFilter = type;
+				chips.forEach(c => c.setAttribute('aria-pressed', c.dataset.filter === type ? 'true' : 'false'));
+				let visible = 0;
+				entries.forEach(e => {
+					const match = e.dataset.type === type;
+					e.hidden = !match;
+					if (match) visible++;
+				});
+				// Hide day groups with no visible entries, open those with matches
+				dayGroups.forEach(g => {
+					const hasVisible = g.querySelectorAll('.entry:not([hidden])').length > 0;
+					g.hidden = !hasVisible;
+					if (hasVisible) g.open = true;
+				});
+				if (totalEl) totalEl.textContent = String(visible);
+			}
+		});
+	});
+})();
+</script>
