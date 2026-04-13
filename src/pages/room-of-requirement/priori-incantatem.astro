@@ -30,8 +30,8 @@ interface DiaryEntry {
 const entries: DiaryEntry[] = diaryRaw
 	.filter((e) => e.data.status === "published")
 	.sort((a, b) => {
-		const da = String(a.data.publishedAt ?? a.data.createdAt ?? "");
-		const db = String(b.data.publishedAt ?? b.data.createdAt ?? "");
+		const da = String(a.data.createdAt ?? a.data.publishedAt ?? "");
+		const db = String(b.data.createdAt ?? b.data.publishedAt ?? "");
 		return db.localeCompare(da);
 	})
 	.map((e) => ({
