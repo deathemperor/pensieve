@@ -59,7 +59,11 @@ export default {
 			url.searchParams.get("limit") === "100"
 		) {
 			url.searchParams.set("limit", "99");
-			return handler.fetch(new Request(url.toString(), request), env, ctx);
+			request = new Request(url.toString(), {
+				method: request.method,
+				headers: request.headers,
+				body: request.body,
+			});
 		}
 
 		// Lowercase /trương → canonical /Trương
