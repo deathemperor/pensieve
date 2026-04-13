@@ -20,6 +20,7 @@ interface DiaryEntry {
 	model: string;
 	inputTokens: number;
 	outputTokens: number;
+	cacheRead: number;
 	cost: number;
 }
 
@@ -39,6 +40,7 @@ const entries: DiaryEntry[] = diaryRaw
 		model: e.data.model ?? "unknown",
 		inputTokens: e.data.input_tokens ?? 0,
 		outputTokens: e.data.output_tokens ?? 0,
+		cacheRead: e.data.cache_read ?? 0,
 		cost: e.data.cost ?? 0,
 	}));
 
@@ -67,7 +69,9 @@ interface Release {
 	chapter: number;
 	chapterTitle: string;
 	entries: DiaryEntry[];
-	totalTokens: number;
+	totalInput: number;
+	totalOutput: number;
+	totalCache: number;
 	totalCost: number;
 	types: string[];
 }
@@ -93,7 +97,9 @@ for (const [date, dayEntries] of releaseMap) {
 		chapter: chapterNum,
 		chapterTitle,
 		entries: dayEntries,
-		totalTokens: dayEntries.reduce((s, e) => s + e.inputTokens + e.outputTokens, 0),
+		totalInput: dayEntries.reduce((s, e) => s + e.inputTokens, 0),
+		totalOutput: dayEntries.reduce((s, e) => s + e.outputTokens, 0),
+		totalCache: dayEntries.reduce((s, e) => s + e.cacheRead, 0),
 		totalCost: dayEntries.reduce((s, e) => s + e.cost, 0),
 		types: [...new Set(dayEntries.map(e => e.type))],
 	});
@@ -219,11 +225,13 @@ function ordinalSuffix(n: number): string {
 											{typeLabels[lang]?.[t] ?? t}
 										</span>
 									))}
-									{rel.totalTokens > 0 && (
-										<span class="cl-meta-tokens">{formatTokens(rel.totalTokens)} tokens</span>
+									{(rel.totalInput + rel.totalOutput) > 0 && (
+										<span class="cl-meta-tokens">
+											{formatTokens(rel.totalInput)} in · {formatTokens(rel.totalOutput)} out{rel.totalCache > 0 && <> · {formatTokens(rel.totalCache)} cache</>}
+										</span>
 									)}
 									{rel.totalCost > 0 && (
-										<span class="cl-meta-cost">${(rel.totalCost / 100).toFixed(2)}</span>
+										<span class="cl-meta-cost">{`$${(rel.totalCost / 100).toFixed(2)}`}</span>
 									)}
 								</div>
 							</article>
