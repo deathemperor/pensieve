@@ -101,7 +101,7 @@ npx wrangler d1 execute pensieve-db --remote --command \
   "INSERT INTO ec_diary (id, slug, status, title, date, entry_type, prompt, summary, model, claude_code, input_tokens, output_tokens, cache_read, cost, created_at, updated_at, published_at) VALUES ('$ID', '$SLUG', 'published', '$SQL_TITLE', '$TODAY', '$ENTRY_TYPE', '$SQL_PROMPTS', '$SUMMARY', 'claude-opus-4-6', '$CC_VERSION', $T_IN, $T_OUT, $T_CACHE, $T_COST, '$TS', '$TS', '$TS');" \
   > /dev/null 2>&1
 
-# Clear buffers after write
-rm -f "$PROMPTS" "$INSIGHTS" "$REPO_ROOT/.session/plans.jsonl" "$REPO_ROOT/.session/usage.jsonl" "$REPO_ROOT/.session/tasks.jsonl"
+# Clear only prompts (consumed by this entry). Insights persist across commits.
+rm -f "$PROMPTS"
 
 exit 0
