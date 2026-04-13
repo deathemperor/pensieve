@@ -5,7 +5,8 @@ import Base from "../../../../layouts/Base.astro";
 import { getTerm, getEmDashCollection } from "emdash";
 import { getCurrentLang } from "../../../../utils/lang";
 
-const isVi = getCurrentLang(Astro) === "vi";
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
 const { subject: subjectSlug } = Astro.params;
 
 if (!subjectSlug) {
@@ -26,10 +27,10 @@ const { entries: lessons, cacheHint } = await getEmDashCollection("lessons", {
 
 Astro.cache.set(cacheHint);
 
-// Sort by order field
-const sortedLessons = [...lessons].sort(
-	(a, b) => (a.data.order ?? 999) - (b.data.order ?? 999)
-);
+// Filter by language and sort by order
+const sortedLessons = [...lessons]
+	.filter((l) => l.data.language === currentLang)
+	.sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999));
 
 const difficultyColors: Record<string, string> = {
 	beginner: "#3fb950",
