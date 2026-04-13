@@ -92,7 +92,8 @@ const plugins = [
 ];
 
 // Task Observatory data from D1
-const db = Astro.locals.runtime?.env?.DB;
+import { env } from "cloudflare:workers";
+const db = env.DB;
 let taskSystems: { slug: string; name: string; tool: string; color: string; routes: string; open: number; done: number }[] = [];
 
 const hpSystemDefs = [
