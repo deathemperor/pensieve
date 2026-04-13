@@ -4,7 +4,7 @@ import { BASE } from "../../utils/link";
 
 const siteTitle = "Pensieve — English";
 const siteDescription =
-	"Long-form thoughts, English edition. Narratives rescued from Facebook, sorted into themed categories.";
+	"Memories extracted from the Pensieve, sorted by the Sorting Hat.";
 
 export const GET: APIRoute = async ({ site, url }) => {
 	const origin = site?.origin ?? url.origin;

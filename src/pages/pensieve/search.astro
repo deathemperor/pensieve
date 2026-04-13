@@ -34,14 +34,14 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 	description={isVi ? "Tìm kiếm bài viết" : "Search blog posts"}
 >
 	<section class="search-page">
-		<h1 class="search-title">{isVi ? "Tìm kiếm" : "Search"}</h1>
+		<h1 class="search-title">Accio</h1>
 
 		<form method="get" action={link("search")} class="search-form">
 			<input
 				type="search"
 				name="q"
 				value={query}
-				placeholder={isVi ? "Tìm ký ức..." : "Search memories..."}
+				placeholder={isVi ? "Nói tên điều bạn muốn tìm." : "Speak the name of what you seek."}
 				class="search-input"
 				autofocus
 			/>
@@ -52,7 +52,7 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 			query && (
 				<p class="search-summary">
 					{results.length === 0
-						? isVi ? `Không tìm thấy kết quả cho "${query}"` : `No results for "${query}"`
+						? isVi ? `Không có ký ức nào nổi lên cho "${query}"` : `No memories surfaced for "${query}"`
 						: isVi ? `${results.length} kết quả cho "${query}"` : `${results.length} result${results.length === 1 ? "" : "s"} for "${query}"`}
 				</p>
 			)
@@ -75,7 +75,7 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 			)
 		}
 
-		{!query && <p class="search-hint">{isVi ? "Nhập từ khóa để tìm bài viết." : "Enter a search term to find memories."}</p>}
+		{!query && <p class="search-hint">{isVi ? "Nói tên điều bạn muốn tìm." : "Speak the name of what you seek."}</p>}
 	</section>
 </Base>
 

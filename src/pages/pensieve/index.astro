@@ -112,8 +112,8 @@ function formatDate(date: Date | null | undefined) {
 	{
 		!featured ? (
 			<section class="empty-state">
-				<h2>{isVi ? "Chưa có ký ức nào" : "No memories yet"}</h2>
-				<p>{isVi ? "Tạo bài viết đầu tiên trong trang quản trị." : "Create your first post in the admin panel."}</p>
+				<h2>{isVi ? "Pensieve còn trống" : "The Pensieve is empty"}</h2>
+				<p>{isVi ? "Rút ký ức đầu tiên trong trang quản trị." : "Extract your first memory in the admin panel."}</p>
 				<a href="/_emdash/admin/content/posts/new" class="btn">
 					{isVi ? "Tạo bài viết" : "Create a post"}
 				</a>
