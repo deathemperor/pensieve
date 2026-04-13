@@ -53,22 +53,21 @@ export default {
 		}
 
 		// EmDash admin bug: limit=100 crashes with CONTENT_LIST_ERROR.
-		// Retry with limit=99 if the original request fails.
+		// Rewrite to limit=99 and return immediately (don't fall through).
 		if (
 			path.startsWith("/_emdash/api/content/") &&
 			url.searchParams.get("limit") === "100"
 		) {
-			const response = await handler.fetch(request, env, ctx);
-			if (response.status === 500) {
-				url.searchParams.set("limit", "99");
-				const retryReq = new Request(url.toString(), {
+			url.searchParams.set("limit", "99");
+			return handler.fetch(
+				new Request(url.toString(), {
 					method: request.method,
 					headers: request.headers,
 					body: request.body,
-				});
-				return handler.fetch(retryReq, env, ctx);
-			}
-			return response;
+				}),
+				env,
+				ctx,
+			);
 		}
 
 		// Lowercase /trương → canonical /Trương
