@@ -44,5 +44,7 @@ To get token usage for the current session, check the conversation context or as
 - Never log secrets, passwords, tokens, or sensitive data.
 - If multiple prompts were handled together, combine into one entry.
 - When a planning session produces no code, use type `"plan"`.
-- Keep summaries under 3 sentences. Use past tense.
+- **Plans get their own diary entries** with `entry_type='plan'`. The `summary` field must contain the FULL plan text — all options considered, trade-offs, decisions, and reasoning. Plans are the most valuable diary content. Never abbreviate or summarize plans — preserve every detail.
+- For non-plan entries, keep summaries under 3 sentences. Use past tense.
 - Escape single quotes in SQL strings by doubling them (`'` → `''`).
+- Check `.session/prompts.jsonl`, `.session/insights.jsonl`, and `.session/plans.jsonl` for accumulated session data. Use this data instead of relying on the parent agent's summary.
