@@ -52,6 +52,16 @@ export default {
 			});
 		}
 
+		// EmDash admin bug: limit=100 crashes with CONTENT_LIST_ERROR.
+		// Rewrite to limit=99 which works fine.
+		if (
+			path.startsWith("/_emdash/api/content/") &&
+			url.searchParams.get("limit") === "100"
+		) {
+			url.searchParams.set("limit", "99");
+			return handler.fetch(new Request(url.toString(), request), env, ctx);
+		}
+
 		// Lowercase /trương → canonical /Trương
 		if (path.startsWith("/tr\u01B0\u01A1ng")) {
 			const canonical = path.replace("/tr\u01B0\u01A1ng", "/Tr\u01B0\u01A1ng");
