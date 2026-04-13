@@ -302,10 +302,10 @@ const isLoggedIn = !!Astro.locals.user;
 				<div class="footer-grid">
 					<div class="footer-brand">
 						<a href="/" class="footer-logo">{siteTitle}</a>
-						<p class="footer-tagline">{currentLang === "vi" ? "Suy nghĩ, câu chuyện, và ý tưởng." : "Thoughts, stories, and ideas."}</p>
+						<p class="footer-tagline">{currentLang === "vi" ? "Suy nghĩ được rút ra, câu chuyện được lưu giữ." : "Thoughts extracted, stories preserved."}</p>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">{currentLang === "vi" ? "Điều hướng" : "Navigate"}</h4>
+						<h4 class="footer-heading">{currentLang === "vi" ? "Bản Đồ Đạo Tặc" : "Marauder's Map"}</h4>
 						<ul class="footer-links">
 							<li><a href="/">{currentLang === "vi" ? "Trang chủ" : "Home"}</a></li>
 							<li><a href={link("memories")}>{currentLang === "vi" ? "Tất cả ký ức" : "All Memories"}</a></li>
@@ -321,7 +321,7 @@ const isLoggedIn = !!Astro.locals.user;
 						</ul>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">{currentLang === "vi" ? "Kết nối" : "Connect"}</h4>
+						<h4 class="footer-heading">{currentLang === "vi" ? "Danh Bạ Cú" : "Owl Directory"}</h4>
 						<ul class="footer-links">
 							{
 								menu?.items.map((item) => (
@@ -383,7 +383,7 @@ const isLoggedIn = !!Astro.locals.user;
 							type="button"
 							class="theme-btn"
 							data-theme="light"
-							aria-label="Light mode"
+							aria-label="Lumos"
 						>
 							<svg
 								width="16"
@@ -414,7 +414,7 @@ const isLoggedIn = !!Astro.locals.user;
 							type="button"
 							class="theme-btn"
 							data-theme="dark"
-							aria-label="Dark mode"
+							aria-label="Nox"
 						>
 							<svg
 								width="16"

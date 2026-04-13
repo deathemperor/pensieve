@@ -331,7 +331,7 @@ const publishDate =
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
 					<CommentForm collection="posts" contentId={post.data.id} />
-					<p class="comments-note">{postLang === "vi" ? "Bình luận được kiểm duyệt và có thể mất một lúc để hiển thị." : "Comments are moderated and may take a moment to appear."}</p>
+					<p class="comments-note">{postLang === "vi" ? "Cú bưu điện được kiểm duyệt và có thể mất một lúc để tới nơi." : "Owl post is moderated and may take a moment to arrive."}</p>
 				</div>
 			</div>
 
@@ -356,7 +356,7 @@ const publishDate =
 		otherPostsWithTags.length > 0 && (
 			<section class="more-posts">
 				<div class="more-inner">
-					<h2 class="more-title">{postLang === "vi" ? "Đọc tiếp" : "Continue reading"}</h2>
+					<h2 class="more-title">{postLang === "vi" ? "Thêm ký ức" : "More memories"}</h2>
 					<div class="more-grid">
 						{otherPostsWithTags.map(
 							({ post: p, tags: postTags, bylines: postBylines }) => (
