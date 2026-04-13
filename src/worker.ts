@@ -53,21 +53,24 @@ export default {
 		}
 
 		// EmDash admin bug: limit=100 crashes with CONTENT_LIST_ERROR.
-		// Rewrite to limit=99 and return immediately (don't fall through).
-		if (
-			path.startsWith("/_emdash/api/content/") &&
-			url.searchParams.get("limit") === "100"
-		) {
-			url.searchParams.set("limit", "99");
-			return handler.fetch(
-				new Request(url.toString(), {
-					method: request.method,
-					headers: request.headers,
-					body: request.body,
-				}),
-				env,
-				ctx,
-			);
+		// Inject client-side patch into the admin HTML page.
+		if (path === "/_emdash/admin" || path === "/_emdash/admin/" || path.startsWith("/_emdash/admin/content")) {
+			const response = await handler.fetch(request, env, ctx);
+			const contentType = response.headers.get("content-type") || "";
+			if (contentType.includes("text/html")) {
+				let html = await response.text();
+				const patch = `<script>
+const _f=window.fetch;window.fetch=function(u,...a){
+if(typeof u==='string'&&u.includes('limit=100'))u=u.replace('limit=100','limit=99');
+return _f.call(this,u,...a);};
+</script>`;
+				html = html.replace("</head>", patch + "</head>");
+				return new Response(html, {
+					status: response.status,
+					headers: response.headers,
+				});
+			}
+			return response;
 		}
 
 		// Lowercase /trương → canonical /Trương
