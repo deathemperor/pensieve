@@ -1,15 +1,29 @@
 {
-	"hooks": {
-		"UserPromptSubmit": [
-			{
-				"matcher": "",
-				"hooks": [
-					{
-						"type": "command",
-						"command": ".claude/hooks/log-prompt.sh"
-					}
-				]
-			}
-		]
-	}
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/log-prompt.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-push-diary.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "remember@claude-plugins-official": true
+  }
 }
