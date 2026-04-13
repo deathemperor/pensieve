@@ -157,7 +157,7 @@ function formatModel(model: string) {
 								<div class="entry-type">
 									<span class="entry-type-dot" />
 									{typeLabels[lang]?.[entry.type] ?? entry.type}
-									<time class="entry-date">{entry.createdAt ? new Date(entry.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : entry.date}</time>
+									<time class="entry-date">{entry.createdAt ? new Date(entry.createdAt).toLocaleString(isVi ? "vi-VN" : "en-US", { timeZone: "Asia/Ho_Chi_Minh", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : entry.date}</time>
 								</div>
 								<h3 class="entry-title">{entry.title}</h3>
 								{entry.prompt && (
