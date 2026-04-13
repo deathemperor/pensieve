@@ -22,13 +22,15 @@
         ]
       }
     ],
-    "Stop": [
+    "PostToolUse": [
       {
-        "matcher": "",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/post-stop-diary.sh"
+            "command": ".claude/hooks/post-commit-diary.sh",
+            "if": "Bash(git commit*)",
+            "async": true
           }
         ]
       }
