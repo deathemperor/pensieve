@@ -5,7 +5,8 @@ import Base from "../../../layouts/Base.astro";
 import { getTaxonomyTerms, getEmDashCollection } from "emdash";
 import { getCurrentLang } from "../../../utils/lang";
 
-const isVi = getCurrentLang(Astro) === "vi";
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
 
 const subjectMeta: Record<string, { icon: string; description: string }> = {
 	"modern-ai": {
@@ -26,7 +27,8 @@ const subjectsWithCounts = await Promise.all(
 			status: "published",
 			where: { subject: subject.slug },
 		});
-		return { ...subject, lessonCount: entries.length, _ch: ch };
+		const filtered = entries.filter((l) => l.data.language === currentLang);
+		return { ...subject, lessonCount: filtered.length, _ch: ch };
 	})
 );
 
