@@ -377,7 +377,7 @@ const isLoggedIn = !!Astro.locals.user;
 				</div>
 				<div class="footer-bottom">
 					<p class="footer-copyright">
-						© Trương Hữu Lộc
+						© <span class="footer-name" role="button" tabindex="0" title="Expecto Patronum!">Trương Hữu Lộc</span>
 					</p>
 					<div class="theme-switcher">
 						<button
@@ -517,6 +517,15 @@ const isLoggedIn = !!Astro.locals.user;
 					else window.SpellSounds?.sparkle();
 				});
 			});
+
+			// Expecto Patronum — click name to summon stag
+			const footerName = document.querySelector(".footer-name");
+			if (footerName) {
+				footerName.addEventListener("click", () => {
+					window.SpellSounds?.sparkle();
+					window.MagicalCreatures?.summon("stag");
+				});
+			}
 
 			// Listen for system preference changes
 			window
@@ -1253,6 +1262,15 @@ const isLoggedIn = !!Astro.locals.user;
 			}
 
 			.footer-copyright a {
+				color: var(--color-text-secondary);
+			}
+
+			.footer-name {
+				cursor: pointer;
+				transition: color var(--transition-fast);
+			}
+
+			.footer-name:hover {
 				color: var(--color-text-secondary);
 			}
 
