@@ -52,20 +52,17 @@ export default {
 			});
 		}
 
-		// Debug: add header to ALL /_emdash/api requests to verify Worker intercepts
-		if (path.startsWith("/_emdash/api/")) {
-			const origLimit = url.searchParams.get("limit");
-			if (origLimit && parseInt(origLimit) > 50) {
+		// EmDash admin content list with limit>50 exceeds Worker CPU time
+		// when there are 200+ posts (SEO + byline hydration is O(n)).
+		if (
+			path.startsWith("/_emdash/api/content/") &&
+			!path.includes("/trash")
+		) {
+			const limit = url.searchParams.get("limit");
+			if (limit && parseInt(limit) > 50) {
 				url.searchParams.set("limit", "50");
+				return handler.fetch(new Request(url.href, request), env, ctx);
 			}
-			const resp = await handler.fetch(
-				new Request(url.href, request),
-				env,
-				ctx,
-			);
-			const newResp = new Response(resp.body, resp);
-			newResp.headers.set("X-Worker-Intercepted", `path=${path},limit=${origLimit || "none"}`);
-			return newResp;
 		}
 
 		// Lowercase /trương → canonical /Trương
