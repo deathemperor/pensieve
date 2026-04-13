@@ -540,10 +540,10 @@ const publishDate =
 			.then(d => { if (countEl) countEl.textContent = String(d.count || 0); })
 			.catch(() => {});
 
-		btn.addEventListener('click', () => {
+		btn.addEventListener('click', (e: MouseEvent) => {
 			if (btn.classList.contains('lumos-cast')) return;
 			window.SpellSounds?.lumos();
-			spawnSparkles(btn);
+			spawnSparkles(e.clientX, e.clientY);
 			fetch(`${API}/lumos/cast`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -560,10 +560,7 @@ const publishDate =
 				.catch(() => {});
 		});
 
-		function spawnSparkles(el: HTMLElement) {
-			const rect = el.getBoundingClientRect();
-			const cx = rect.left + rect.width / 2;
-			const cy = rect.top + rect.height / 2;
+		function spawnSparkles(cx: number, cy: number) {
 			for (let i = 0; i < 8; i++) {
 				const dot = document.createElement('span');
 				dot.className = 'lumos-sparkle';
