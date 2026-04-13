@@ -144,9 +144,14 @@ if (db) {
 					? " tác tử AI lập trình của Anthropic. Mọi trang, plugin, triển khai và cấu hình đều được lập trình cặp trong terminal."
 					: " Anthropic's AI coding agent. Every page, plugin, deployment, and configuration was pair-programmed in the terminal."}
 			</p>
-			<a href="/room-of-requirement/priori-incantatem" class="diary-link">
-				{isVi ? "Xem nhật ký xây dựng" : "View build diary"} &rarr;
-			</a>
+			<div class="hero-links">
+				<a href="/room-of-requirement/priori-incantatem" class="diary-link">
+					{isVi ? "Nhật ký xây dựng" : "Build diary"} &rarr;
+				</a>
+				<a href="/room-of-requirement/daily-prophet" class="diary-link">
+					{isVi ? "Nhật Báo Tiên Tri" : "The Daily Prophet"} &rarr;
+				</a>
+			</div>
 		</div>
 	</section>
 
@@ -399,6 +404,11 @@ if (db) {
 
 	.cc-link:hover {
 		text-decoration: underline;
+	}
+
+	.hero-links {
+		display: flex;
+		gap: var(--spacing-6);
 	}
 
 	.diary-link {
