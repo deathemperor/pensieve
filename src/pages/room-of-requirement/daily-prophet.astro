@@ -1,0 +1,412 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { entries: diaryRaw, cacheHint } = await getEmDashCollection("diary");
+Astro.cache.set(cacheHint);
+
+interface DiaryEntry {
+	date: string;
+	createdAt: string;
+	title: string;
+	type: string;
+	summary: string;
+	model: string;
+	inputTokens: number;
+	outputTokens: number;
+	cost: number;
+}
+
+const entries: DiaryEntry[] = diaryRaw
+	.filter((e) => e.data.status === "published")
+	.sort((a, b) => {
+		const da = new Date(a.data.createdAt ?? a.data.publishedAt ?? 0).getTime();
+		const db = new Date(b.data.createdAt ?? b.data.publishedAt ?? 0).getTime();
+		return da - db; // chronological for chapter numbering
+	})
+	.map((e) => ({
+		date: e.data.date ?? "",
+		createdAt: String(e.data.createdAt ?? ""),
+		title: e.data.title,
+		type: (e.data.entry_type ?? "build") as string,
+		summary: e.data.summary ?? "",
+		model: e.data.model ?? "unknown",
+		inputTokens: e.data.input_tokens ?? 0,
+		outputTokens: e.data.output_tokens ?? 0,
+		cost: e.data.cost ?? 0,
+	}));
+
+// Group by date → each date = one release
+const releaseMap = new Map<string, DiaryEntry[]>();
+for (const entry of entries) {
+	const existing = releaseMap.get(entry.date);
+	if (existing) existing.push(entry);
+	else releaseMap.set(entry.date, [entry]);
+}
+
+// Hogwarts year: Sept 1 to Aug 31. Year 1 starts Sept 1, 2025 (or the first release date)
+function hogwartsYear(dateStr: string): number {
+	const d = new Date(dateStr + "T00:00:00");
+	const year = d.getFullYear();
+	const month = d.getMonth(); // 0-indexed
+	// Before September = previous academic year
+	const academicStart = month >= 8 ? year : year - 1;
+	// Year 1 = 2025-2026 academic year
+	return academicStart - 2024;
+}
+
+interface Release {
+	date: string;
+	year: number;
+	chapter: number;
+	chapterTitle: string;
+	entries: DiaryEntry[];
+	totalTokens: number;
+	totalCost: number;
+	types: string[];
+}
+
+// Build releases with chapter numbers per Hogwarts year
+const yearChapterCounters = new Map<number, number>();
+const releases: Release[] = [];
+
+for (const [date, dayEntries] of releaseMap) {
+	const year = hogwartsYear(date);
+	const chapterNum = (yearChapterCounters.get(year) ?? 0) + 1;
+	yearChapterCounters.set(year, chapterNum);
+
+	// Chapter title = the most significant entry's title
+	// Priority: ultraplan > plan > deploy > build > fix
+	const typePriority: Record<string, number> = { ultraplan: 5, plan: 4, deploy: 3, build: 2, fix: 1 };
+	const sorted = [...dayEntries].sort((a, b) => (typePriority[b.type] ?? 0) - (typePriority[a.type] ?? 0));
+	const chapterTitle = sorted[0].title;
+
+	releases.push({
+		date,
+		year,
+		chapter: chapterNum,
+		chapterTitle,
+		entries: dayEntries,
+		totalTokens: dayEntries.reduce((s, e) => s + e.inputTokens + e.outputTokens, 0),
+		totalCost: dayEntries.reduce((s, e) => s + e.cost, 0),
+		types: [...new Set(dayEntries.map(e => e.type))],
+	});
+}
+
+// Reverse for display (newest first)
+const displayReleases = [...releases].reverse();
+
+// Group display releases by Hogwarts year
+const yearGroups = new Map<number, Release[]>();
+for (const rel of displayReleases) {
+	const existing = yearGroups.get(rel.year);
+	if (existing) existing.push(rel);
+	else yearGroups.set(rel.year, [rel]);
+}
+
+const typeLabels: Record<string, Record<string, string>> = {
+	en: { build: "Spell Cast", plan: "Prophecy", ultraplan: "Unbreakable Vow", fix: "Reparo", deploy: "Apparition" },
+	vi: { build: "Phép Thuật", plan: "Lời Tiên Tri", ultraplan: "Lời Thề Bất Hoại", fix: "Reparo", deploy: "Hiện Hình" },
+};
+
+const typeColors: Record<string, string> = {
+	build: "#5e6ad2",
+	plan: "#d4a843",
+	ultraplan: "#c678dd",
+	fix: "#e5534b",
+	deploy: "#3fb950",
+};
+
+function formatDate(dateStr: string) {
+	const d = new Date(dateStr + "T00:00:00");
+	return d.toLocaleDateString(isVi ? "vi-VN" : "en-US", {
+		weekday: "short",
+		month: "short",
+		day: "numeric",
+	});
+}
+
+function formatTokens(n: number) {
+	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+	if (n >= 1_000) return `${(n / 1000).toFixed(0)}K`;
+	return String(n);
+}
+
+function ordinalSuffix(n: number): string {
+	const s = ["th", "st", "nd", "rd"];
+	const v = n % 100;
+	return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+---
+
+<Base
+	title={isVi ? "Nhật Báo Tiên Tri" : "The Daily Prophet"}
+	description={isVi ? "Mỗi bản phát hành hàng ngày, đặt tên theo chương" : "Every daily release, named by its chapter"}
+	breadcrumbs={[
+		{ label: "Room of Requirement", href: "/room-of-requirement" },
+		{ label: isVi ? "Nhật Báo Tiên Tri" : "The Daily Prophet" },
+	]}
+>
+	<section class="cl-hero">
+		<div class="cl-hero-inner">
+			<div class="cl-rule" />
+			<span class="cl-label">{isVi ? "Nhật Báo" : "Daily Edition"}</span>
+			<h1 class="cl-title">{isVi ? "Nhật Báo Tiên Tri" : "The Daily Prophet"}</h1>
+			<p class="cl-subtitle">
+				{isVi
+					? "Mỗi ngày lúc 5 giờ sáng, một chương mới được viết. Tên chương đến từ công việc trong ngày — không bao giờ lặp lại, vì không có hai ngày nào giống nhau."
+					: "Every day at 5AM, a new chapter is written. Chapter names come from the day's work — never repeating, because no two days are the same."}
+			</p>
+			<div class="cl-stats">
+				<span class="cl-stat">
+					<span class="cl-stat-value">{releases.length}</span>
+					<span class="cl-stat-label">{isVi ? "chương" : "chapters"}</span>
+				</span>
+				<span class="cl-stat-dot" />
+				<span class="cl-stat">
+					<span class="cl-stat-value">{yearGroups.size}</span>
+					<span class="cl-stat-label">{isVi ? "niên khóa" : "years"}</span>
+				</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="cl-releases">
+		<div class="cl-inner">
+			{[...yearGroups.entries()].map(([year, rels]) => (
+				<div class="cl-year-group">
+					<h2 class="cl-year-heading">
+						{isVi ? `Năm thứ ${year} tại Hogwarts` : `${ordinalSuffix(year)} Year at Hogwarts`}
+						<span class="cl-year-count">{rels.length} {isVi ? "chương" : "chapters"}</span>
+					</h2>
+
+					<div class="cl-chapter-list">
+						{rels.map((rel) => (
+							<article class="cl-chapter">
+								<div class="cl-chapter-header">
+									<span class="cl-chapter-num">
+										{isVi ? `Chương ${rel.chapter}` : `Chapter ${rel.chapter}`}
+									</span>
+									<time class="cl-chapter-date">{formatDate(rel.date)}</time>
+								</div>
+								<h3 class="cl-chapter-title">{rel.chapterTitle}</h3>
+								<div class="cl-chapter-entries">
+									{rel.entries.map((entry) => {
+										const color = typeColors[entry.type] ?? typeColors.build;
+										return (
+											<div class="cl-entry" style={`--entry-color: ${color};`}>
+												<span class="cl-entry-type">
+													<span class="cl-entry-dot" />
+													{typeLabels[lang]?.[entry.type] ?? entry.type}
+												</span>
+												<span class="cl-entry-title">{entry.title}</span>
+												{entry.summary && (
+													<p class="cl-entry-summary">{entry.summary}</p>
+												)}
+											</div>
+										);
+									})}
+								</div>
+								<div class="cl-chapter-meta">
+									{rel.types.map((t) => (
+										<span class="cl-meta-badge" style={`--badge-color: ${typeColors[t] ?? typeColors.build};`}>
+											{typeLabels[lang]?.[t] ?? t}
+										</span>
+									))}
+									{rel.totalTokens > 0 && (
+										<span class="cl-meta-tokens">{formatTokens(rel.totalTokens)} tokens</span>
+									)}
+									{rel.totalCost > 0 && (
+										<span class="cl-meta-cost">${(rel.totalCost / 100).toFixed(2)}</span>
+									)}
+								</div>
+							</article>
+						))}
+					</div>
+				</div>
+			))}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.cl-hero { border-bottom: 1px solid var(--color-border); }
+	.cl-hero-inner { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-16) var(--spacing-8); }
+	.cl-rule { width: 24px; height: 1px; background: var(--color-accent); margin-bottom: var(--spacing-5); }
+	.cl-label { display: block; font-family: var(--font-sans); font-size: var(--font-size-xs); font-weight: 500; text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--color-muted); margin-bottom: var(--spacing-4); }
+	.cl-title { font-family: var(--font-display); font-size: clamp(1.875rem, 3.5vw, 3rem); font-weight: var(--font-weight-display); line-height: 1.1; letter-spacing: -0.022em; color: var(--color-text); margin: 0 0 var(--spacing-5); font-style: italic; }
+	.cl-subtitle { font-family: var(--font-sans); font-size: var(--font-size-base); line-height: var(--leading-relaxed); color: var(--color-text-secondary); max-width: 55ch; margin: 0 0 var(--spacing-6); }
+
+	.cl-stats { display: flex; align-items: center; gap: var(--spacing-4); font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-muted); }
+	.cl-stat { display: flex; align-items: baseline; gap: var(--spacing-2); }
+	.cl-stat-value { font-weight: 600; color: var(--color-text); font-size: var(--font-size-lg); }
+	.cl-stat-dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+
+	/* Releases */
+	.cl-releases { padding-bottom: var(--spacing-24); }
+	.cl-inner { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-12) var(--spacing-8); }
+
+	.cl-year-group { margin-bottom: var(--spacing-16); }
+	.cl-year-group:last-child { margin-bottom: 0; }
+
+	.cl-year-heading {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.012em;
+		margin: 0 0 var(--spacing-8);
+		padding-bottom: var(--spacing-4);
+		border-bottom: 1px solid var(--color-border);
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-4);
+	}
+
+	.cl-year-count {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		font-weight: 400;
+	}
+
+	.cl-chapter-list { display: flex; flex-direction: column; gap: var(--spacing-6); }
+
+	.cl-chapter {
+		padding: var(--spacing-6);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		transition: border-color var(--transition-fast);
+	}
+
+	.cl-chapter:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+	}
+
+	.cl-chapter-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: var(--spacing-2);
+	}
+
+	.cl-chapter-num {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-accent);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+	}
+
+	.cl-chapter-date {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	.cl-chapter-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-4);
+		letter-spacing: -0.011em;
+	}
+
+	.cl-chapter-entries {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.cl-entry {
+		padding-left: var(--spacing-4);
+		border-left: 2px solid var(--entry-color);
+	}
+
+	.cl-entry-type {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--entry-color);
+		font-weight: 500;
+		margin-bottom: var(--spacing-1);
+	}
+
+	.cl-entry-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--entry-color);
+	}
+
+	.cl-entry-title {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text);
+		font-weight: 500;
+	}
+
+	.cl-entry-summary {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		margin: var(--spacing-1) 0 0;
+	}
+
+	.cl-chapter-meta {
+		display: flex;
+		gap: var(--spacing-2);
+		flex-wrap: wrap;
+		align-items: center;
+		padding-top: var(--spacing-3);
+		border-top: 1px solid var(--color-border-subtle, var(--color-border));
+	}
+
+	.cl-meta-badge {
+		display: inline-block;
+		padding: 1px var(--spacing-2);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		border-radius: 3px;
+		line-height: 1.6;
+		background: color-mix(in srgb, var(--badge-color) 10%, transparent);
+		color: var(--badge-color);
+		border: 1px solid color-mix(in srgb, var(--badge-color) 20%, transparent);
+	}
+
+	.cl-meta-tokens {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+		margin-left: auto;
+	}
+
+	.cl-meta-cost {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	@media (max-width: 900px) {
+		.cl-hero-inner { padding: var(--spacing-12) var(--spacing-6); }
+		.cl-inner { padding: var(--spacing-10) var(--spacing-6); }
+	}
+
+	@media (max-width: 600px) {
+		.cl-hero-inner { padding: var(--spacing-10) var(--spacing-5); }
+		.cl-inner { padding: var(--spacing-8) var(--spacing-5); }
+	}
+</style>
