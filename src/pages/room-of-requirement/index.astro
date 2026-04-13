@@ -90,6 +90,43 @@ const plugins = [
 		purpose: isVi ? "Đăng ký email, gửi bản tin, theo dõi click, phân tích đọc" : "Email subscriptions, newsletter dispatch, click tracking, reading analytics",
 	},
 ];
+
+// Task Observatory data from D1
+const db = Astro.locals.runtime?.env?.DB;
+let taskSystems: { slug: string; name: string; tool: string; color: string; routes: string; open: number; done: number }[] = [];
+
+const hpSystemDefs = [
+  { slug: "remembrall", name: "Remembrall", tool: "Todoist", color: "#e5534b", routes: isVi ? "Suy nghĩ nhanh, nhắc nhở" : "Quick thoughts, reminders" },
+  { slug: "marauders-map", name: "Marauder's Map", tool: "GitHub Issues", color: "#d4a843", routes: isVi ? "Lỗi code, yêu cầu tính năng" : "Code bugs, feature requests" },
+  { slug: "owls", name: "O.W.L.s", tool: "Linear", color: "#7c3aed", routes: isVi ? "Dự án lớn, lộ trình" : "Epics, roadmap" },
+  { slug: "room-of-requirement", name: "Room of Requirement", tool: "Notion", color: "#3fb950", routes: isVi ? "Ghi chú nghiên cứu, quyết định thiết kế" : "Research notes, design decisions" },
+  { slug: "pensieve-strands", name: "Pensieve Strands", tool: "Session Tracker", color: "#58a6ff", routes: isVi ? "Nhật ký phiên tự động" : "Automatic session trail" },
+  { slug: "marauders-parchment", name: "Marauder's Parchment", tool: "TASKS.md", color: "#d2a679", routes: isVi ? "Việc cần làm ngay trong repo" : "Immediate in-repo actions" },
+];
+
+if (db) {
+  try {
+    const counts = await db.prepare(
+      "SELECT hp_system, status, COUNT(*) as count FROM tasks GROUP BY hp_system, status"
+    ).all();
+    const countMap = new Map<string, { open: number; done: number }>();
+    for (const row of (counts.results ?? []) as any[]) {
+      const existing = countMap.get(row.hp_system) ?? { open: 0, done: 0 };
+      if (row.status === 'open' || row.status === 'in_progress') existing.open += row.count;
+      else if (row.status === 'done') existing.done += row.count;
+      countMap.set(row.hp_system, existing);
+    }
+    taskSystems = hpSystemDefs.map(sys => ({
+      ...sys,
+      open: countMap.get(sys.slug)?.open ?? 0,
+      done: countMap.get(sys.slug)?.done ?? 0,
+    }));
+  } catch {
+    taskSystems = hpSystemDefs.map(sys => ({ ...sys, open: 0, done: 0 }));
+  }
+} else {
+  taskSystems = hpSystemDefs.map(sys => ({ ...sys, open: 0, done: 0 }));
+}
 ---
 
 <Base title="Room of Requirement" description={isVi ? "Trang web này được xây dựng như thế nào, từng phiên Claude Code" : "How this site is built, one Claude Code session at a time"} breadcrumbs={[{ label: "Room of Requirement" }]}>
@@ -176,6 +213,35 @@ const plugins = [
 			</a>
 		</div>
 	</section>
+
+  <section class="room-section">
+    <div class="room-inner">
+      <h2 class="section-heading">{isVi ? "Đài Quan Sát Nhiệm Vụ" : "Task Observatory"}</h2>
+      <p class="section-desc">
+        {isVi
+          ? "Sáu hệ thống phép thuật theo dõi mọi nhiệm vụ, từ suy nghĩ thoáng qua đến dự án lớn."
+          : "Six magical systems tracking every task, from fleeting thoughts to grand projects."}
+      </p>
+      <div class="tech-grid">
+        {taskSystems.map(sys => (
+          <div class="tech-card task-sys-card" style={`--sys-color: ${sys.color};`}>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style={`width: 8px; height: 8px; border-radius: 50%; background: ${sys.color}; flex-shrink: 0;`} />
+              <span class="tech-name">{sys.name}</span>
+            </div>
+            <span class="tech-role" style={`color: ${sys.color};`}>{sys.tool}</span>
+            <span class="tech-desc">{sys.routes}</span>
+            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--color-muted); margin-top: 4px;">
+              {sys.open} {isVi ? "mở" : "open"} / {sys.done} {isVi ? "xong" : "done"}
+            </span>
+          </div>
+        ))}
+      </div>
+      <a href="/room-of-requirement/task-observatory" class="diary-link" style="margin-top: var(--spacing-6); display: inline-block;">
+        {isVi ? "Xem tất cả nhiệm vụ" : "View all tasks"} &rarr;
+      </a>
+    </div>
+  </section>
 
 	<section class="room-section">
 		<div class="room-inner">
@@ -460,6 +526,14 @@ const plugins = [
 		font-size: var(--font-size-xs);
 		color: var(--color-muted);
 	}
+
+  .task-sys-card {
+    border-left: 2px solid var(--sys-color);
+  }
+
+  .task-sys-card:hover {
+    border-left-color: var(--sys-color);
+  }
 
 	/* Agents + plugins */
 	.two-col {
