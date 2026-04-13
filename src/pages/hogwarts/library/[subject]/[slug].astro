@@ -1,0 +1,497 @@
+---
+export const prerender = false;
+
+import { getEmDashEntry } from "emdash";
+
+const { subject, slug } = Astro.params;
+
+if (!subject || !slug) {
+	return Astro.redirect("/hogwarts/library/");
+}
+
+const { entry: lesson, cacheHint } = await getEmDashEntry("lessons", slug);
+
+if (!lesson) {
+	return Astro.redirect(`/hogwarts/library/${subject}/`);
+}
+
+Astro.cache.set(cacheHint);
+
+const slides = Array.isArray(lesson.data.slides) ? lesson.data.slides : [];
+const title = lesson.data.title ?? "Lesson";
+const description = lesson.data.description ?? "";
+
+function renderSlide(slide: any, idx: number): string {
+	const layout = slide.layout ?? "text-left-image-right";
+	const hasNotes = slide.speaker_notes;
+	const notes = hasNotes
+		? `<aside class="notes">${escapeHtml(slide.speaker_notes)}</aside>`
+		: "";
+
+	const keyTakeaway = slide.key_takeaway
+		? `<div class="key-takeaway"><span class="takeaway-label">Key takeaway</span><span class="takeaway-text">${escapeHtml(slide.key_takeaway)}</span></div>`
+		: "";
+
+	const interaction = slide.interaction
+		? `<div class="interaction-prompt">${escapeHtml(slide.interaction)}</div>`
+		: "";
+
+	function renderFragments(items: any[]): string {
+		if (!items || !items.length) return "";
+		return items
+			.map((f) => `<li class="fragment">${escapeHtml(typeof f === "string" ? f : f.text ?? String(f))}</li>`)
+			.join("\n");
+	}
+
+	if (layout === "title-only") {
+		return `<section>
+  <h2>${escapeHtml(slide.title ?? "")}</h2>
+  ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "quote") {
+		return `<section>
+  <blockquote class="slide-quote">
+    <p>${escapeHtml(slide.title ?? "")}</p>
+    ${slide.body ? `<footer>— ${escapeHtml(slide.body)}</footer>` : ""}
+  </blockquote>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "image-full") {
+		const imgSrc = slide.image?.src ?? slide.image ?? "";
+		const imgAlt = slide.image?.alt ?? "";
+		return `<section data-background-image="${escapeHtml(imgSrc)}" data-background-size="cover" data-background-position="center">
+  <div class="image-full-overlay">
+    ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+    ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
+  </div>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "two-column") {
+		const frags = Array.isArray(slide.fragments) ? slide.fragments : [];
+		const half = Math.ceil(frags.length / 2);
+		const leftFrags = frags.slice(0, half);
+		const rightFrags = frags.slice(half);
+		return `<section>
+  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+  <div class="two-col">
+    <ul>${renderFragments(leftFrags)}</ul>
+    <ul>${renderFragments(rightFrags)}</ul>
+  </div>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	if (layout === "code") {
+		const lang = slide.code_lang ?? "";
+		return `<section>
+  ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+  <pre><code class="language-${lang}" data-trim data-noescape>${escapeHtml(slide.body ?? "")}</code></pre>
+  ${keyTakeaway}${interaction}${notes}
+</section>`;
+	}
+
+	// Default: text-left-image-right
+	const imgSrc = slide.image?.src ?? slide.image ?? "";
+	const imgAlt = slide.image?.alt ?? slide.title ?? "";
+	const frags = Array.isArray(slide.fragments) ? slide.fragments : [];
+	return `<section>
+  <div class="slide-split">
+    <div class="slide-left">
+      ${slide.title ? `<h2>${escapeHtml(slide.title)}</h2>` : ""}
+      ${slide.body ? `<p>${escapeHtml(slide.body)}</p>` : ""}
+      ${frags.length ? `<ul>${renderFragments(frags)}</ul>` : ""}
+      ${keyTakeaway}${interaction}
+    </div>
+    ${imgSrc ? `<div class="slide-right"><img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(imgAlt)}" /></div>` : ""}
+  </div>
+  ${notes}
+</section>`;
+}
+
+function escapeHtml(str: string): string {
+	return String(str)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
+}
+
+const renderedSlides = slides.map((s: any, i: number) => renderSlide(s, i)).join("\n");
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>{title}</title>
+	<meta name="description" content={description} />
+
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+		rel="stylesheet"
+	/>
+
+	<!-- Reveal.js -->
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css"
+	/>
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css"
+		id="theme"
+	/>
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css"
+	/>
+
+	<style>
+		/* ─── Reset & Pensieve canvas ──────────────────────────────── */
+		:root {
+			--bg: #0d1117;
+			--text: #e6edf3;
+			--text-secondary: #8b949e;
+			--accent: #7c3aed;
+			--accent-light: #a78bfa;
+			--border: rgba(255, 255, 255, 0.08);
+			--surface: rgba(255, 255, 255, 0.04);
+			--green: #3fb950;
+			--font-display: "Inter Tight", sans-serif;
+			--font-sans: "Inter", sans-serif;
+			--font-mono: "JetBrains Mono", monospace;
+		}
+
+		.reveal-viewport {
+			background: var(--bg);
+		}
+
+		.reveal {
+			font-family: var(--font-sans);
+			font-size: 1.5rem;
+			color: var(--text);
+		}
+
+		/* ─── Headings ─────────────────────────────────────────────── */
+		.reveal h1,
+		.reveal h2,
+		.reveal h3 {
+			font-family: var(--font-display);
+			font-weight: 700;
+			letter-spacing: -0.022em;
+			line-height: 1.1;
+			color: var(--text);
+			text-transform: none;
+			text-shadow: none;
+			margin-bottom: 0.75rem;
+		}
+
+		.reveal h1 { font-size: 2.4rem; }
+		.reveal h2 { font-size: 1.8rem; }
+		.reveal h3 { font-size: 1.4rem; }
+
+		/* ─── Body text ────────────────────────────────────────────── */
+		.reveal p {
+			font-family: var(--font-sans);
+			color: var(--text-secondary);
+			line-height: 1.65;
+			margin-bottom: 0.75rem;
+		}
+
+		/* ─── Lists ────────────────────────────────────────────────── */
+		.reveal ul,
+		.reveal ol {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.reveal li {
+			font-family: var(--font-sans);
+			font-size: 0.9em;
+			color: var(--text-secondary);
+			line-height: 1.5;
+			padding-left: 1.25rem;
+			position: relative;
+		}
+
+		.reveal li::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			top: 0.55em;
+			width: 5px;
+			height: 5px;
+			border-radius: 50%;
+			background: var(--accent);
+		}
+
+		/* ─── Slide layouts ────────────────────────────────────────── */
+		.slide-split {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 2.5rem;
+			align-items: center;
+			width: 100%;
+			height: 100%;
+		}
+
+		.slide-left {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			text-align: left;
+		}
+
+		.slide-right {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.slide-right img {
+			max-width: 100%;
+			max-height: 65vh;
+			object-fit: contain;
+			border-radius: 8px;
+			border: 1px solid var(--border);
+		}
+
+		/* ─── Two-column layout ────────────────────────────────────── */
+		.two-col {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 2rem;
+			text-align: left;
+			margin-top: 1rem;
+		}
+
+		/* ─── Quote layout ─────────────────────────────────────────── */
+		.slide-quote {
+			margin: 0 auto;
+			max-width: 75%;
+			text-align: center;
+			padding: 2rem;
+			border-left: none;
+			background: var(--surface);
+			border: 1px solid var(--border);
+			border-radius: 12px;
+		}
+
+		.slide-quote p {
+			font-family: var(--font-display);
+			font-size: 1.4rem;
+			font-weight: 600;
+			color: var(--text);
+			line-height: 1.4;
+			font-style: italic;
+			margin-bottom: 1rem;
+		}
+
+		.slide-quote footer {
+			font-family: var(--font-mono);
+			font-size: 0.75rem;
+			color: var(--text-secondary);
+			letter-spacing: 0.04em;
+		}
+
+		/* ─── Image-full overlay ───────────────────────────────────── */
+		.image-full-overlay {
+			background: rgba(13, 17, 23, 0.75);
+			backdrop-filter: blur(2px);
+			border-radius: 8px;
+			padding: 1.5rem 2rem;
+			display: inline-block;
+			max-width: 60%;
+		}
+
+		.image-full-overlay h2 {
+			color: var(--text) !important;
+		}
+
+		/* ─── Key takeaway ─────────────────────────────────────────── */
+		.key-takeaway {
+			display: flex;
+			align-items: baseline;
+			gap: 0.75rem;
+			margin-top: 1.25rem;
+			padding: 0.75rem 1rem;
+			background: color-mix(in srgb, var(--accent) 12%, transparent);
+			border-left: 3px solid var(--accent);
+			border-radius: 0 6px 6px 0;
+			text-align: left;
+		}
+
+		.takeaway-label {
+			font-family: var(--font-mono);
+			font-size: 0.65em;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.08em;
+			color: var(--accent-light);
+			flex-shrink: 0;
+		}
+
+		.takeaway-text {
+			font-family: var(--font-sans);
+			font-size: 0.8em;
+			color: var(--text);
+			line-height: 1.5;
+		}
+
+		/* ─── Interaction prompt ───────────────────────────────────── */
+		.interaction-prompt {
+			margin-top: 1rem;
+			padding: 0.75rem 1rem;
+			background: color-mix(in srgb, var(--green) 10%, transparent);
+			border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+			border-radius: 6px;
+			font-family: var(--font-sans);
+			font-size: 0.8em;
+			color: var(--green);
+			text-align: left;
+		}
+
+		/* ─── Code blocks ──────────────────────────────────────────── */
+		.reveal pre {
+			width: 100%;
+			box-shadow: none;
+			border-radius: 8px;
+			border: 1px solid var(--border);
+			margin: 0.5rem 0;
+		}
+
+		.reveal pre code {
+			font-family: var(--font-mono);
+			font-size: 0.78em;
+			line-height: 1.6;
+			padding: 1.25rem 1.5rem;
+			max-height: 55vh;
+		}
+
+		/* ─── Section alignment ────────────────────────────────────── */
+		.reveal .slides section {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: flex-start;
+			text-align: left;
+			height: 100%;
+			padding: 0 1rem;
+		}
+
+		.reveal .slides section:has(.slide-split),
+		.reveal .slides section:has(.slide-quote) {
+			align-items: center;
+		}
+
+		.reveal .slides section:has(.slide-quote) {
+			text-align: center;
+		}
+
+		/* ─── Back link ────────────────────────────────────────────── */
+		.back-link {
+			position: fixed;
+			top: 1rem;
+			left: 1rem;
+			z-index: 1000;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			font-family: var(--font-mono);
+			font-size: 0.75rem;
+			color: rgba(230, 237, 243, 0.5);
+			text-decoration: none;
+			padding: 5px 10px;
+			background: rgba(13, 17, 23, 0.7);
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			backdrop-filter: blur(8px);
+			transition: color 0.15s, border-color 0.15s, opacity 0.15s;
+		}
+
+		.back-link:hover {
+			color: var(--accent-light);
+			border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+		}
+
+		/* ─── Controls / progress overrides ───────────────────────── */
+		.reveal .controls {
+			color: var(--accent);
+		}
+
+		.reveal .progress {
+			color: var(--accent);
+			height: 3px;
+		}
+
+		.reveal .slide-number {
+			font-family: var(--font-mono);
+			font-size: 0.7rem;
+			background: transparent;
+			color: var(--text-secondary);
+		}
+
+		/* ─── Fragments ────────────────────────────────────────────── */
+		.reveal .fragment {
+			opacity: 0.15;
+		}
+
+		.reveal .fragment.visible {
+			opacity: 1;
+		}
+	</style>
+</head>
+<body>
+	<a href={`/hogwarts/library/${subject}/`} class="back-link">
+		&larr; {subject}
+	</a>
+
+	<div class="reveal">
+		<div class="slides">
+			<Fragment set:html={renderedSlides} />
+		</div>
+	</div>
+
+	<!-- Reveal.js scripts -->
+	<script
+		is:inline
+		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"
+	></script>
+	<script
+		is:inline
+		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"
+	></script>
+	<script
+		is:inline
+		src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"
+	></script>
+
+	<script is:inline>
+		Reveal.initialize({
+			hash: true,
+			slideNumber: true,
+			controls: true,
+			progress: true,
+			center: false,
+			transition: "slide",
+			plugins: [RevealNotes, RevealHighlight],
+		});
+	</script>
+</body>
+</html>
