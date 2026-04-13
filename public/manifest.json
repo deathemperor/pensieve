@@ -1,0 +1,51 @@
+{
+	"id": "/",
+	"name": "Pensieve — Trương Hữu Lộc",
+	"short_name": "Pensieve",
+	"description": "Thoughts, stories, and ideas from Trương Hữu Lộc",
+	"start_url": "/pensieve/",
+	"scope": "/",
+	"display": "standalone",
+	"display_override": ["window-controls-overlay", "standalone", "browser"],
+	"orientation": "any",
+	"lang": "en",
+	"dir": "ltr",
+	"theme_color": "#08090a",
+	"background_color": "#08090a",
+	"categories": ["blog", "personalization"],
+	"icons": [
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any"
+		},
+		{
+			"src": "/icon-maskable.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "maskable"
+		}
+	],
+	"shortcuts": [
+		{
+			"name": "All Memories",
+			"short_name": "Memories",
+			"url": "/pensieve/memories",
+			"icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+		},
+		{
+			"name": "Categories",
+			"short_name": "Categories",
+			"url": "/pensieve/categories",
+			"icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+		},
+		{
+			"name": "Room of Requirement",
+			"short_name": "RoR",
+			"url": "/room-of-requirement",
+			"icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+		}
+	],
+	"prefer_related_applications": false
+}

@@ -110,6 +110,10 @@ const isLoggedIn = !!Astro.locals.user;
 		/>
 		<title>{fullTitle}</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="manifest" href="/manifest.json" />
+		<meta name="theme-color" content="#08090a" media="(prefers-color-scheme: dark)" />
+		<meta name="theme-color" content="#fafbfc" media="(prefers-color-scheme: light)" />
+		<link rel="apple-touch-icon" href="/icon-maskable.svg" />
 		<link
 			rel="alternate"
 			type="application/rss+xml"
