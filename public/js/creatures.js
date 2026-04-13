@@ -92,7 +92,9 @@
     s.textContent = [
       ".magical-creature{position:fixed;z-index:1;pointer-events:none;color:rgba(192,210,235,0.12);filter:drop-shadow(0 0 6px rgba(192,210,235,0.15))}",
       "@keyframes creature-traverse{from{transform:translateX(var(--mc-from))}to{transform:translateX(var(--mc-to))}}",
-      "@keyframes creature-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}"
+      "@keyframes creature-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}",
+      "@keyframes creature-gallop{0%,100%{transform:rotate(0deg) scaleY(1)}25%{transform:rotate(2deg) scaleY(0.95)}50%{transform:rotate(0deg) scaleY(1)}75%{transform:rotate(-2deg) scaleY(0.95)}}",
+      "@keyframes creature-flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.85)}}"
     ].join("\n");
     document.head.appendChild(s);
   }
@@ -103,7 +105,8 @@
   function spawn(name) {
     if (active) return;
     injectStyles();
-    var c = creatures[name] || creatures[pick(names)];
+    if (!name || !creatures[name]) name = pick(names);
+    var c = creatures[name];
     var goLeft = Math.random() < 0.5;
     var yPct = rand(20, 80);
     var dur = c.speed + rand(-1, 1);
@@ -127,7 +130,16 @@
     svg.setAttribute("width", size);
     svg.setAttribute("height", Math.round(c.h * scale));
     svg.style.display = "block";
-    if (goLeft) svg.style.transform = "scaleX(-1)";
+    // Creatures face right by default; flip when going left
+    // Also add gallop (ground) or flap (flying) animation
+    var isFlying = name === "owl" || name === "phoenix";
+    var motionAnim = isFlying ? "creature-flap 0.4s ease-in-out infinite" : "creature-gallop 0.3s ease-in-out infinite";
+    if (goLeft) {
+      svg.style.transform = "scaleX(-1)";
+      svg.style.animation = motionAnim;
+    } else {
+      svg.style.animation = motionAnim;
+    }
 
     c.paths.forEach(function (d) {
       var p = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -171,7 +183,7 @@
       if (timer) { clearTimeout(timer); timer = null; }
     },
     summon: function (name) {
-      spawn(name && creatures[name] ? name : pick(names));
+      spawn(name || undefined);
     }
   };
 
