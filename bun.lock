@@ -10,6 +10,7 @@
         "@emdash-cms/cloudflare": "^0.1.0",
         "@emdash-cms/plugin-forms": "^0.1.0",
         "@emdash-cms/plugin-webhook-notifier": "^0.1.0",
+        "@rive-app/canvas-lite": "^2.37.1",
         "@types/adm-zip": "^0.5.8",
         "adm-zip": "^0.5.17",
         "astro": "^6.1.2",
@@ -342,6 +343,8 @@
     "@portabletext/types": ["@portabletext/types@4.0.2", "", {}, "sha512-djfIGU9n6DRrunlvj2nIDAp17URo/nA4jSXGvf+Gupx8NLLy9fmJBZ3GL8yhqn9lSVc+cKCharjOa3aOBnWbRw=="],
 
     "@remirror/core-constants": ["@remirror/core-constants@3.0.0", "", {}, "sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg=="],
+
+    "@rive-app/canvas-lite": ["@rive-app/canvas-lite@2.37.1", "", {}, "sha512-2ZiV4Sq3l0o5b52SmtzGrxNTvL+klX258eiw+0r4mum60EiUbtSpOTnMrOneM5V3TxpcXk+su+bNIkUcEzd0+Q=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-rc.3", "", {}, "sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q=="],
 
