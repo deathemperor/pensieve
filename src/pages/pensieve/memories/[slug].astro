@@ -537,7 +537,7 @@ const publishDate =
 		// Fetch count
 		fetch(`${API}/lumos/count?post=${encodeURIComponent(slug!)}`)
 			.then(r => r.json())
-			.then(d => { if (countEl) countEl.textContent = String(d.count || 0); })
+			.then(res => { const d = res.data ?? res; if (countEl) countEl.textContent = String(d.count || 0); })
 			.catch(() => {});
 
 		btn.addEventListener('click', (e: MouseEvent) => {
@@ -550,7 +550,8 @@ const publishDate =
 				body: JSON.stringify({ postSlug: slug }),
 			})
 				.then(r => r.json())
-				.then(d => {
+				.then(res => {
+					const d = res.data ?? res;
 					if (d.success || d.alreadyCast) {
 						btn.classList.add('lumos-cast');
 						if (countEl) countEl.textContent = String(d.count);
