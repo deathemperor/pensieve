@@ -143,6 +143,7 @@ const isLoggedIn = !!Astro.locals.user;
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
+		<div class="memory-wisps" aria-hidden="true"><span class="wisp-extra"></span></div>
 		{breadcrumbs ? (
 			<header class="site-header breadcrumb-header">
 				<nav class="breadcrumb-nav">
@@ -509,7 +510,11 @@ const isLoggedIn = !!Astro.locals.user;
 
 			themeBtns.forEach((btn) => {
 				btn.addEventListener("click", () => {
-					setTheme(btn.dataset.theme || "system");
+					const t = btn.dataset.theme || "system";
+					setTheme(t);
+					if (t === "light") window.SpellSounds?.lumos();
+					else if (t === "dark") window.SpellSounds?.nox();
+					else window.SpellSounds?.sparkle();
 				});
 			});
 
@@ -615,6 +620,77 @@ const isLoggedIn = !!Astro.locals.user;
 			::selection {
 				background: var(--color-accent);
 				color: white;
+			}
+
+			/* Memory wisps — subtle floating particles in dark mode */
+			@keyframes wisp-float {
+				0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+				10% { opacity: var(--wisp-opacity); }
+				90% { opacity: var(--wisp-opacity); }
+				100% { transform: translateY(-10vh) translateX(var(--wisp-drift)); opacity: 0; }
+			}
+
+			.dark .memory-wisps::before,
+			.dark .memory-wisps::after,
+			.dark .memory-wisps .wisp-extra::before,
+			.dark .memory-wisps .wisp-extra::after {
+				content: "";
+				position: fixed;
+				width: 3px;
+				height: 3px;
+				border-radius: 50%;
+				background: rgba(255, 255, 255, 0.8);
+				pointer-events: none;
+				z-index: 0;
+				animation: wisp-float var(--wisp-duration) var(--wisp-delay) infinite linear;
+			}
+
+			.memory-wisps {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				z-index: 0;
+				overflow: hidden;
+			}
+
+			.memory-wisps::before {
+				--wisp-opacity: 0.04;
+				--wisp-duration: 18s;
+				--wisp-delay: 0s;
+				--wisp-drift: 30px;
+				left: 15%;
+				width: 2px;
+				height: 2px;
+			}
+
+			.memory-wisps::after {
+				--wisp-opacity: 0.05;
+				--wisp-duration: 22s;
+				--wisp-delay: -5s;
+				--wisp-drift: -20px;
+				left: 55%;
+				width: 3px;
+				height: 3px;
+			}
+
+			.memory-wisps .wisp-extra::before {
+				--wisp-opacity: 0.03;
+				--wisp-duration: 25s;
+				--wisp-delay: -12s;
+				--wisp-drift: 15px;
+				left: 80%;
+				width: 2px;
+				height: 2px;
+			}
+
+			.memory-wisps .wisp-extra::after {
+				--wisp-opacity: 0.06;
+				--wisp-duration: 20s;
+				--wisp-delay: -8s;
+				--wisp-drift: -25px;
+				left: 35%;
+				width: 4px;
+				height: 4px;
 			}
 		</style>
 
@@ -1430,5 +1506,6 @@ const isLoggedIn = !!Astro.locals.user;
 			</svg>
 			<span class="nixie-label">{currentLang === "vi" ? "Phù phép bởi CC" : "Conjured by CC"}</span>
 		</a>
+		<script src="/js/spellsounds.js"></script>
 	</body>
 </html>

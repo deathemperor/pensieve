@@ -77,6 +77,12 @@ const results = query ? allPosts.filter((p) => matchesQuery(p, query)) : [];
 
 		{!query && <p class="search-hint">{isVi ? "Nói tên điều bạn muốn tìm." : "Speak the name of what you seek."}</p>}
 	</section>
+
+	<script>
+		document.querySelector('.search-form')?.addEventListener('submit', () => {
+			window.SpellSounds?.accio();
+		});
+	</script>
 </Base>
 
 <style>
