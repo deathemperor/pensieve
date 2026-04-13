@@ -1,0 +1,60 @@
+---
+import Base from "../layouts/Base.astro";
+import { getCurrentLang } from "../utils/lang";
+
+export const prerender = false;
+
+const isVi = getCurrentLang(Astro) === "vi";
+---
+
+<Base title={isVi ? "Lỗi cổng" : "Bad gateway"} breadcrumbs={[{ label: "Dark Arts" }]}>
+	<div class="error-page">
+		<svg class="error-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<!-- Lightning bolt / curse strike -->
+			<path d="M40 6 L28 36 L38 36 L24 74 L56 32 L44 32 L56 6 Z" stroke="#8b1a1a" stroke-width="2.5" stroke-linejoin="round" fill="none" />
+			<!-- Impact sparks -->
+			<line x1="18" y1="68" x2="12" y2="74" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+			<line x1="30" y1="72" x2="28" y2="78" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.5" />
+			<line x1="16" y1="58" x2="10" y2="60" stroke="#8b1a1a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" />
+		</svg>
+		<h1>502</h1>
+		<p class="spell-name">Crucio!</p>
+		<p>{isVi ? "Máy chủ nguồn đang quằn quại trong đau đớn." : "The upstream server writhes in agony."}</p>
+		<a href="/">{isVi ? "Chờ lời nguyền được giải" : "Wait for the curse to lift"}</a>
+	</div>
+</Base>
+
+<style>
+	.error-page {
+		text-align: center;
+		padding: var(--spacing-24) var(--spacing-6);
+	}
+
+	.error-icon {
+		width: 80px;
+		height: 80px;
+		margin-bottom: var(--spacing-4);
+	}
+
+	.error-page h1 {
+		font-size: var(--font-size-5xl);
+		margin-bottom: var(--spacing-1);
+		color: var(--color-border);
+	}
+
+	.error-page .spell-name {
+		font-style: italic;
+		color: #8b1a1a;
+		font-size: var(--font-size-lg);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.error-page p {
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-6);
+	}
+
+	.error-page a {
+		color: var(--color-text);
+	}
+</style>
