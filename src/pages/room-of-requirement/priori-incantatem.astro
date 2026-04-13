@@ -63,6 +63,12 @@ for (const entry of entries) {
 const totalTokens = entries.reduce((sum, e) => sum + e.inputTokens + e.outputTokens, 0);
 const totalCost = entries.reduce((sum, e) => sum + e.cost, 0);
 
+// Per-type counts
+const typeCounts = entries.reduce((acc, e) => {
+	acc[e.type] = (acc[e.type] || 0) + 1;
+	return acc;
+}, {} as Record<string, number>);
+
 const typeLabels: Record<string, Record<string, string>> = {
 	en: { build: "Spell Cast", plan: "Prophecy", ultraplan: "Unbreakable Vow", fix: "Reparo", deploy: "Apparition" },
 	vi: { build: "Phép Thuật", plan: "Lời Tiên Tri", ultraplan: "Lời Thề Bất Hoại", fix: "Reparo", deploy: "Hiện Hình" },
@@ -112,7 +118,7 @@ function formatModel(model: string) {
 			<div class="pi-stats">
 				<span class="pi-stat">
 					<span class="pi-stat-value">{entries.length}</span>
-					<span class="pi-stat-label">{isVi ? "phép thuật" : "spells cast"}</span>
+					<span class="pi-stat-label">{isVi ? "tổng cộng" : "total"}</span>
 				</span>
 				<span class="pi-stat-dot" />
 				<span class="pi-stat">
@@ -137,6 +143,19 @@ function formatModel(model: string) {
 						</span>
 					</>
 				)}
+			</div>
+			<div class="pi-type-summary">
+				{(["build", "plan", "ultraplan", "fix", "deploy"] as const).map((type) => {
+					const count = typeCounts[type];
+					if (!count) return null;
+					return (
+						<span class="pi-type-chip" style={`--chip-color: ${typeColors[type]};`}>
+							<span class="pi-type-chip-dot" />
+							{typeLabels[lang]?.[type] ?? type}
+							<span class="pi-type-chip-count">{count}</span>
+						</span>
+					);
+				})}
 			</div>
 		</div>
 	</section>
@@ -295,6 +314,39 @@ function formatModel(model: string) {
 		border-radius: 50%;
 		background: currentColor;
 		opacity: 0.5;
+	}
+
+	.pi-type-summary {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+		margin-top: var(--spacing-4);
+	}
+
+	.pi-type-chip {
+		--chip-color: var(--color-accent);
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		padding: 2px var(--spacing-3);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--chip-color);
+		background: color-mix(in srgb, var(--chip-color) 10%, transparent);
+		border: 1px solid color-mix(in srgb, var(--chip-color) 20%, transparent);
+		border-radius: var(--radius-full, 9999px);
+		line-height: 1.6;
+	}
+
+	.pi-type-chip-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--chip-color);
+	}
+
+	.pi-type-chip-count {
+		font-weight: 600;
 	}
 
 	/* Timeline */
