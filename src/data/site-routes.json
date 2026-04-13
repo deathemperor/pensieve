@@ -5,6 +5,7 @@
 		{ "path": "/pensieve/categories", "title": "Categories", "priority": "0.6" },
 		{ "path": "/room-of-requirement", "title": "Room of Requirement", "priority": "0.7" },
 		{ "path": "/room-of-requirement/priori-incantatem", "title": "Priori Incantatem", "priority": "0.7" },
+		{ "path": "/room-of-requirement/task-observatory", "title": "Task Observatory", "priority": "0.6" },
 		{ "path": "/Trương", "title": "Trương Hữu Lộc — About", "priority": "0.8" }
 	],
 	"feeds": [
