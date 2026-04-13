@@ -59,8 +59,16 @@ export default {
 			const limit = url.searchParams.get("limit");
 			if (limit && parseInt(limit) > 50) {
 				url.searchParams.set("limit", "50");
+				const newHeaders = new Headers();
+				for (const [k, v] of request.headers.entries()) {
+					newHeaders.set(k, v);
+				}
 				return handler.fetch(
-					new Request(url.toString(), request),
+					new Request(url.toString(), {
+						method: request.method,
+						headers: newHeaders,
+						redirect: request.redirect,
+					}),
 					env,
 					ctx,
 				);
