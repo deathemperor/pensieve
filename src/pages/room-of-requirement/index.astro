@@ -309,6 +309,10 @@ if (db) {
             <span class="dash-panel-stat">{docsByProject.size} {isVi ? "dự án" : "projects"} · {totalLines.toLocaleString()} {isVi ? "dòng" : "lines"} &rarr;</span>
           </div>
         </a>
+        <div class="dash-dest" style="--dest-color: #58a6ff;">
+          <span class="dash-dest-title">{isVi ? "Khu Cấm" : "The Restricted Section"}</span>
+          <span class="dash-dest-hint">{isVi ? "đi sâu vào ký ức..." : "diving into memory..."}</span>
+        </div>
       </div>
 
       <!-- 4: Patronus Burst → House-Elves -->
@@ -320,6 +324,10 @@ if (db) {
             <span class="dash-panel-stat">{agents.length} {isVi ? "tác tử" : "agents"} &rarr;</span>
           </div>
         </a>
+        <div class="dash-dest" style="--dest-color: rgba(200,220,255,0.9);">
+          <span class="dash-dest-title">{isVi ? "Gia Tinh" : "House-Elves"}</span>
+          <span class="dash-dest-hint">{isVi ? "triệu hồi..." : "summoning..."}</span>
+        </div>
       </div>
 
       <!-- 3: Floo Network → Plugins -->
@@ -331,6 +339,10 @@ if (db) {
             <span class="dash-panel-stat">{plugins.length} plugins &rarr;</span>
           </div>
         </a>
+        <div class="dash-dest" style="--dest-color: #3fb950;">
+          <span class="dash-dest-title">Plugins</span>
+          <span class="dash-dest-hint">{isVi ? "bước vào lò sưởi..." : "entering fireplace..."}</span>
+        </div>
       </div>
 
       <!-- Superpowers Artifacts -->
@@ -704,6 +716,31 @@ if (db) {
     100% { opacity: 0; transform: scale(1.5); }
   }
 
+  /* ═══ Destination label that fades in after panel dissolves ═══ */
+  .dash-dest {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; opacity: 0; pointer-events: none;
+    transition: opacity 0.4s;
+  }
+  .dash-dest.revealed { opacity: 1; }
+  .dash-dest-title {
+    font-family: var(--font-display, sans-serif);
+    font-size: 18px; font-weight: 700;
+    color: var(--dest-color, #e6edf3);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 16px color-mix(in srgb, var(--dest-color, #58a6ff) 60%, transparent);
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dash-dest.revealed .dash-dest-title { opacity: 1; transform: translateY(0); transition-delay: 0.15s; }
+  .dash-dest-hint {
+    font-family: var(--font-mono, monospace);
+    font-size: 11px; color: var(--color-muted, #8b949e);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .dash-dest.revealed .dash-dest-hint { opacity: 1; transition-delay: 0.35s; }
+
   /* ═══ Atmospheric stage glow ═══ */
   .dash-stage.atmo-on::after {
     content: ''; position: absolute; inset: -20px; border-radius: calc(12px + 20px);
@@ -957,8 +994,10 @@ if (db) {
         panel.className = panel.className.replace(/\s*(diving|burning|casting|apparating|pulling|vanishing)\b/g, '');
         panel.style.cssText = '';
       }
-      stage.classList.remove('tracing', 'door-open');
-      stage.querySelectorAll('.pensieve-ripple,.pensieve-vortex,.pensieve-bubble,.pensieve-wisp,.floo-flame,.floo-ember,.floo-smoke,.floo-spark,.patronus-ray,.patronus-core,.apparition-crack,.apparition-lightning,.apparition-shockwave,.portkey-swirl,.portkey-spark,.portkey-trail,.vanish-shimmer,.vanish-static').forEach(e => e.remove());
+      stage.classList.remove('tracing', 'door-open', 'atmo-on', 'atmo-fade');
+      const dest = stage.querySelector('.dash-dest');
+      if (dest) dest.classList.remove('revealed');
+      stage.querySelectorAll('.pensieve-ripple,.pensieve-vortex,.pensieve-bubble,.pensieve-wisp,.floo-flame,.floo-ember,.floo-smoke,.floo-spark,.patronus-ray,.patronus-core,.apparition-crack,.apparition-lightning,.apparition-shockwave,.portkey-swirl,.portkey-spark,.portkey-trail,.vanish-shimmer,.vanish-static,.click-flash').forEach(e => e.remove());
     });
     sizeDoorTrace();
   });
@@ -997,6 +1036,14 @@ if (db) {
     }, lifetime);
   }
 
+  // Reveal destination label after panel dissolves
+  function revealDest(stage, delay) {
+    setTimeout(() => {
+      const dest = stage.querySelector('.dash-dest');
+      if (dest) dest.classList.add('revealed');
+    }, delay);
+  }
+
   // Instant click feedback — a bright flash overlay at t=0
   function clickFlash(stage, color) {
     const flash = document.createElement('div');
@@ -1026,6 +1073,7 @@ if (db) {
       clickFlash(stage, 'rgba(88,166,255,0.6)');
       atmoGlow(stage, 'rgba(88,166,255,0.35)', 1500);
       panel.classList.add('diving');
+      revealDest(stage, 1100);
       // Vortex swirl — bigger, longer-lasting
       const vortex = spawn(stage, 'pensieve-vortex', { left: '50%', top: '50%' });
       setTimeout(() => vortex.remove(), 1400);
@@ -1065,6 +1113,7 @@ if (db) {
       clickFlash(stage, 'rgba(63,185,80,0.6)');
       atmoGlow(stage, 'rgba(63,185,80,0.4)', 1400);
       panel.classList.add('burning');
+      revealDest(stage, 1000);
       // Smoke plume expanding from the bottom
       const smoke = spawn(stage, 'floo-smoke', {});
       requestAnimationFrame(() => smoke.classList.add('bloom'));
@@ -1119,6 +1168,7 @@ if (db) {
       clickFlash(stage, 'rgba(255,255,255,0.7)');
       atmoGlow(stage, 'rgba(200,220,255,0.5)', 1600);
       panel.classList.add('casting');
+      revealDest(stage, 1200);
       // Central flash core
       setTimeout(() => {
         const core = spawn(stage, 'patronus-core', { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' });
