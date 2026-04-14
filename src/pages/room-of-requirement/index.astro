@@ -12,36 +12,42 @@ const techStack = [
 		role: isVi ? "Framework SSR" : "SSR framework",
 		description: isVi ? "Trang server-rendered, không JS phía client mặc định" : "Server-rendered pages, zero client JS by default",
 		url: "https://astro.build",
+		color: "#FF5D01",
 	},
 	{
 		name: "EmDash CMS",
 		role: isVi ? "Quản lý nội dung" : "Content management",
 		description: isVi ? "CMS gốc Astro với giao diện quản trị, bình luận, hệ thống plugin" : "Astro-native CMS with admin UI, comments, plugin system",
 		url: "https://emdashcms.com",
+		color: "#58a6ff",
 	},
 	{
 		name: "Cloudflare Workers",
 		role: isVi ? "Hosting & tính toán" : "Hosting & compute",
 		description: isVi ? "Edge runtime — D1 (SQL), R2 (lưu trữ), KV (session)" : "Edge runtime — D1 (SQL), R2 (storage), KV (sessions)",
 		url: "https://workers.cloudflare.com",
+		color: "#F6821F",
 	},
 	{
 		name: "Resend",
 		role: isVi ? "Gửi email" : "Email delivery",
 		description: isVi ? "API email giao dịch cho thông báo bình luận" : "Transactional email API for comment notifications",
 		url: "https://resend.com",
+		color: "#3fb950",
 	},
 	{
 		name: "Claude Code",
 		role: isVi ? "Lập trình viên AI" : "AI pair programmer",
 		description: isVi ? "Tác tử CLI của Anthropic — xây dựng mọi dòng code của trang này" : "Anthropic's CLI agent — built every line of this site",
 		url: "https://claude.com/claude-code",
+		color: "#DA7756",
 	},
 	{
 		name: "GitHub Actions",
 		role: "CI/CD",
 		description: isVi ? "Triển khai tự động khi push lên main" : "Automated deployment on push to main",
 		url: "https://github.com/features/actions",
+		color: "#2088FF",
 	},
 ];
 
@@ -220,15 +226,17 @@ if (db) {
       </div>
 
       <!-- Panel: Architecture (Apparition) -->
-      <div class="dash-panel" data-magic="apparition">
+      <div class="dash-panel dash-full" data-magic="apparition">
         <div class="dash-panel-inner">
           <span class="dash-panel-title">{isVi ? "Kiến Trúc" : "Architecture"}</span>
-          <div class="dash-chips">
+          <div class="dash-tech-grid">
             {techStack.map((t) => (
-              <span class="dash-chip">{t.name}</span>
+              <a href={t.url} target="_blank" rel="noopener" class="dash-tech-item" style={`--tech-color: ${t.color};`}>
+                <span class="dash-tech-name">{t.name}</span>
+                <span class="dash-tech-role">{t.role}</span>
+              </a>
             ))}
           </div>
-          <span class="dash-panel-stat">{techStack.length} {isVi ? "dịch vụ" : "services"}</span>
         </div>
       </div>
 
@@ -379,8 +387,18 @@ if (db) {
   .dash-role-label { font-size: 11px; font-weight: 600; }
   .dash-role-count { font-size: 11px; color: var(--color-muted); }
   .dash-muted-line { font-size: 10px; color: var(--color-muted); font-family: var(--font-mono); }
-  .dash-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-  .dash-chip { font-size: 10px; padding: 2px 8px; background: color-mix(in srgb, var(--color-border) 50%, transparent); border-radius: 4px; color: var(--color-text-secondary); font-family: var(--font-mono); }
+  .dash-tech-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .dash-tech-item {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 6px 10px; border-radius: 6px;
+    border-left: 2px solid var(--tech-color);
+    background: color-mix(in srgb, var(--tech-color) 6%, transparent);
+    text-decoration: none; color: inherit;
+    transition: background var(--transition-fast);
+  }
+  .dash-tech-item:hover { background: color-mix(in srgb, var(--tech-color) 12%, transparent); }
+  .dash-tech-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--tech-color); }
+  .dash-tech-role { font-family: var(--font-sans); font-size: 9px; color: var(--color-muted); }
   .dash-mono { font-family: var(--font-mono); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-text); }
   .dash-hp-dots { display: flex; gap: 8px; flex-wrap: wrap; }
   .dash-hp-dot { display: flex; align-items: center; gap: 4px; }
@@ -497,6 +515,7 @@ if (db) {
     .room-hero-inner { padding: var(--spacing-12) var(--spacing-5); }
     .room-dashboard { padding: var(--spacing-5); }
     .dash-grid { grid-template-columns: 1fr; }
+    .dash-tech-grid { grid-template-columns: 1fr 1fr; }
   }
 
   /* Reduced motion */
