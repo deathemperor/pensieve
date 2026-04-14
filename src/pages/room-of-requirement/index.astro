@@ -206,107 +206,131 @@ if (db) {
   <section class="room-dashboard">
     <div class="dash-grid">
 
-      <!-- Panel: What CC Does (full width, Vanishing Cabinet) -->
-      <div class="dash-panel dash-full" data-magic="vanish">
-        <div class="dash-panel-inner">
-          <div class="dash-row">
-            <div class="dash-role-group">
-              <span class="dash-dot" style="background: var(--color-accent);" />
-              <span class="dash-role-label" style="color: var(--color-accent);">Claude Code</span>
-              <span class="dash-role-count">7 {isVi ? "vai trò" : "roles"}</span>
+      <!-- 7: Vanishing Cabinet → What CC Does -->
+      <div class="dash-stage dash-stage-full" id="stage-vanish">
+        <div class="dash-panel">
+          <div class="dash-panel-inner">
+            <div class="dash-row">
+              <div class="dash-role-group">
+                <span class="dash-dot" style="background: var(--color-accent);" />
+                <span class="dash-role-label" style="color: var(--color-accent);">Claude Code</span>
+                <span class="dash-role-count">7 {isVi ? "vai trò" : "roles"}</span>
+              </div>
+              <div class="dash-role-group">
+                <span class="dash-dot" style="background: #3fb950;" />
+                <span class="dash-role-label" style="color: #3fb950;">{isVi ? "Con Người" : "Human"}</span>
+                <span class="dash-role-count">5 {isVi ? "vai trò" : "roles"}</span>
+              </div>
             </div>
-            <div class="dash-role-group">
-              <span class="dash-dot" style="background: #3fb950;" />
-              <span class="dash-role-label" style="color: #3fb950;">{isVi ? "Con Người" : "Human"}</span>
-              <span class="dash-role-count">5 {isVi ? "vai trò" : "roles"}</span>
-            </div>
-          </div>
-          <span class="dash-muted-line">{isVi ? "Mã nguồn · Hạ tầng · CI/CD · Plugin · DNS · Kiến trúc · Git" : "Source code · Infrastructure · CI/CD · Plugins · DNS · Architecture · Git"}</span>
-        </div>
-      </div>
-
-      <!-- Panel: Architecture (Apparition) -->
-      <div class="dash-panel dash-full" data-magic="apparition">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Kiến Trúc" : "Architecture"}</span>
-          <div class="dash-tech-grid">
-            {techStack.map((t) => (
-              <a href={t.url} target="_blank" rel="noopener" class="dash-tech-item" style={`--tech-color: ${t.color};`}>
-                <span class="dash-tech-name">{t.name}</span>
-                <span class="dash-tech-role">{t.role}</span>
-              </a>
-            ))}
+            <span class="dash-muted-line">{isVi ? "Mã nguồn · Hạ tầng · CI/CD · Plugin · DNS · Kiến trúc · Git" : "Source code · Infrastructure · CI/CD · Plugins · DNS · Architecture · Git"}</span>
           </div>
         </div>
       </div>
 
-      <!-- Panel: Source (Portkey) -->
-      <a href="https://github.com/deathemperor/pensieve" target="_blank" rel="noopener" class="dash-panel dash-link-panel" data-magic="portkey">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Mã Nguồn" : "Source"}</span>
-          <div class="dash-row" style="gap: 6px;">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="color: var(--color-text);"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-            <span class="dash-mono">deathemperor/pensieve</span>
+      <!-- 5: Apparition → Architecture -->
+      <div class="dash-stage dash-stage-full" id="stage-apparition">
+        <div class="dash-panel">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Kiến Trúc" : "Architecture"}</span>
+            <div class="dash-tech-grid">
+              {techStack.map((t) => (
+                <a href={t.url} target="_blank" rel="noopener" class="dash-tech-item" style={`--tech-color: ${t.color};`}>
+                  <span class="dash-tech-name">{t.name}</span>
+                  <span class="dash-tech-role">{t.role}</span>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
-      </a>
+      </div>
 
-      <!-- Panel: Task Observatory (Wand Trace Door) -->
-      <a href="/room-of-requirement/task-observatory" class="dash-panel dash-nav-panel" data-magic="door">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Đài Quan Sát" : "Task Observatory"}</span>
-          <div class="dash-hp-dots">
-            {taskSystems.map(sys => (
-              <span class="dash-hp-dot">
-                <span class="dash-dot" style={`background: ${sys.color};`} />
-                <span style={`font-size: 10px; color: ${sys.color};`}>{sys.name}</span>
-              </span>
-            ))}
+      <!-- 6: Portkey → Source -->
+      <div class="dash-stage" id="stage-portkey">
+        <a href="https://github.com/deathemperor/pensieve" target="_blank" rel="noopener" class="dash-panel dash-nav-panel" data-magic="portkey">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Mã Nguồn" : "Source"}</span>
+            <div class="dash-row" style="gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="color: var(--color-text);"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+              <span class="dash-mono">deathemperor/pensieve</span>
+            </div>
           </div>
-          <span class="dash-panel-stat">
-            {totalTasks} {isVi ? "nhiệm vụ" : "tasks"} · {openTasks} {isVi ? "mở" : "open"} / {doneTasks} {isVi ? "xong" : "done"} &rarr;
-          </span>
-        </div>
-      </a>
+        </a>
+      </div>
 
-      <!-- Panel: Restricted Section (Pensieve Dive) -->
-      <a href="/room-of-requirement/restricted-section" class="dash-panel dash-nav-panel" data-magic="pensieve">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Khu Cấm" : "The Restricted Section"}</span>
-          <div class="dash-row" style="gap: 8px;">
-            <span class="dash-badge dash-badge-spec">{totalSpecs} {isVi ? "thiết kế" : "specs"}</span>
-            <span class="dash-badge dash-badge-plan">{totalPlans} {isVi ? "kế hoạch" : "plans"}</span>
+      <!-- 1: Wand Trace Door → Task Observatory -->
+      <div class="dash-stage dash-stage-door" id="stage-door">
+        <div class="door-glow"></div>
+        <div class="door-trace"><div class="door-trace-inner"></div></div>
+        <a href="/room-of-requirement/task-observatory" class="dash-panel dash-nav-panel" data-magic="door">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Đài Quan Sát" : "Task Observatory"}</span>
+            <div class="dash-hp-dots">
+              {taskSystems.map(sys => (
+                <span class="dash-hp-dot">
+                  <span class="dash-dot" style={`background: ${sys.color};`} />
+                  <span style={`font-size: 10px; color: ${sys.color};`}>{sys.name}</span>
+                </span>
+              ))}
+            </div>
+            <span class="dash-panel-stat">
+              {totalTasks} {isVi ? "nhiệm vụ" : "tasks"} · {openTasks} {isVi ? "mở" : "open"} / {doneTasks} {isVi ? "xong" : "done"} &rarr;
+            </span>
           </div>
-          <span class="dash-panel-stat">{docsByProject.size} {isVi ? "dự án" : "projects"} · {totalLines.toLocaleString()} {isVi ? "dòng" : "lines"} &rarr;</span>
+        </a>
+        <div class="door-room">
+          <div style="text-align: center;">
+            <div class="door-room-title">{isVi ? "Đài Quan Sát" : "Task Observatory"}</div>
+            <div class="door-room-hint">{isVi ? "đang vào..." : "entering..."}</div>
+          </div>
         </div>
-      </a>
+      </div>
 
-      <!-- Panel: House-Elves (Patronus Burst) -->
-      <a href="/room-of-requirement/house-elves" class="dash-panel dash-nav-panel" data-magic="patronus">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Gia Tinh" : "House-Elves"}</span>
-          <span class="dash-name-list">{agents.map(a => a.name).join(" · ")}</span>
-          <span class="dash-panel-stat">{agents.length} {isVi ? "tác tử" : "agents"} &rarr;</span>
-        </div>
-      </a>
+      <!-- 2: Pensieve Dive → Restricted Section -->
+      <div class="dash-stage" id="stage-pensieve">
+        <a href="/room-of-requirement/restricted-section" class="dash-panel dash-nav-panel" data-magic="pensieve">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Khu Cấm" : "The Restricted Section"}</span>
+            <div class="dash-row" style="gap: 8px;">
+              <span class="dash-badge dash-badge-spec">{totalSpecs} {isVi ? "thiết kế" : "specs"}</span>
+              <span class="dash-badge dash-badge-plan">{totalPlans} {isVi ? "kế hoạch" : "plans"}</span>
+            </div>
+            <span class="dash-panel-stat">{docsByProject.size} {isVi ? "dự án" : "projects"} · {totalLines.toLocaleString()} {isVi ? "dòng" : "lines"} &rarr;</span>
+          </div>
+        </a>
+      </div>
 
-      <!-- Panel: Plugins (Floo Network) -->
-      <a href="/room-of-requirement/plugins" class="dash-panel dash-nav-panel" data-magic="floo">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">Plugins</span>
-          <span class="dash-name-list">{plugins.map(p => p.name.replace('plugin-', '')).join(" · ")}</span>
-          <span class="dash-panel-stat">{plugins.length} plugins &rarr;</span>
-        </div>
-      </a>
+      <!-- 4: Patronus Burst → House-Elves -->
+      <div class="dash-stage" id="stage-patronus">
+        <a href="/room-of-requirement/house-elves" class="dash-panel dash-nav-panel" data-magic="patronus">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Gia Tinh" : "House-Elves"}</span>
+            <span class="dash-name-list">{agents.map(a => a.name).join(" · ")}</span>
+            <span class="dash-panel-stat">{agents.length} {isVi ? "tác tử" : "agents"} &rarr;</span>
+          </div>
+        </a>
+      </div>
 
-      <!-- Panel: Superpowers Artifacts (Marauder's Map Ink) -->
-      <a href="https://github.com/deathemperor/pensieve/tree/main/.superpowers/brainstorm" target="_blank" rel="noopener" class="dash-panel dash-link-panel" data-magic="mapink">
-        <div class="dash-panel-inner">
-          <span class="dash-panel-title">{isVi ? "Siêu Năng Lực" : "Superpowers"}</span>
-          <span class="dash-name-list">{isVi ? "Bản xem trước brainstorm · Mockup tương tác · Lịch sử thiết kế" : "Brainstorm previews · Interactive mockups · Design history"}</span>
-          <span class="dash-panel-stat">{isVi ? "Xem trên GitHub" : "View on GitHub"} &rarr;</span>
-        </div>
-      </a>
+      <!-- 3: Floo Network → Plugins -->
+      <div class="dash-stage" id="stage-floo">
+        <a href="/room-of-requirement/plugins" class="dash-panel dash-nav-panel" data-magic="floo">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">Plugins</span>
+            <span class="dash-name-list">{plugins.map(p => p.name.replace('plugin-', '')).join(" · ")}</span>
+            <span class="dash-panel-stat">{plugins.length} plugins &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Superpowers Artifacts -->
+      <div class="dash-stage" id="stage-superpowers">
+        <a href="https://github.com/deathemperor/pensieve/tree/main/.superpowers/brainstorm" target="_blank" rel="noopener" class="dash-panel dash-nav-panel" data-magic="portkey">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Siêu Năng Lực" : "Superpowers"}</span>
+            <span class="dash-name-list">{isVi ? "Bản xem trước brainstorm · Mockup tương tác · Lịch sử thiết kế" : "Brainstorm previews · Interactive mockups · Design history"}</span>
+            <span class="dash-panel-stat">{isVi ? "Xem trên GitHub" : "View on GitHub"} &rarr;</span>
+          </div>
+        </a>
+      </div>
 
     </div>
   </section>
@@ -330,51 +354,39 @@ if (db) {
   .room-dashboard { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-8); }
   .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); }
 
+  /* Stage wrapper — holds particles, doesn't animate */
+  .dash-stage { position: relative; border-radius: var(--radius-lg); opacity: 0; animation: materialize 0.4s ease-out forwards; }
+  .dash-stage:nth-child(1) { animation-delay: 0ms; }
+  .dash-stage:nth-child(2) { animation-delay: 80ms; }
+  .dash-stage:nth-child(3) { animation-delay: 160ms; }
+  .dash-stage:nth-child(4) { animation-delay: 240ms; }
+  .dash-stage:nth-child(5) { animation-delay: 320ms; }
+  .dash-stage:nth-child(6) { animation-delay: 400ms; }
+  .dash-stage:nth-child(7) { animation-delay: 480ms; }
+  .dash-stage:nth-child(8) { animation-delay: 560ms; }
+  .dash-stage-full { grid-column: 1 / -1; }
+
+  @keyframes materialize { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
   /* Panel base */
   .dash-panel {
-    background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    overflow: visible;
-    position: relative;
-    opacity: 0;
-    animation: materialize 0.4s ease-out forwards;
+    background: var(--color-surface-elevated); border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg); position: relative; z-index: 2;
   }
-  .dash-panel:nth-child(1) { animation-delay: 0ms; }
-  .dash-panel:nth-child(2) { animation-delay: 80ms; }
-  .dash-panel:nth-child(3) { animation-delay: 160ms; }
-  .dash-panel:nth-child(4) { animation-delay: 240ms; }
-  .dash-panel:nth-child(5) { animation-delay: 320ms; }
-  .dash-panel:nth-child(6) { animation-delay: 400ms; }
-  .dash-panel:nth-child(7) { animation-delay: 480ms; }
-  .dash-panel:nth-child(8) { animation-delay: 560ms; }
-
-  @keyframes materialize {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .dash-full { grid-column: 1 / -1; }
   .dash-panel-inner { padding: var(--spacing-5); display: flex; flex-direction: column; gap: var(--spacing-2); }
 
   /* Navigable panels */
-  .dash-nav-panel, .dash-link-panel {
-    text-decoration: none; color: inherit; cursor: pointer;
-    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  .dash-nav-panel {
+    text-decoration: none; color: inherit; cursor: pointer; display: block;
+    transition: border-color 0.2s, transform 0.2s;
   }
-  .dash-nav-panel:hover, .dash-link-panel:hover {
-    border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
-    transform: translateY(-1px);
-  }
-
-  /* Shimmer border on navigable panels */
+  .dash-nav-panel:hover { border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border)); transform: translateY(-1px); }
   .dash-nav-panel::before {
     content: ''; position: absolute; inset: -1px; border-radius: var(--radius-lg);
     background: conic-gradient(from 0deg, #58a6ff, #7c3aed, #d4a843, #58a6ff);
-    opacity: 0; transition: opacity 0.3s; z-index: -1;
+    opacity: 0; transition: opacity 0.3s; z-index: 1;
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude; -webkit-mask-composite: xor;
-    padding: 1px;
+    mask-composite: exclude; -webkit-mask-composite: xor; padding: 1px;
   }
   .dash-nav-panel:hover::before { opacity: 0.4; }
 
@@ -388,14 +400,7 @@ if (db) {
   .dash-role-count { font-size: 11px; color: var(--color-muted); }
   .dash-muted-line { font-size: 10px; color: var(--color-muted); font-family: var(--font-mono); }
   .dash-tech-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .dash-tech-item {
-    display: flex; flex-direction: column; gap: 2px;
-    padding: 6px 10px; border-radius: 6px;
-    border-left: 2px solid var(--tech-color);
-    background: color-mix(in srgb, var(--tech-color) 6%, transparent);
-    text-decoration: none; color: inherit;
-    transition: background var(--transition-fast);
-  }
+  .dash-tech-item { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; border-radius: 6px; border-left: 2px solid var(--tech-color); background: color-mix(in srgb, var(--tech-color) 6%, transparent); text-decoration: none; color: inherit; transition: background 0.2s; }
   .dash-tech-item:hover { background: color-mix(in srgb, var(--tech-color) 12%, transparent); }
   .dash-tech-name { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--tech-color); }
   .dash-tech-role { font-family: var(--font-sans); font-size: 9px; color: var(--color-muted); }
@@ -407,108 +412,61 @@ if (db) {
   .dash-badge-spec { color: #7c3aed; background: color-mix(in srgb, #7c3aed 12%, transparent); }
   .dash-badge-plan { color: #d4a843; background: color-mix(in srgb, #d4a843 12%, transparent); }
 
-  /* ── Magic Animations ── */
+  /* ═══ 1. WAND TRACE DOOR ═══ */
+  .dash-stage-door { perspective: 1000px; }
+  .dash-stage-door .dash-panel { transform-style: preserve-3d; transform-origin: left center; transition: transform 0.8s cubic-bezier(0.32, 0, 0.15, 1); backface-visibility: hidden; }
+  .door-trace { position: absolute; inset: -1px; border-radius: calc(var(--radius-lg) + 1px); pointer-events: none; z-index: 5; opacity: 0; overflow: hidden; }
+  .door-trace-inner { position: absolute; inset: 0; border: 2px solid transparent; border-radius: calc(var(--radius-lg) + 1px); background: conic-gradient(from 0deg, #58a6ff, #7c3aed, #d4a843, #58a6ff) border-box; mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); mask-composite: exclude; -webkit-mask-composite: xor; clip-path: inset(0 100% 0 0); }
+  .dash-stage-door.tracing .door-trace { opacity: 1; }
+  .dash-stage-door.tracing .door-trace-inner { animation: traceClip 0.8s ease-out forwards; }
+  @keyframes traceClip { 0% { clip-path: inset(0 100% 0 0); } 100% { clip-path: inset(0 0 0 0); } }
+  .door-glow { position: absolute; inset: -4px; border-radius: calc(var(--radius-lg) + 4px); background: conic-gradient(from 0deg, rgba(88,166,255,0.1), rgba(124,58,237,0.1), rgba(212,168,67,0.1), rgba(88,166,255,0.1)); filter: blur(8px); opacity: 0; z-index: 0; transition: opacity 0.4s; }
+  .dash-stage-door.tracing .door-glow { opacity: 1; }
+  .door-room { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; background: var(--color-surface-elevated); border-radius: var(--radius-lg); border: 1px solid var(--color-border); opacity: 0; transition: opacity 0.3s; }
+  .door-room-title { font-size: 16px; font-weight: 600; color: #58a6ff; letter-spacing: -0.02em; opacity: 0; transform: translateY(6px); transition: all 0.4s; }
+  .door-room-hint { font-size: 10px; color: var(--color-muted); font-family: var(--font-mono); opacity: 0; transition: opacity 0.3s; }
+  .dash-stage-door.door-open .dash-panel { transform: rotateY(-105deg); }
+  .dash-stage-door.door-open .door-room { opacity: 1; transition-delay: 0.3s; }
+  .dash-stage-door.door-open .door-room-title { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+  .dash-stage-door.door-open .door-room-hint { opacity: 1; transition-delay: 0.7s; }
 
-  /* Pensieve Dive (Restricted Section) */
-  @keyframes pensieveDive {
-    0% { transform: scale(1); border-color: var(--color-border); }
-    15% { transform: scale(1.03); border-color: #58a6ff; box-shadow: 0 0 24px rgba(88,166,255,0.25); }
-    35% { transform: scale(1.03); }
-    55% { transform: scale(0.92) translateY(6px); }
-    75% { transform: scale(0.3) translateY(24px); opacity: 0.3; filter: blur(3px); }
-    100% { transform: scale(0) translateY(50px); opacity: 0; filter: blur(10px); }
-  }
+  /* ═══ 2. PENSIEVE DIVE ═══ */
+  .diving { animation: pensieveDive 1.2s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes pensieveDive { 0% { transform: scale(1); } 15% { transform: scale(1.03); border-color: #58a6ff; box-shadow: 0 0 24px rgba(88,166,255,0.25), inset 0 0 24px rgba(88,166,255,0.06); } 35% { transform: scale(1.03); } 55% { transform: scale(0.92) translateY(6px); } 75% { transform: scale(0.3) translateY(24px); opacity: 0.3; filter: blur(3px); } 100% { transform: scale(0) translateY(50px); opacity: 0; filter: blur(10px); } }
+  .pensieve-ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(88,166,255,0.3); pointer-events: none; z-index: 3; animation: rippleOut 1.2s ease-out forwards; }
+  @keyframes rippleOut { 0% { width: 20px; height: 20px; opacity: 0.8; transform: translate(-50%, -50%); } 100% { width: 350px; height: 350px; opacity: 0; transform: translate(-50%, -50%); } }
 
-  /* Floo Network (Plugins) */
-  @keyframes flooBurn {
-    0% { border-color: var(--color-border); }
-    10% { border-color: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.2); }
-    30% { box-shadow: 0 0 30px rgba(63,185,80,0.4), inset 0 -30px 30px rgba(63,185,80,0.15); }
-    60% { box-shadow: 0 0 50px rgba(63,185,80,0.3), inset 0 -60px 40px rgba(63,185,80,0.25); transform: scale(1.02); }
-    80% { opacity: 0.5; transform: scale(0.98) translateY(-8px); filter: blur(2px); }
-    100% { opacity: 0; transform: scale(0.9) translateY(-30px); filter: blur(6px); }
-  }
+  /* ═══ 3. FLOO NETWORK ═══ */
+  .burning { animation: flooBurn 1s ease-in forwards !important; }
+  @keyframes flooBurn { 0% { } 10% { border-color: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.2); } 30% { box-shadow: 0 0 30px rgba(63,185,80,0.4), inset 0 -30px 30px rgba(63,185,80,0.15); } 60% { box-shadow: 0 0 50px rgba(63,185,80,0.3), inset 0 -60px 40px rgba(63,185,80,0.25); transform: scale(1.02); } 80% { opacity: 0.5; transform: scale(0.98) translateY(-8px); filter: blur(2px); } 100% { opacity: 0; transform: scale(0.9) translateY(-30px); filter: blur(6px); } }
+  .floo-flame { position: absolute; width: 6px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; pointer-events: none; filter: blur(1px); z-index: 3; }
+  .floo-flame.lit { animation: flameRise 0.8s ease-out forwards; }
+  @keyframes flameRise { 0% { opacity: 0.8; transform: translateY(0) scale(1); } 50% { opacity: 0.6; } 100% { opacity: 0; transform: translateY(-80px) scale(0.3); } }
 
-  /* Patronus Burst (House-Elves) */
-  @keyframes patronusBurst {
-    0% { border-color: var(--color-border); }
-    15% { border-color: rgba(200,220,255,0.6); box-shadow: 0 0 12px rgba(200,220,255,0.2); }
-    30% { box-shadow: 0 0 40px rgba(200,220,255,0.4), inset 0 0 30px rgba(200,220,255,0.1); transform: scale(1.02); }
-    50% { box-shadow: 0 0 80px rgba(200,220,255,0.5); }
-    70% { opacity: 0.6; transform: scale(1.05); filter: blur(1px); }
-    100% { opacity: 0; filter: blur(8px); transform: scale(1.2); }
-  }
+  /* ═══ 4. PATRONUS BURST ═══ */
+  .casting { animation: patronusBurst 1.3s ease-out forwards !important; }
+  @keyframes patronusBurst { 0% { } 15% { border-color: rgba(200,220,255,0.6); box-shadow: 0 0 12px rgba(200,220,255,0.2); } 30% { box-shadow: 0 0 40px rgba(200,220,255,0.4), inset 0 0 30px rgba(200,220,255,0.1); transform: scale(1.02); } 50% { box-shadow: 0 0 80px rgba(200,220,255,0.5); background: rgba(200,220,255,0.05); } 70% { opacity: 0.6; transform: scale(1.05); filter: blur(1px); } 100% { opacity: 0; filter: blur(8px); transform: scale(1.2); } }
+  .patronus-ray { position: absolute; height: 1px; transform-origin: left center; background: linear-gradient(90deg, rgba(200,220,255,0.7), transparent); pointer-events: none; z-index: 3; opacity: 0; }
+  .patronus-ray.burst { animation: rayBurst 0.8s ease-out forwards; }
+  @keyframes rayBurst { 0% { opacity: 0.9; width: 0; } 100% { opacity: 0; width: 200px; } }
 
-  /* Apparition (Architecture) */
-  @keyframes apparate {
-    0% { transform: scale(1, 1); }
-    20% { transform: scale(1.02, 0.98); }
-    40% { transform: scale(0.3, 1.8); opacity: 0.7; filter: blur(2px); }
-    60% { transform: scale(0.1, 2.5); opacity: 0.4; filter: blur(4px); }
-    100% { transform: scale(0, 4); opacity: 0; filter: blur(8px); }
-  }
+  /* ═══ 5. APPARITION ═══ */
+  .apparating { animation: apparate 0.9s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes apparate { 0% { transform: scale(1, 1); opacity: 1; } 20% { transform: scale(1.02, 0.98); } 40% { transform: scale(0.3, 1.8); opacity: 0.7; filter: blur(2px); } 60% { transform: scale(0.1, 2.5); opacity: 0.4; filter: blur(4px); } 80% { transform: scale(0.05, 3); opacity: 0.2; filter: blur(6px); } 100% { transform: scale(0, 4); opacity: 0; filter: blur(8px); } }
+  .apparition-crack { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: white; pointer-events: none; z-index: 3; opacity: 0; }
+  .apparition-crack.pop { animation: crackPop 0.3s ease-out forwards; }
+  @keyframes crackPop { 0% { opacity: 1; transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 30px rgba(255,255,255,0.9); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(10); } }
 
-  /* Portkey (Source) */
-  @keyframes portkeyPull {
-    0% { transform: rotate(0deg) scale(1); border-color: var(--color-border); }
-    15% { border-color: #d4a843; box-shadow: 0 0 12px rgba(212,168,67,0.3); }
-    30% { transform: rotate(2deg) scale(1.01); }
-    50% { transform: rotate(-1deg) scale(1.02); }
-    65% { transform: rotate(3deg) scale(0.95); }
-    100% { transform: rotate(720deg) scale(0); opacity: 0; filter: blur(6px); }
-  }
+  /* ═══ 6. PORTKEY ═══ */
+  .pulling { animation: portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes portkeyPull { 0% { transform: rotate(0deg) scale(1); } 15% { border-color: #d4a843; box-shadow: 0 0 12px rgba(212,168,67,0.3); } 30% { transform: rotate(2deg) scale(1.01); box-shadow: 0 0 20px rgba(212,168,67,0.4); } 50% { transform: rotate(-1deg) scale(1.02); } 65% { transform: rotate(3deg) scale(0.95); } 80% { transform: rotate(-5deg) scale(0.7); opacity: 0.6; filter: blur(2px); } 100% { transform: rotate(720deg) scale(0); opacity: 0; filter: blur(6px); } }
+  .portkey-swirl { position: absolute; width: 120px; height: 120px; border-radius: 50%; border: 1px solid rgba(212,168,67,0.3); pointer-events: none; z-index: 3; opacity: 0; }
+  .portkey-swirl.active { animation: swirlSpin 1s ease-in forwards; }
+  @keyframes swirlSpin { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); } 30% { opacity: 0.7; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(540deg) scale(2.5); } }
 
-  /* Vanishing Cabinet (What CC Does) */
-  @keyframes vanishPhase {
-    0% { opacity: 1; } 10% { opacity: 0.3; } 20% { opacity: 0.9; }
-    30% { opacity: 0.2; } 40% { opacity: 0.8; } 50% { opacity: 0.1; }
-    60% { opacity: 0.6; } 70% { opacity: 0.05; filter: blur(1px); }
-    80% { opacity: 0.4; } 90% { opacity: 0.02; filter: blur(3px); }
-    100% { opacity: 0; filter: blur(4px); transform: scale(0.98); }
-  }
-
-  /* Wand Trace Door (Task Observatory) */
-  @keyframes doorSwing {
-    0% { transform: perspective(800px) rotateY(0deg); }
-    100% { transform: perspective(800px) rotateY(-105deg); opacity: 0.3; }
-  }
-
-  /* Particles */
-  .magic-ripple {
-    position: absolute; border-radius: 50%; pointer-events: none;
-    border: 1px solid rgba(88,166,255,0.25);
-    animation: rippleExpand 1.2s ease-out forwards;
-  }
-  @keyframes rippleExpand {
-    0% { width: 20px; height: 20px; opacity: 0.7; transform: translate(-50%, -50%); }
-    100% { width: 300px; height: 300px; opacity: 0; transform: translate(-50%, -50%); }
-  }
-
-  .magic-flame {
-    position: absolute; width: 6px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-    background: #3fb950; pointer-events: none; filter: blur(1px);
-    animation: flameRise 0.8s ease-out forwards;
-  }
-  @keyframes flameRise {
-    0% { opacity: 0.8; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-60px) scale(0.3); }
-  }
-
-  .magic-ray {
-    position: absolute; height: 1px; transform-origin: left center; pointer-events: none;
-    background: linear-gradient(90deg, rgba(200,220,255,0.6), transparent);
-    animation: rayShoot 0.7s ease-out forwards;
-  }
-  @keyframes rayShoot { 0% { opacity: 0.8; width: 0; } 100% { opacity: 0; width: 150px; } }
-
-  .magic-crack {
-    position: absolute; width: 4px; height: 4px; border-radius: 50%; background: white; pointer-events: none;
-    animation: crackFlash 0.3s ease-out forwards;
-  }
-  @keyframes crackFlash {
-    0% { opacity: 1; transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
-    100% { opacity: 0; transform: translate(-50%,-50%) scale(8); }
-  }
+  /* ═══ 7. VANISHING CABINET ═══ */
+  .vanishing { animation: vanishPhase 1.2s ease-in-out forwards !important; }
+  @keyframes vanishPhase { 0% { opacity: 1; } 10% { opacity: 0.3; } 20% { opacity: 0.9; } 30% { opacity: 0.2; } 40% { opacity: 0.8; transform: scale(1.01); } 50% { opacity: 0.1; } 60% { opacity: 0.6; } 70% { opacity: 0.05; filter: blur(1px); } 80% { opacity: 0.4; } 90% { opacity: 0.02; filter: blur(3px); } 100% { opacity: 0; filter: blur(4px); transform: scale(0.98); } }
 
   /* Responsive */
   @media (max-width: 600px) {
@@ -520,97 +478,107 @@ if (db) {
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .dash-panel { animation: none; opacity: 1; }
+    .dash-stage { animation: none; opacity: 1; }
     .dash-nav-panel::before { display: none; }
   }
 </style>
 
 <script>
-  // Restore panels on back navigation (bfcache/pageshow)
+  // Restore panels on back navigation
   window.addEventListener('pageshow', () => {
-    document.querySelectorAll('[data-magic]').forEach(panel => {
-      panel.style.animation = '';
-      panel.style.transform = '';
-      panel.style.opacity = '';
-      panel.style.filter = '';
-      panel.style.transformOrigin = '';
-      panel.querySelectorAll('.magic-ripple,.magic-flame,.magic-ray,.magic-crack').forEach(p => p.remove());
+    document.querySelectorAll('.dash-stage').forEach(stage => {
+      const panel = stage.querySelector('.dash-panel');
+      if (panel) {
+        panel.className = panel.className.replace(/\s*(diving|burning|casting|apparating|pulling|vanishing)\b/g, '');
+        panel.style.cssText = '';
+      }
+      stage.classList.remove('tracing', 'door-open');
+      stage.querySelectorAll('.pensieve-ripple,.floo-flame,.patronus-ray,.apparition-crack,.portkey-swirl').forEach(e => e.remove());
     });
   });
 
-  // Spawn particle into the panel itself (position: relative makes it work)
-  function spawn(panel, className, styles, lifetime) {
+  function spawn(container, className, styles, lifetime) {
     const el = document.createElement('div');
     el.className = className;
     Object.assign(el.style, styles);
-    panel.appendChild(el);
-    setTimeout(() => el.remove(), lifetime);
+    container.appendChild(el);
+    if (lifetime) setTimeout(() => el.remove(), lifetime);
+    return el;
   }
 
-  const animations = {
-    door: (panel) => {
-      panel.style.transformOrigin = 'left center';
-      panel.style.animation = 'doorSwing 0.8s cubic-bezier(0.32,0,0.15,1) forwards';
-    },
-    pensieve: (panel) => {
-      panel.style.animation = 'pensieveDive 1.2s cubic-bezier(0.4,0,0.2,1) forwards';
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => spawn(panel, 'magic-ripple', { left: '50%', top: '50%' }, 1200), i * 250 + 300);
+  function navigate(href, delay) {
+    setTimeout(() => {
+      if (document.startViewTransition) {
+        document.startViewTransition(() => { window.location.href = href; });
+      } else {
+        window.location.href = href;
       }
+    }, delay);
+  }
+
+  const magic = {
+    door(stage, panel, href) {
+      stage.classList.add('tracing');
+      setTimeout(() => stage.classList.add('door-open'), 800);
+      navigate(href, 1600);
     },
-    floo: (panel) => {
-      panel.style.animation = 'flooBurn 1s ease-in forwards';
-      for (let i = 0; i < 10; i++) {
-        setTimeout(() => spawn(panel, 'magic-flame', {
-          left: (30 + Math.random() * 40) + '%',
-          bottom: '20%',
-          height: (8 + Math.random() * 12) + 'px',
-        }, 800), i * 60 + 100);
+    pensieve(stage, panel, href) {
+      panel.classList.add('diving');
+      for (let i = 0; i < 3; i++) setTimeout(() => spawn(stage, 'pensieve-ripple', { left: '50%', top: '50%' }, 1200), i * 250 + 300);
+      navigate(href, 1200);
+    },
+    floo(stage, panel, href) {
+      panel.classList.add('burning');
+      for (let i = 0; i < 14; i++) {
+        setTimeout(() => {
+          const f = spawn(stage, 'floo-flame', { left: (20 + Math.random() * 60) + '%', bottom: '10%', height: (10 + Math.random() * 16) + 'px', background: Math.random() > 0.4 ? '#3fb950' : '#2ea043' });
+          requestAnimationFrame(() => f.classList.add('lit'));
+          setTimeout(() => f.remove(), 800);
+        }, i * 50 + 80);
       }
+      navigate(href, 1000);
     },
-    patronus: (panel) => {
-      panel.style.animation = 'patronusBurst 1.3s ease-out forwards';
-      for (let i = 0; i < 8; i++) {
-        setTimeout(() => spawn(panel, 'magic-ray', {
-          left: '50%', top: '50%',
-          transform: `rotate(${i * 45}deg)`,
-        }, 700), 400 + i * 30);
+    patronus(stage, panel, href) {
+      panel.classList.add('casting');
+      for (let i = 0; i < 12; i++) {
+        setTimeout(() => {
+          const r = spawn(stage, 'patronus-ray', { left: '50%', top: '50%', transform: `rotate(${i * 30}deg)`, transformOrigin: 'left center' });
+          requestAnimationFrame(() => r.classList.add('burst'));
+          setTimeout(() => r.remove(), 800);
+        }, 350 + i * 25);
       }
+      navigate(href, 1300);
     },
-    apparition: (panel) => {
-      panel.style.animation = 'apparate 0.9s cubic-bezier(0.4,0,0.2,1) forwards';
-      setTimeout(() => spawn(panel, 'magic-crack', { left: '50%', top: '50%' }, 400), 500);
+    apparition(stage, panel, href) {
+      panel.classList.add('apparating');
+      setTimeout(() => { const c = spawn(stage, 'apparition-crack', { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }); requestAnimationFrame(() => c.classList.add('pop')); setTimeout(() => c.remove(), 400); }, 500);
+      navigate(href, 900);
     },
-    portkey: (panel) => {
-      panel.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards';
+    portkey(stage, panel, href) {
+      panel.classList.add('pulling');
+      setTimeout(() => { const sw = spawn(stage, 'portkey-swirl', { left: '50%', top: '50%' }); requestAnimationFrame(() => sw.classList.add('active')); setTimeout(() => sw.remove(), 1000); }, 200);
+      navigate(href, 1000);
     },
-    vanish: (panel) => {
-      panel.style.animation = 'vanishPhase 1.2s ease-in-out forwards';
-    },
-    mapink: (panel) => {
-      panel.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards';
+    vanish(stage, panel, href) {
+      panel.classList.add('vanishing');
+      navigate(href, 1200);
     },
   };
 
+  // Map data-magic to stage IDs
+  const magicMap = { door: 'stage-door', pensieve: 'stage-pensieve', floo: 'stage-floo', patronus: 'stage-patronus', apparition: 'stage-apparition', portkey: 'stage-portkey', vanish: 'stage-vanish' };
+
   document.querySelectorAll('[data-magic]').forEach(panel => {
-    const magic = panel.dataset.magic;
+    const type = panel.dataset.magic;
     const href = panel.getAttribute('href');
-    if (!href || !animations[magic]) return;
+    if (!href || !magic[type]) return;
+    const stage = panel.closest('.dash-stage');
+    if (!stage) return;
 
     panel.addEventListener('click', (e) => {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
       e.preventDefault();
-      animations[magic](panel);
-
-      const delay = magic === 'pensieve' ? 1200 : magic === 'patronus' ? 1300 : magic === 'vanish' ? 1200 : 1000;
-      setTimeout(() => {
-        if (document.startViewTransition) {
-          document.startViewTransition(() => { window.location.href = href; });
-        } else {
-          window.location.href = href;
-        }
-      }, delay);
+      magic[type](stage, panel, href);
     });
   });
 </script>
