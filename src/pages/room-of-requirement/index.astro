@@ -697,6 +697,13 @@ if (db) {
     100% { opacity: 0; filter: blur(4px); transform: scale(0.96); }
   }
 
+  /* ═══ Click feedback flash ═══ */
+  @keyframes clickFlashPop {
+    0% { opacity: 0; transform: scale(0.8); }
+    30% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+
   /* ═══ Atmospheric stage glow ═══ */
   .dash-stage.atmo-on::after {
     content: ''; position: absolute; inset: -20px; border-radius: calc(12px + 20px);
@@ -990,17 +997,34 @@ if (db) {
     }, lifetime);
   }
 
+  // Instant click feedback — a bright flash overlay at t=0
+  function clickFlash(stage, color) {
+    const flash = document.createElement('div');
+    flash.className = 'click-flash';
+    Object.assign(flash.style, {
+      position: 'absolute', inset: '0', borderRadius: 'inherit',
+      background: `radial-gradient(ellipse at center, ${color}, transparent 60%)`,
+      pointerEvents: 'none', zIndex: '5',
+      opacity: '0',
+      animation: 'clickFlashPop 0.5s ease-out forwards',
+    });
+    stage.appendChild(flash);
+    setTimeout(() => flash.remove(), 500);
+  }
+
   const magic = {
     door(stage, panel, href) {
       sizeDoorTrace(); // ensure trace matches current panel size
-      atmoGlow(stage, 'rgba(88,166,255,0.3)', 1600);
+      clickFlash(stage, 'rgba(88,166,255,0.5)');
+      atmoGlow(stage, 'rgba(88,166,255,0.3)', 1800);
       stage.classList.add('tracing');
       setTimeout(() => stage.classList.add('door-open'), 900);
-      navigate(href, 1800);
+      navigate(href, 2000);
     },
 
     pensieve(stage, panel, href) {
-      atmoGlow(stage, 'rgba(88,166,255,0.35)', 1300);
+      clickFlash(stage, 'rgba(88,166,255,0.6)');
+      atmoGlow(stage, 'rgba(88,166,255,0.35)', 1500);
       panel.classList.add('diving');
       // Vortex swirl — bigger, longer-lasting
       const vortex = spawn(stage, 'pensieve-vortex', { left: '50%', top: '50%' });
@@ -1034,11 +1058,12 @@ if (db) {
           setTimeout(() => b.remove(), 1400);
         }, 150 + i * 60);
       }
-      navigate(href, 1400);
+      navigate(href, 1600);
     },
 
     floo(stage, panel, href) {
-      atmoGlow(stage, 'rgba(63,185,80,0.4)', 1100);
+      clickFlash(stage, 'rgba(63,185,80,0.6)');
+      atmoGlow(stage, 'rgba(63,185,80,0.4)', 1400);
       panel.classList.add('burning');
       // Smoke plume expanding from the bottom
       const smoke = spawn(stage, 'floo-smoke', {});
@@ -1087,11 +1112,12 @@ if (db) {
           setTimeout(() => e.remove(), 1400);
         }, i * 40 + 150);
       }
-      navigate(href, 1200);
+      navigate(href, 1500);
     },
 
     patronus(stage, panel, href) {
-      atmoGlow(stage, 'rgba(200,220,255,0.5)', 1300);
+      clickFlash(stage, 'rgba(255,255,255,0.7)');
+      atmoGlow(stage, 'rgba(200,220,255,0.5)', 1600);
       panel.classList.add('casting');
       // Central flash core
       setTimeout(() => {
@@ -1111,11 +1137,12 @@ if (db) {
           setTimeout(() => r.remove(), 900);
         }, 400 + i * 15);
       }
-      navigate(href, 1400);
+      navigate(href, 1700);
     },
 
     apparition(stage, panel, href) {
-      atmoGlow(stage, 'rgba(255,255,255,0.35)', 1000);
+      clickFlash(stage, 'rgba(255,255,255,0.7)');
+      atmoGlow(stage, 'rgba(255,255,255,0.35)', 1300);
       panel.classList.add('apparating');
       // 4 lightning bolts striking down (was 3)
       for (let i = 0; i < 4; i++) {
@@ -1141,11 +1168,12 @@ if (db) {
         requestAnimationFrame(() => sw.classList.add('blast'));
         setTimeout(() => sw.remove(), 600);
       }, 600);
-      navigate(href, 1100);
+      navigate(href, 1400);
     },
 
     portkey(stage, panel, href) {
-      atmoGlow(stage, 'rgba(212,168,67,0.4)', 1100);
+      clickFlash(stage, 'rgba(212,168,67,0.6)');
+      atmoGlow(stage, 'rgba(212,168,67,0.4)', 1400);
       panel.classList.add('pulling');
       // Golden dust trail — spiraling ring
       const trail = spawn(stage, 'portkey-trail', {});
@@ -1177,11 +1205,12 @@ if (db) {
           setTimeout(() => s.remove(), 1000);
         }, 300 + i * 15);
       }
-      navigate(href, 1200);
+      navigate(href, 1500);
     },
 
     vanish(stage, panel, href) {
-      atmoGlow(stage, 'rgba(200,200,255,0.3)', 1300);
+      clickFlash(stage, 'rgba(255,255,255,0.5)');
+      atmoGlow(stage, 'rgba(200,200,255,0.3)', 1600);
       panel.classList.add('vanishing');
       // 5 shimmer sweeps during the phase-in/out
       for (let i = 0; i < 5; i++) {
@@ -1199,7 +1228,7 @@ if (db) {
           setTimeout(() => st.remove(), 300);
         }, 120 + i * 180);
       }
-      navigate(href, 1400);
+      navigate(href, 1700);
     },
   };
 
