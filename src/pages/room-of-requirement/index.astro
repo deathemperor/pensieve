@@ -378,16 +378,25 @@ if (db) {
   .room-dashboard { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-8); }
   .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); position: relative; }
 
-  /* Spotlight dim: when grid has .casting-active, dim all panels EXCEPT .dash-stage.active */
+  /* Spotlight dim: when a panel is animating, aggressively hide all OTHER panels
+     so the clicked stage has an empty canvas like the preview demos */
   .dash-grid.spotlight .dash-stage:not(.active) {
-    transition: opacity 0.4s, filter 0.4s;
-    opacity: 0.25;
-    filter: blur(2px) saturate(0.5);
+    transition: opacity 0.3s ease-out, filter 0.3s ease-out;
+    opacity: 0.08;
+    filter: blur(4px) saturate(0.3) brightness(0.5);
     pointer-events: none;
   }
   .dash-grid.spotlight .dash-stage.active {
     z-index: 10;
   }
+  /* A dark backdrop behind the active stage gives particles a clean canvas */
+  .dash-grid.spotlight::before {
+    content: ''; position: absolute; inset: -20px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3), transparent 70%);
+    pointer-events: none; z-index: 5;
+    animation: spotlightFade 0.4s ease-out forwards;
+  }
+  @keyframes spotlightFade { from { opacity: 0; } to { opacity: 1; } }
 
   /* Stage wrapper — holds particles, doesn't animate */
   .dash-stage { position: relative; border-radius: var(--radius-lg); opacity: 0; animation: materialize 0.4s ease-out forwards; }
