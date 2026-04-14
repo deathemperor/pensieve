@@ -376,7 +376,18 @@ if (db) {
 
   /* Dashboard grid */
   .room-dashboard { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-8); }
-  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); position: relative; }
+
+  /* Spotlight dim: when grid has .casting-active, dim all panels EXCEPT .dash-stage.active */
+  .dash-grid.spotlight .dash-stage:not(.active) {
+    transition: opacity 0.4s, filter 0.4s;
+    opacity: 0.25;
+    filter: blur(2px) saturate(0.5);
+    pointer-events: none;
+  }
+  .dash-grid.spotlight .dash-stage.active {
+    z-index: 10;
+  }
 
   /* Stage wrapper — holds particles, doesn't animate */
   .dash-stage { position: relative; border-radius: var(--radius-lg); opacity: 0; animation: materialize 0.4s ease-out forwards; }
@@ -989,13 +1000,14 @@ if (db) {
 
   // Restore panels on back navigation
   window.addEventListener('pageshow', () => {
+    document.querySelector('.dash-grid')?.classList.remove('spotlight');
     document.querySelectorAll('.dash-stage').forEach(stage => {
       const panel = stage.querySelector('.dash-panel');
       if (panel) {
         panel.className = panel.className.replace(/\s*(diving|burning|casting|apparating|pulling|vanishing)\b/g, '');
         panel.style.cssText = '';
       }
-      stage.classList.remove('tracing', 'door-open', 'atmo-on', 'atmo-fade');
+      stage.classList.remove('tracing', 'door-open', 'atmo-on', 'atmo-fade', 'active');
       const dest = stage.querySelector('.dash-dest');
       if (dest) dest.classList.remove('revealed');
       stage.querySelectorAll('.pensieve-ripple,.pensieve-vortex,.pensieve-bubble,.pensieve-wisp,.floo-flame,.floo-ember,.floo-smoke,.floo-spark,.patronus-ray,.patronus-core,.apparition-crack,.apparition-lightning,.apparition-shockwave,.portkey-swirl,.portkey-spark,.portkey-trail,.vanish-shimmer,.vanish-static,.click-flash').forEach(e => e.remove());
@@ -1045,6 +1057,14 @@ if (db) {
     }, delay);
   }
 
+  // Spotlight: dim other panels so clicked one takes center stage
+  function spotlight(stage) {
+    const grid = document.querySelector('.dash-grid');
+    if (!grid) return;
+    grid.classList.add('spotlight');
+    stage.classList.add('active');
+  }
+
   // Instant click feedback — a bright flash overlay at t=0
   function clickFlash(stage, color) {
     const flash = document.createElement('div');
@@ -1062,6 +1082,7 @@ if (db) {
 
   const magic = {
     door(stage, panel, href) {
+      spotlight(stage);
       sizeDoorTrace(); // ensure trace matches current panel size
       clickFlash(stage, 'rgba(88,166,255,0.5)');
       atmoGlow(stage, 'rgba(88,166,255,0.3)', 1800);
@@ -1071,6 +1092,7 @@ if (db) {
     },
 
     pensieve(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(88,166,255,0.6)');
       atmoGlow(stage, 'rgba(88,166,255,0.35)', 1500);
       panel.classList.add('diving');
@@ -1111,6 +1133,7 @@ if (db) {
     },
 
     floo(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(63,185,80,0.6)');
       atmoGlow(stage, 'rgba(63,185,80,0.4)', 1400);
       panel.classList.add('burning');
@@ -1166,6 +1189,7 @@ if (db) {
     },
 
     patronus(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(255,255,255,0.7)');
       atmoGlow(stage, 'rgba(200,220,255,0.5)', 1600);
       panel.classList.add('casting');
@@ -1192,6 +1216,7 @@ if (db) {
     },
 
     apparition(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(255,255,255,0.7)');
       atmoGlow(stage, 'rgba(255,255,255,0.35)', 1300);
       panel.classList.add('apparating');
@@ -1223,6 +1248,7 @@ if (db) {
     },
 
     portkey(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(212,168,67,0.6)');
       atmoGlow(stage, 'rgba(212,168,67,0.4)', 1400);
       panel.classList.add('pulling');
@@ -1260,6 +1286,7 @@ if (db) {
     },
 
     vanish(stage, panel, href) {
+      spotlight(stage);
       clickFlash(stage, 'rgba(255,255,255,0.5)');
       atmoGlow(stage, 'rgba(200,200,255,0.3)', 1600);
       panel.classList.add('vanishing');
