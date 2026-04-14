@@ -440,12 +440,12 @@ if (db) {
   .dash-stage-door .dash-panel { transform-style: preserve-3d; transform-origin: left center; transition: transform 0.9s cubic-bezier(0.32, 0, 0.15, 1); backface-visibility: hidden; }
   .door-trace-svg { position: absolute; inset: -2px; pointer-events: none; z-index: 5; opacity: 0; overflow: visible; }
   .door-trace-svg svg { width: 100%; height: 100%; display: block; overflow: visible; }
-  .door-trace-svg rect { fill: none; stroke-width: 2; stroke-linecap: round; }
+  .door-trace-svg rect { fill: none; stroke-width: 3; stroke-linecap: round; }
   .door-trace-svg .trace-path {
     stroke: url(#doorGrad);
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    filter: drop-shadow(0 0 4px rgba(88,166,255,0.6)) drop-shadow(0 0 8px rgba(88,166,255,0.3));
+    filter: drop-shadow(0 0 6px rgba(88,166,255,0.8)) drop-shadow(0 0 14px rgba(124,58,237,0.5)) drop-shadow(0 0 24px rgba(212,168,67,0.3));
   }
   .dash-stage-door.tracing .door-trace-svg { opacity: 1; }
   .dash-stage-door.tracing .door-trace-svg .trace-path {
@@ -453,7 +453,7 @@ if (db) {
   }
   @keyframes drawDoorTrace { to { stroke-dashoffset: 0; } }
 
-  .door-glow { position: absolute; inset: -10px; border-radius: calc(var(--radius-lg) + 10px); background: conic-gradient(from 0deg, rgba(88,166,255,0.25), rgba(124,58,237,0.25), rgba(212,168,67,0.25), rgba(88,166,255,0.25)); filter: blur(20px); opacity: 0; z-index: 0; transition: opacity 0.6s; }
+  .door-glow { position: absolute; inset: -20px; border-radius: calc(var(--radius-lg) + 20px); background: conic-gradient(from 0deg, rgba(88,166,255,0.5), rgba(124,58,237,0.5), rgba(212,168,67,0.5), rgba(88,166,255,0.5)); filter: blur(30px); opacity: 0; z-index: 0; transition: opacity 0.6s; }
   .dash-stage-door.tracing .door-glow { opacity: 1; }
   .door-room { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #161b22, #1a2332); border-radius: var(--radius-lg); border: 1px solid rgba(88,166,255,0.2); opacity: 0; transition: opacity 0.4s; overflow: hidden; }
   .door-room::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(88,166,255,0.12), transparent 70%); pointer-events: none; }
