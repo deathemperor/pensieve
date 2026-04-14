@@ -327,7 +327,7 @@ if (db) {
     background: var(--color-surface-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     opacity: 0;
     animation: materialize 0.4s ease-out forwards;
@@ -507,16 +507,70 @@ if (db) {
 </style>
 
 <script>
-  // Magic click transitions with View Transitions API fallback
+  // Restore panels on back navigation (bfcache/pageshow)
+  window.addEventListener('pageshow', () => {
+    document.querySelectorAll('[data-magic]').forEach(panel => {
+      panel.style.animation = '';
+      panel.style.transform = '';
+      panel.style.opacity = '';
+      panel.style.filter = '';
+      panel.style.transformOrigin = '';
+      panel.querySelectorAll('.magic-ripple,.magic-flame,.magic-ray,.magic-crack').forEach(p => p.remove());
+    });
+  });
+
+  // Spawn particle into the panel itself (position: relative makes it work)
+  function spawn(panel, className, styles, lifetime) {
+    const el = document.createElement('div');
+    el.className = className;
+    Object.assign(el.style, styles);
+    panel.appendChild(el);
+    setTimeout(() => el.remove(), lifetime);
+  }
+
   const animations = {
-    door: (el) => { el.style.transformOrigin = 'left center'; el.style.animation = 'doorSwing 0.8s cubic-bezier(0.32,0,0.15,1) forwards'; },
-    pensieve: (el, stage) => { el.style.animation = 'pensieveDive 1.2s cubic-bezier(0.4,0,0.2,1) forwards'; for (let i = 0; i < 3; i++) setTimeout(() => { const r = document.createElement('div'); r.className = 'magic-ripple'; r.style.left = '50%'; r.style.top = '50%'; stage.appendChild(r); setTimeout(() => r.remove(), 1200); }, i * 250 + 300); },
-    floo: (el, stage) => { el.style.animation = 'flooBurn 1s ease-in forwards'; for (let i = 0; i < 10; i++) setTimeout(() => { const f = document.createElement('div'); f.className = 'magic-flame'; f.style.left = (30 + Math.random() * 40) + '%'; f.style.bottom = '20%'; f.style.height = (8 + Math.random() * 12) + 'px'; stage.appendChild(f); setTimeout(() => f.remove(), 800); }, i * 60 + 100); },
-    patronus: (el, stage) => { el.style.animation = 'patronusBurst 1.3s ease-out forwards'; for (let i = 0; i < 8; i++) setTimeout(() => { const r = document.createElement('div'); r.className = 'magic-ray'; r.style.left = '50%'; r.style.top = '50%'; r.style.transform = `rotate(${i * 45}deg)`; stage.appendChild(r); setTimeout(() => r.remove(), 700); }, 400 + i * 30); },
-    apparition: (el, stage) => { el.style.animation = 'apparate 0.9s cubic-bezier(0.4,0,0.2,1) forwards'; setTimeout(() => { const c = document.createElement('div'); c.className = 'magic-crack'; c.style.left = '50%'; c.style.top = '50%'; stage.appendChild(c); setTimeout(() => c.remove(), 400); }, 500); },
-    portkey: (el) => { el.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards'; },
-    vanish: (el) => { el.style.animation = 'vanishPhase 1.2s ease-in-out forwards'; },
-    mapink: (el) => { el.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards'; },
+    door: (panel) => {
+      panel.style.transformOrigin = 'left center';
+      panel.style.animation = 'doorSwing 0.8s cubic-bezier(0.32,0,0.15,1) forwards';
+    },
+    pensieve: (panel) => {
+      panel.style.animation = 'pensieveDive 1.2s cubic-bezier(0.4,0,0.2,1) forwards';
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => spawn(panel, 'magic-ripple', { left: '50%', top: '50%' }, 1200), i * 250 + 300);
+      }
+    },
+    floo: (panel) => {
+      panel.style.animation = 'flooBurn 1s ease-in forwards';
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => spawn(panel, 'magic-flame', {
+          left: (30 + Math.random() * 40) + '%',
+          bottom: '20%',
+          height: (8 + Math.random() * 12) + 'px',
+        }, 800), i * 60 + 100);
+      }
+    },
+    patronus: (panel) => {
+      panel.style.animation = 'patronusBurst 1.3s ease-out forwards';
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => spawn(panel, 'magic-ray', {
+          left: '50%', top: '50%',
+          transform: `rotate(${i * 45}deg)`,
+        }, 700), 400 + i * 30);
+      }
+    },
+    apparition: (panel) => {
+      panel.style.animation = 'apparate 0.9s cubic-bezier(0.4,0,0.2,1) forwards';
+      setTimeout(() => spawn(panel, 'magic-crack', { left: '50%', top: '50%' }, 400), 500);
+    },
+    portkey: (panel) => {
+      panel.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards';
+    },
+    vanish: (panel) => {
+      panel.style.animation = 'vanishPhase 1.2s ease-in-out forwards';
+    },
+    mapink: (panel) => {
+      panel.style.animation = 'portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards';
+    },
   };
 
   document.querySelectorAll('[data-magic]').forEach(panel => {
@@ -528,8 +582,7 @@ if (db) {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
       e.preventDefault();
-      const animate = animations[magic];
-      animate(panel, panel.parentElement);
+      animations[magic](panel);
 
       const delay = magic === 'pensieve' ? 1200 : magic === 'patronus' ? 1300 : magic === 'vanish' ? 1200 : 1000;
       setTimeout(() => {
