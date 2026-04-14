@@ -465,8 +465,16 @@ if (db) {
   }
   .pensieve-ripple { position: absolute; border-radius: 50%; border: 2px solid rgba(88,166,255,0.4); pointer-events: none; z-index: 3; animation: rippleOut 1.4s ease-out forwards; box-shadow: 0 0 20px rgba(88,166,255,0.3); }
   @keyframes rippleOut { 0% { width: 30px; height: 30px; opacity: 1; transform: translate(-50%, -50%); border-width: 3px; } 60% { opacity: 0.6; } 100% { width: 700px; height: 700px; opacity: 0; transform: translate(-50%, -50%); border-width: 1px; } }
-  .pensieve-vortex { position: absolute; width: 140px; height: 140px; border-radius: 50%; pointer-events: none; z-index: 2; opacity: 0; background: conic-gradient(from 0deg, transparent, rgba(88,166,255,0.3), rgba(124,58,237,0.3), transparent); animation: vortexSpin 1.2s ease-out forwards; transform-origin: center; }
-  @keyframes vortexSpin { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); } 30% { opacity: 0.9; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(720deg) scale(3); } }
+  .pensieve-vortex { position: absolute; width: 180px; height: 180px; border-radius: 50%; pointer-events: none; z-index: 2; opacity: 0; background: conic-gradient(from 0deg, transparent, rgba(88,166,255,0.4), rgba(124,58,237,0.4), transparent); animation: vortexSpin 1.4s ease-out forwards; transform-origin: center; filter: blur(2px); }
+  @keyframes vortexSpin { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(900deg) scale(4); } }
+  /* Bubbles rising from the basin */
+  .pensieve-bubble { position: absolute; border-radius: 50%; pointer-events: none; z-index: 3; background: radial-gradient(circle at 30% 30%, rgba(200,220,255,0.9), rgba(88,166,255,0.4), rgba(124,58,237,0.2)); box-shadow: 0 0 8px rgba(88,166,255,0.6), inset 0 0 4px rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.3); }
+  .pensieve-bubble.rise { animation: bubbleRise 1.4s ease-out forwards; }
+  @keyframes bubbleRise { 0% { opacity: 0.9; transform: translate(0, 0) scale(0.3); } 20% { opacity: 1; transform: translate(var(--bdx, 0), -20px) scale(1); } 100% { opacity: 0; transform: translate(calc(var(--bdx, 0) * 2), -180px) scale(0.6); } }
+  /* Silvery memory wisps */
+  .pensieve-wisp { position: absolute; width: 120px; height: 3px; pointer-events: none; z-index: 2; opacity: 0; background: linear-gradient(90deg, transparent, rgba(200,220,255,0.7), transparent); filter: blur(1px); transform-origin: center; }
+  .pensieve-wisp.drift { animation: wispDrift 1.2s ease-in-out forwards; }
+  @keyframes wispDrift { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--wr, 0deg)) scaleX(0.3); } 40% { opacity: 0.8; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--wr, 0deg)) scaleX(2.5); } }
 
   /* ═══ 3. FLOO NETWORK — dense emerald inferno ═══ */
   .burning { animation: flooBurn 1.1s ease-in forwards !important; }
@@ -484,6 +492,14 @@ if (db) {
   .floo-ember { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #3fb950; pointer-events: none; z-index: 3; filter: blur(0.5px); box-shadow: 0 0 6px #3fb950; }
   .floo-ember.glow { animation: emberRise 1.3s ease-out forwards; }
   @keyframes emberRise { 0% { opacity: 1; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(var(--dx, 0), -200px); } }
+  /* Smoke plume — expanding radial gradient behind the flames */
+  .floo-smoke { position: absolute; left: 50%; bottom: -20px; width: 200px; height: 200px; border-radius: 50%; pointer-events: none; z-index: 1; opacity: 0; background: radial-gradient(circle at center, rgba(63,185,80,0.3) 0%, rgba(46,160,67,0.2) 40%, transparent 70%); filter: blur(20px); transform: translate(-50%, 0); }
+  .floo-smoke.bloom { animation: smokeBloom 1.1s ease-out forwards; }
+  @keyframes smokeBloom { 0% { opacity: 0; transform: translate(-50%, 20px) scale(0.3); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60px) scale(2.5); } }
+  /* Sparkle flash at ignition */
+  .floo-spark { position: absolute; width: 4px; height: 4px; pointer-events: none; z-index: 4; opacity: 0; background: #fff; border-radius: 50%; box-shadow: 0 0 12px #56d364, 0 0 24px #3fb950; }
+  .floo-spark.flash { animation: sparkFlash 0.4s ease-out forwards; }
+  @keyframes sparkFlash { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); } 30% { opacity: 1; transform: translate(-50%, -50%) scale(2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } }
 
   /* ═══ 4. PATRONUS BURST — core flash + rays ═══ */
   .casting { animation: patronusBurst 1.4s ease-out forwards !important; }
@@ -519,6 +535,10 @@ if (db) {
   .apparition-lightning { position: absolute; width: 2px; transform-origin: top center; background: linear-gradient(180deg, #fff, rgba(255,255,255,0.3), transparent); pointer-events: none; z-index: 3; opacity: 0; filter: blur(0.5px) drop-shadow(0 0 6px #fff); }
   .apparition-lightning.strike { animation: lightningStrike 0.3s ease-out forwards; }
   @keyframes lightningStrike { 0% { opacity: 1; height: 0; } 50% { opacity: 1; } 100% { opacity: 0; height: 200px; } }
+  /* Shockwave — expanding ring at the squeeze-point */
+  .apparition-shockwave { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; border-radius: 50%; pointer-events: none; z-index: 3; opacity: 0; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 20px rgba(255,255,255,0.6), inset 0 0 20px rgba(255,255,255,0.4); }
+  .apparition-shockwave.blast { animation: shockwaveBlast 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+  @keyframes shockwaveBlast { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); border-width: 3px; } 60% { opacity: 0.7; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(10); border-width: 1px; } }
 
   /* ═══ 6. PORTKEY — golden vortex ═══ */
   .pulling { animation: portkeyPull 1.1s cubic-bezier(0.4,0,0.2,1) forwards !important; }
@@ -538,6 +558,10 @@ if (db) {
   .portkey-spark { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #d4a843; pointer-events: none; z-index: 3; box-shadow: 0 0 8px #d4a843; }
   .portkey-spark.fly { animation: sparkFly 0.9s ease-out forwards; }
   @keyframes sparkFly { 0% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + var(--dy, 0))); } }
+  /* Golden dust trail — spiraling ring */
+  .portkey-trail { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; border-radius: 50%; pointer-events: none; z-index: 3; opacity: 0; background: conic-gradient(from 0deg, transparent 0deg, rgba(212,168,67,0.5) 60deg, rgba(212,168,67,0.8) 120deg, rgba(255,240,180,0.6) 180deg, transparent 360deg); filter: blur(3px); transform: translate(-50%, -50%); }
+  .portkey-trail.spin { animation: trailSpin 1s ease-in forwards; }
+  @keyframes trailSpin { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(1080deg) scale(3); } }
 
   /* ═══ 7. VANISHING CABINET — shimmer + phase ═══ */
   .vanishing { animation: vanishPhase 1.3s ease-in-out forwards !important; }
@@ -554,9 +578,13 @@ if (db) {
     85% { opacity: 0.02; filter: blur(4px); }
     100% { opacity: 0; filter: blur(6px); transform: scale(0.96); }
   }
-  .vanish-shimmer { position: absolute; left: 0; right: 0; height: 2px; pointer-events: none; z-index: 4; opacity: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); filter: blur(0.5px); }
-  .vanish-shimmer.sweep { animation: shimmerSweep 0.5s ease-out forwards; }
+  .vanish-shimmer { position: absolute; left: 0; right: 0; height: 2px; pointer-events: none; z-index: 4; opacity: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent); filter: blur(0.5px); box-shadow: 0 0 12px rgba(255,255,255,0.6); }
+  .vanish-shimmer.sweep { animation: shimmerSweep 0.6s ease-out forwards; }
   @keyframes shimmerSweep { 0% { opacity: 0; top: 0%; } 40% { opacity: 1; } 100% { opacity: 0; top: 100%; } }
+  /* Static noise overlay during phase transitions */
+  .vanish-static { position: absolute; inset: 0; pointer-events: none; z-index: 4; opacity: 0; border-radius: var(--radius-lg); background: repeating-linear-gradient(90deg, rgba(255,255,255,0.1) 0px, rgba(200,200,255,0.1) 1px, transparent 2px, transparent 4px), repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, transparent 1px, transparent 3px); mix-blend-mode: screen; }
+  .vanish-static.show { animation: staticFlicker 0.3s ease-in-out; }
+  @keyframes staticFlicker { 0%, 100% { opacity: 0; } 50% { opacity: 0.8; } }
 
   /* Responsive */
   @media (max-width: 600px) {
@@ -600,7 +628,7 @@ if (db) {
         panel.style.cssText = '';
       }
       stage.classList.remove('tracing', 'door-open');
-      stage.querySelectorAll('.pensieve-ripple,.pensieve-vortex,.floo-flame,.floo-ember,.patronus-ray,.patronus-core,.apparition-crack,.apparition-lightning,.portkey-swirl,.portkey-spark,.vanish-shimmer').forEach(e => e.remove());
+      stage.querySelectorAll('.pensieve-ripple,.pensieve-vortex,.pensieve-bubble,.pensieve-wisp,.floo-flame,.floo-ember,.floo-smoke,.floo-spark,.patronus-ray,.patronus-core,.apparition-crack,.apparition-lightning,.apparition-shockwave,.portkey-swirl,.portkey-spark,.portkey-trail,.vanish-shimmer,.vanish-static').forEach(e => e.remove());
     });
     sizeDoorTrace();
   });
@@ -638,48 +666,91 @@ if (db) {
 
     pensieve(stage, panel, href) {
       panel.classList.add('diving');
-      // Vortex swirl
+      // Vortex swirl — bigger, longer-lasting
       const vortex = spawn(stage, 'pensieve-vortex', { left: '50%', top: '50%' });
-      setTimeout(() => vortex.remove(), 1200);
+      setTimeout(() => vortex.remove(), 1400);
       // 6 ripples for wider coverage
       for (let i = 0; i < 6; i++) {
         setTimeout(() => spawn(stage, 'pensieve-ripple', { left: '50%', top: '50%' }, 1400), i * 180 + 200);
       }
-      navigate(href, 1300);
+      // Silvery memory wisps drifting out
+      for (let i = 0; i < 8; i++) {
+        setTimeout(() => {
+          const w = spawn(stage, 'pensieve-wisp', {
+            left: '50%', top: '50%',
+            '--wr': (i * 45 + Math.random() * 20) + 'deg',
+          });
+          requestAnimationFrame(() => w.classList.add('drift'));
+          setTimeout(() => w.remove(), 1200);
+        }, 200 + i * 60);
+      }
+      // Bubbles rising from the basin
+      for (let i = 0; i < 12; i++) {
+        setTimeout(() => {
+          const size = 4 + Math.random() * 10;
+          const b = spawn(stage, 'pensieve-bubble', {
+            left: (20 + Math.random() * 60) + '%',
+            bottom: (10 + Math.random() * 30) + '%',
+            width: size + 'px', height: size + 'px',
+            '--bdx': (Math.random() - 0.5) * 40 + 'px',
+          });
+          requestAnimationFrame(() => b.classList.add('rise'));
+          setTimeout(() => b.remove(), 1400);
+        }, 150 + i * 60);
+      }
+      navigate(href, 1400);
     },
 
     floo(stage, panel, href) {
       panel.classList.add('burning');
-      // Dense flames — 30 of them across the width
-      for (let i = 0; i < 30; i++) {
+      // Smoke plume expanding from the bottom
+      const smoke = spawn(stage, 'floo-smoke', {});
+      requestAnimationFrame(() => smoke.classList.add('bloom'));
+      setTimeout(() => smoke.remove(), 1100);
+      // Initial ignition sparks — 5 bright flashes
+      for (let i = 0; i < 5; i++) {
         setTimeout(() => {
-          const width = 6 + Math.random() * 8;
-          const height = 14 + Math.random() * 28;
+          const sp = spawn(stage, 'floo-spark', {
+            left: (25 + Math.random() * 50) + '%',
+            bottom: (20 + Math.random() * 30) + '%',
+            transform: 'translate(-50%, -50%)',
+          });
+          requestAnimationFrame(() => sp.classList.add('flash'));
+          setTimeout(() => sp.remove(), 400);
+        }, 60 + i * 40);
+      }
+      // Dense flames — 35 of them across the width
+      for (let i = 0; i < 35; i++) {
+        setTimeout(() => {
+          const width = 6 + Math.random() * 10;
+          const height = 14 + Math.random() * 36;
+          const greens = ['#3fb950', '#2ea043', '#56d364', '#4ac76a'];
+          const color = greens[Math.floor(Math.random() * greens.length)];
           const f = spawn(stage, 'floo-flame', {
-            left: (10 + Math.random() * 80) + '%',
-            bottom: (-5 + Math.random() * 20) + '%',
+            left: (5 + Math.random() * 90) + '%',
+            bottom: (-10 + Math.random() * 25) + '%',
             width: width + 'px',
             height: height + 'px',
-            color: ['#3fb950', '#2ea043', '#56d364'][Math.floor(Math.random() * 3)],
-            background: ['#3fb950', '#2ea043', '#56d364'][Math.floor(Math.random() * 3)],
+            color: color,
+            background: color,
           });
           requestAnimationFrame(() => f.classList.add('lit'));
-          setTimeout(() => f.remove(), 1000);
-        }, i * 30 + 60);
+          setTimeout(() => f.remove(), 1100);
+        }, i * 25 + 80);
       }
       // Ember sparks rising
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 25; i++) {
         setTimeout(() => {
           const e = spawn(stage, 'floo-ember', {
-            left: (15 + Math.random() * 70) + '%',
-            bottom: (5 + Math.random() * 15) + '%',
-            '--dx': (Math.random() - 0.5) * 60 + 'px',
+            left: (10 + Math.random() * 80) + '%',
+            bottom: (5 + Math.random() * 20) + '%',
+            '--dx': (Math.random() - 0.5) * 80 + 'px',
           });
           requestAnimationFrame(() => e.classList.add('glow'));
-          setTimeout(() => e.remove(), 1300);
-        }, i * 50 + 150);
+          setTimeout(() => e.remove(), 1400);
+        }, i * 40 + 150);
       }
-      navigate(href, 1100);
+      navigate(href, 1200);
     },
 
     patronus(stage, panel, href) {
@@ -707,17 +778,17 @@ if (db) {
 
     apparition(stage, panel, href) {
       panel.classList.add('apparating');
-      // 3 lightning bolts striking down
-      for (let i = 0; i < 3; i++) {
+      // 4 lightning bolts striking down (was 3)
+      for (let i = 0; i < 4; i++) {
         setTimeout(() => {
-          const lx = 40 + Math.random() * 20;
+          const lx = 30 + Math.random() * 40;
           const l = spawn(stage, 'apparition-lightning', {
             left: lx + '%', top: '-10%',
-            transform: `rotate(${(Math.random() - 0.5) * 10}deg)`,
+            transform: `rotate(${(Math.random() - 0.5) * 12}deg)`,
           });
           requestAnimationFrame(() => l.classList.add('strike'));
           setTimeout(() => l.remove(), 300);
-        }, 350 + i * 80);
+        }, 250 + i * 70);
       }
       // Big central crack flash
       setTimeout(() => {
@@ -725,51 +796,69 @@ if (db) {
         requestAnimationFrame(() => c.classList.add('pop'));
         setTimeout(() => c.remove(), 400);
       }, 550);
-      navigate(href, 1000);
+      // Shockwave ring at the squeeze-point
+      setTimeout(() => {
+        const sw = spawn(stage, 'apparition-shockwave', {});
+        requestAnimationFrame(() => sw.classList.add('blast'));
+        setTimeout(() => sw.remove(), 600);
+      }, 600);
+      navigate(href, 1100);
     },
 
     portkey(stage, panel, href) {
       panel.classList.add('pulling');
+      // Golden dust trail — spiraling ring
+      const trail = spawn(stage, 'portkey-trail', {});
+      requestAnimationFrame(() => trail.classList.add('spin'));
+      setTimeout(() => trail.remove(), 1000);
       // 3 concentric swirls at different scales
       for (let i = 0; i < 3; i++) {
         setTimeout(() => {
-          const size = 100 + i * 40;
+          const size = 100 + i * 50;
           const sw = spawn(stage, 'portkey-swirl', {
             left: '50%', top: '50%',
             width: size + 'px', height: size + 'px',
           });
           requestAnimationFrame(() => sw.classList.add('active'));
           setTimeout(() => sw.remove(), 1200);
-        }, 150 + i * 120);
+        }, 150 + i * 100);
       }
-      // Golden sparks flying outward
-      for (let i = 0; i < 16; i++) {
+      // Golden sparks flying outward — 20 of them
+      for (let i = 0; i < 20; i++) {
         setTimeout(() => {
-          const angle = (i / 16) * Math.PI * 2;
-          const dist = 80 + Math.random() * 80;
+          const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.3;
+          const dist = 100 + Math.random() * 100;
           const s = spawn(stage, 'portkey-spark', {
             left: '50%', top: '50%',
             '--dx': Math.cos(angle) * dist + 'px',
             '--dy': Math.sin(angle) * dist + 'px',
           });
           requestAnimationFrame(() => s.classList.add('fly'));
-          setTimeout(() => s.remove(), 900);
-        }, 300 + i * 20);
+          setTimeout(() => s.remove(), 1000);
+        }, 300 + i * 15);
       }
-      navigate(href, 1100);
+      navigate(href, 1200);
     },
 
     vanish(stage, panel, href) {
       panel.classList.add('vanishing');
-      // Shimmer sweeps during the phase-in/out
-      for (let i = 0; i < 4; i++) {
+      // 5 shimmer sweeps during the phase-in/out
+      for (let i = 0; i < 5; i++) {
         setTimeout(() => {
           const sh = spawn(stage, 'vanish-shimmer', {});
           requestAnimationFrame(() => sh.classList.add('sweep'));
-          setTimeout(() => sh.remove(), 500);
-        }, i * 280 + 100);
+          setTimeout(() => sh.remove(), 600);
+        }, i * 220 + 80);
       }
-      navigate(href, 1300);
+      // Static noise flickers at each "solid" moment
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          const st = spawn(stage, 'vanish-static', {});
+          requestAnimationFrame(() => st.classList.add('show'));
+          setTimeout(() => st.remove(), 300);
+        }, 120 + i * 180);
+      }
+      navigate(href, 1400);
     },
   };
 
