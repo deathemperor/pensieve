@@ -664,6 +664,7 @@ if (db) {
   .dash-panel.diving { animation: pensieveDive 1.6s cubic-bezier(0.4,0,0.2,1) forwards !important; }
   @keyframes pensieveDive {
     0% { transform: scale(1); }
+    4% { transform: scale(0.97); } /* tactile press-down */
     10% { transform: scale(1.08); border-color: #58a6ff; box-shadow: 0 0 80px rgba(88,166,255,0.7), inset 0 0 60px rgba(88,166,255,0.2); }
     25% { transform: scale(1.06); box-shadow: 0 0 120px rgba(88,166,255,0.8), inset 0 0 80px rgba(88,166,255,0.25); }
     45% { transform: scale(0.92) translateY(8px); box-shadow: 0 0 140px rgba(124,58,237,0.7), inset 0 0 100px rgba(124,58,237,0.3); }
