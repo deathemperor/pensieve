@@ -368,6 +368,17 @@ if (db) {
 
   /* Stage wrapper — holds particles, doesn't animate */
   .dash-stage { position: relative; border-radius: var(--radius-lg); opacity: 0; animation: materialize 0.4s ease-out forwards; }
+
+  /* Stage-level atmospheric glow — blooms during animations */
+  .dash-stage::after {
+    content: ''; position: absolute; inset: -20px; border-radius: calc(var(--radius-lg) + 20px);
+    pointer-events: none; z-index: 0; opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(ellipse at center, var(--atmo-color, rgba(88,166,255,0.15)), transparent 70%);
+    filter: blur(20px);
+  }
+  .dash-stage.atmo-on::after { opacity: 1; }
+  .dash-stage.atmo-fade::after { opacity: 0; }
   .dash-stage:nth-child(1) { animation-delay: 0ms; }
   .dash-stage:nth-child(2) { animation-delay: 80ms; }
   .dash-stage:nth-child(3) { animation-delay: 160ms; }
@@ -656,15 +667,28 @@ if (db) {
     }, delay);
   }
 
+  // Helper: trigger stage-level atmospheric glow with a color
+  function atmoGlow(stage, color, lifetime) {
+    stage.style.setProperty('--atmo-color', color);
+    stage.classList.add('atmo-on');
+    setTimeout(() => {
+      stage.classList.remove('atmo-on');
+      stage.classList.add('atmo-fade');
+      setTimeout(() => stage.classList.remove('atmo-fade'), 300);
+    }, lifetime);
+  }
+
   const magic = {
     door(stage, panel, href) {
       sizeDoorTrace(); // ensure trace matches current panel size
+      atmoGlow(stage, 'rgba(88,166,255,0.3)', 1600);
       stage.classList.add('tracing');
       setTimeout(() => stage.classList.add('door-open'), 900);
-      navigate(href, 1700);
+      navigate(href, 1800);
     },
 
     pensieve(stage, panel, href) {
+      atmoGlow(stage, 'rgba(88,166,255,0.35)', 1300);
       panel.classList.add('diving');
       // Vortex swirl — bigger, longer-lasting
       const vortex = spawn(stage, 'pensieve-vortex', { left: '50%', top: '50%' });
@@ -702,6 +726,7 @@ if (db) {
     },
 
     floo(stage, panel, href) {
+      atmoGlow(stage, 'rgba(63,185,80,0.4)', 1100);
       panel.classList.add('burning');
       // Smoke plume expanding from the bottom
       const smoke = spawn(stage, 'floo-smoke', {});
@@ -754,6 +779,7 @@ if (db) {
     },
 
     patronus(stage, panel, href) {
+      atmoGlow(stage, 'rgba(200,220,255,0.5)', 1300);
       panel.classList.add('casting');
       // Central flash core
       setTimeout(() => {
@@ -777,6 +803,7 @@ if (db) {
     },
 
     apparition(stage, panel, href) {
+      atmoGlow(stage, 'rgba(255,255,255,0.35)', 1000);
       panel.classList.add('apparating');
       // 4 lightning bolts striking down (was 3)
       for (let i = 0; i < 4; i++) {
@@ -806,6 +833,7 @@ if (db) {
     },
 
     portkey(stage, panel, href) {
+      atmoGlow(stage, 'rgba(212,168,67,0.4)', 1100);
       panel.classList.add('pulling');
       // Golden dust trail — spiraling ring
       const trail = spawn(stage, 'portkey-trail', {});
@@ -841,6 +869,7 @@ if (db) {
     },
 
     vanish(stage, panel, href) {
+      atmoGlow(stage, 'rgba(200,200,255,0.3)', 1300);
       panel.classList.add('vanishing');
       // 5 shimmer sweeps during the phase-in/out
       for (let i = 0; i < 5; i++) {
