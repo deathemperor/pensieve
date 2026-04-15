@@ -227,21 +227,35 @@ function formatGHDate(iso: string) {
 					</div>
 				</dl>
 			</div>
-			<div class="about-hero-photo">
-				<Image
-					src={profilePhoto}
-					alt={isVi ? "Ảnh chân dung Trương Hữu Lộc" : "Portrait of Trương Hữu Lộc"}
-					width={480}
-					height={600}
-					format="webp"
-					quality={85}
-					loading="eager"
-					class="profile-photo"
-				/>
-				<span class="photo-caption">
+			<figure class="about-hero-photo" aria-hidden="false">
+				<div class="portrait-frame">
+					<div class="portrait-aura" aria-hidden="true" />
+					<div class="portrait-sheen" aria-hidden="true" />
+					<div class="portrait-image-wrap">
+						<Image
+							src={profilePhoto}
+							alt={isVi ? "Ảnh chân dung Trương Hữu Lộc" : "Portrait of Trương Hữu Lộc"}
+							width={720}
+							height={900}
+							format="webp"
+							quality={90}
+							loading="eager"
+							class="profile-photo"
+						/>
+						<div class="portrait-vignette" aria-hidden="true" />
+					</div>
+					<svg class="portrait-corner portrait-corner-tl" viewBox="0 0 40 40" aria-hidden="true">
+						<path d="M2 38 L2 2 L38 2" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+					</svg>
+					<svg class="portrait-corner portrait-corner-br" viewBox="0 0 40 40" aria-hidden="true">
+						<path d="M38 2 L38 38 L2 38" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" />
+					</svg>
+				</div>
+				<figcaption class="photo-caption">
+					<span class="photo-caption-dot" aria-hidden="true" />
 					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
-				</span>
-			</div>
+				</figcaption>
+			</figure>
 		</div>
 	</section>
 
@@ -504,29 +518,196 @@ function formatGHDate(iso: string) {
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		align-items: flex-end;
-		gap: var(--spacing-2);
+		align-items: center;
+		gap: var(--spacing-5);
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Outer frame — holds the aura, image, and decorative corners */
+	.portrait-frame {
+		position: relative;
+		width: 100%;
+		max-width: 360px;
+		aspect-ratio: 4 / 5;
+		padding: 14px;
+		color: #f0c75e;
+		border-radius: 3px;
+		background:
+			linear-gradient(
+				180deg,
+				rgba(240, 199, 94, 0.14) 0%,
+				rgba(240, 199, 94, 0.06) 50%,
+				rgba(240, 199, 94, 0.12) 100%
+			);
+		box-shadow:
+			inset 0 0 0 1px rgba(240, 199, 94, 0.25),
+			inset 0 0 0 7px rgba(10, 10, 12, 0.4),
+			0 1px 0 rgba(240, 199, 94, 0.2),
+			0 30px 90px -20px rgba(0, 0, 0, 0.55),
+			0 0 120px -40px rgba(240, 199, 94, 0.35);
+	}
+
+	/* Animated glow behind the frame */
+	.portrait-aura {
+		position: absolute;
+		inset: -24px;
+		border-radius: inherit;
+		background: radial-gradient(
+			ellipse at 50% 40%,
+			rgba(240, 199, 94, 0.25) 0%,
+			rgba(240, 199, 94, 0.08) 40%,
+			transparent 70%
+		);
+		filter: blur(18px);
+		opacity: 0.7;
+		z-index: -1;
+		animation: portrait-pulse 6s ease-in-out infinite;
+	}
+
+	@keyframes portrait-pulse {
+		0%, 100% { opacity: 0.55; transform: scale(1); }
+		50% { opacity: 0.85; transform: scale(1.04); }
+	}
+
+	/* Slow diagonal sheen sweeping across the portrait */
+	.portrait-sheen {
+		position: absolute;
+		inset: 14px;
+		border-radius: 2px;
+		overflow: hidden;
+		pointer-events: none;
+		z-index: 2;
+		opacity: 0.55;
+	}
+
+	.portrait-sheen::before {
+		content: "";
+		position: absolute;
+		inset: -40% -80%;
+		background: linear-gradient(
+			115deg,
+			transparent 35%,
+			rgba(255, 230, 170, 0.16) 48%,
+			rgba(255, 245, 210, 0.28) 50%,
+			rgba(255, 230, 170, 0.16) 52%,
+			transparent 65%
+		);
+		animation: portrait-sheen-sweep 8s ease-in-out infinite;
+	}
+
+	@keyframes portrait-sheen-sweep {
+		0%, 15% { transform: translateX(-60%); }
+		70%, 100% { transform: translateX(60%); }
+	}
+
+	/* Inner image container — holds the photo and vignette */
+	.portrait-image-wrap {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		border-radius: 2px;
+		overflow: hidden;
+		background: #0a0a0c;
+		box-shadow:
+			inset 0 0 0 1px rgba(0, 0, 0, 0.6),
+			inset 0 0 30px rgba(0, 0, 0, 0.4);
 	}
 
 	.profile-photo {
 		width: 100%;
-		max-width: 360px;
-		height: auto;
-		aspect-ratio: 4 / 5;
+		height: 100%;
 		object-fit: cover;
-		border-radius: 2px;
-		filter: grayscale(12%) contrast(1.02);
-		box-shadow:
-			0 1px 0 var(--color-border),
-			0 30px 60px -20px rgba(0, 0, 0, 0.35);
+		display: block;
+		filter:
+			grayscale(18%)
+			contrast(1.05)
+			brightness(0.96)
+			sepia(6%);
+		transition:
+			filter 600ms ease,
+			transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
+	.about-hero-photo:hover .profile-photo {
+		filter:
+			grayscale(4%)
+			contrast(1.08)
+			brightness(1.02)
+			sepia(2%);
+		transform: scale(1.02);
+	}
+
+	/* Vignette — darkens edges to draw focus, pensieve-like */
+	.portrait-vignette {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(
+				ellipse at 50% 45%,
+				transparent 45%,
+				rgba(0, 0, 0, 0.25) 80%,
+				rgba(0, 0, 0, 0.45) 100%
+			),
+			linear-gradient(
+				180deg,
+				rgba(240, 199, 94, 0.06) 0%,
+				transparent 30%,
+				transparent 70%,
+				rgba(0, 0, 0, 0.15) 100%
+			);
+		mix-blend-mode: multiply;
+	}
+
+	/* Gold corner brackets — wizarding portrait feel */
+	.portrait-corner {
+		position: absolute;
+		width: 22px;
+		height: 22px;
+		color: rgba(240, 199, 94, 0.85);
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.4));
+		z-index: 3;
+	}
+
+	.portrait-corner-tl { top: 6px; left: 6px; }
+	.portrait-corner-br { bottom: 6px; right: 6px; }
+
+	/* Caption */
 	.photo-caption {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-2);
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 		color: var(--color-muted);
 		letter-spacing: var(--tracking-wider);
 		text-transform: uppercase;
+	}
+
+	.photo-caption-dot {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: rgba(240, 199, 94, 0.8);
+		box-shadow: 0 0 8px rgba(240, 199, 94, 0.6);
+		animation: caption-blink 3s ease-in-out infinite;
+	}
+
+	@keyframes caption-blink {
+		0%, 100% { opacity: 0.4; }
+		50% { opacity: 1; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.portrait-aura,
+		.portrait-sheen::before,
+		.photo-caption-dot {
+			animation: none;
+		}
+		.about-hero-photo:hover .profile-photo {
+			transform: none;
+		}
 	}
 
 	.about-meta {
@@ -971,8 +1152,22 @@ function formatGHDate(iso: string) {
 			align-items: flex-start;
 		}
 
-		.profile-photo {
-			max-width: 240px;
+		.portrait-frame {
+			max-width: 260px;
+			padding: 10px;
+		}
+
+		.portrait-aura {
+			inset: -16px;
+		}
+
+		.portrait-sheen {
+			inset: 10px;
+		}
+
+		.portrait-corner {
+			width: 18px;
+			height: 18px;
 		}
 
 		.about-meta-row {
