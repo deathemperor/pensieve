@@ -386,9 +386,16 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     position: relative;
     overflow: hidden;
     --rs-prowl-dur: 16s;
-    --rs-cat-w: 320px;
-    --rs-cat-h: 160px;
+    --rs-cat-w: min(560px, 70vw);
+    --rs-cat-h: calc(var(--rs-cat-w) * 0.5);
     isolation: isolate;
+    min-height: clamp(360px, 50vh, 540px);
+  }
+  /* Push title content above the cat zone */
+  .rs-page-hero .rs-page-inner {
+    position: relative;
+    z-index: 5;
+    padding-bottom: clamp(180px, 28vh, 280px);
   }
 
   /* Title shake — sympathetic motion at peak (40-44% of prowl) */
