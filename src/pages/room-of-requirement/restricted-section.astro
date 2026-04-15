@@ -104,6 +104,15 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-moonbeam rs-moonbeam-2"></span>
       <span class="rs-moonbeam rs-moonbeam-3"></span>
     </div>
+    <!-- Floating spell book — open in mid-air, pages flip slowly -->
+    <div class="rs-spellbook" aria-hidden="true">
+      <div class="rs-book-base"></div>
+      <div class="rs-book-page rs-book-page-l"></div>
+      <div class="rs-book-page rs-book-page-r"></div>
+      <div class="rs-book-page rs-book-page-flip"></div>
+      <div class="rs-book-glow"></div>
+      <div class="rs-book-runes"></div>
+    </div>
     <!-- Floating dust motes — tiny specks catching the moonlight -->
     <div class="rs-dust" aria-hidden="true">
       <span class="rs-mote" style="--x:14%; --y:25%; --d:0s; --dur:18s;"></span>
@@ -868,6 +877,89 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 100%;
     opacity: 0.4;
     mix-blend-mode: overlay;
+  }
+
+  /* Floating spell book — open, mid-air, pages flip lazily */
+  .rs-spellbook {
+    position: absolute;
+    top: 18%;
+    right: 14%;
+    width: 56px;
+    height: 36px;
+    pointer-events: none;
+    z-index: 2;
+    transform: rotate(-8deg);
+    animation: rs-book-bob 6s ease-in-out infinite;
+    perspective: 200px;
+  }
+  @keyframes rs-book-bob {
+    0%, 100% { transform: rotate(-8deg) translateY(0); }
+    50% { transform: rotate(-7deg) translateY(-4px); }
+  }
+  .rs-book-base {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #5a3a20 0%, #3a2410 100%);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 0 4px rgba(0,0,0,0.5);
+  }
+  .rs-book-page {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 26px;
+    background: linear-gradient(180deg, #d8c7a3 0%, #c0a880 100%);
+    box-shadow: inset 0 0 3px rgba(80,50,20,0.4);
+  }
+  .rs-book-page-l { left: 2px; border-radius: 1px 0 0 1px; }
+  .rs-book-page-r { right: 2px; border-radius: 0 1px 1px 0; }
+  .rs-book-page-flip {
+    left: 28px;
+    transform-origin: left center;
+    transform: rotateY(0deg);
+    animation: rs-page-flip 8s ease-in-out infinite;
+    z-index: 3;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    backface-visibility: visible;
+  }
+  @keyframes rs-page-flip {
+    0%, 30% { transform: rotateY(0deg); }
+    50% { transform: rotateY(-180deg); }
+    80%, 100% { transform: rotateY(-180deg); }
+  }
+  .rs-book-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(155, 231, 255, 0.45), transparent 65%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: blur(4px);
+    animation: rs-book-glow-pulse 3s ease-in-out infinite;
+  }
+  @keyframes rs-book-glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  .rs-book-runes {
+    position: absolute;
+    inset: 6px;
+    background:
+      radial-gradient(circle at 25% 30%, rgba(155, 231, 255, 0.7) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 75% 30%, rgba(155, 231, 255, 0.7) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 25% 60%, rgba(255, 200, 100, 0.6) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 75% 70%, rgba(255, 100, 200, 0.6) 0.5px, transparent 1.5px);
+    background-size: 100% 100%;
+    animation: rs-runes-shimmer 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-runes-shimmer {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 
   /* Floating dust motes — tiny specks slowly drifting in the air */
