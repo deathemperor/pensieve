@@ -75,6 +75,10 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <div class="rs-cat-shadow"></div>
       <div class="rs-cat-haze"></div>
     </div>
+    <!-- Floor reflection — vertical mirror of the cat, faded -->
+    <svg class="rs-cat-reflection" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette"/>
+    </svg>
     <!-- Ghost double — translucent cat-shape that lags behind for echo effect -->
     <svg class="rs-cat-ghost" viewBox="0 0 220 110" aria-hidden="true">
       <use href="#rs-cat-silhouette"/>
@@ -391,17 +395,40 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     border-bottom: 1px solid var(--color-border);
     position: relative;
     overflow: hidden;
-    --rs-prowl-dur: 16s;
+    --rs-prowl-dur: 18s;
     --rs-cat-w: min(560px, 70vw);
     --rs-cat-h: calc(var(--rs-cat-w) * 0.5);
     isolation: isolate;
-    min-height: clamp(360px, 50vh, 540px);
+    min-height: clamp(380px, 52vh, 560px);
   }
   /* Push title content above the cat zone */
   .rs-page-hero .rs-page-inner {
     position: relative;
     z-index: 5;
-    padding-bottom: clamp(180px, 28vh, 280px);
+    padding-bottom: clamp(200px, 30vh, 300px);
+  }
+  /* Focal vignette: dim the corners so eye focuses on cat */
+  .rs-page-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(ellipse at 50% 75%, transparent 30%, rgba(0,0,0,0.18) 70%, rgba(0,0,0,0.45) 100%);
+    mix-blend-mode: multiply;
+  }
+  /* Floor reflection: soft horizontal gradient at base for grounding */
+  .rs-page-hero::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 24px;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(180deg, transparent, rgba(155, 231, 255, 0.05) 60%, rgba(155, 231, 255, 0.12));
+    mix-blend-mode: screen;
   }
 
   /* Title shake — sympathetic motion at peak (40-44% of prowl) */
@@ -580,6 +607,33 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   .rs-cat-mini-2 {
     /* Override transform-origin so flipped scaleX(-1) preserves right-side anchor */
     transform-origin: 100% 100%;
+  }
+
+  /* Floor reflection — vertical mirror of cat, fades into the floor */
+  .rs-cat-reflection {
+    position: absolute;
+    bottom: -52px;
+    left: 50%;
+    transform: translateX(-50%) scaleY(-1);
+    width: var(--rs-cat-w, 320px);
+    height: calc(var(--rs-cat-h, 160px) * 0.5);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 0;
+    animation: rs-cat-reflect var(--rs-prowl-dur, 18s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px) drop-shadow(0 0 8px rgba(126, 200, 255, 0.3));
+    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
+  }
+  @keyframes rs-cat-reflect {
+    0%, 6%, 92%, 100% { opacity: 0; }
+    14% { opacity: 0.18; }
+    30% { opacity: 0.22; }
+    42% { opacity: 0.32; transform: translateX(-50%) scaleY(-1) translateY(-3px); }
+    56% { opacity: 0.22; }
+    78% { opacity: 0.18; }
+    86% { opacity: 0.08; }
   }
 
   /* Ghost double — translucent cat-shape lagging behind */
