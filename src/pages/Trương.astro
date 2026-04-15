@@ -2,6 +2,8 @@
 export const prerender = false;
 
 import Base from "../layouts/Base.astro";
+import { Image } from "astro:assets";
+import profilePhoto from "../assets/truong-profile.jpg";
 import { link } from "../utils/link";
 import { getCurrentLang } from "../utils/lang";
 const isVi = getCurrentLang(Astro) === "vi";
@@ -199,12 +201,47 @@ function formatGHDate(iso: string) {
 <Base title="Trương Hữu Lộc" description={isVi ? "Trương Hữu Lộc — kỹ sư, nhà văn, người nuôi cá" : "Trương Hữu Lộc — engineer, writer, fishkeeper"} breadcrumbs={[{ label: "Trương" }]}>
 	<section class="about-hero">
 		<div class="about-hero-inner">
-			<div class="about-rule" />
-			<span class="about-label">{isVi ? "Giới Thiệu" : "About"}</span>
-			<h1 class="about-title">Trương Hữu Lộc</h1>
-			<p class="about-subtitle">
-				{isVi ? "Kỹ sư. Nhà văn. Người nuôi cá." : "Engineer. Writer. Fishkeeper."}
-			</p>
+			<div class="about-hero-text">
+				<div class="about-rule" />
+				<span class="about-label">{isVi ? "Giới Thiệu" : "About"}</span>
+				<h1 class="about-title">Trương Hữu Lộc</h1>
+				<p class="about-subtitle">
+					{isVi ? "Kỹ sư. Nhà văn. Người nuôi cá." : "Engineer. Writer. Fishkeeper."}
+				</p>
+				<dl class="about-meta">
+					<div class="about-meta-row">
+						<dt>{isVi ? "Vai trò" : "Role"}</dt>
+						<dd>{isVi ? "CTO / COO · Kỹ sư full-stack" : "CTO / COO · Full-Stack Engineer"}</dd>
+					</div>
+					<div class="about-meta-row">
+						<dt>{isVi ? "Nơi ở" : "Based"}</dt>
+						<dd>{isVi ? "Sài Gòn, Việt Nam" : "Saigon, Vietnam"}</dd>
+					</div>
+					<div class="about-meta-row">
+						<dt>{isVi ? "Hiện tại" : "Currently"}</dt>
+						<dd>{isVi ? "Xây hạ tầng bảo hiểm quy mô lớn ở Papaya" : "Building hyperscale insurance infrastructure at Papaya"}</dd>
+					</div>
+					<div class="about-meta-row">
+						<dt>{isVi ? "Trên GitHub" : "GitHub"}</dt>
+						<dd>{isVi ? "Từ 2013 · 44 kho mã công khai · đang xây 37+ AI agent" : "Since 2013 · 44 public repos · shipping 37+ AI agents"}</dd>
+					</div>
+				</dl>
+			</div>
+			<div class="about-hero-photo">
+				<Image
+					src={profilePhoto}
+					alt={isVi ? "Ảnh chân dung Trương Hữu Lộc" : "Portrait of Trương Hữu Lộc"}
+					width={480}
+					height={600}
+					format="webp"
+					quality={85}
+					loading="eager"
+					class="profile-photo"
+				/>
+				<span class="photo-caption">
+					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
+				</span>
+			</div>
 		</div>
 	</section>
 
@@ -453,6 +490,77 @@ function formatGHDate(iso: string) {
 		max-width: var(--wide-width);
 		margin: 0 auto;
 		padding: var(--spacing-24) var(--spacing-8) var(--spacing-16);
+		display: grid;
+		grid-template-columns: 1fr minmax(280px, 360px);
+		gap: var(--spacing-12);
+		align-items: center;
+	}
+
+	.about-hero-text {
+		min-width: 0;
+	}
+
+	.about-hero-photo {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--spacing-2);
+	}
+
+	.profile-photo {
+		width: 100%;
+		max-width: 360px;
+		height: auto;
+		aspect-ratio: 4 / 5;
+		object-fit: cover;
+		border-radius: 2px;
+		filter: grayscale(12%) contrast(1.02);
+		box-shadow:
+			0 1px 0 var(--color-border),
+			0 30px 60px -20px rgba(0, 0, 0, 0.35);
+	}
+
+	.photo-caption {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		letter-spacing: var(--tracking-wider);
+		text-transform: uppercase;
+	}
+
+	.about-meta {
+		margin: var(--spacing-8) 0 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+		border-top: 1px solid var(--color-border);
+		padding-top: var(--spacing-6);
+	}
+
+	.about-meta-row {
+		display: grid;
+		grid-template-columns: 100px 1fr;
+		gap: var(--spacing-4);
+		align-items: baseline;
+	}
+
+	.about-meta-row dt {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin: 0;
+	}
+
+	.about-meta-row dd {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text);
+		margin: 0;
+		line-height: 1.5;
 	}
 
 	.about-rule {
@@ -854,6 +962,22 @@ function formatGHDate(iso: string) {
 	@media (max-width: 900px) {
 		.about-hero-inner {
 			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+			grid-template-columns: 1fr;
+			gap: var(--spacing-8);
+		}
+
+		.about-hero-photo {
+			grid-row: 1;
+			align-items: flex-start;
+		}
+
+		.profile-photo {
+			max-width: 240px;
+		}
+
+		.about-meta-row {
+			grid-template-columns: 84px 1fr;
+			gap: var(--spacing-3);
 		}
 
 		.about-inner {
