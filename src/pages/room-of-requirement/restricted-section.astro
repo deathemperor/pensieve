@@ -655,7 +655,8 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     min-height: clamp(380px, 52vh, 560px);
     cursor: crosshair;
     animation: rs-hero-shake var(--rs-prowl-dur, 18s) linear infinite;
-    /* Library at midnight — deeper contrast, true darkness at floor */
+    /* Library at midnight — deeper contrast, true darkness at floor.
+       Subtle radial accent at top-right adds magical glow visible always */
     background:
       radial-gradient(ellipse at 50% 30%, rgba(20, 24, 38, 0.5), transparent 65%),
       linear-gradient(180deg,
@@ -1067,19 +1068,19 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 140%;
     background: linear-gradient(180deg,
       transparent 0%,
-      rgba(155, 200, 230, 0.10) 25%,
-      rgba(155, 200, 230, 0.18) 50%,
-      rgba(155, 200, 230, 0.10) 75%,
+      rgba(180, 220, 250, 0.18) 20%,
+      rgba(180, 220, 250, 0.32) 50%,
+      rgba(180, 220, 250, 0.18) 80%,
       transparent 100%);
     transform-origin: center top;
     transform: rotate(18deg);
-    filter: blur(6px);
+    filter: blur(8px);
     mix-blend-mode: screen;
     animation: rs-moonbeam-drift 14s ease-in-out infinite;
   }
-  .rs-moonbeam-1 { left: 8%; width: 60px; opacity: 0.7; animation-delay: 0s; }
-  .rs-moonbeam-2 { left: 32%; width: 90px; opacity: 0.85; animation-delay: -3s; transform: rotate(20deg); }
-  .rs-moonbeam-3 { left: 58%; width: 70px; opacity: 0.6; animation-delay: -7s; transform: rotate(16deg); }
+  .rs-moonbeam-1 { left: 8%; width: 60px; opacity: 0.85; animation-delay: 0s; }
+  .rs-moonbeam-2 { left: 32%; width: 100px; opacity: 1; animation-delay: -3s; transform: rotate(20deg); }
+  .rs-moonbeam-3 { left: 58%; width: 80px; opacity: 0.75; animation-delay: -7s; transform: rotate(16deg); }
   @keyframes rs-moonbeam-drift {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.95; }
