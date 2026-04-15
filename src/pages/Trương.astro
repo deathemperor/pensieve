@@ -232,6 +232,41 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
+				{/* Rose window cathedral pattern behind */}
+				<svg class="portrait-rose-window" viewBox="0 0 400 400" aria-hidden="true">
+					<g fill="none" stroke="currentColor" stroke-width="0.8">
+						<circle cx="200" cy="200" r="190" />
+						<circle cx="200" cy="200" r="160" />
+						<circle cx="200" cy="200" r="120" />
+						{Array.from({ length: 16 }).map((_, i) => (
+							<g transform={`rotate(${i * 22.5} 200 200)`}>
+								<path d="M200 40 Q220 80 200 120 Q180 80 200 40 Z" opacity="0.5" />
+								<circle cx="200" cy="70" r="4" fill="currentColor" opacity="0.7" />
+							</g>
+						))}
+						<circle cx="200" cy="200" r="20" fill="currentColor" opacity="0.4" />
+					</g>
+				</svg>
+
+				{/* Ancient runes scrolling in a circle around portrait */}
+				<div class="portrait-runes-ring" aria-hidden="true">
+					<div class="runes-ring-inner">
+						{"ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ".split("").map((r, i) => (
+							<span class="rune-letter" style={`--rl-angle: ${i * (360 / 24)}deg;`}>{r}</span>
+						))}
+					</div>
+				</div>
+
+				{/* Camera aperture iris */}
+				<div class="portrait-aperture" aria-hidden="true">
+					{Array.from({ length: 8 }).map((_, i) => (
+						<span class="aperture-blade" style={`--ab: ${i};`} />
+					))}
+				</div>
+
+				{/* Photo negative flash periodic */}
+				<div class="portrait-negative-flash" aria-hidden="true" />
+
 				{/* Lens flare sweeping diagonally across */}
 				<div class="portrait-lens-flare" aria-hidden="true">
 					<span class="flare-ring flare-ring-1" />
@@ -1075,6 +1110,112 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Rose window cathedral pattern */
+	.portrait-rose-window {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 460px;
+		height: 460px;
+		margin-left: -230px;
+		margin-top: -230px;
+		pointer-events: none;
+		z-index: 0;
+		color: rgba(240, 199, 94, 0.15);
+		filter: drop-shadow(0 0 3px rgba(240, 199, 94, 0.4));
+		animation: rose-pulse 8s ease-in-out infinite;
+	}
+
+	@keyframes rose-pulse {
+		0%, 100% { opacity: 0.6; transform: scale(1) rotate(0deg); }
+		50% { opacity: 1; transform: scale(1.05) rotate(4deg); }
+	}
+
+	/* Rotating ring of ancient runes */
+	.portrait-runes-ring {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	.runes-ring-inner {
+		position: absolute;
+		width: 0;
+		height: 0;
+		animation: runes-ring-spin 40s linear infinite;
+	}
+
+	.rune-letter {
+		position: absolute;
+		left: 0;
+		top: 0;
+		font-family: serif;
+		font-size: 14px;
+		color: rgba(255, 230, 160, 0.65);
+		text-shadow: 0 0 4px rgba(240, 199, 94, 0.8);
+		transform: rotate(var(--rl-angle)) translateY(-170px);
+	}
+
+	@keyframes runes-ring-spin {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Camera aperture (iris) blades */
+	.portrait-aperture {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		z-index: 8;
+	}
+
+	.aperture-blade {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 80px;
+		height: 300px;
+		margin-left: -40px;
+		background: linear-gradient(to bottom, transparent 0%, rgba(240, 199, 94, 0.15) 50%, transparent 100%);
+		filter: blur(8px);
+		transform: rotate(calc(var(--ab) * 45deg)) translateY(-180px);
+		transform-origin: 50% 180px;
+		opacity: 0;
+		animation: aperture-bloom 10s ease-in-out infinite;
+		animation-delay: calc(var(--ab) * 0.1s);
+	}
+
+	@keyframes aperture-bloom {
+		0%, 85%, 100% { opacity: 0; }
+		92% { opacity: 0.8; }
+	}
+
+	/* Photo negative flash — brief color inversion every 20s */
+	.portrait-negative-flash {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+		pointer-events: none;
+		z-index: 5;
+		background: rgba(255, 240, 200, 0.9);
+		mix-blend-mode: difference;
+		opacity: 0;
+		animation: negative-flash 20s ease-out infinite;
+	}
+
+	@keyframes negative-flash {
+		0%, 96%, 100% { opacity: 0; }
+		97%, 98% { opacity: 0.7; }
 	}
 
 	/* Lens flare sweeping diagonally */
