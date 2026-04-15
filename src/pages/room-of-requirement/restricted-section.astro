@@ -98,6 +98,12 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <path class="rs-crack" d="M200 0 L262 28 L308 42 L352 58 L392 74"/>
       </g>
     </svg>
+    <!-- Diagonal moonlight beams — stream through invisible windows -->
+    <div class="rs-moonbeams" aria-hidden="true">
+      <span class="rs-moonbeam rs-moonbeam-1"></span>
+      <span class="rs-moonbeam rs-moonbeam-2"></span>
+      <span class="rs-moonbeam rs-moonbeam-3"></span>
+    </div>
     <!-- Permanent summoning sigil — always visible, brightens at peak -->
     <div class="rs-sigil" aria-hidden="true">
       <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
@@ -851,6 +857,39 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 100%;
     opacity: 0.4;
     mix-blend-mode: overlay;
+  }
+
+  /* Moonlight beams — diagonal slabs of cool light from upper-left */
+  .rs-moonbeams {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .rs-moonbeam {
+    position: absolute;
+    top: -20%;
+    width: 80px;
+    height: 140%;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(155, 200, 230, 0.10) 25%,
+      rgba(155, 200, 230, 0.18) 50%,
+      rgba(155, 200, 230, 0.10) 75%,
+      transparent 100%);
+    transform-origin: center top;
+    transform: rotate(18deg);
+    filter: blur(6px);
+    mix-blend-mode: screen;
+    animation: rs-moonbeam-drift 14s ease-in-out infinite;
+  }
+  .rs-moonbeam-1 { left: 8%; width: 60px; opacity: 0.7; animation-delay: 0s; }
+  .rs-moonbeam-2 { left: 32%; width: 90px; opacity: 0.85; animation-delay: -3s; transform: rotate(20deg); }
+  .rs-moonbeam-3 { left: 58%; width: 70px; opacity: 0.6; animation-delay: -7s; transform: rotate(16deg); }
+  @keyframes rs-moonbeam-drift {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.95; }
   }
 
   /* Stage spotlight: a vertical light cone descends on the cat at peak */
