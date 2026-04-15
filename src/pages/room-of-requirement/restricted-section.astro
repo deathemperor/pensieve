@@ -63,6 +63,8 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     </div>
     <!-- Peak-moment dim overlay — darkens hero except cat at SCREECH -->
     <div class="rs-peak-dim" aria-hidden="true"></div>
+    <!-- Stage spotlight cone — top-down theatrical light at peak -->
+    <div class="rs-spotlight" aria-hidden="true"></div>
     <!-- Glowing ground cracks — radiate from cat's feet at peak -->
     <svg class="rs-ground-cracks" viewBox="0 0 400 80" preserveAspectRatio="xMidYEnd meet" aria-hidden="true">
       <g stroke="url(#rs-crack-gradient)" stroke-width="1.2" fill="none" stroke-linecap="round">
@@ -828,6 +830,37 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     0%, 22%, 70%, 100% { transform: scale(1); opacity: 1; }
     44% { transform: scale(1.4); opacity: 1; }
     50% { transform: scale(1.2); }
+  }
+
+  /* Stage spotlight: a vertical light cone descends on the cat at peak */
+  .rs-spotlight {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(280px, 40vw, 440px);
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    background:
+      linear-gradient(180deg,
+        rgba(255, 240, 180, 0.18) 0%,
+        rgba(255, 220, 140, 0.12) 30%,
+        rgba(255, 200, 100, 0.08) 60%,
+        transparent 90%);
+    clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
+    opacity: 0;
+    animation: rs-spotlight-pulse var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px);
+  }
+  @keyframes rs-spotlight-pulse {
+    0%, 22%, 65%, 100% { opacity: 0; }
+    30% { opacity: 0.4; }
+    38% { opacity: 0.6; }
+    44% { opacity: 1; } /* PEAK */
+    50% { opacity: 0.8; }
+    58% { opacity: 0.3; }
   }
 
   /* Peak-moment dim — corners darken at SCREECH, cat zone stays bright */
