@@ -228,14 +228,20 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Pensieve-vortex conic gradient slowly spinning behind */}
+				<div class="portrait-vortex" aria-hidden="true" />
+
+				{/* Pulsing halo behind card */}
 				<div class="portrait-halo" aria-hidden="true" />
-				<div class="portrait-embers" aria-hidden="true">
-					<span style="--ex: 15%; --ed: 0s;" />
-					<span style="--ex: 35%; --ed: 1.5s;" />
-					<span style="--ex: 55%; --ed: 3s;" />
-					<span style="--ex: 75%; --ed: 4.5s;" />
-					<span style="--ex: 92%; --ed: 2.2s;" />
+
+				{/* Pensieve wisps — silvery horizontal lines drifting past */}
+				<div class="portrait-wisps" aria-hidden="true">
+					<span class="wisp" style="--wt: 20%; --wl: -10%; --wd: 0s; --wr: -8deg;" />
+					<span class="wisp" style="--wt: 48%; --wl: -20%; --wd: 3s; --wr: 4deg;" />
+					<span class="wisp" style="--wt: 72%; --wl: -15%; --wd: 5.5s; --wr: -3deg;" />
+					<span class="wisp" style="--wt: 32%; --wl: -25%; --wd: 7s; --wr: 6deg;" />
 				</div>
+
 				<div class="portrait-card">
 					<Image
 						src={profilePhoto}
@@ -250,6 +256,19 @@ function formatGHDate(iso: string) {
 					<div class="portrait-vignette" aria-hidden="true" />
 					<div class="portrait-sheen" aria-hidden="true" />
 				</div>
+
+				{/* Rising gold bubbles (8 looped) */}
+				<div class="portrait-bubbles" aria-hidden="true">
+					<span class="bubble" style="--bx: 8%; --bsz: 10px; --bd: 0s; --bdx: 12px;" />
+					<span class="bubble" style="--bx: 22%; --bsz: 6px; --bd: 1.2s; --bdx: -8px;" />
+					<span class="bubble" style="--bx: 38%; --bsz: 12px; --bd: 2.4s; --bdx: 18px;" />
+					<span class="bubble" style="--bx: 52%; --bsz: 5px; --bd: 3.6s; --bdx: -14px;" />
+					<span class="bubble" style="--bx: 65%; --bsz: 9px; --bd: 4.8s; --bdx: 6px;" />
+					<span class="bubble" style="--bx: 78%; --bsz: 7px; --bd: 0.6s; --bdx: -20px;" />
+					<span class="bubble" style="--bx: 90%; --bsz: 11px; --bd: 2.8s; --bdx: 10px;" />
+					<span class="bubble" style="--bx: 15%; --bsz: 8px; --bd: 5.4s; --bdx: -6px;" />
+				</div>
+
 				<figcaption class="photo-caption">
 					<span class="photo-caption-dot" aria-hidden="true" />
 					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
@@ -524,6 +543,117 @@ function formatGHDate(iso: string) {
 		width: 280px;
 	}
 
+	/* Conic-gradient vortex behind portrait — pensieve-like rotation */
+	.portrait-vortex {
+		position: absolute;
+		top: -40px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 380px;
+		height: 460px;
+		pointer-events: none;
+		z-index: 0;
+		border-radius: 50%;
+		background: conic-gradient(
+			from 0deg,
+			transparent 0deg,
+			rgba(240, 199, 94, 0.12) 45deg,
+			transparent 90deg,
+			rgba(240, 199, 94, 0.18) 135deg,
+			transparent 180deg,
+			rgba(240, 199, 94, 0.12) 225deg,
+			transparent 270deg,
+			rgba(240, 199, 94, 0.15) 315deg,
+			transparent 360deg
+		);
+		filter: blur(30px);
+		opacity: 0.8;
+		animation: vortex-slow-spin 30s linear infinite;
+	}
+
+	@keyframes vortex-slow-spin {
+		to { transform: translateX(-50%) rotate(360deg); }
+	}
+
+	/* Silvery memory wisps drifting horizontally across portrait */
+	.portrait-wisps {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 4;
+		overflow: visible;
+	}
+
+	.wisp {
+		position: absolute;
+		top: var(--wt);
+		left: var(--wl);
+		width: 120px;
+		height: 2px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(255, 240, 200, 0.5) 30%,
+			rgba(255, 230, 160, 0.85) 50%,
+			rgba(255, 240, 200, 0.5) 70%,
+			transparent 100%
+		);
+		filter: blur(1.5px);
+		opacity: 0;
+		transform: rotate(var(--wr)) translateX(0);
+		animation: wisp-drift 9s ease-in-out infinite;
+		animation-delay: var(--wd);
+	}
+
+	@keyframes wisp-drift {
+		0% { opacity: 0; transform: rotate(var(--wr)) translateX(0) scaleX(0.3); }
+		20% { opacity: 0.85; transform: rotate(var(--wr)) translateX(160px) scaleX(1); }
+		70% { opacity: 0.6; transform: rotate(var(--wr)) translateX(380px) scaleX(1.2); }
+		100% { opacity: 0; transform: rotate(var(--wr)) translateX(500px) scaleX(1.8); }
+	}
+
+	/* Rising gold bubbles — looped */
+	.portrait-bubbles {
+		position: absolute;
+		bottom: -20px;
+		left: 0;
+		right: 0;
+		height: 260px;
+		pointer-events: none;
+		z-index: 3;
+		overflow: visible;
+	}
+
+	.bubble {
+		position: absolute;
+		bottom: 0;
+		left: var(--bx);
+		width: var(--bsz);
+		height: var(--bsz);
+		border-radius: 50%;
+		background: radial-gradient(
+			circle at 30% 30%,
+			rgba(255, 240, 200, 0.95) 0%,
+			rgba(240, 199, 94, 0.7) 40%,
+			rgba(180, 140, 60, 0.4) 80%
+		);
+		box-shadow:
+			0 0 8px rgba(240, 199, 94, 0.8),
+			0 0 16px rgba(240, 199, 94, 0.4),
+			inset 0 0 4px rgba(255, 255, 255, 0.5);
+		border: 1px solid rgba(255, 240, 200, 0.4);
+		opacity: 0;
+		animation: bubble-rise 6s ease-out infinite;
+		animation-delay: var(--bd);
+	}
+
+	@keyframes bubble-rise {
+		0% { opacity: 0.9; transform: translate(0, 0) scale(0.3); }
+		10% { opacity: 1; transform: translate(calc(var(--bdx) * 0.2), -30px) scale(1); }
+		50% { opacity: 1; transform: translate(calc(var(--bdx) * 0.7), -140px) scale(0.85); }
+		100% { opacity: 0; transform: translate(var(--bdx), -260px) scale(0.5); }
+	}
+
 	/* Pulsing gold halo behind portrait */
 	.portrait-halo {
 		position: absolute;
@@ -548,40 +678,6 @@ function formatGHDate(iso: string) {
 	@keyframes halo-pulse {
 		0%, 100% { opacity: 0.7; transform: translateX(-50%) scale(1); }
 		50% { opacity: 1; transform: translateX(-50%) scale(1.08); }
-	}
-
-	/* Floating gold embers */
-	.portrait-embers {
-		position: absolute;
-		inset: 0;
-		top: 320px;
-		height: 100px;
-		pointer-events: none;
-		z-index: 3;
-	}
-
-	.portrait-embers span {
-		position: absolute;
-		bottom: 0;
-		left: var(--ex);
-		width: 4px;
-		height: 4px;
-		border-radius: 50%;
-		background: #fff0c2;
-		box-shadow:
-			0 0 6px #f0c75e,
-			0 0 12px rgba(240, 199, 94, 0.7),
-			0 0 24px rgba(240, 199, 94, 0.4);
-		opacity: 0;
-		animation: ember-float 6s ease-in-out infinite;
-		animation-delay: var(--ed);
-	}
-
-	@keyframes ember-float {
-		0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
-		15% { opacity: 1; transform: translate(3px, -20px) scale(1); }
-		50% { opacity: 0.9; transform: translate(-6px, -90px) scale(0.9); }
-		100% { opacity: 0; transform: translate(10px, -180px) scale(0.4); }
 	}
 
 	/* Portrait card — the frame + image */
