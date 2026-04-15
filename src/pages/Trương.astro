@@ -228,6 +228,63 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Magical sigil / pentagram rotating behind */}
+				<svg class="portrait-sigil" viewBox="0 0 200 200" aria-hidden="true">
+					<g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+						<circle cx="100" cy="100" r="90" />
+						<circle cx="100" cy="100" r="70" stroke-dasharray="3 3" />
+						<polygon points="100,20 157,165 18,70 182,70 43,165" opacity="0.6" />
+						<circle cx="100" cy="100" r="8" fill="currentColor" opacity="0.8" />
+						{/* Runes around the circle */}
+						{Array.from({ length: 8 }).map((_, i) => (
+							<g transform={`rotate(${i * 45} 100 100) translate(0 -85)`}>
+								<path d="M-3 -3 L3 3 M-3 3 L3 -3" stroke-width="1.2" />
+							</g>
+						))}
+					</g>
+				</svg>
+
+				{/* Mandala pattern */}
+				<svg class="portrait-mandala" viewBox="0 0 300 300" aria-hidden="true">
+					<g fill="none" stroke="currentColor" stroke-width="0.5">
+						{Array.from({ length: 12 }).map((_, i) => (
+							<g transform={`rotate(${i * 30} 150 150)`}>
+								<path d="M150 40 Q160 60 150 80 Q140 60 150 40 Z" />
+								<path d="M150 60 Q165 80 150 100 Q135 80 150 60 Z" />
+								<circle cx="150" cy="55" r="2" fill="currentColor" opacity="0.7" />
+							</g>
+						))}
+						<circle cx="150" cy="150" r="110" stroke-dasharray="1 3" />
+						<circle cx="150" cy="150" r="140" stroke-dasharray="5 8" />
+					</g>
+				</svg>
+
+				{/* Alchemy symbols cycling at 4 positions */}
+				<div class="portrait-alchemy" aria-hidden="true">
+					<svg class="alchemy alchemy-1" viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="1.2" fill="none" />
+						<line x1="12" y1="13" x2="12" y2="22" stroke="currentColor" stroke-width="1.2" />
+						<line x1="9" y1="19" x2="15" y2="19" stroke="currentColor" stroke-width="1.2" />
+					</svg>
+					<svg class="alchemy alchemy-2" viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2" fill="none" />
+						<circle cx="12" cy="12" r="2" fill="currentColor" />
+					</svg>
+					<svg class="alchemy alchemy-3" viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="12" cy="14" r="6" stroke="currentColor" stroke-width="1.2" fill="none" />
+						<path d="M8 4 Q12 8 16 4" stroke="currentColor" stroke-width="1.2" fill="none" />
+					</svg>
+					<svg class="alchemy alchemy-4" viewBox="0 0 24 24" aria-hidden="true">
+						<polygon points="12,4 20,20 4,20" stroke="currentColor" stroke-width="1.2" fill="none" />
+						<line x1="7" y1="14" x2="17" y2="14" stroke="currentColor" stroke-width="1.2" />
+					</svg>
+				</div>
+
+				{/* Flying silhouette bird traversing */}
+				<svg class="portrait-bird" viewBox="0 0 30 20" aria-hidden="true">
+					<path d="M2 10 Q8 4 14 10 Q20 4 28 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+				</svg>
+
 				{/* Animated compass / celestial dial rotating behind */}
 				<svg class="portrait-compass" viewBox="0 0 400 400" aria-hidden="true">
 					<g stroke="currentColor" stroke-width="0.8" fill="none">
@@ -868,6 +925,102 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Magical sigil / pentagram */
+	.portrait-sigil {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 320px;
+		height: 320px;
+		margin-left: -160px;
+		margin-top: -160px;
+		pointer-events: none;
+		z-index: 2;
+		color: rgba(240, 199, 94, 0.35);
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.5));
+		animation: sigil-rotate 45s linear infinite;
+	}
+
+	@keyframes sigil-rotate {
+		to { transform: rotate(-360deg); }
+	}
+
+	/* Mandala */
+	.portrait-mandala {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 380px;
+		height: 380px;
+		margin-left: -190px;
+		margin-top: -190px;
+		pointer-events: none;
+		z-index: 1;
+		color: rgba(240, 199, 94, 0.18);
+		filter: drop-shadow(0 0 2px rgba(240, 199, 94, 0.4));
+		animation: mandala-rotate 80s linear infinite reverse;
+	}
+
+	@keyframes mandala-rotate {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Alchemy symbols at 4 positions */
+	.portrait-alchemy {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 400px;
+		height: 400px;
+		margin-left: -200px;
+		margin-top: -200px;
+		pointer-events: none;
+		z-index: 6;
+	}
+
+	.alchemy {
+		position: absolute;
+		width: 28px;
+		height: 28px;
+		color: rgba(255, 230, 160, 0.85);
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.8)) drop-shadow(0 0 10px rgba(240, 199, 94, 0.4));
+		opacity: 0;
+		animation: alchemy-cycle 16s ease-in-out infinite;
+	}
+
+	.alchemy-1 { top: 20px; left: 50%; margin-left: -14px; animation-delay: 0s; }
+	.alchemy-2 { top: 50%; right: 20px; margin-top: -14px; animation-delay: 4s; }
+	.alchemy-3 { bottom: 20px; left: 50%; margin-left: -14px; animation-delay: 8s; }
+	.alchemy-4 { top: 50%; left: 20px; margin-top: -14px; animation-delay: 12s; }
+
+	@keyframes alchemy-cycle {
+		0%, 90%, 100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
+		10% { opacity: 1; transform: scale(1.15) rotate(15deg); }
+		25% { opacity: 1; transform: scale(1) rotate(30deg); }
+	}
+
+	/* Flying silhouette bird traversing */
+	.portrait-bird {
+		position: absolute;
+		top: 30%;
+		left: -40px;
+		width: 30px;
+		height: 20px;
+		color: rgba(240, 199, 94, 0.8);
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.5));
+		z-index: 7;
+		pointer-events: none;
+		animation: bird-fly 20s linear infinite;
+	}
+
+	@keyframes bird-fly {
+		0%, 95%, 100% { opacity: 0; transform: translate(0, 0) scale(1); }
+		3% { opacity: 1; }
+		30% { transform: translate(150px, -25px) scale(0.9); }
+		60% { transform: translate(280px, 10px) scale(0.8); }
+		90% { opacity: 0.5; transform: translate(400px, -15px) scale(0.7); }
 	}
 
 	/* Animated compass / celestial dial */
