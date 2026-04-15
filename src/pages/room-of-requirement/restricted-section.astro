@@ -54,7 +54,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   <section class="rs-page-hero">
     <div class="rs-page-inner">
       <div class="room-rule" />
-      <h1 class="rs-page-title">{isVi ? "Khu Cấm" : "The Restricted Section"}</h1>
+      <h1 class="rs-page-title rs-title-shake">{isVi ? "Khu Cấm" : "The Restricted Section"}</h1>
       <p class="rs-page-desc">
         {isVi
           ? "Bản thiết kế và kế hoạch triển khai — mọi quyết định kiến trúc được ghi lại từ các phiên brainstorm."
@@ -78,6 +78,31 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     <!-- Ghost double — translucent cat-shape that lags behind for echo effect -->
     <svg class="rs-cat-ghost" viewBox="0 0 220 110" aria-hidden="true">
       <use href="#rs-cat-silhouette"/>
+    </svg>
+    <!-- Familiar pack: 2 smaller skeleton kittens trailing the alpha cat -->
+    <svg class="rs-cat-mini rs-cat-mini-1" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette-detailed"/>
+    </svg>
+    <svg class="rs-cat-mini rs-cat-mini-2" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette-detailed"/>
+    </svg>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="rs-cat-silhouette-detailed" viewBox="0 0 220 110">
+        <g stroke="#cce8ff" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+          <path d="M82 51 Q83 66 88 75 M102 51 Q103 67 108 76 M122 52 Q123 67 128 76"/>
+          <path d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
+          <path d="M68 76 L66 92 L70 100 M76 76 L78 92 L74 100"/>
+          <path d="M170 75 L173 92 L168 100 M180 76 L182 92 L186 100"/>
+          <path d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
+          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+          <path d="M30 30 L28 18 L36 26 M58 28 L62 17 L54 24"/>
+          <ellipse cx="40" cy="36" rx="3" ry="4" fill="#05080d"/>
+          <ellipse cx="54" cy="36" rx="3" ry="4" fill="#05080d"/>
+          <circle cx="40" cy="36" r="1.6" fill="#9be7ff"/>
+          <circle cx="54" cy="36" r="1.6" fill="#9be7ff"/>
+        </g>
+      </symbol>
     </svg>
     <!-- Hidden symbol for ghost double to reuse cat outline -->
     <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -323,6 +348,27 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     border-bottom: 1px solid var(--color-border);
     position: relative;
     overflow: hidden;
+    --rs-prowl-dur: 16s;
+    --rs-cat-w: 320px;
+    --rs-cat-h: 160px;
+    isolation: isolate;
+  }
+
+  /* Title shake — sympathetic motion at peak (40-44% of prowl) */
+  .rs-title-shake {
+    display: inline-block;
+    animation: rs-title-shake var(--rs-prowl-dur, 16s) linear infinite;
+    transform-origin: center;
+  }
+  @keyframes rs-title-shake {
+    0%, 36%, 50%, 100% { transform: translate(0, 0); text-shadow: none; }
+    38% { transform: translate(-1px, 0); }
+    39% { transform: translate(2px, -1px); text-shadow: 2px 0 0 rgba(255,100,200,0.5), -2px 0 0 rgba(126,200,255,0.5); }
+    40% { transform: translate(-2px, 1px); text-shadow: 3px 0 0 rgba(255,100,200,0.7), -3px 0 0 rgba(126,200,255,0.7); }
+    41% { transform: translate(3px, -1px); text-shadow: 2px 0 0 rgba(255,230,100,0.7), -2px 0 0 rgba(155,231,255,0.7); }
+    42% { transform: translate(-2px, 1px); text-shadow: 3px 0 0 rgba(255,230,100,0.8), -3px 0 0 rgba(126,200,255,0.7); }
+    43% { transform: translate(1px, 0); text-shadow: 1px 0 0 rgba(255,200,60,0.4), -1px 0 0 rgba(155,231,255,0.4); }
+    44% { transform: translate(0, 0); text-shadow: none; }
   }
 
   /* ═══ Skeleton Cat — Mrs. Norris in bone form, prowling the Restricted Section ═══ */
@@ -335,12 +381,12 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   .rs-skeleton-cat {
     position: absolute;
     bottom: 4px;
-    left: -280px;
-    width: 280px;
-    height: 140px;
+    left: -320px;
+    width: var(--rs-cat-w, 320px);
+    height: var(--rs-cat-h, 160px);
     pointer-events: none;
     opacity: 0;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
     transform-origin: 50% 100%;
     z-index: 2;
     filter: drop-shadow(0 6px 10px rgba(0, 8, 20, 0.7))
@@ -390,7 +436,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     z-index: 0;
     background: radial-gradient(ellipse at 50% 100%, rgba(126, 200, 255, 0.10), rgba(168, 140, 255, 0.06) 30%, transparent 60%);
     opacity: 0;
-    animation: rs-stage-glow-pulse 24s linear infinite;
+    animation: rs-stage-glow-pulse var(--rs-prowl-dur, 16s) linear infinite;
     mix-blend-mode: screen;
   }
   @keyframes rs-stage-glow-pulse {
@@ -414,7 +460,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 0;
     pointer-events: none;
     z-index: 2;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-hiss-wave {
     position: absolute;
@@ -427,7 +473,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     box-shadow: 0 0 12px rgba(255, 200, 60, 0.6), inset 0 0 8px rgba(255, 230, 100, 0.4);
     transform: translate(-50%, -50%) scale(0);
     opacity: 0;
-    animation: rs-hiss-pulse 24s linear infinite;
+    animation: rs-hiss-pulse var(--rs-prowl-dur, 16s) linear infinite;
     animation-delay: calc(var(--i) * 0.08s);
   }
   @keyframes rs-hiss-pulse {
@@ -435,6 +481,33 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     40% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); border-width: 3px; }
     44% { opacity: 0.7; transform: translate(-50%, -50%) scale(2.5); border-width: 1.5px; }
     48% { opacity: 0; transform: translate(-50%, -50%) scale(4); border-width: 0.5px; }
+  }
+
+  /* Familiar pack: 2 smaller kittens trailing alpha at offset phases */
+  .rs-cat-mini {
+    position: absolute;
+    bottom: 4px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 2;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 4px 6px rgba(0, 8, 20, 0.6))
+            drop-shadow(0 0 12px rgba(126, 200, 255, 0.3));
+    will-change: left, opacity, transform, filter;
+  }
+  .rs-cat-mini-1 {
+    width: calc(var(--rs-cat-w, 320px) * 0.55);
+    height: calc(var(--rs-cat-h, 160px) * 0.55);
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -1.6s; /* 10% phase offset on a 16s timeline */
+    bottom: -4px;
+  }
+  .rs-cat-mini-2 {
+    width: calc(var(--rs-cat-w, 320px) * 0.42);
+    height: calc(var(--rs-cat-h, 160px) * 0.42);
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -2.8s;
+    bottom: -8px;
   }
 
   /* Ghost double — translucent cat-shape lagging behind */
@@ -447,7 +520,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     pointer-events: none;
     opacity: 0;
     z-index: 1;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
     animation-delay: -0.4s; /* trails behind by 0.4s */
     mix-blend-mode: screen;
     filter: blur(2.5px) drop-shadow(0 0 12px rgba(155, 231, 255, 0.6));
@@ -482,7 +555,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     pointer-events: none;
     z-index: 1;
     opacity: 0;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-cat-shadow {
     position: absolute;
@@ -525,7 +598,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 90px;
     pointer-events: none;
     z-index: 2;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-wisp {
     position: absolute;
@@ -556,7 +629,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 100px;
     pointer-events: none;
     z-index: 3;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-shard {
     position: absolute;
@@ -591,10 +664,10 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   .rs-eye-burst {
     transform-origin: center;
     transform-box: fill-box;
-    animation: rs-eye-burst-pulse 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-eye-burst-pulse var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
     mix-blend-mode: screen;
   }
-  .rs-skeleton-cat .rs-eye-burst-group { animation: rs-eye-burst-fade 24s linear infinite; }
+  .rs-skeleton-cat .rs-eye-burst-group { animation: rs-eye-burst-fade var(--rs-prowl-dur, 16s) linear infinite; }
   @keyframes rs-eye-burst-fade {
     0%, 36%, 50%, 100% { opacity: 0; }
     40%, 44% { opacity: 1; }
@@ -740,7 +813,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   .rs-rib:nth-of-type(5) { animation-delay: 0.20s; }
 
   /* Lightning bolts along spine — flicker on and off at apparation moments */
-  .rs-lightning { opacity: 0; animation: rs-lightning-flicker 24s linear infinite; }
+  .rs-lightning { opacity: 0; animation: rs-lightning-flicker var(--rs-prowl-dur, 16s) linear infinite; }
   @keyframes rs-lightning-flicker {
     0%, 1.5%, 6%, 60%, 62%, 100% { opacity: 0; }
     2%, 3%, 4%, 5% { opacity: 1; }
@@ -771,7 +844,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 0;
     pointer-events: none;
     z-index: 2;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-ray-burst::before {
     /* anchor at cat's chest center, 50% of the prowl box */
@@ -793,7 +866,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     transform: rotate(var(--a)) translateY(0);
     opacity: 0;
     filter: drop-shadow(0 0 4px rgba(155, 231, 255, 0.95));
-    animation: rs-ray-fire 24s linear infinite;
+    animation: rs-ray-fire var(--rs-prowl-dur, 16s) linear infinite;
   }
   @keyframes rs-ray-fire {
     0%, 38%, 50%, 100% { height: 0; opacity: 0; }
@@ -811,7 +884,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 80px;
     pointer-events: none;
     z-index: 1;
-    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-summon-ring {
     position: absolute;
@@ -824,7 +897,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     transform: translateX(-50%);
     opacity: 0;
     box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor;
-    animation: rs-summon-rotate 24s linear infinite, rs-summon-pulse 24s linear infinite;
+    animation: rs-summon-rotate var(--rs-prowl-dur, 16s) linear infinite, rs-summon-pulse var(--rs-prowl-dur, 16s) linear infinite;
   }
   .rs-summon-ring-1 {
     color: rgba(155, 231, 255, 0.9);
@@ -878,7 +951,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       radial-gradient(circle at 65% 70%, #d8e8f8 1.5px, transparent 2px);
     opacity: 0;
     filter: drop-shadow(0 0 3px rgba(155, 231, 255, 0.6));
-    animation: rs-paw-fade 24s linear infinite;
+    animation: rs-paw-fade var(--rs-prowl-dur, 16s) linear infinite;
     animation-delay: calc(var(--i) * 1.2s + 1s);
   }
   @keyframes rs-paw-fade {
@@ -904,6 +977,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
     .rs-summon-circle, .rs-ray-burst, .rs-paw-trail,
     .rs-stage-glow, .rs-hiss-waves, .rs-hiss-wave, .rs-cat-ghost,
+    .rs-cat-mini, .rs-cat-mini-1, .rs-cat-mini-2, .rs-title-shake,
     .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
     .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
