@@ -63,6 +63,29 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     </div>
     <!-- Hero-wide atmospheric glow — pulses brightest at peak -->
     <div class="rs-stage-glow" aria-hidden="true"></div>
+    <!-- Drifting floor fog — slow horizontal mist -->
+    <div class="rs-floor-fog" aria-hidden="true">
+      <span class="rs-fog-band rs-fog-band-1"></span>
+      <span class="rs-fog-band rs-fog-band-2"></span>
+      <span class="rs-fog-band rs-fog-band-3"></span>
+    </div>
+    <!-- Floating spell papers — torn pages drift down/sideways -->
+    <div class="rs-papers" aria-hidden="true">
+      <span class="rs-paper" style="--i:0; --x:8%; --tx:-30px; --r:-12deg;"></span>
+      <span class="rs-paper" style="--i:1; --x:22%; --tx:20px; --r:8deg;"></span>
+      <span class="rs-paper" style="--i:2; --x:78%; --tx:-25px; --r:-6deg;"></span>
+      <span class="rs-paper" style="--i:3; --x:90%; --tx:15px; --r:14deg;"></span>
+      <span class="rs-paper" style="--i:4; --x:42%; --tx:-40px; --r:-18deg;"></span>
+    </div>
+    <!-- Corner candles — flickering flames flank the hero -->
+    <div class="rs-candle rs-candle-l" aria-hidden="true">
+      <span class="rs-candle-flame"></span>
+      <span class="rs-candle-glow"></span>
+    </div>
+    <div class="rs-candle rs-candle-r" aria-hidden="true">
+      <span class="rs-candle-flame"></span>
+      <span class="rs-candle-glow"></span>
+    </div>
     <!-- Concentric hiss soundwaves — fire from mouth at peak -->
     <div class="rs-hiss-waves" aria-hidden="true">
       <span class="rs-hiss-wave" style="--i:0"></span>
@@ -507,6 +530,135 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     92%  { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.7) translateY(-22px); filter: blur(8px); }
     /* Phase 8: REST (92-100%) — empty hero, anticipation builds */
     100% { left: 50%; opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(10px); }
+  }
+
+  /* ═══ Atmospheric environment — fog, candles, drifting papers ═══ */
+
+  /* Floor fog — 3 slow horizontal bands at the base */
+  .rs-floor-fog {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: 0;
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    mix-blend-mode: screen;
+  }
+  .rs-fog-band {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 60px;
+    background: radial-gradient(ellipse at 20% 50%, rgba(180, 200, 230, 0.18), transparent 50%),
+                radial-gradient(ellipse at 60% 60%, rgba(155, 200, 230, 0.14), transparent 55%),
+                radial-gradient(ellipse at 85% 50%, rgba(200, 220, 255, 0.16), transparent 50%);
+    filter: blur(8px);
+    animation: rs-fog-drift 38s linear infinite;
+  }
+  .rs-fog-band-1 { animation-duration: 28s; opacity: 0.7; bottom: 0; }
+  .rs-fog-band-2 { animation-duration: 42s; animation-direction: reverse; opacity: 0.5; bottom: 12px; height: 50px; }
+  .rs-fog-band-3 { animation-duration: 55s; opacity: 0.4; bottom: 24px; height: 40px; filter: blur(12px); }
+  @keyframes rs-fog-drift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Floating spell papers — fall and rotate from top */
+  .rs-papers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .rs-paper {
+    position: absolute;
+    top: -20px;
+    left: var(--x, 50%);
+    width: 14px;
+    height: 18px;
+    background: linear-gradient(135deg, #d8c7a3 0%, #c7b48a 50%, #b09b6e 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 4px rgba(80, 50, 20, 0.3);
+    opacity: 0;
+    transform-origin: center;
+    border-radius: 1px 0 1px 0;
+    animation: rs-paper-fall 16s linear infinite;
+    animation-delay: calc(var(--i) * 3.2s);
+  }
+  /* fake torn-edge with clip-path */
+  .rs-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 2px, rgba(80,50,20,0.18) 2px, rgba(80,50,20,0.18) 3px, transparent 3px, transparent 5px);
+    border-radius: inherit;
+  }
+  @keyframes rs-paper-fall {
+    0% { opacity: 0; top: -20px; transform: translateX(0) rotate(0deg); }
+    8% { opacity: 0.85; }
+    50% { opacity: 0.7; transform: translateX(calc(var(--tx, 0px) * 0.5)) rotate(calc(var(--r, 0deg) * 0.5)); }
+    92% { opacity: 0.4; }
+    100% { opacity: 0; top: 100%; transform: translateX(var(--tx, 0px)) rotate(var(--r, 0deg)); }
+  }
+
+  /* Corner candles — wax pillars with flickering flames */
+  .rs-candle {
+    position: absolute;
+    bottom: 30px;
+    width: 8px;
+    height: 36px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(180deg, #f0e6d0 0%, #d8c498 50%, #b8a070 100%);
+    border-radius: 2px 2px 1px 1px;
+    box-shadow: inset -2px 0 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  .rs-candle-l { left: clamp(20px, 4vw, 60px); }
+  .rs-candle-r { right: clamp(20px, 4vw, 60px); }
+  .rs-candle-flame {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 8px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 80%, #fff7a8 0%, #ffc857 30%, #ff8a3d 60%, #d4451a 90%);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    box-shadow: 0 0 12px rgba(255, 200, 100, 0.7), 0 0 24px rgba(255, 150, 60, 0.5);
+    animation: rs-candle-flicker 0.6s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    filter: blur(0.4px);
+    mix-blend-mode: screen;
+  }
+  .rs-candle-r .rs-candle-flame {
+    animation-delay: -0.3s;
+  }
+  @keyframes rs-candle-flicker {
+    0%, 100% { transform: translateX(-50%) scale(1, 1) skewX(0); opacity: 1; }
+    25% { transform: translateX(-50%) scale(0.95, 1.1) skewX(-3deg); opacity: 0.95; }
+    50% { transform: translateX(-50%) scale(1.05, 0.9) skewX(2deg); opacity: 1; }
+    75% { transform: translateX(-50%) scale(0.92, 1.15) skewX(-2deg); opacity: 0.9; }
+  }
+  .rs-candle-glow {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    transform: translate(-50%, 30%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.18), transparent 65%);
+    pointer-events: none;
+    animation: rs-candle-glow-pulse 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(4px);
+  }
+  @keyframes rs-candle-glow-pulse {
+    0%, 100% { opacity: 0.7; transform: translate(-50%, 30%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, 30%) scale(1.1); }
   }
 
   /* Hero-wide atmospheric stage glow — pulses brightest at peak */
@@ -1222,6 +1374,8 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     .rs-summon-circle, .rs-ray-burst, .rs-paw-trail,
     .rs-stage-glow, .rs-hiss-waves, .rs-hiss-wave, .rs-cat-ghost,
     .rs-cat-mini, .rs-cat-mini-1, .rs-cat-mini-2, .rs-title-shake,
+    .rs-cat-reflection, .rs-floor-fog, .rs-fog-band, .rs-papers,
+    .rs-paper, .rs-candle, .rs-candle-flame, .rs-candle-glow,
     .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
     .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
