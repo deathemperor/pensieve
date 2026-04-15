@@ -1603,6 +1603,11 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   /* Bones flicker as if barely held together */
   .rs-cat-bones {
     animation: rs-bone-flicker 5.5s ease-in-out infinite;
+    /* Always-on aura: subtle ghostly halo wraps the bone silhouette */
+    filter:
+      url(#rs-bone-glow)
+      drop-shadow(0 0 3px rgba(155, 231, 255, 0.6))
+      drop-shadow(0 0 8px rgba(126, 200, 255, 0.3));
   }
   @keyframes rs-bone-flicker {
     0%, 100% { opacity: 1; }
