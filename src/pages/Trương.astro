@@ -232,6 +232,49 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
+				{/* Lens flare sweeping diagonally across */}
+				<div class="portrait-lens-flare" aria-hidden="true">
+					<span class="flare-ring flare-ring-1" />
+					<span class="flare-ring flare-ring-2" />
+					<span class="flare-beam" />
+				</div>
+
+				{/* Growing vines that creep around the frame */}
+				<svg class="portrait-vines" viewBox="0 0 300 370" preserveAspectRatio="none" aria-hidden="true">
+					<g stroke="url(#flourishGrad)" stroke-width="1.5" fill="none" stroke-linecap="round">
+						<path class="vine vine-1" d="M10 350 Q30 300 20 250 Q10 200 30 150 Q50 100 40 60 Q30 30 50 10" />
+						<path class="vine vine-2" d="M290 10 Q270 50 280 100 Q290 150 270 200 Q250 250 260 300 Q270 340 250 360" />
+						<path class="vine-leaf vine-leaf-1" d="M25 200 Q15 195 20 190 Q30 185 30 195 Q32 210 25 200 Z" fill="url(#flourishGrad)" />
+						<path class="vine-leaf vine-leaf-2" d="M275 170 Q285 165 280 160 Q270 155 270 165 Q268 180 275 170 Z" fill="url(#flourishGrad)" />
+					</g>
+				</svg>
+
+				{/* Spinning gold coin in top-right corner */}
+				<div class="portrait-coin-wrap" aria-hidden="true">
+					<div class="coin">
+						<div class="coin-face coin-front">
+							<svg viewBox="0 0 40 40" aria-hidden="true">
+								<circle cx="20" cy="20" r="18" fill="url(#snitchGrad)" stroke="#b48c3c" stroke-width="1" />
+								<circle cx="20" cy="20" r="14" fill="none" stroke="#b48c3c" stroke-width="0.5" />
+								<text x="20" y="25" text-anchor="middle" font-size="14" fill="#6a4e20" font-family="serif" font-weight="bold">T</text>
+							</svg>
+						</div>
+						<div class="coin-face coin-back">
+							<svg viewBox="0 0 40 40" aria-hidden="true">
+								<circle cx="20" cy="20" r="18" fill="url(#snitchGrad)" stroke="#b48c3c" stroke-width="1" />
+								<polygon points="20,8 24,17 33,17 26,23 29,32 20,27 11,32 14,23 7,17 16,17" fill="#b48c3c" />
+							</svg>
+						</div>
+					</div>
+				</div>
+
+				{/* Mercury liquid blobs morphing */}
+				<div class="portrait-mercury" aria-hidden="true">
+					<span class="mercury-blob mercury-1" />
+					<span class="mercury-blob mercury-2" />
+					<span class="mercury-blob mercury-3" />
+				</div>
+
 				{/* Zodiac wheel rotating in deep background */}
 				<svg class="portrait-zodiac" viewBox="0 0 500 500" aria-hidden="true">
 					<g stroke="currentColor" stroke-width="0.5" fill="none">
@@ -1032,6 +1075,185 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Lens flare sweeping diagonally */
+	.portrait-lens-flare {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 6;
+		overflow: hidden;
+		border-radius: 4px;
+	}
+
+	.flare-ring {
+		position: absolute;
+		border-radius: 50%;
+		pointer-events: none;
+		opacity: 0;
+		animation: flare-sweep 14s ease-in-out infinite;
+	}
+
+	.flare-ring-1 {
+		width: 80px;
+		height: 80px;
+		background: radial-gradient(circle, rgba(255, 240, 200, 0.5), transparent 60%);
+		filter: blur(12px);
+		top: -80px;
+		left: -80px;
+	}
+
+	.flare-ring-2 {
+		width: 40px;
+		height: 40px;
+		background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(240, 199, 94, 0.4) 40%, transparent 80%);
+		filter: blur(3px);
+		top: -40px;
+		left: -40px;
+		animation-delay: 0.2s;
+	}
+
+	.flare-beam {
+		position: absolute;
+		top: -100%;
+		left: -50%;
+		width: 300%;
+		height: 3px;
+		background: linear-gradient(to right, transparent, rgba(255, 240, 200, 0.4), transparent);
+		transform: rotate(35deg);
+		transform-origin: 50% 50%;
+		filter: blur(1px);
+		opacity: 0;
+		animation: flare-beam-sweep 14s ease-in-out infinite;
+	}
+
+	@keyframes flare-sweep {
+		0%, 85%, 100% { opacity: 0; transform: translate(0, 0); }
+		90% { opacity: 1; transform: translate(400px, 500px); }
+	}
+
+	@keyframes flare-beam-sweep {
+		0%, 80%, 100% { opacity: 0; }
+		90% { opacity: 1; top: 50%; left: 0; }
+	}
+
+	/* Growing vines that creep around frame */
+	.portrait-vines {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		z-index: 5;
+		filter: drop-shadow(0 0 3px rgba(240, 199, 94, 0.6));
+	}
+
+	.vine {
+		stroke-dasharray: 600;
+		stroke-dashoffset: 600;
+		animation: vine-grow 12s ease-in-out infinite;
+	}
+
+	.vine-2 { animation-delay: 3s; }
+
+	@keyframes vine-grow {
+		0%, 10% { stroke-dashoffset: 600; }
+		45% { stroke-dashoffset: 0; }
+		80% { stroke-dashoffset: 0; }
+		100% { stroke-dashoffset: -600; }
+	}
+
+	.vine-leaf {
+		opacity: 0;
+		transform-origin: center;
+		animation: vine-leaf-pop 12s ease-in-out infinite;
+	}
+
+	.vine-leaf-1 { animation-delay: 4s; }
+	.vine-leaf-2 { animation-delay: 7s; }
+
+	@keyframes vine-leaf-pop {
+		0%, 30%, 100% { opacity: 0; transform: scale(0.3); }
+		40% { opacity: 0.8; transform: scale(1.2); }
+		80% { opacity: 0.8; transform: scale(1); }
+	}
+
+	/* Spinning 3D gold coin */
+	.portrait-coin-wrap {
+		position: absolute;
+		top: -20px;
+		right: -30px;
+		width: 42px;
+		height: 42px;
+		pointer-events: none;
+		z-index: 8;
+		perspective: 200px;
+		filter: drop-shadow(0 3px 8px rgba(240, 199, 94, 0.6)) drop-shadow(0 0 8px rgba(240, 199, 94, 0.8));
+	}
+
+	.coin {
+		position: absolute;
+		inset: 0;
+		transform-style: preserve-3d;
+		animation: coin-spin 4s linear infinite;
+	}
+
+	.coin-face {
+		position: absolute;
+		inset: 0;
+		backface-visibility: hidden;
+	}
+
+	.coin-back {
+		transform: rotateY(180deg);
+	}
+
+	.coin svg {
+		width: 100%;
+		height: 100%;
+	}
+
+	@keyframes coin-spin {
+		to { transform: rotateY(360deg); }
+	}
+
+	/* Mercury liquid blobs */
+	.portrait-mercury {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 3;
+	}
+
+	.mercury-blob {
+		position: absolute;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle at 30% 30%,
+			rgba(255, 240, 200, 0.9) 0%,
+			rgba(240, 199, 94, 0.7) 30%,
+			rgba(180, 140, 60, 0.5) 100%
+		);
+		box-shadow:
+			0 0 12px rgba(240, 199, 94, 0.7),
+			inset -2px -2px 4px rgba(0, 0, 0, 0.3),
+			inset 2px 2px 4px rgba(255, 255, 255, 0.4);
+		filter: blur(1px);
+		animation: mercury-morph 8s ease-in-out infinite;
+	}
+
+	.mercury-1 { top: 20%; left: -8px; animation-delay: 0s; }
+	.mercury-2 { top: 55%; right: -8px; animation-delay: 2.5s; }
+	.mercury-3 { bottom: 15%; left: 45%; animation-delay: 5s; }
+
+	@keyframes mercury-morph {
+		0%, 100% { border-radius: 50%; transform: translate(0, 0) scale(1); }
+		33% { border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%; transform: translate(5px, -5px) scale(1.1); }
+		66% { border-radius: 55% 45% 40% 60% / 45% 55% 50% 50%; transform: translate(-3px, 6px) scale(0.9); }
 	}
 
 	/* Zodiac wheel in deep background */
