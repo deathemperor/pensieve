@@ -228,6 +228,42 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Parallax background stars — 3 depth layers */}
+				<div class="portrait-stars-bg" aria-hidden="true">
+					<div class="stars-layer stars-far">
+						{Array.from({ length: 20 }).map((_, i) => (
+							<span style={`--sx: ${(i * 17) % 100}%; --sy: ${(i * 29) % 100}%; --sd: ${(i * 0.3) % 6}s;`} />
+						))}
+					</div>
+					<div class="stars-layer stars-mid">
+						{Array.from({ length: 12 }).map((_, i) => (
+							<span style={`--sx: ${(i * 23) % 100}%; --sy: ${(i * 37) % 100}%; --sd: ${(i * 0.4) % 5}s;`} />
+						))}
+					</div>
+				</div>
+
+				{/* Holographic rainbow shimmer overlay on photo */}
+				<div class="portrait-holo" aria-hidden="true" />
+
+				{/* Floo flames rising at base */}
+				<div class="portrait-flames" aria-hidden="true">
+					<span class="flame" style="--fx: 20%; --fd: 0s;" />
+					<span class="flame" style="--fx: 35%; --fd: 0.6s;" />
+					<span class="flame" style="--fx: 50%; --fd: 1.2s;" />
+					<span class="flame" style="--fx: 65%; --fd: 1.8s;" />
+					<span class="flame" style="--fx: 80%; --fd: 2.4s;" />
+				</div>
+
+				{/* Mirror reflection pool below portrait */}
+				<div class="portrait-pool" aria-hidden="true">
+					<div class="pool-reflection" />
+					<div class="pool-ripples">
+						<span class="pool-ripple" style="--prd: 0s;" />
+						<span class="pool-ripple" style="--prd: 1.5s;" />
+						<span class="pool-ripple" style="--prd: 3s;" />
+					</div>
+				</div>
+
 				{/* SVG defs for turbulence displacement filter applied to photo */}
 				<svg class="portrait-filters" aria-hidden="true" width="0" height="0">
 					<defs>
@@ -761,6 +797,182 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Parallax background stars — 3 depth layers */
+	.portrait-stars-bg {
+		position: absolute;
+		inset: -80px;
+		pointer-events: none;
+		z-index: 0;
+		overflow: hidden;
+		border-radius: 4px;
+	}
+
+	.stars-layer {
+		position: absolute;
+		inset: 0;
+	}
+
+	.stars-far span {
+		position: absolute;
+		left: var(--sx);
+		top: var(--sy);
+		width: 1px;
+		height: 1px;
+		border-radius: 50%;
+		background: rgba(255, 240, 200, 0.8);
+		box-shadow: 0 0 2px rgba(255, 240, 200, 0.6);
+		animation: star-bg-twinkle 4s ease-in-out infinite;
+		animation-delay: var(--sd);
+	}
+
+	.stars-mid span {
+		position: absolute;
+		left: var(--sx);
+		top: var(--sy);
+		width: 2px;
+		height: 2px;
+		border-radius: 50%;
+		background: rgba(240, 199, 94, 0.95);
+		box-shadow: 0 0 3px rgba(240, 199, 94, 0.7);
+		animation: star-bg-twinkle 3s ease-in-out infinite;
+		animation-delay: var(--sd);
+	}
+
+	@keyframes star-bg-twinkle {
+		0%, 100% { opacity: 0.3; transform: scale(0.8); }
+		50% { opacity: 1; transform: scale(1.5); }
+	}
+
+	/* Holographic rainbow shimmer overlay */
+	.portrait-holo {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+		pointer-events: none;
+		z-index: 5;
+		border-radius: 2px;
+		background: linear-gradient(
+			135deg,
+			rgba(255, 0, 150, 0.08) 0%,
+			rgba(255, 200, 0, 0.12) 20%,
+			rgba(0, 255, 200, 0.08) 40%,
+			rgba(100, 100, 255, 0.08) 60%,
+			rgba(255, 100, 200, 0.08) 80%,
+			rgba(255, 200, 100, 0.1) 100%
+		);
+		background-size: 400% 400%;
+		mix-blend-mode: overlay;
+		animation: holo-shift 15s ease-in-out infinite;
+	}
+
+	@keyframes holo-shift {
+		0%, 100% { background-position: 0% 0%; filter: hue-rotate(0deg); }
+		50% { background-position: 100% 100%; filter: hue-rotate(30deg); }
+	}
+
+	/* Floo flames rising at base */
+	.portrait-flames {
+		position: absolute;
+		bottom: -60px;
+		left: 0;
+		right: 0;
+		height: 140px;
+		pointer-events: none;
+		z-index: 4;
+	}
+
+	.flame {
+		position: absolute;
+		bottom: 20px;
+		left: var(--fx);
+		width: 18px;
+		height: 40px;
+		margin-left: -9px;
+		border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+		background: radial-gradient(
+			ellipse at center bottom,
+			rgba(255, 240, 200, 0.95) 0%,
+			rgba(240, 199, 94, 0.8) 30%,
+			rgba(200, 140, 60, 0.5) 60%,
+			transparent 90%
+		);
+		filter: blur(2px);
+		box-shadow: 0 0 20px rgba(240, 199, 94, 0.7), 0 0 40px rgba(240, 199, 94, 0.3);
+		opacity: 0;
+		animation: flame-flicker 3.2s ease-out infinite;
+		animation-delay: var(--fd);
+	}
+
+	@keyframes flame-flicker {
+		0% { opacity: 0; transform: translateY(0) scale(0.6) rotate(-3deg); }
+		20% { opacity: 1; transform: translateY(-20px) scale(1.2) rotate(4deg); }
+		60% { opacity: 0.8; transform: translateY(-60px) scale(0.9) rotate(-5deg); }
+		100% { opacity: 0; transform: translateY(-120px) scale(0.3) rotate(6deg); }
+	}
+
+	/* Mirror reflection pool below portrait */
+	.portrait-pool {
+		position: absolute;
+		bottom: -140px;
+		left: 50%;
+		width: 280px;
+		height: 120px;
+		margin-left: -140px;
+		pointer-events: none;
+		z-index: 1;
+		overflow: hidden;
+		mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+		-webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+	}
+
+	.pool-reflection {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			to bottom,
+			rgba(240, 199, 94, 0.3) 0%,
+			rgba(240, 199, 94, 0.15) 40%,
+			transparent 100%
+		);
+		transform: scaleY(-1);
+		filter: blur(3px);
+		animation: pool-shift 6s ease-in-out infinite;
+	}
+
+	@keyframes pool-shift {
+		0%, 100% { transform: scaleY(-1) translateX(0); }
+		50% { transform: scaleY(-1) translateX(6px); }
+	}
+
+	.pool-ripples {
+		position: absolute;
+		inset: 0;
+	}
+
+	.pool-ripple {
+		position: absolute;
+		top: 30%;
+		left: 50%;
+		width: 30px;
+		height: 4px;
+		margin-left: -15px;
+		border-radius: 50%;
+		border: 1px solid rgba(240, 199, 94, 0.6);
+		box-shadow: 0 0 4px rgba(240, 199, 94, 0.5);
+		transform: scale(0);
+		opacity: 0;
+		animation: pool-ripple-expand 4.5s ease-out infinite;
+		animation-delay: var(--prd);
+	}
+
+	@keyframes pool-ripple-expand {
+		0% { transform: scale(0.3); opacity: 0; }
+		15% { opacity: 1; }
+		100% { transform: scale(8); opacity: 0; }
 	}
 
 	/* Crystalline geometric pattern overlay on photo */
