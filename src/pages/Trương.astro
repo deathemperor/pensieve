@@ -232,6 +232,32 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
+				{/* Diffraction rainbow sweep */}
+				<div class="portrait-diffraction" aria-hidden="true" />
+
+				{/* Sweeping clock hands */}
+				<svg class="portrait-clock" viewBox="0 0 300 300" aria-hidden="true">
+					<g stroke="currentColor" stroke-linecap="round">
+						<line class="clock-hour" x1="150" y1="150" x2="150" y2="90" stroke-width="2.5" />
+						<line class="clock-minute" x1="150" y1="150" x2="150" y2="60" stroke-width="1.5" />
+						<line class="clock-second" x1="150" y1="150" x2="150" y2="50" stroke-width="0.8" opacity="0.7" />
+						<circle cx="150" cy="150" r="4" fill="currentColor" />
+						<circle cx="150" cy="150" r="2" fill="#fff" />
+					</g>
+				</svg>
+
+				{/* Lotus petals unfurling */}
+				<svg class="portrait-lotus" viewBox="0 0 200 200" aria-hidden="true">
+					<g fill="url(#flourishGrad)" opacity="0.6" stroke="rgba(240, 199, 94, 0.8)" stroke-width="0.6">
+						{Array.from({ length: 8 }).map((_, i) => (
+							<g transform={`rotate(${i * 45} 100 100)`}>
+								<path class="lotus-petal" d="M100 100 Q115 70 110 45 Q100 40 90 45 Q85 70 100 100 Z" style={`animation-delay: ${i * 0.3}s;`} />
+							</g>
+						))}
+						<circle cx="100" cy="100" r="6" fill="#fff0c2" />
+					</g>
+				</svg>
+
 				{/* Retro sunburst rays — 24 alternating long/short rays */}
 				<div class="portrait-sunburst" aria-hidden="true">
 					{Array.from({ length: 24 }).map((_, i) => (
@@ -1123,6 +1149,104 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Diffraction rainbow sweep */
+	.portrait-diffraction {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+		pointer-events: none;
+		z-index: 5;
+		background: linear-gradient(
+			105deg,
+			transparent 40%,
+			rgba(255, 0, 120, 0.12) 45%,
+			rgba(255, 180, 0, 0.12) 48%,
+			rgba(0, 255, 180, 0.12) 51%,
+			rgba(100, 100, 255, 0.12) 54%,
+			rgba(255, 100, 200, 0.12) 57%,
+			transparent 62%
+		);
+		background-size: 300% 100%;
+		background-position: -50% 0;
+		mix-blend-mode: overlay;
+		animation: diffraction-sweep 12s ease-in-out infinite;
+	}
+
+	@keyframes diffraction-sweep {
+		0%, 10% { background-position: -50% 0; }
+		90%, 100% { background-position: 150% 0; }
+	}
+
+	/* Sweeping clock hands */
+	.portrait-clock {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 340px;
+		height: 340px;
+		margin-left: -170px;
+		margin-top: -170px;
+		pointer-events: none;
+		z-index: 1;
+		color: rgba(240, 199, 94, 0.4);
+		filter: drop-shadow(0 0 3px rgba(240, 199, 94, 0.5));
+	}
+
+	.clock-hour {
+		transform-origin: 150px 150px;
+		animation: clock-hour-sweep 120s linear infinite;
+	}
+
+	.clock-minute {
+		transform-origin: 150px 150px;
+		animation: clock-minute-sweep 15s linear infinite;
+	}
+
+	.clock-second {
+		transform-origin: 150px 150px;
+		animation: clock-second-sweep 3s linear infinite;
+	}
+
+	@keyframes clock-hour-sweep {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+	@keyframes clock-minute-sweep {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+	@keyframes clock-second-sweep {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
+	/* Lotus petals unfurling */
+	.portrait-lotus {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 240px;
+		height: 240px;
+		margin-left: -120px;
+		margin-top: -120px;
+		pointer-events: none;
+		z-index: 1;
+		filter: drop-shadow(0 0 6px rgba(240, 199, 94, 0.6));
+		opacity: 0.5;
+	}
+
+	.lotus-petal {
+		transform-origin: 100px 100px;
+		animation: petal-unfurl 8s ease-in-out infinite;
+	}
+
+	@keyframes petal-unfurl {
+		0%, 100% { transform: scale(0.6); opacity: 0.4; }
+		50% { transform: scale(1.1); opacity: 0.9; }
 	}
 
 	/* Retro sunburst rays */
