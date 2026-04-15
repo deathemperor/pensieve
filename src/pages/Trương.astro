@@ -573,7 +573,7 @@ function formatGHDate(iso: string) {
 		margin: 0 auto;
 		padding: var(--spacing-24) var(--spacing-8) var(--spacing-16);
 		display: grid;
-		grid-template-columns: 1fr minmax(280px, 360px);
+		grid-template-columns: minmax(0, 1fr) 280px;
 		gap: var(--spacing-12);
 		align-items: center;
 	}
@@ -718,11 +718,10 @@ function formatGHDate(iso: string) {
 		100% { opacity: 0; transform: rotate(var(--burst-angle)) scaleY(2.5) translateY(20px); }
 	}
 
-	/* Stage — contains all magical effects, no margin tricks */
+	/* Stage — contains all magical effects */
 	.portrait-stage {
 		position: relative;
-		width: 100%;
-		max-width: 360px;
+		width: 280px;
 		aspect-ratio: 4 / 5;
 		overflow: visible;
 	}
@@ -863,20 +862,20 @@ function formatGHDate(iso: string) {
 		z-index: 2;
 	}
 
-	/* Pulsing halo aura — much larger and brighter */
+	/* Pulsing halo aura — extends outside frame but contained */
 	.portrait-aura {
 		position: absolute;
-		inset: -60px;
+		inset: -30px;
 		border-radius: inherit;
 		background: radial-gradient(
 			ellipse at 50% 45%,
-			rgba(240, 199, 94, 0.5) 0%,
-			rgba(240, 199, 94, 0.22) 30%,
-			rgba(240, 199, 94, 0.08) 55%,
-			transparent 75%
+			rgba(240, 199, 94, 0.55) 0%,
+			rgba(240, 199, 94, 0.25) 35%,
+			rgba(240, 199, 94, 0.1) 60%,
+			transparent 80%
 		);
-		filter: blur(32px);
-		opacity: 0.9;
+		filter: blur(24px);
+		opacity: 0.95;
 		z-index: -1;
 		animation: portrait-pulse 4s ease-in-out infinite;
 	}
