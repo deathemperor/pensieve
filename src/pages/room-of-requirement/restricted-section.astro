@@ -63,6 +63,31 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     </div>
     <!-- Peak-moment dim overlay — darkens hero except cat at SCREECH -->
     <div class="rs-peak-dim" aria-hidden="true"></div>
+    <!-- Glowing ground cracks — radiate from cat's feet at peak -->
+    <svg class="rs-ground-cracks" viewBox="0 0 400 80" preserveAspectRatio="xMidYEnd meet" aria-hidden="true">
+      <g stroke="url(#rs-crack-gradient)" stroke-width="1.2" fill="none" stroke-linecap="round">
+        <defs>
+          <linearGradient id="rs-crack-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stop-color="#ffe064" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#ff6abc" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#9be7ff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- 12 jagged cracks radiating out + down from center -->
+        <path class="rs-crack" d="M200 0 L196 18 L202 32 L194 50 L198 68"/>
+        <path class="rs-crack" d="M200 0 L208 16 L202 30 L210 48 L204 66"/>
+        <path class="rs-crack" d="M200 0 L184 14 L172 26 L160 40 L150 58"/>
+        <path class="rs-crack" d="M200 0 L216 14 L228 26 L240 40 L250 58"/>
+        <path class="rs-crack" d="M200 0 L172 18 L150 32 L128 48 L110 66"/>
+        <path class="rs-crack" d="M200 0 L228 18 L250 32 L272 48 L290 66"/>
+        <path class="rs-crack" d="M200 0 L160 20 L130 36 L100 52 L70 68"/>
+        <path class="rs-crack" d="M200 0 L240 20 L270 36 L300 52 L330 68"/>
+        <path class="rs-crack" d="M200 0 L150 24 L110 40 L75 56 L40 72"/>
+        <path class="rs-crack" d="M200 0 L250 24 L290 40 L325 56 L360 72"/>
+        <path class="rs-crack" d="M200 0 L138 28 L92 42 L48 58 L8 74"/>
+        <path class="rs-crack" d="M200 0 L262 28 L308 42 L352 58 L392 74"/>
+      </g>
+    </svg>
     <!-- Permanent summoning sigil — always visible, brightens at peak -->
     <div class="rs-sigil" aria-hidden="true">
       <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
@@ -713,6 +738,53 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     85%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
     /* Phase 8: REST — empty hero, anticipation rebuilds (85-100%) */
     100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+  }
+
+  /* Ground cracks — radiate from cat's feet at SCREECH peak */
+  .rs-ground-cracks {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(360px, 50vw, 520px);
+    height: 80px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    animation: rs-cracks-glow var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 6px rgba(255, 200, 100, 0.8));
+  }
+  @keyframes rs-cracks-glow {
+    0%, 38%, 60%, 100% { opacity: 0; }
+    41% { opacity: 0.4; }
+    44% { opacity: 1; } /* SCREECH peak */
+    47% { opacity: 0.85; }
+    52% { opacity: 0.4; }
+    56% { opacity: 0.1; }
+  }
+  .rs-crack {
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: rs-crack-stab var(--rs-prowl-dur, 18s) ease-out infinite;
+  }
+  .rs-crack:nth-child(2) { animation-delay: -0.05s; }
+  .rs-crack:nth-child(3) { animation-delay: -0.1s; }
+  .rs-crack:nth-child(4) { animation-delay: -0.15s; }
+  .rs-crack:nth-child(5) { animation-delay: -0.2s; }
+  .rs-crack:nth-child(6) { animation-delay: -0.25s; }
+  .rs-crack:nth-child(7) { animation-delay: -0.3s; }
+  .rs-crack:nth-child(8) { animation-delay: -0.35s; }
+  .rs-crack:nth-child(9) { animation-delay: -0.4s; }
+  .rs-crack:nth-child(10) { animation-delay: -0.45s; }
+  .rs-crack:nth-child(11) { animation-delay: -0.5s; }
+  .rs-crack:nth-child(12) { animation-delay: -0.55s; }
+  @keyframes rs-crack-stab {
+    0%, 38%, 60%, 100% { stroke-dashoffset: 80; }
+    41% { stroke-dashoffset: 60; }
+    44% { stroke-dashoffset: 0; } /* fully drawn at SCREECH */
+    52% { stroke-dashoffset: 0; }
+    56% { stroke-dashoffset: 80; }
   }
 
   /* Permanent summoning sigil — always visible faint, brightens at peak */
