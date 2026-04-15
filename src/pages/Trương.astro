@@ -231,7 +231,39 @@ function formatGHDate(iso: string) {
 					</div>
 				</dl>
 			</div>
-			<figure class="about-hero-photo" aria-hidden="false">
+			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
+				{/* Ornate baroque frame border with scrollwork */}
+				<svg class="portrait-baroque" viewBox="0 0 320 390" preserveAspectRatio="none" aria-hidden="true">
+					<g stroke="url(#flourishGrad)" stroke-width="1.2" fill="none" stroke-linecap="round">
+						<path d="M20 20 Q40 5 60 20 M260 20 Q280 5 300 20 M20 370 Q40 385 60 370 M260 370 Q280 385 300 370" />
+						<path d="M10 60 Q5 80 10 100 M10 170 Q5 195 10 220 M310 60 Q315 80 310 100 M310 170 Q315 195 310 220" />
+						<circle cx="20" cy="20" r="3" fill="url(#flourishGrad)" />
+						<circle cx="300" cy="20" r="3" fill="url(#flourishGrad)" />
+						<circle cx="20" cy="370" r="3" fill="url(#flourishGrad)" />
+						<circle cx="300" cy="370" r="3" fill="url(#flourishGrad)" />
+					</g>
+				</svg>
+
+				{/* Levitating runestones — 3 floating around */}
+				<div class="portrait-runestones" aria-hidden="true">
+					<div class="runestone" style="--rsx: -50px; --rsy: 30%; --rsd: 0s;">
+						<span>ᚱ</span>
+					</div>
+					<div class="runestone" style="--rsx: calc(100% + 10px); --rsy: 45%; --rsd: 2s;">
+						<span>ᚨ</span>
+					</div>
+					<div class="runestone" style="--rsx: -40px; --rsy: 70%; --rsd: 4s;">
+						<span>ᛗ</span>
+					</div>
+				</div>
+
+				{/* Flying owl silhouette occasionally */}
+				<svg class="portrait-owl" viewBox="0 0 40 30" aria-hidden="true">
+					<path class="owl-body" d="M20 15 Q14 8 20 5 Q26 8 20 15 M20 10 Q10 15 15 25 Q20 22 25 25 Q30 15 20 10 Z" fill="currentColor" />
+					<path class="owl-wing-l" d="M15 12 Q5 16 8 22 Q12 18 15 18 Z" fill="currentColor" />
+					<path class="owl-wing-r" d="M25 12 Q35 16 32 22 Q28 18 25 18 Z" fill="currentColor" />
+				</svg>
+
 				{/* Golden Snitch circling */}
 				<div class="portrait-snitch-wrap" aria-hidden="true">
 					<div class="snitch-orbit">
@@ -965,6 +997,110 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Ornate baroque frame border scrollwork */
+	.portrait-baroque {
+		position: absolute;
+		top: -20px;
+		left: -20px;
+		width: calc(100% + 40px);
+		height: calc(100% + 40px);
+		pointer-events: none;
+		z-index: 5;
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.7));
+		animation: baroque-pulse 5s ease-in-out infinite;
+	}
+
+	@keyframes baroque-pulse {
+		0%, 100% { opacity: 0.8; }
+		50% { opacity: 1; }
+	}
+
+	/* Levitating runestones */
+	.portrait-runestones {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 7;
+	}
+
+	.runestone {
+		position: absolute;
+		left: var(--rsx);
+		top: var(--rsy);
+		width: 36px;
+		height: 36px;
+		border-radius: 6px;
+		background:
+			linear-gradient(135deg, rgba(80, 60, 30, 0.7) 0%, rgba(60, 40, 20, 0.6) 100%),
+			radial-gradient(circle at 30% 30%, rgba(240, 199, 94, 0.3), transparent);
+		border: 1px solid rgba(240, 199, 94, 0.5);
+		box-shadow:
+			0 0 10px rgba(240, 199, 94, 0.6),
+			inset 0 0 6px rgba(0, 0, 0, 0.5);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		animation: runestone-levitate 6s ease-in-out infinite;
+		animation-delay: var(--rsd);
+	}
+
+	.runestone span {
+		font-family: serif;
+		font-size: 20px;
+		color: rgba(255, 230, 160, 0.95);
+		text-shadow: 0 0 4px rgba(240, 199, 94, 1), 0 0 10px rgba(240, 199, 94, 0.7);
+	}
+
+	@keyframes runestone-levitate {
+		0%, 100% { transform: translateY(0) rotate(-4deg); }
+		50% { transform: translateY(-10px) rotate(4deg); }
+	}
+
+	/* Flying owl silhouette */
+	.portrait-owl {
+		position: absolute;
+		top: 15%;
+		left: -50px;
+		width: 40px;
+		height: 30px;
+		color: rgba(80, 60, 30, 0.85);
+		filter: drop-shadow(0 0 3px rgba(240, 199, 94, 0.6));
+		z-index: 7;
+		pointer-events: none;
+		opacity: 0;
+		animation: owl-fly 30s linear infinite;
+	}
+
+	.owl-wing-l, .owl-wing-r {
+		transform-origin: center;
+		animation: owl-wing-flap 0.4s ease-in-out infinite;
+	}
+
+	.owl-wing-r { animation-delay: 0.2s; }
+
+	@keyframes owl-wing-flap {
+		0%, 100% { transform: scaleY(1); }
+		50% { transform: scaleY(0.5); }
+	}
+
+	@keyframes owl-fly {
+		0%, 85%, 100% { opacity: 0; transform: translate(0, 0) scale(1); }
+		5% { opacity: 0.9; }
+		50% { transform: translate(200px, -40px) scale(0.85); }
+		80% { opacity: 0.5; transform: translate(420px, -20px) scale(0.7); }
+	}
+
+	/* Mouse parallax — subtle card tilt follows mouse */
+	.about-hero-photo {
+		--mx: 0;
+		--my: 0;
+		transition: transform 300ms ease-out;
+	}
+
+	.about-hero-photo.parallax-active .portrait-card {
+		transform: perspective(800px) rotateY(calc(var(--mx) * 3deg)) rotateX(calc(var(--my) * -3deg));
 	}
 
 	/* Golden Snitch circling the portrait */
@@ -3021,3 +3157,31 @@ function formatGHDate(iso: string) {
 		}
 	}
 </style>
+
+<script is:inline>
+	// Mouse parallax on the portrait
+	(function() {
+		const fig = document.getElementById('hero-photo');
+		if (!fig) return;
+		const rect = () => fig.getBoundingClientRect();
+		fig.classList.add('parallax-active');
+
+		function handleMove(e) {
+			const r = rect();
+			const cx = r.left + r.width / 2;
+			const cy = r.top + r.height / 2;
+			const mx = Math.max(-1, Math.min(1, (e.clientX - cx) / 400));
+			const my = Math.max(-1, Math.min(1, (e.clientY - cy) / 300));
+			fig.style.setProperty('--mx', mx);
+			fig.style.setProperty('--my', my);
+		}
+
+		function reset() {
+			fig.style.setProperty('--mx', 0);
+			fig.style.setProperty('--my', 0);
+		}
+
+		window.addEventListener('mousemove', handleMove, { passive: true });
+		window.addEventListener('mouseleave', reset);
+	})();
+</script>
