@@ -675,23 +675,23 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
   }
 
-  /* Peak-moment dim — hero darkens except cat zone during SCREECH */
+  /* Peak-moment dim — corners darken at SCREECH, cat zone stays bright */
   .rs-peak-dim {
     position: absolute;
     inset: 0;
     pointer-events: none;
     z-index: 3;
-    background: radial-gradient(ellipse at 50% 65%, transparent 18%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.55) 100%);
+    background: radial-gradient(ellipse at 50% 65%, transparent 30%, rgba(0,0,0,0.20) 55%, rgba(0,0,0,0.40) 100%);
     opacity: 0;
     animation: rs-peak-dim-flash var(--rs-prowl-dur, 18s) ease-in-out infinite;
     mix-blend-mode: multiply;
   }
   @keyframes rs-peak-dim-flash {
     0%, 38%, 58%, 100% { opacity: 0; }
-    41% { opacity: 0.4; }
-    44% { opacity: 0.85; } /* SCREECH peak — siblings dim hard */
-    47% { opacity: 0.7; }
-    52% { opacity: 0.3; }
+    41% { opacity: 0.3; }
+    44% { opacity: 0.55; } /* SCREECH peak — corners dim, center clear */
+    47% { opacity: 0.45; }
+    52% { opacity: 0.2; }
   }
 
   /* ═══ Atmospheric environment — bookshelves, fog, candles, papers ═══ */
