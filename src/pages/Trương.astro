@@ -228,6 +228,27 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Deathly Hallows symbol subtly behind everything */}
+				<svg class="portrait-hallows" viewBox="0 0 200 200" aria-hidden="true">
+					<circle cx="100" cy="125" r="40" fill="none" stroke="currentColor" stroke-width="1.5" />
+					<polygon points="100,40 160,155 40,155" fill="none" stroke="currentColor" stroke-width="1.5" />
+					<line x1="100" y1="40" x2="100" y2="180" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+				</svg>
+
+				{/* Animated aurora background — shifting gold/purple gradient */}
+				<div class="portrait-aurora" aria-hidden="true">
+					<span class="aurora-band aurora-band-1" />
+					<span class="aurora-band aurora-band-2" />
+					<span class="aurora-band aurora-band-3" />
+				</div>
+
+				{/* Gold dust particles — 24 tiny points floating everywhere */}
+				<div class="portrait-dust" aria-hidden="true">
+					{Array.from({ length: 24 }).map((_, i) => (
+						<span style={`--dx: ${(i * 37) % 100}%; --dy: ${(i * 61) % 100}%; --dd: ${(i * 0.4) % 8}s; --dsz: ${2 + (i % 3)}px;`} />
+					))}
+				</div>
+
 				{/* Ornate flourish above portrait — decorative gold metalwork */}
 				<svg class="portrait-flourish portrait-flourish-top" viewBox="0 0 240 32" aria-hidden="true">
 					<defs>
@@ -668,6 +689,119 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Deathly Hallows symbol watermark */
+	.portrait-hallows {
+		position: absolute;
+		top: 100px;
+		left: 50%;
+		width: 500px;
+		height: 500px;
+		margin-left: -250px;
+		pointer-events: none;
+		z-index: 0;
+		color: rgba(240, 199, 94, 0.12);
+		filter: blur(0.5px);
+		animation: hallows-rotate 60s linear infinite;
+	}
+
+	@keyframes hallows-rotate {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Animated aurora background — shifting gold/purple bands */
+	.portrait-aurora {
+		position: absolute;
+		top: -40px;
+		left: 50%;
+		width: 400px;
+		height: 480px;
+		margin-left: -200px;
+		pointer-events: none;
+		z-index: 0;
+		border-radius: 50%;
+		overflow: hidden;
+		opacity: 0.6;
+	}
+
+	.aurora-band {
+		position: absolute;
+		inset: 0;
+		mix-blend-mode: screen;
+		filter: blur(40px);
+	}
+
+	.aurora-band-1 {
+		background: linear-gradient(120deg, rgba(240, 199, 94, 0.5) 0%, transparent 40%, rgba(240, 199, 94, 0.4) 60%, transparent 100%);
+		animation: aurora-shift-1 14s ease-in-out infinite;
+	}
+
+	.aurora-band-2 {
+		background: linear-gradient(60deg, transparent 0%, rgba(255, 230, 170, 0.4) 40%, transparent 70%, rgba(180, 140, 60, 0.5) 100%);
+		animation: aurora-shift-2 18s ease-in-out infinite;
+	}
+
+	.aurora-band-3 {
+		background: linear-gradient(90deg, transparent 0%, rgba(240, 199, 94, 0.35) 30%, transparent 60%, rgba(255, 240, 200, 0.3) 90%);
+		animation: aurora-shift-3 22s ease-in-out infinite;
+	}
+
+	@keyframes aurora-shift-1 {
+		0%, 100% { transform: translate(0, 0) rotate(0deg); }
+		50% { transform: translate(-20px, 20px) rotate(15deg); }
+	}
+	@keyframes aurora-shift-2 {
+		0%, 100% { transform: translate(0, 0) rotate(0deg); }
+		50% { transform: translate(25px, -15px) rotate(-20deg); }
+	}
+	@keyframes aurora-shift-3 {
+		0%, 100% { transform: translate(0, 0) scale(1); }
+		50% { transform: translate(-10px, -25px) scale(1.1); }
+	}
+
+	/* Gold dust — 24 tiny particles floating everywhere */
+	.portrait-dust {
+		position: absolute;
+		inset: -60px;
+		pointer-events: none;
+		z-index: 6;
+		overflow: visible;
+	}
+
+	.portrait-dust span {
+		position: absolute;
+		left: var(--dx);
+		top: var(--dy);
+		width: var(--dsz);
+		height: var(--dsz);
+		border-radius: 50%;
+		background: rgba(255, 230, 160, 0.9);
+		box-shadow: 0 0 4px rgba(240, 199, 94, 0.8), 0 0 8px rgba(240, 199, 94, 0.4);
+		opacity: 0;
+		animation: dust-float 8s ease-in-out infinite;
+		animation-delay: var(--dd);
+	}
+
+	@keyframes dust-float {
+		0%, 100% { opacity: 0; transform: translate(0, 0); }
+		25% { opacity: 0.9; transform: translate(-8px, -12px); }
+		50% { opacity: 1; transform: translate(10px, -20px); }
+		75% { opacity: 0.6; transform: translate(-5px, -8px); }
+	}
+
+	/* 3D tilt on portrait card */
+	.portrait-card {
+		animation: card-3d-tilt 12s ease-in-out infinite;
+		transform-style: preserve-3d;
+		perspective: 800px;
+	}
+
+	@keyframes card-3d-tilt {
+		0%, 100% { transform: perspective(800px) rotateY(0deg) rotateX(0deg); }
+		25% { transform: perspective(800px) rotateY(2deg) rotateX(-1deg); }
+		50% { transform: perspective(800px) rotateY(0deg) rotateX(1deg); }
+		75% { transform: perspective(800px) rotateY(-2deg) rotateX(-1deg); }
 	}
 
 	/* Ornate SVG flourishes above and below portrait */
