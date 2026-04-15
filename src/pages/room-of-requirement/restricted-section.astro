@@ -423,6 +423,25 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     --rs-cat-h: calc(var(--rs-cat-w) * 0.5);
     isolation: isolate;
     min-height: clamp(380px, 52vh, 560px);
+    cursor: crosshair;
+  }
+  /* Hover summons the cat IMMEDIATELY — mirrors preview click pacing */
+  .rs-page-hero:hover .rs-skeleton-cat,
+  .rs-page-hero:hover .rs-cat-aura,
+  .rs-page-hero:hover .rs-cat-trail,
+  .rs-page-hero:hover .rs-bone-shards,
+  .rs-page-hero:hover .rs-summon-circle,
+  .rs-page-hero:hover .rs-ray-burst,
+  .rs-page-hero:hover .rs-paw-trail,
+  .rs-page-hero:hover .rs-stage-glow,
+  .rs-page-hero:hover .rs-hiss-waves,
+  .rs-page-hero:hover .rs-cat-ghost,
+  .rs-page-hero:hover .rs-cat-mini,
+  .rs-page-hero:hover .rs-cat-reflection,
+  .rs-page-hero:hover .rs-title-shake {
+    /* Speed up to 4s on hover — concentrated burst like a manual cast */
+    animation-duration: 4s !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
   /* Push title content above the cat zone */
   .rs-page-hero .rs-page-inner {
