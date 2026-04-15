@@ -571,6 +571,9 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
           <!-- glowing pupils -->
           <circle class="rs-eye" cx="32" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
           <circle class="rs-eye" cx="44" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
+          <!-- vertical slit pupils — cat-like, narrow at peak -->
+          <ellipse class="rs-slit-pupil" cx="32" cy="33" rx="0.4" ry="2.6" fill="#0a0d18"/>
+          <ellipse class="rs-slit-pupil" cx="44" cy="33" rx="0.4" ry="2.6" fill="#0a0d18"/>
           <!-- HINGED JAW -->
           <g class="rs-jaw">
             <path d="M22 42 Q32 50 50 48 Q53 46 53 42"/>
@@ -2144,6 +2147,20 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   /* Cranial sutures — barely-visible plate divisions */
   .rs-suture { stroke-dasharray: 1.5 1; }
+
+  /* Vertical slit pupils — narrow at peak (predatory hunting eye) */
+  .rs-slit-pupil {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rs-slit-narrow var(--rs-prowl-dur, 18s) ease-in-out infinite;
+  }
+  @keyframes rs-slit-narrow {
+    0%, 25%, 65%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+    34% { transform: scaleX(1) scaleY(1); opacity: 1; }
+    44% { transform: scaleX(0.5) scaleY(1.1); opacity: 1; } /* PEAK: narrowed slit */
+    52% { transform: scaleX(0.7) scaleY(1.05); opacity: 0.95; }
+    58% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+  }
 
   /* Bone sparkles — twinkling stars across the skeleton */
   .rs-bone-sparkles { mix-blend-mode: screen; }
