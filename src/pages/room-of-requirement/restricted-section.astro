@@ -140,6 +140,12 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-cap-name">Mrs. Norris</span>
       <span class="rs-cap-meta">— Familiar of the Restricted Section</span>
     </div>
+    <!-- Spell incantation — Latin words float up at SCREECH peak -->
+    <div class="rs-incantation" aria-hidden="true">
+      <span class="rs-incant-word rs-incant-1">Felis</span>
+      <span class="rs-incant-word rs-incant-2">Mortuus</span>
+      <span class="rs-incant-word rs-incant-3">Custos</span>
+    </div>
     <!-- Floating spell book — open in mid-air, pages flip slowly -->
     <div class="rs-spellbook" aria-hidden="true">
       <div class="rs-book-base"></div>
@@ -988,6 +994,46 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     90% { left: 50%; transform: translateY(0); }
     94% { left: 110%; opacity: 0.7; }
     95% { left: 110%; opacity: 0; }
+  }
+
+  /* Spell incantation — Latin words float up from sigil at SCREECH */
+  .rs-incantation {
+    position: absolute;
+    bottom: 20%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    font-family: var(--font-display, Georgia, serif);
+    font-style: italic;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 230, 150, 0.95);
+    text-shadow:
+      0 0 10px rgba(255, 200, 100, 0.85),
+      0 0 24px rgba(255, 100, 200, 0.5),
+      0 0 40px rgba(155, 231, 255, 0.3);
+    pointer-events: none;
+  }
+  .rs-incant-word {
+    display: inline-block;
+    margin: 0 0.4em;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: rs-incant-rise var(--rs-prowl-dur, 18s) ease-out infinite;
+  }
+  .rs-incant-1 { font-size: 18px; animation-delay: 0s; }
+  .rs-incant-2 { font-size: 24px; animation-delay: 0s; }
+  .rs-incant-3 { font-size: 18px; animation-delay: 0s; }
+  @keyframes rs-incant-rise {
+    0%, 36%, 64%, 100% { opacity: 0; transform: translateY(20px) scale(0.85); }
+    40% { opacity: 0.4; transform: translateY(8px) scale(0.95); }
+    44% { opacity: 1; transform: translateY(0) scale(1); } /* SCREECH peak */
+    50% { opacity: 1; transform: translateY(-4px) scale(1); }
+    58% { opacity: 0.5; transform: translateY(-12px) scale(0.95); }
+    62% { opacity: 0; transform: translateY(-24px) scale(0.85); }
   }
 
   /* Cat caption — small text label fades in during cat's settled phase */
