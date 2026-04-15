@@ -495,41 +495,37 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     will-change: opacity, transform, filter;
   }
 
-  /* Stationary summon-cast cycle — matches preview pacing:
-     APPARATE-IN → PROWL-IN-PLACE → ARCH → CAST PEAK → DISSOLVE → REST → repeat */
+  /* Compressed summon-cast cycle — matches preview pacing.
+     The cat is INVISIBLE for ~50% of the cycle. Each appearance feels
+     intentional and rare, like a click-triggered spell. */
   @keyframes rs-cat-prowl {
-    /* Phase 1: APPARATE IN center stage (0-12%) */
-    0%   { left: 50%; opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: drop-shadow(0 8px 14px rgba(0,8,20,0)) drop-shadow(0 0 0 rgba(126,200,255,0)) blur(10px); }
-    4%   { opacity: 0.2; transform: translateX(-50%) scaleX(1) scaleY(0.75) translateY(12px); filter: blur(6px) drop-shadow(0 0 30px rgba(155,231,255,0.4)); }
-    8%   { opacity: 0.7; transform: translateX(-50%) scaleX(1) scaleY(0.92) translateY(4px); filter: blur(2px) drop-shadow(0 0 40px rgba(155,231,255,0.7)); }
-    12%  { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
-    /* Phase 2: SETTLE — subtle breathing/sway in place (12-30%) */
-    18%  { transform: translateX(-50%) scaleX(1) scaleY(1.01) translateY(-1.5px); }
-    24%  { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(168,140,255,0.55)); }
-    30%  { transform: translateX(-50%) scaleX(1) scaleY(1.01) translateY(-1px); }
-    /* Phase 3: ANTICIPATION — recoil before the peak (30-38%) */
-    34%  { transform: translateX(-50%) scaleX(1) scaleY(0.94) translateY(2px); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); } /* compress */
-    37%  { transform: translateX(-50%) scaleX(1) scaleY(1.02) translateY(-2px); }
-    /* Phase 4: ARCH + CAST — the spell moment (38-48%) */
-    38%  { transform: translateX(-50%) scaleX(1) scaleY(1.08) translateY(-4px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 40px rgba(255,100,200,0.7)); }
-    40%  { transform: translateX(-50%) scaleX(1) scaleY(1.20) translateY(-9px) skewX(-5deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 60px rgba(255,100,200,0.95)) drop-shadow(0 0 110px rgba(255,60,160,0.5)); } /* ARCH violet */
-    42%  { transform: translateX(-50%) scaleX(1) scaleY(1.26) translateY(-12px) skewX(-6deg) rotate(-5deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.9)) drop-shadow(0 0 80px rgba(255,230,100,1)) drop-shadow(0 0 140px rgba(255,200,60,0.7)); } /* PEAK GOLD */
-    44%  { transform: translateX(-50%) scaleX(1) scaleY(1.20) translateY(-9px) skewX(-4deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 60px rgba(155,231,255,0.95)) drop-shadow(0 0 100px rgba(90,184,255,0.5)); } /* ICE flash */
-    46%  { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-2deg); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.8)) drop-shadow(0 0 40px rgba(126,200,255,0.6)); }
-    /* Phase 5: SETTLE BACK from arch (48-58%) */
-    50%  { transform: translateX(-50%) scaleX(1) scaleY(1.02) translateY(-1px) skewX(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
-    56%  { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
-    /* Phase 6: REST + secondary breath (58-72%) */
-    62%  { transform: translateX(-50%) scaleX(1) scaleY(1.01) translateY(-1px); }
-    68%  { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(168,140,255,0.45)); }
-    72%  { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); opacity: 0.95; }
-    /* Phase 7: DISSOLVE — fade and dissipate up + outward (72-92%) */
-    76%  { opacity: 0.9; transform: translateX(-50%) scaleX(1) scaleY(0.99) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.6)) drop-shadow(0 0 30px rgba(126,200,255,0.5)) blur(0.5px); }
-    82%  { opacity: 0.55; transform: translateX(-50%) scaleX(1.04) scaleY(0.94) translateY(-6px); filter: blur(2.5px) drop-shadow(0 0 50px rgba(155,231,255,0.7)); }
-    88%  { opacity: 0.2; transform: translateX(-50%) scaleX(1.08) scaleY(0.85) translateY(-14px); filter: blur(5px) drop-shadow(0 0 40px rgba(155,231,255,0.4)); }
-    92%  { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.7) translateY(-22px); filter: blur(8px); }
-    /* Phase 8: REST (92-100%) — empty hero, anticipation builds */
-    100% { left: 50%; opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(10px); }
+    /* Phase 0: REST — empty hero, anticipation builds (0-22%) */
+    0%, 18%   { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+    /* Phase 1: ANTICIPATION cue — soft pre-flash (22-26%) */
+    22%       { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(8px) drop-shadow(0 0 24px rgba(155,231,255,0.4)); }
+    /* Phase 2: APPARATE IN — fast materialize (26-34%) */
+    26%       { opacity: 0.15; transform: translateX(-50%) scaleX(1) scaleY(0.7) translateY(14px); filter: blur(5px) drop-shadow(0 0 40px rgba(155,231,255,0.6)); }
+    30%       { opacity: 0.65; transform: translateX(-50%) scaleX(1) scaleY(0.88) translateY(6px); filter: blur(2px) drop-shadow(0 0 45px rgba(155,231,255,0.8)); }
+    34%       { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
+    /* Phase 3: ANTICIPATION recoil — compress before cast (34-38%) */
+    37%       { transform: translateX(-50%) scaleX(1) scaleY(0.93) translateY(3px); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
+    /* Phase 4: ARCH + CAST — peak spell moment (38-50%) */
+    40%       { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 50px rgba(255,100,200,0.85)); }
+    43%       { transform: translateX(-50%) scaleX(1) scaleY(1.24) translateY(-11px) skewX(-5deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 70px rgba(255,100,200,1)) drop-shadow(0 0 130px rgba(255,60,160,0.5)); } /* ARCH violet */
+    46%       { transform: translateX(-50%) scaleX(1) scaleY(1.30) translateY(-14px) skewX(-6deg) rotate(-5deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.9)) drop-shadow(0 0 90px rgba(255,230,100,1)) drop-shadow(0 0 160px rgba(255,200,60,0.7)); } /* PEAK GOLD */
+    49%       { transform: translateX(-50%) scaleX(1) scaleY(1.20) translateY(-9px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 60px rgba(155,231,255,0.95)) drop-shadow(0 0 110px rgba(90,184,255,0.5)); } /* ICE flash */
+    /* Phase 5: SETTLE BACK from arch (50-58%) */
+    54%       { transform: translateX(-50%) scaleX(1) scaleY(1.04) translateY(-2px) skewX(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
+    58%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); opacity: 1; }
+    /* Phase 6: BRIEF HOLD — let viewer process (58-66%) */
+    62%       { transform: translateX(-50%) scaleX(1) scaleY(1.005) translateY(-0.5px); }
+    66%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); opacity: 0.98; }
+    /* Phase 7: DISSOLVE — fade up + outward (66-82%) */
+    70%       { opacity: 0.85; transform: translateX(-50%) scaleX(1.02) scaleY(0.98) translateY(-2px); filter: blur(0.5px) drop-shadow(0 0 35px rgba(155,231,255,0.7)); }
+    76%       { opacity: 0.4; transform: translateX(-50%) scaleX(1.07) scaleY(0.9) translateY(-10px); filter: blur(3px) drop-shadow(0 0 45px rgba(155,231,255,0.5)); }
+    82%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
+    /* Phase 8: REST — empty hero, anticipation rebuilds (82-100%) */
+    100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
   }
 
   /* ═══ Atmospheric environment — fog, candles, drifting papers ═══ */
