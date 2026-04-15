@@ -536,6 +536,19 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     isolation: isolate;
     min-height: clamp(380px, 52vh, 560px);
     cursor: crosshair;
+    animation: rs-hero-shake var(--rs-prowl-dur, 18s) linear infinite;
+  }
+  /* Hero camera shake at SCREECH peak — viewer FEELS the spell */
+  @keyframes rs-hero-shake {
+    0%, 41%, 50%, 100% { transform: translate(0, 0); }
+    42%   { transform: translate(-1px, 1px); }
+    43%   { transform: translate(2px, -1px); }
+    44%   { transform: translate(-2px, 2px); } /* SCREECH peak */
+    45%   { transform: translate(2px, -2px); }
+    46%   { transform: translate(-1px, 1px); }
+    47%   { transform: translate(1px, -1px); }
+    48%   { transform: translate(-0.5px, 0.5px); }
+    49%   { transform: translate(0.5px, 0); }
   }
   /* Hover summons the cat IMMEDIATELY — mirrors preview click pacing */
   .rs-page-hero:hover .rs-skeleton-cat,
