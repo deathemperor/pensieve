@@ -232,6 +232,41 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
+				{/* Zodiac wheel rotating in deep background */}
+				<svg class="portrait-zodiac" viewBox="0 0 500 500" aria-hidden="true">
+					<g stroke="currentColor" stroke-width="0.5" fill="none">
+						<circle cx="250" cy="250" r="240" />
+						<circle cx="250" cy="250" r="220" stroke-dasharray="1 2" />
+						<circle cx="250" cy="250" r="200" />
+					</g>
+					{/* 12 zodiac segments */}
+					{Array.from({ length: 12 }).map((_, i) => (
+						<g transform={`rotate(${i * 30} 250 250)`}>
+							<line x1="250" y1="10" x2="250" y2="30" stroke="currentColor" stroke-width="1" />
+							<line x1="250" y1="35" x2="250" y2="48" stroke="currentColor" stroke-width="0.5" opacity="0.7" />
+							<circle cx="250" cy="25" r="2" fill="currentColor" />
+							<text x="250" y="56" text-anchor="middle" font-size="10" fill="currentColor" font-family="serif">
+								{["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"][i]}
+							</text>
+						</g>
+					))}
+				</svg>
+
+				{/* Stained glass pattern overlay */}
+				<svg class="portrait-stained-glass" viewBox="0 0 280 350" preserveAspectRatio="none" aria-hidden="true">
+					<g stroke="rgba(240, 199, 94, 0.35)" stroke-width="1" fill="none">
+						<path d="M0 100 L280 80" />
+						<path d="M0 180 L280 200" />
+						<path d="M0 270 L280 260" />
+						<path d="M70 0 L80 350" />
+						<path d="M140 0 L135 350" />
+						<path d="M210 0 L220 350" />
+						{/* Diamond accents */}
+						<polygon points="140,100 155,130 140,160 125,130" fill="rgba(240, 199, 94, 0.08)" />
+						<polygon points="140,180 155,210 140,240 125,210" fill="rgba(240, 199, 94, 0.08)" />
+					</g>
+				</svg>
+
 				{/* Ornate baroque frame border with scrollwork */}
 				<svg class="portrait-baroque" viewBox="0 0 320 390" preserveAspectRatio="none" aria-hidden="true">
 					<g stroke="url(#flourishGrad)" stroke-width="1.2" fill="none" stroke-linecap="round">
@@ -997,6 +1032,47 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Zodiac wheel in deep background */
+	.portrait-zodiac {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 560px;
+		height: 560px;
+		margin-left: -280px;
+		margin-top: -280px;
+		pointer-events: none;
+		z-index: 0;
+		color: rgba(240, 199, 94, 0.18);
+		filter: drop-shadow(0 0 2px rgba(240, 199, 94, 0.3));
+		animation: zodiac-rotate 120s linear infinite;
+	}
+
+	@keyframes zodiac-rotate {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Stained glass leading lines on photo */
+	.portrait-stained-glass {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+		width: auto;
+		height: auto;
+		pointer-events: none;
+		z-index: 4;
+		opacity: 0.7;
+		mix-blend-mode: overlay;
+		animation: stained-shift 12s ease-in-out infinite;
+	}
+
+	@keyframes stained-shift {
+		0%, 100% { opacity: 0.5; filter: hue-rotate(0deg); }
+		50% { opacity: 0.9; filter: hue-rotate(15deg); }
 	}
 
 	/* Ornate baroque frame border scrollwork */
