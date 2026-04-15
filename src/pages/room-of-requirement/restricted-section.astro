@@ -638,23 +638,25 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     34%       { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
     /* Phase 3: ANTICIPATION recoil — compress before cast (34-38%) */
     37%       { transform: translateX(-50%) scaleX(1) scaleY(0.93) translateY(3px); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
-    /* Phase 4: ARCH + CAST — peak spell moment (38-50%)
-       Glow accents the cat — never overwhelms its silhouette. */
+    /* Phase 4: ARCH + CAST — peak spell moment EXTENDED (38-58%)
+       Glow accents the cat — never overwhelms its silhouette.
+       Longer hold so viewer can read the moment. */
     40%       { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 24px rgba(255,100,200,0.6)); }
     43%       { transform: translateX(-50%) scaleX(1) scaleY(1.24) translateY(-11px) skewX(-5deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.9)) drop-shadow(0 0 32px rgba(255,100,200,0.75)) drop-shadow(0 0 60px rgba(255,60,160,0.3)); } /* ARCH violet */
     46%       { transform: translateX(-50%) scaleX(1) scaleY(1.30) translateY(-14px) skewX(-6deg) rotate(-5deg); filter: drop-shadow(0 10px 18px rgba(0,8,20,0.95)) drop-shadow(0 0 38px rgba(255,230,100,0.85)) drop-shadow(0 0 70px rgba(255,200,60,0.35)); } /* PEAK GOLD */
-    49%       { transform: translateX(-50%) scaleX(1) scaleY(1.20) translateY(-9px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 28px rgba(155,231,255,0.75)) drop-shadow(0 0 50px rgba(90,184,255,0.3)); } /* ICE flash */
-    /* Phase 5: SETTLE BACK from arch (50-58%) */
-    54%       { transform: translateX(-50%) scaleX(1) scaleY(1.04) translateY(-2px) skewX(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
-    58%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); opacity: 1; }
-    /* Phase 6: BRIEF HOLD — let viewer process (58-66%) */
-    62%       { transform: translateX(-50%) scaleX(1) scaleY(1.005) translateY(-0.5px); }
-    66%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); opacity: 0.98; }
-    /* Phase 7: DISSOLVE — fade up + outward (66-82%) */
-    70%       { opacity: 0.85; transform: translateX(-50%) scaleX(1.02) scaleY(0.98) translateY(-2px); filter: blur(0.5px) drop-shadow(0 0 35px rgba(155,231,255,0.7)); }
-    76%       { opacity: 0.4; transform: translateX(-50%) scaleX(1.07) scaleY(0.9) translateY(-10px); filter: blur(3px) drop-shadow(0 0 45px rgba(155,231,255,0.5)); }
-    82%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
-    /* Phase 8: REST — empty hero, anticipation rebuilds (82-100%) */
+    49%       { transform: translateX(-50%) scaleX(1) scaleY(1.28) translateY(-13px) skewX(-5deg) rotate(-4deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 32px rgba(155,231,255,0.85)) drop-shadow(0 0 60px rgba(90,184,255,0.4)); } /* ICE flash — HOLD arch */
+    52%       { transform: translateX(-50%) scaleX(1) scaleY(1.24) translateY(-11px) skewX(-4deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 28px rgba(155,231,255,0.7)); } /* still arched */
+    /* Phase 5: SETTLE BACK from arch (52-62%) */
+    56%       { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-2deg); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
+    62%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); opacity: 1; }
+    /* Phase 6: BRIEF HOLD — let viewer process (62-70%) */
+    66%       { transform: translateX(-50%) scaleX(1) scaleY(1.005) translateY(-0.5px); }
+    70%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); opacity: 0.98; }
+    /* Phase 7: DISSOLVE — fade up + outward (70-85%) */
+    74%       { opacity: 0.85; transform: translateX(-50%) scaleX(1.02) scaleY(0.98) translateY(-2px); filter: blur(0.5px) drop-shadow(0 0 35px rgba(155,231,255,0.7)); }
+    80%       { opacity: 0.4; transform: translateX(-50%) scaleX(1.07) scaleY(0.9) translateY(-10px); filter: blur(3px) drop-shadow(0 0 45px rgba(155,231,255,0.5)); }
+    85%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
+    /* Phase 8: REST — empty hero, anticipation rebuilds (85-100%) */
     100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
   }
 
