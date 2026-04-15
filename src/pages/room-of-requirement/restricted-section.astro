@@ -61,6 +61,76 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
           : "Design specs and implementation plans — every architecture decision captured from brainstorming sessions."}
       </p>
     </div>
+    <svg class="rs-skeleton-cat" viewBox="0 0 220 110" aria-hidden="true">
+      <defs>
+        <radialGradient id="rs-eye-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#9be7ff" stop-opacity="1"/>
+          <stop offset="60%" stop-color="#5ab8ff" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#1a4a7a" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="rs-bone-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.6" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="#e8eef5" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- spine: nape to hips -->
+        <path class="rs-bone rs-spine" d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+        <!-- ribs: 7 curved arcs hanging from spine -->
+        <path class="rs-bone rs-rib" d="M72 53 Q73 66 78 74"/>
+        <path class="rs-bone rs-rib" d="M82 51 Q83 66 88 75"/>
+        <path class="rs-bone rs-rib" d="M92 51 Q93 67 98 76"/>
+        <path class="rs-bone rs-rib" d="M102 51 Q103 67 108 76"/>
+        <path class="rs-bone rs-rib" d="M112 51 Q113 67 118 76"/>
+        <path class="rs-bone rs-rib" d="M122 52 Q123 67 128 76"/>
+        <path class="rs-bone rs-rib" d="M132 53 Q133 67 138 76"/>
+        <!-- pelvis -->
+        <path class="rs-bone rs-pelvis" d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
+        <!-- front legs -->
+        <path class="rs-bone rs-leg rs-leg-fr" d="M68 76 L66 92 L70 100"/>
+        <path class="rs-bone rs-leg rs-leg-fl" d="M76 76 L78 92 L74 100"/>
+        <!-- back legs -->
+        <path class="rs-bone rs-leg rs-leg-br" d="M170 75 L173 92 L168 100"/>
+        <path class="rs-bone rs-leg rs-leg-bl" d="M180 76 L182 92 L186 100"/>
+        <!-- paw joints -->
+        <circle class="rs-joint" cx="68" cy="100" r="1.6"/>
+        <circle class="rs-joint" cx="76" cy="100" r="1.6"/>
+        <circle class="rs-joint" cx="170" cy="100" r="1.6"/>
+        <circle class="rs-joint" cx="184" cy="100" r="1.6"/>
+        <!-- tail: arcing whip with vertebrae -->
+        <path class="rs-bone rs-tail" d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
+        <circle class="rs-vert" cx="190" cy="55" r="1.1"/>
+        <circle class="rs-vert" cx="196" cy="50" r="1.1"/>
+        <circle class="rs-vert" cx="202" cy="44" r="1.1"/>
+        <circle class="rs-vert" cx="207" cy="36" r="1.1"/>
+        <circle class="rs-vert" cx="208" cy="26" r="1.1"/>
+        <circle class="rs-vert" cx="205" cy="18" r="1.1"/>
+        <!-- skull -->
+        <g class="rs-skull">
+          <!-- cranium -->
+          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+          <!-- ears -->
+          <path d="M30 30 L28 18 L36 26"/>
+          <path d="M58 28 L62 17 L54 24"/>
+          <!-- jaw -->
+          <path d="M32 48 Q40 58 56 56 Q60 53 60 48"/>
+          <!-- nose triangle -->
+          <path d="M32 44 L30 48 L34 48 Z" fill="#e8eef5"/>
+          <!-- teeth -->
+          <path d="M36 52 L36 55 M40 53 L40 56 M44 53 L44 56 M48 53 L48 56 M52 53 L52 56" stroke-width="0.9"/>
+          <!-- eye sockets -->
+          <ellipse class="rs-eye-socket" cx="40" cy="36" rx="4" ry="5"/>
+          <ellipse class="rs-eye-socket" cx="54" cy="36" rx="4" ry="5"/>
+          <!-- glowing pupils -->
+          <circle class="rs-eye" cx="40" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-eye" cx="54" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
+          <!-- whisker dots (sockets) -->
+          <circle cx="34" cy="46" r="0.5" fill="#e8eef5"/>
+          <circle cx="34" cy="49" r="0.5" fill="#e8eef5"/>
+          <circle cx="34" cy="52" r="0.5" fill="#e8eef5"/>
+        </g>
+      </g>
+    </svg>
   </section>
 
   <section class="rs-page-section">
@@ -134,6 +204,158 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 <style>
   .rs-page-hero {
     border-bottom: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Skeleton Cat — Mrs. Norris in bone form, prowling the Restricted Section */
+  .rs-skeleton-cat {
+    position: absolute;
+    bottom: 6px;
+    left: -240px;
+    width: 220px;
+    height: 110px;
+    pointer-events: none;
+    opacity: 0;
+    animation: rs-cat-prowl 28s linear infinite;
+    transform-origin: 50% 100%;
+    z-index: 1;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45));
+  }
+
+  @keyframes rs-cat-prowl {
+    0%   { left: -240px; opacity: 0; transform: scaleX(1); }
+    4%   { opacity: 0.85; }
+    20%  { left: 28%; transform: scaleX(1) translateY(0); }
+    21%  { transform: scaleX(1) translateY(-1px); } /* paw step */
+    35%  { left: 52%; transform: scaleX(1) translateY(0); }
+    50%  { left: 70%; transform: scaleX(1); opacity: 0.9; }
+    55%  { left: 70%; opacity: 0; }
+    56%  { left: 70%; transform: scaleX(-1); } /* turn around (vanish + flip) */
+    60%  { left: 70%; opacity: 0.9; }
+    80%  { left: 18%; transform: scaleX(-1); }
+    96%  { left: -240px; transform: scaleX(-1); opacity: 0.4; }
+    100% { left: -240px; opacity: 0; transform: scaleX(1); }
+  }
+
+  /* Bones flicker as if barely held together */
+  .rs-cat-bones {
+    animation: rs-bone-flicker 5.5s ease-in-out infinite;
+  }
+  @keyframes rs-bone-flicker {
+    0%, 100% { opacity: 1; }
+    47% { opacity: 1; }
+    49% { opacity: 0.55; } /* brief skip */
+    50% { opacity: 1; }
+    72% { opacity: 0.8; }
+    74% { opacity: 1; }
+  }
+
+  /* Spine: subtle breathing arc */
+  .rs-spine {
+    transform-origin: 50% 56px;
+    animation: rs-spine-breathe 3.4s ease-in-out infinite;
+  }
+  @keyframes rs-spine-breathe {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50% { transform: translateY(-1px) scaleY(1.03); }
+  }
+
+  /* Ribs: stagger expand/contract — breathing rib cage */
+  .rs-rib {
+    transform-origin: top center;
+    animation: rs-rib-breathe 3.4s ease-in-out infinite;
+  }
+  .rs-rib:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-rib:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-rib:nth-of-type(5) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(6) { animation-delay: 0.05s; }
+  @keyframes rs-rib-breathe {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.08); }
+  }
+
+  /* Legs: simulate a gait — alternating front/back pairs */
+  .rs-leg-fr, .rs-leg-bl {
+    transform-origin: top center;
+    animation: rs-leg-step 0.8s ease-in-out infinite;
+  }
+  .rs-leg-fl, .rs-leg-br {
+    transform-origin: top center;
+    animation: rs-leg-step 0.8s ease-in-out infinite reverse;
+  }
+  @keyframes rs-leg-step {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(8deg); }
+  }
+
+  /* Tail: bony whip, sways like a metronome */
+  .rs-tail {
+    transform-origin: 186px 58px;
+    animation: rs-tail-sway 2.2s ease-in-out infinite;
+  }
+  .rs-vert {
+    transform-origin: 186px 58px;
+    animation: rs-tail-sway 2.2s ease-in-out infinite;
+  }
+  @keyframes rs-tail-sway {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(14deg); }
+  }
+
+  /* Skull: head bob in time with steps */
+  .rs-skull {
+    transform-origin: 46px 38px;
+    animation: rs-head-bob 0.8s ease-in-out infinite;
+  }
+  @keyframes rs-head-bob {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-1.5px) rotate(1deg); }
+  }
+
+  /* Eye sockets: hollow black */
+  .rs-eye-socket {
+    fill: #05080d;
+    stroke: #e8eef5;
+    stroke-width: 0.9;
+  }
+
+  /* Glowing pupils with blink */
+  .rs-eye {
+    transform-origin: center;
+    animation: rs-eye-blink 4.7s steps(1, end) infinite, rs-eye-pulse 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 3px #6ec8ff) drop-shadow(0 0 6px #4aa8ff);
+  }
+  @keyframes rs-eye-blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    93%, 95% { transform: scaleY(0.05); }
+    94% { transform: scaleY(0.05); }
+  }
+  @keyframes rs-eye-pulse {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; }
+  }
+
+  /* Joints: subtle pulse so paws look alive */
+  .rs-joint {
+    fill: #e8eef5;
+    animation: rs-joint-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes rs-joint-pulse {
+    0%, 100% { opacity: 0.7; r: 1.6; }
+    50% { opacity: 1; r: 2; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rs-skeleton-cat,
+    .rs-cat-bones,
+    .rs-spine, .rs-rib,
+    .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
+    .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint {
+      animation: none;
+    }
+    .rs-skeleton-cat { left: 80px; opacity: 0.7; }
   }
 
   .rs-page-inner {
