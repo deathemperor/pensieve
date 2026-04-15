@@ -86,6 +86,38 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-shard rs-shard-rib" style="--i:4"></span>
       <span class="rs-shard rs-shard-vert" style="--i:5"></span>
     </div>
+    <!-- Summoning circle — appears under cat at peak (40-48% of prowl) -->
+    <div class="rs-summon-circle" aria-hidden="true">
+      <div class="rs-summon-ring rs-summon-ring-1"></div>
+      <div class="rs-summon-ring rs-summon-ring-2"></div>
+      <div class="rs-summon-ring rs-summon-ring-3"></div>
+    </div>
+    <!-- Patronus-style 12 rays bursting from cat's chest at peak -->
+    <div class="rs-ray-burst" aria-hidden="true">
+      <span class="rs-ray" style="--a:0deg"></span>
+      <span class="rs-ray" style="--a:30deg"></span>
+      <span class="rs-ray" style="--a:60deg"></span>
+      <span class="rs-ray" style="--a:90deg"></span>
+      <span class="rs-ray" style="--a:120deg"></span>
+      <span class="rs-ray" style="--a:150deg"></span>
+      <span class="rs-ray" style="--a:180deg"></span>
+      <span class="rs-ray" style="--a:210deg"></span>
+      <span class="rs-ray" style="--a:240deg"></span>
+      <span class="rs-ray" style="--a:270deg"></span>
+      <span class="rs-ray" style="--a:300deg"></span>
+      <span class="rs-ray" style="--a:330deg"></span>
+    </div>
+    <!-- Paw-print trail left behind on the floor -->
+    <div class="rs-paw-trail" aria-hidden="true">
+      <span class="rs-paw" style="--i:0"></span>
+      <span class="rs-paw" style="--i:1"></span>
+      <span class="rs-paw" style="--i:2"></span>
+      <span class="rs-paw" style="--i:3"></span>
+      <span class="rs-paw" style="--i:4"></span>
+      <span class="rs-paw" style="--i:5"></span>
+      <span class="rs-paw" style="--i:6"></span>
+      <span class="rs-paw" style="--i:7"></span>
+    </div>
     <svg class="rs-skeleton-cat" viewBox="0 0 220 110" aria-hidden="true">
       <defs>
         <radialGradient id="rs-eye-glow" cx="50%" cy="50%" r="50%">
@@ -125,6 +157,12 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <g class="rs-eye-burst-group">
         <circle class="rs-eye-burst" cx="40" cy="36" r="14" fill="url(#rs-eye-burst)"/>
         <circle class="rs-eye-burst" cx="54" cy="36" r="14" fill="url(#rs-eye-burst)"/>
+      </g>
+      <!-- Lightning crackles along spine at apparation — jagged white bolts -->
+      <g class="rs-lightning" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" filter="url(#rs-bone-glow)">
+        <path class="rs-bolt rs-bolt-1" d="M62 50 L66 48 L64 54 L70 52 L68 58 L74 56"/>
+        <path class="rs-bolt rs-bolt-2" d="M120 48 L124 46 L122 52 L128 50 L126 56"/>
+        <path class="rs-bolt rs-bolt-3" d="M168 56 L172 54 L170 60 L176 58 L174 62"/>
       </g>
       <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <!-- spine: nape to hips -->
@@ -553,6 +591,185 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     /* base look already has the rs-bone-glow filter; turbulence is too jittery to leave on always */
   }
 
+  /* Bones draw themselves in via stroke-dasharray during apparation phase */
+  .rs-bone {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 0;
+    animation: rs-bone-draw 24s ease-in-out infinite;
+  }
+  @keyframes rs-bone-draw {
+    /* Apparation in (0-6%): bones draw from nothing */
+    0%, 1% { stroke-dashoffset: 200; }
+    6% { stroke-dashoffset: 0; }
+    /* Stable through prowl */
+    58% { stroke-dashoffset: 0; }
+    /* Vanish out at flip (60-62%): bones erase */
+    60% { stroke-dashoffset: 200; }
+    62% { stroke-dashoffset: 200; }
+    /* Re-draw after flip */
+    66% { stroke-dashoffset: 0; }
+    93% { stroke-dashoffset: 0; }
+    /* Final apparation out (97-100%) */
+    97% { stroke-dashoffset: 200; }
+    100% { stroke-dashoffset: 200; }
+  }
+  /* Stagger the rib draw-ins for visual richness */
+  .rs-rib:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-rib:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-rib:nth-of-type(5) { animation-delay: 0.20s; }
+
+  /* Lightning bolts along spine — flicker on and off at apparation moments */
+  .rs-lightning { opacity: 0; animation: rs-lightning-flicker 24s linear infinite; }
+  @keyframes rs-lightning-flicker {
+    0%, 1.5%, 6%, 60%, 62%, 100% { opacity: 0; }
+    2%, 3%, 4%, 5% { opacity: 1; }
+    60.5%, 61% { opacity: 1; }
+    /* mid-prowl crackle at peak too */
+    40%, 42%, 44% { opacity: 1; }
+    41%, 43% { opacity: 0.4; }
+    45%, 50% { opacity: 0; }
+    /* leftward apparation flicker */
+    93%, 94%, 95% { opacity: 1; }
+    93.5%, 94.5% { opacity: 0.3; }
+  }
+  .rs-bolt { stroke-dasharray: 50; }
+  .rs-bolt-1 { animation: rs-bolt-strike 0.18s steps(2) infinite; }
+  .rs-bolt-2 { animation: rs-bolt-strike 0.24s steps(2) infinite reverse; }
+  .rs-bolt-3 { animation: rs-bolt-strike 0.20s steps(2) infinite; }
+  @keyframes rs-bolt-strike {
+    0% { stroke-dashoffset: 50; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  /* Patronus 12-ray burst — fires at PEAK (40-46%) from cat's chest */
+  .rs-ray-burst {
+    position: absolute;
+    bottom: 60px;
+    left: -280px;
+    width: 280px;
+    height: 0;
+    pointer-events: none;
+    z-index: 2;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-ray-burst::before {
+    /* anchor at cat's chest center, 50% of the prowl box */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 0;
+    height: 0;
+  }
+  .rs-ray {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(155, 231, 255, 0.6), transparent);
+    transform-origin: top center;
+    transform: rotate(var(--a)) translateY(0);
+    opacity: 0;
+    filter: drop-shadow(0 0 4px rgba(155, 231, 255, 0.95));
+    animation: rs-ray-fire 24s linear infinite;
+  }
+  @keyframes rs-ray-fire {
+    0%, 38%, 50%, 100% { height: 0; opacity: 0; }
+    40% { height: 0; opacity: 1; }
+    44% { height: 90px; opacity: 1; }
+    48% { height: 130px; opacity: 0; }
+  }
+
+  /* Summoning circle — 3 concentric rings appear under cat at peak */
+  .rs-summon-circle {
+    position: absolute;
+    bottom: -8px;
+    left: -280px;
+    width: 280px;
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-summon-ring {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    width: 110px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    transform: translateX(-50%);
+    opacity: 0;
+    box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor;
+    animation: rs-summon-rotate 24s linear infinite, rs-summon-pulse 24s linear infinite;
+  }
+  .rs-summon-ring-1 {
+    color: rgba(155, 231, 255, 0.9);
+    border-color: currentColor;
+  }
+  .rs-summon-ring-2 {
+    color: rgba(126, 200, 255, 0.7);
+    width: 80px;
+    height: 20px;
+    border-style: dashed;
+    animation-delay: -0.3s, 0s;
+  }
+  .rs-summon-ring-3 {
+    color: rgba(200, 230, 255, 0.5);
+    width: 140px;
+    height: 36px;
+    border-style: dotted;
+    animation-delay: 0.3s, 0s;
+  }
+  @keyframes rs-summon-rotate {
+    /* Rotation only meaningful with conic but we use transform for the dashed/dotted illusion */
+    0%, 100% { transform: translateX(-50%) rotateZ(0deg); }
+    100% { transform: translateX(-50%) rotateZ(360deg); }
+  }
+  @keyframes rs-summon-pulse {
+    0%, 36%, 50%, 100% { opacity: 0; }
+    40%, 44% { opacity: 1; }
+    48% { opacity: 0.4; }
+  }
+
+  /* Paw-print trail — small bone-paws left along the floor */
+  .rs-paw-trail {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .rs-paw {
+    position: absolute;
+    bottom: 0;
+    left: calc(8% + var(--i) * 10%);
+    width: 8px;
+    height: 8px;
+    background:
+      radial-gradient(circle at 25% 30%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 75% 30%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 35% 70%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 65% 70%, #d8e8f8 1.5px, transparent 2px);
+    opacity: 0;
+    filter: drop-shadow(0 0 3px rgba(155, 231, 255, 0.6));
+    animation: rs-paw-fade 24s linear infinite;
+    animation-delay: calc(var(--i) * 1.2s + 1s);
+  }
+  @keyframes rs-paw-fade {
+    0%, 5% { opacity: 0; transform: scale(0.5); }
+    7% { opacity: 0.95; transform: scale(1); }
+    25% { opacity: 0.7; }
+    50% { opacity: 0.3; }
+    70% { opacity: 0; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
   /* Joints: subtle pulse so paws look alive */
   .rs-joint {
     fill: #e8eef5;
@@ -565,15 +782,18 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   @media (prefers-reduced-motion: reduce) {
     .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
-    .rs-cat-bones, .rs-spine, .rs-rib,
+    .rs-summon-circle, .rs-ray-burst, .rs-paw-trail,
+    .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
     .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
     .rs-eye-burst, .rs-eye-burst-group,
-    .rs-cat-shadow, .rs-cat-haze, .rs-wisp, .rs-shard {
+    .rs-cat-shadow, .rs-cat-haze, .rs-wisp, .rs-shard,
+    .rs-summon-ring, .rs-ray, .rs-paw {
       animation: none;
     }
     .rs-skeleton-cat { left: 80px; opacity: 0.7; }
     .rs-cat-aura { left: 80px; opacity: 0.5; }
+    .rs-bone { stroke-dashoffset: 0; }
   }
 
   .rs-page-inner {
