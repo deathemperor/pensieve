@@ -598,14 +598,15 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     min-height: clamp(380px, 52vh, 560px);
     cursor: crosshair;
     animation: rs-hero-shake var(--rs-prowl-dur, 18s) linear infinite;
-    /* Darker library-night backdrop — cat needs contrast to pop */
+    /* Library at midnight — deeper contrast, true darkness at floor */
     background:
-      radial-gradient(ellipse at 50% 30%, rgba(20, 24, 38, 0.4), transparent 60%),
+      radial-gradient(ellipse at 50% 30%, rgba(20, 24, 38, 0.5), transparent 65%),
       linear-gradient(180deg,
         var(--color-bg, #fafafa) 0%,
-        rgba(15, 18, 30, 0.08) 30%,
-        rgba(15, 18, 30, 0.18) 60%,
-        rgba(15, 18, 30, 0.30) 100%);
+        rgba(15, 18, 30, 0.10) 25%,
+        rgba(12, 16, 28, 0.32) 55%,
+        rgba(8, 12, 24, 0.55) 80%,
+        rgba(5, 8, 18, 0.70) 100%);
   }
   /* Hero camera shake at SCREECH peak — viewer FEELS the spell */
   @keyframes rs-hero-shake {
