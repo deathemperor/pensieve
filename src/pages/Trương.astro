@@ -605,11 +605,6 @@ function formatGHDate(iso: string) {
 			0 1px 0 rgba(240, 199, 94, 0.3),
 			0 30px 80px -20px rgba(0, 0, 0, 0.7),
 			0 0 60px -10px rgba(240, 199, 94, 0.4);
-		transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-
-	.about-hero-photo:hover .portrait-card {
-		transform: scale(1.02) translateY(-2px);
 	}
 
 		/* Caption */
@@ -649,11 +644,6 @@ function formatGHDate(iso: string) {
 		object-fit: cover;
 		border-radius: 2px;
 		filter: contrast(1.05) brightness(1.02) saturate(1.05);
-		transition: filter 500ms ease, transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
-	}
-
-	.about-hero-photo:hover .profile-photo {
-		filter: contrast(1.08) brightness(1.08) saturate(1.15);
 	}
 
 	/* Vignette on photo */
@@ -696,19 +686,6 @@ function formatGHDate(iso: string) {
 		60%, 100% { transform: translateX(70%); opacity: 0; }
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.portrait-halo,
-		.portrait-sheen::before,
-		.portrait-embers span,
-		.photo-caption-dot {
-			animation: none;
-		}
-		.about-hero-photo:hover .portrait-card,
-		.about-hero-photo:hover .profile-photo {
-			transform: none;
-			filter: inherit;
-		}
-	}
 
 	.about-meta {
 		margin: var(--spacing-8) 0 0;
