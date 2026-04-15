@@ -677,19 +677,21 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     will-change: opacity, transform, filter;
   }
 
-  /* Compressed summon-cast cycle — matches preview pacing.
-     The cat is INVISIBLE for ~50% of the cycle. Each appearance feels
-     intentional and rare, like a click-triggered spell. */
+  /* Summon-cast cycle — cat visible ~60% of cycle for better engagement.
+     Quicker apparate-in, longer visible time, dramatic peak preserved. */
   @keyframes rs-cat-prowl {
-    /* Phase 0: REST — empty hero, anticipation builds (0-22%) */
-    0%, 18%   { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
-    /* Phase 1: ANTICIPATION cue — soft pre-flash (22-26%) */
-    22%       { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(8px) drop-shadow(0 0 24px rgba(155,231,255,0.4)); }
-    /* Phase 2: APPARATE IN — fast materialize (26-34%) */
-    26%       { opacity: 0.15; transform: translateX(-50%) scaleX(1) scaleY(0.7) translateY(14px); filter: blur(5px) drop-shadow(0 0 40px rgba(155,231,255,0.6)); }
-    30%       { opacity: 0.65; transform: translateX(-50%) scaleX(1) scaleY(0.88) translateY(6px); filter: blur(2px) drop-shadow(0 0 45px rgba(155,231,255,0.8)); }
-    34%       { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
-    /* Phase 3: ANTICIPATION recoil — compress before cast (34-38%) */
+    /* Phase 0: REST — empty hero, anticipation (0-12%) */
+    0%, 8%    { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+    /* Phase 1: ANTICIPATION cue — soft pre-flash (12-16%) */
+    12%       { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(8px) drop-shadow(0 0 24px rgba(155,231,255,0.4)); }
+    /* Phase 2: APPARATE IN — quick materialize (16-22%) */
+    16%       { opacity: 0.15; transform: translateX(-50%) scaleX(1) scaleY(0.7) translateY(14px); filter: blur(5px) drop-shadow(0 0 40px rgba(155,231,255,0.6)); }
+    20%       { opacity: 0.65; transform: translateX(-50%) scaleX(1) scaleY(0.88) translateY(6px); filter: blur(2px) drop-shadow(0 0 45px rgba(155,231,255,0.8)); }
+    22%       { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
+    /* Phase 2.5: SETTLE — cat visible, breathing, ambient (22-37%) */
+    28%       { transform: translateX(-50%) scaleX(1) scaleY(1.01) translateY(-1px); }
+    34%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(168,140,255,0.5)); }
+    /* Phase 3: ANTICIPATION recoil — compress before cast (37-39%) */
     37%       { transform: translateX(-50%) scaleX(1) scaleY(0.93) translateY(3px); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
     /* Phase 4: ARCH + CAST — peak spell moment EXTENDED (38-58%)
        Glow accents the cat — never overwhelms its silhouette.
