@@ -206,105 +206,111 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       </defs>
       <!-- Aura halo behind the eyes — pulses at peak moments -->
       <g class="rs-eye-burst-group">
-        <circle class="rs-eye-burst" cx="40" cy="36" r="14" fill="url(#rs-eye-burst)"/>
-        <circle class="rs-eye-burst" cx="54" cy="36" r="14" fill="url(#rs-eye-burst)"/>
+        <circle class="rs-eye-burst" cx="32" cy="33" r="11" fill="url(#rs-eye-burst)"/>
+        <circle class="rs-eye-burst" cx="44" cy="33" r="11" fill="url(#rs-eye-burst)"/>
       </g>
       <!-- Lightning crackles along spine at apparation — jagged white bolts -->
       <g class="rs-lightning" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" filter="url(#rs-bone-glow)">
-        <path class="rs-bolt rs-bolt-1" d="M62 50 L66 48 L64 54 L70 52 L68 58 L74 56"/>
-        <path class="rs-bolt rs-bolt-2" d="M120 48 L124 46 L122 52 L128 50 L126 56"/>
-        <path class="rs-bolt rs-bolt-3" d="M168 56 L172 54 L170 60 L176 58 L174 62"/>
+        <path class="rs-bolt rs-bolt-1" d="M58 46 L62 44 L60 50 L66 48 L64 54 L70 52"/>
+        <path class="rs-bolt rs-bolt-2" d="M115 44 L119 42 L117 48 L123 46 L121 52"/>
+        <path class="rs-bolt rs-bolt-3" d="M170 50 L174 48 L172 54 L178 52 L176 58"/>
       </g>
-      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <!-- SPIRIT CORE: glowing heart inside ribcage, pulses with breath -->
         <g class="rs-spirit-core">
-          <circle class="rs-spirit-aura" cx="105" cy="62" r="14" fill="url(#rs-eye-burst)" stroke="none"/>
-          <circle class="rs-spirit-orb" cx="105" cy="62" r="3.5" fill="url(#rs-eye-glow)" stroke="none"/>
-          <circle class="rs-spirit-orb-inner" cx="105" cy="62" r="1.2" fill="#ffffff" stroke="none"/>
+          <circle class="rs-spirit-aura" cx="100" cy="58" r="11" fill="url(#rs-eye-burst)" stroke="none"/>
+          <circle class="rs-spirit-orb" cx="100" cy="58" r="2.5" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-spirit-orb-inner" cx="100" cy="58" r="0.9" fill="#ffffff" stroke="none"/>
         </g>
-        <!-- spine: nape to hips -->
-        <path class="rs-bone rs-spine" d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
-        <!-- vertebrae beads on spine -->
-        <circle class="rs-spine-vert" cx="68" cy="54" r="0.9"/>
-        <circle class="rs-spine-vert" cx="80" cy="51" r="0.9"/>
-        <circle class="rs-spine-vert" cx="95" cy="49" r="0.9"/>
-        <circle class="rs-spine-vert" cx="115" cy="49" r="0.9"/>
-        <circle class="rs-spine-vert" cx="135" cy="51" r="0.9"/>
-        <circle class="rs-spine-vert" cx="155" cy="54" r="0.9"/>
-        <circle class="rs-spine-vert" cx="170" cy="56" r="0.9"/>
-        <!-- shoulder blades (scapulae) -->
-        <path class="rs-bone rs-scapula" d="M64 50 Q70 46 76 50 L72 60 Z"/>
-        <path class="rs-bone rs-scapula" d="M158 52 Q164 48 170 52 L166 62 Z"/>
-        <!-- sternum (breastbone running through ribcage) -->
-        <path class="rs-bone rs-sternum" d="M78 73 L88 75 L98 76 L108 76 L118 76 L128 75 L136 73"/>
-        <!-- ribs: 7 curved arcs hanging from spine -->
-        <path class="rs-bone rs-rib" d="M72 53 Q73 66 78 74"/>
-        <path class="rs-bone rs-rib" d="M82 51 Q83 66 88 75"/>
-        <path class="rs-bone rs-rib" d="M92 51 Q93 67 98 76"/>
-        <path class="rs-bone rs-rib" d="M102 51 Q103 67 108 76"/>
-        <path class="rs-bone rs-rib" d="M112 51 Q113 67 118 76"/>
-        <path class="rs-bone rs-rib" d="M122 52 Q123 67 128 76"/>
-        <path class="rs-bone rs-rib" d="M132 53 Q133 67 138 76"/>
-        <!-- pelvis -->
-        <path class="rs-bone rs-pelvis" d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
-        <!-- front legs -->
-        <path class="rs-bone rs-leg rs-leg-fr" d="M68 76 L66 92 L70 100"/>
-        <path class="rs-bone rs-leg rs-leg-fl" d="M76 76 L78 92 L74 100"/>
-        <!-- back legs -->
-        <path class="rs-bone rs-leg rs-leg-br" d="M170 75 L173 92 L168 100"/>
-        <path class="rs-bone rs-leg rs-leg-bl" d="M180 76 L182 92 L186 100"/>
-        <!-- paw joints -->
-        <circle class="rs-joint" cx="68" cy="100" r="1.6"/>
-        <circle class="rs-joint" cx="76" cy="100" r="1.6"/>
-        <circle class="rs-joint" cx="170" cy="100" r="1.6"/>
-        <circle class="rs-joint" cx="184" cy="100" r="1.6"/>
+        <!-- SPINE: graceful arc from nape to hips, slight upward arch -->
+        <path class="rs-bone rs-spine" d="M52 50 Q80 42 120 44 Q160 47 188 52"/>
+        <!-- vertebrae beads on spine — finer detail -->
+        <circle class="rs-spine-vert" cx="60" cy="48" r="0.7"/>
+        <circle class="rs-spine-vert" cx="72" cy="45" r="0.7"/>
+        <circle class="rs-spine-vert" cx="86" cy="43" r="0.7"/>
+        <circle class="rs-spine-vert" cx="102" cy="43" r="0.7"/>
+        <circle class="rs-spine-vert" cx="120" cy="44" r="0.7"/>
+        <circle class="rs-spine-vert" cx="138" cy="46" r="0.7"/>
+        <circle class="rs-spine-vert" cx="156" cy="48" r="0.7"/>
+        <circle class="rs-spine-vert" cx="174" cy="50" r="0.7"/>
+        <!-- shoulder blade (single, on visible side) -->
+        <path class="rs-bone rs-scapula" d="M58 46 Q66 42 72 48 L66 56 Z"/>
+        <!-- pelvis (thin, on visible side) -->
+        <path class="rs-bone rs-scapula" d="M170 50 Q178 46 184 52 L178 60 Z"/>
+        <!-- sternum -->
+        <path class="rs-bone rs-sternum" d="M76 68 L92 70 L108 70 L124 68 L138 65"/>
+        <!-- ribs: 8 fine curved arcs, narrower spacing for elegance -->
+        <path class="rs-bone rs-rib" d="M68 47 Q70 60 76 68"/>
+        <path class="rs-bone rs-rib" d="M78 45 Q80 60 86 70"/>
+        <path class="rs-bone rs-rib" d="M88 44 Q90 60 96 71"/>
+        <path class="rs-bone rs-rib" d="M98 43 Q100 60 106 70"/>
+        <path class="rs-bone rs-rib" d="M108 43 Q110 60 116 70"/>
+        <path class="rs-bone rs-rib" d="M118 44 Q120 60 126 69"/>
+        <path class="rs-bone rs-rib" d="M128 45 Q130 59 134 67"/>
+        <path class="rs-bone rs-rib" d="M138 47 Q140 58 142 65"/>
+        <!-- FRONT LEGS: longer, jointed (humerus + radius + paw) -->
+        <path class="rs-bone rs-leg rs-leg-fr" d="M68 56 L62 78 L70 100"/>
+        <path class="rs-bone rs-leg rs-leg-fl" d="M76 56 L74 78 L78 100"/>
+        <!-- BACK LEGS: longer, jointed (femur + tibia + paw) -->
+        <path class="rs-bone rs-leg rs-leg-br" d="M174 58 L170 80 L162 100"/>
+        <path class="rs-bone rs-leg rs-leg-bl" d="M184 58 L186 80 L182 100"/>
+        <!-- joints at knees (subtle bumps) -->
+        <circle class="rs-joint" cx="62" cy="78" r="1"/>
+        <circle class="rs-joint" cx="74" cy="78" r="1"/>
+        <circle class="rs-joint" cx="170" cy="80" r="1"/>
+        <circle class="rs-joint" cx="186" cy="80" r="1"/>
+        <!-- paw joints (slightly larger so they read as feet) -->
+        <ellipse class="rs-paw-bone" cx="66" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="78" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="162" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="182" cy="100" rx="3" ry="1.2"/>
         <!-- claws extending from paws — appear at peak -->
         <g class="rs-claws" stroke-width="0.9">
-          <path class="rs-claw" d="M66 100 L63 105 M68 100 L67 106 M70 100 L72 105"/>
-          <path class="rs-claw" d="M74 100 L72 105 M76 100 L77 106 M78 100 L80 105"/>
-          <path class="rs-claw" d="M168 100 L165 105 M170 100 L169 106 M173 100 L174 105"/>
-          <path class="rs-claw" d="M182 100 L180 105 M184 100 L185 106 M186 100 L188 105"/>
+          <path class="rs-claw" d="M64 101 L62 105 M66 101 L66 106 M68 101 L70 105"/>
+          <path class="rs-claw" d="M76 101 L74 105 M78 101 L78 106 M80 101 L82 105"/>
+          <path class="rs-claw" d="M160 101 L158 105 M162 101 L162 106 M164 101 L166 105"/>
+          <path class="rs-claw" d="M180 101 L178 105 M182 101 L182 106 M184 101 L186 105"/>
         </g>
-        <!-- tail: arcing whip with vertebrae -->
-        <path class="rs-bone rs-tail" d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
-        <circle class="rs-vert" cx="190" cy="55" r="1.1"/>
-        <circle class="rs-vert" cx="196" cy="50" r="1.1"/>
-        <circle class="rs-vert" cx="202" cy="44" r="1.1"/>
-        <circle class="rs-vert" cx="207" cy="36" r="1.1"/>
-        <circle class="rs-vert" cx="208" cy="26" r="1.1"/>
-        <circle class="rs-vert" cx="205" cy="18" r="1.1"/>
-        <!-- skull (with hinged jaw that drops at peak) -->
+        <!-- TAIL: long graceful S-curve from hips, more vertebrae -->
+        <path class="rs-bone rs-tail" d="M188 52 Q204 46 212 32 Q218 18 210 8 Q204 4 200 6"/>
+        <circle class="rs-vert" cx="194" cy="49" r="0.9"/>
+        <circle class="rs-vert" cx="200" cy="44" r="0.9"/>
+        <circle class="rs-vert" cx="206" cy="38" r="0.9"/>
+        <circle class="rs-vert" cx="212" cy="30" r="0.9"/>
+        <circle class="rs-vert" cx="215" cy="22" r="0.9"/>
+        <circle class="rs-vert" cx="214" cy="14" r="0.9"/>
+        <circle class="rs-vert" cx="208" cy="8" r="0.9"/>
+        <!-- SKULL: smaller, more elongated like real cat skull, held HIGH -->
         <g class="rs-skull">
-          <!-- cranium -->
-          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
-          <!-- cranium suture lines (skull plates) -->
-          <path class="rs-suture" d="M28 32 Q44 28 64 32" stroke-width="0.5" opacity="0.5"/>
-          <path class="rs-suture" d="M46 22 L46 48" stroke-width="0.5" opacity="0.4"/>
-          <!-- ears -->
-          <path d="M30 30 L28 18 L36 26"/>
-          <path d="M58 28 L62 17 L54 24"/>
-          <!-- nose triangle (fixed to upper skull) -->
-          <path d="M32 44 L30 48 L34 48 Z" fill="#e8eef5"/>
-          <!-- eye sockets -->
-          <ellipse class="rs-eye-socket" cx="40" cy="36" rx="4" ry="5"/>
-          <ellipse class="rs-eye-socket" cx="54" cy="36" rx="4" ry="5"/>
+          <!-- cranium: triangular wedge shape -->
+          <path d="M28 47 Q20 42 22 33 Q26 24 38 22 Q50 22 54 28 Q56 36 54 44 L52 47 Z"/>
+          <!-- cranium sutures -->
+          <path class="rs-suture" d="M22 33 Q38 30 54 32" stroke-width="0.4" opacity="0.4"/>
+          <!-- ears: triangular, pointed up -->
+          <path d="M26 28 L22 14 L32 22"/>
+          <path d="M48 26 L52 12 L42 20"/>
+          <!-- snout/nose: tapered front -->
+          <path d="M22 40 L18 43 L22 46 Z" fill="#e8eef5"/>
+          <!-- eye sockets: oval, set in the cranium -->
+          <ellipse class="rs-eye-socket" cx="32" cy="33" rx="3.2" ry="3.8"/>
+          <ellipse class="rs-eye-socket" cx="44" cy="33" rx="3.2" ry="3.8"/>
           <!-- glowing pupils -->
-          <circle class="rs-eye" cx="40" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
-          <circle class="rs-eye" cx="54" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
-          <!-- HINGED JAW — separate group, rotates open at peak -->
+          <circle class="rs-eye" cx="32" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-eye" cx="44" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
+          <!-- HINGED JAW -->
           <g class="rs-jaw">
-            <path d="M32 48 Q40 58 56 56 Q60 53 60 48"/>
+            <path d="M22 42 Q32 50 50 48 Q53 46 53 42"/>
             <!-- lower teeth -->
-            <path d="M36 52 L36 55 M40 53 L40 56 M44 53 L44 56 M48 53 L48 56 M52 53 L52 56" stroke-width="0.9"/>
-            <!-- fangs (sharper, longer) -->
-            <path class="rs-fang" d="M37 51 L36 58" stroke-width="1.3"/>
-            <path class="rs-fang" d="M55 51 L56 58" stroke-width="1.3"/>
+            <path d="M26 45 L26 47 M30 45.5 L30 47.5 M34 46 L34 48 M38 46 L38 48 M42 46 L42 48 M46 45.5 L46 47.5" stroke-width="0.8"/>
+            <!-- lower fangs -->
+            <path class="rs-fang" d="M27 44 L26 50" stroke-width="1.2"/>
+            <path class="rs-fang" d="M48 44 L49 50" stroke-width="1.2"/>
           </g>
-          <!-- upper fangs (fixed to skull, point down) -->
-          <path class="rs-fang-upper" d="M37 48 L36 54" stroke-width="1.3"/>
-          <path class="rs-fang-upper" d="M55 48 L56 54" stroke-width="1.3"/>
-          <!-- whisker dots (sockets) -->
-          <circle cx="34" cy="46" r="0.5" fill="#e8eef5"/>
+          <!-- upper fangs (fixed to skull) -->
+          <path class="rs-fang-upper" d="M27 42 L26 46" stroke-width="1.2"/>
+          <path class="rs-fang-upper" d="M48 42 L49 46" stroke-width="1.2"/>
+          <!-- whisker dots -->
+          <circle cx="24" cy="40" r="0.4" fill="#e8eef5"/>
           <circle cx="34" cy="49" r="0.5" fill="#e8eef5"/>
           <circle cx="34" cy="52" r="0.5" fill="#e8eef5"/>
         </g>
@@ -757,7 +763,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   /* Spine: subtle breathing arc */
   .rs-spine {
-    transform-origin: 50% 56px;
+    transform-origin: 50% 50px;
     animation: rs-spine-breathe 3.4s ease-in-out infinite;
   }
   @keyframes rs-spine-breathe {
@@ -1042,10 +1048,14 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   /* SPIRIT CORE: glowing heart in the ribcage, beats with breath */
   .rs-spirit-core { mix-blend-mode: screen; }
   .rs-spirit-aura {
-    transform-origin: 105px 62px;
+    transform-origin: 100px 58px;
     transform-box: fill-box;
     animation: rs-spirit-aura-pulse var(--rs-prowl-dur, 16s) linear infinite;
-    opacity: 0.7;
+    opacity: 0.45;
+  }
+  .rs-paw-bone {
+    fill: #e8eef5;
+    opacity: 0.9;
   }
   @keyframes rs-spirit-aura-pulse {
     0%, 100% { transform: scale(0.6); opacity: 0.4; }
@@ -1057,7 +1067,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     66% { transform: scale(1); opacity: 0.7; }
   }
   .rs-spirit-orb {
-    transform-origin: 105px 62px;
+    transform-origin: 100px 58px;
     transform-box: fill-box;
     animation: rs-spirit-beat 1.2s ease-in-out infinite;
   }
@@ -1098,7 +1108,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   /* HINGED JAW: drops open at peak (40-46%), revealing teeth */
   .rs-jaw {
-    transform-origin: 32px 48px; /* hinge at jaw joint */
+    transform-origin: 22px 42px; /* hinge at jaw joint (new skull coords) */
     transform-box: fill-box;
     animation: rs-jaw-drop var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
