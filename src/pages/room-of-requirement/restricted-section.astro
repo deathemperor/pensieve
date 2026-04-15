@@ -708,10 +708,34 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   .rs-page-hero:hover .rs-cat-ghost,
   .rs-page-hero:hover .rs-cat-mini,
   .rs-page-hero:hover .rs-cat-reflection,
-  .rs-page-hero:hover .rs-title-shake {
+  .rs-page-hero:hover .rs-title-shake,
+  .rs-page-hero:hover .rs-peak-dim,
+  .rs-page-hero:hover .rs-spotlight,
+  .rs-page-hero:hover .rs-bone-sparkles,
+  .rs-page-hero:hover .rs-ground-cracks,
+  .rs-page-hero:hover .rs-cat-bones {
     /* Speed up to 4s on hover — concentrated burst like a manual cast */
     animation-duration: 4s !important;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  /* Active state: clicking pauses the spell at peak — viewer holds the moment */
+  .rs-page-hero:active .rs-skeleton-cat,
+  .rs-page-hero:active .rs-cat-aura,
+  .rs-page-hero:active .rs-cat-trail,
+  .rs-page-hero:active .rs-bone-shards,
+  .rs-page-hero:active .rs-summon-circle,
+  .rs-page-hero:active .rs-ray-burst,
+  .rs-page-hero:active .rs-paw-trail,
+  .rs-page-hero:active .rs-stage-glow,
+  .rs-page-hero:active .rs-hiss-waves,
+  .rs-page-hero:active .rs-cat-ghost,
+  .rs-page-hero:active .rs-cat-mini,
+  .rs-page-hero:active .rs-title-shake,
+  .rs-page-hero:active .rs-peak-dim,
+  .rs-page-hero:active .rs-spotlight,
+  .rs-page-hero:active .rs-bone-sparkles,
+  .rs-page-hero:active .rs-ground-cracks {
+    animation-play-state: paused !important;
   }
   /* Push title content above the cat zone */
   .rs-page-hero .rs-page-inner {
