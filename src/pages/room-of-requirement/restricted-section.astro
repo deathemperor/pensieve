@@ -216,8 +216,27 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <path class="rs-bolt rs-bolt-3" d="M168 56 L172 54 L170 60 L176 58 L174 62"/>
       </g>
       <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- SPIRIT CORE: glowing heart inside ribcage, pulses with breath -->
+        <g class="rs-spirit-core">
+          <circle class="rs-spirit-aura" cx="105" cy="62" r="14" fill="url(#rs-eye-burst)" stroke="none"/>
+          <circle class="rs-spirit-orb" cx="105" cy="62" r="3.5" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-spirit-orb-inner" cx="105" cy="62" r="1.2" fill="#ffffff" stroke="none"/>
+        </g>
         <!-- spine: nape to hips -->
         <path class="rs-bone rs-spine" d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+        <!-- vertebrae beads on spine -->
+        <circle class="rs-spine-vert" cx="68" cy="54" r="0.9"/>
+        <circle class="rs-spine-vert" cx="80" cy="51" r="0.9"/>
+        <circle class="rs-spine-vert" cx="95" cy="49" r="0.9"/>
+        <circle class="rs-spine-vert" cx="115" cy="49" r="0.9"/>
+        <circle class="rs-spine-vert" cx="135" cy="51" r="0.9"/>
+        <circle class="rs-spine-vert" cx="155" cy="54" r="0.9"/>
+        <circle class="rs-spine-vert" cx="170" cy="56" r="0.9"/>
+        <!-- shoulder blades (scapulae) -->
+        <path class="rs-bone rs-scapula" d="M64 50 Q70 46 76 50 L72 60 Z"/>
+        <path class="rs-bone rs-scapula" d="M158 52 Q164 48 170 52 L166 62 Z"/>
+        <!-- sternum (breastbone running through ribcage) -->
+        <path class="rs-bone rs-sternum" d="M78 73 L88 75 L98 76 L108 76 L118 76 L128 75 L136 73"/>
         <!-- ribs: 7 curved arcs hanging from spine -->
         <path class="rs-bone rs-rib" d="M72 53 Q73 66 78 74"/>
         <path class="rs-bone rs-rib" d="M82 51 Q83 66 88 75"/>
@@ -239,6 +258,13 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <circle class="rs-joint" cx="76" cy="100" r="1.6"/>
         <circle class="rs-joint" cx="170" cy="100" r="1.6"/>
         <circle class="rs-joint" cx="184" cy="100" r="1.6"/>
+        <!-- claws extending from paws — appear at peak -->
+        <g class="rs-claws" stroke-width="0.9">
+          <path class="rs-claw" d="M66 100 L63 105 M68 100 L67 106 M70 100 L72 105"/>
+          <path class="rs-claw" d="M74 100 L72 105 M76 100 L77 106 M78 100 L80 105"/>
+          <path class="rs-claw" d="M168 100 L165 105 M170 100 L169 106 M173 100 L174 105"/>
+          <path class="rs-claw" d="M182 100 L180 105 M184 100 L185 106 M186 100 L188 105"/>
+        </g>
         <!-- tail: arcing whip with vertebrae -->
         <path class="rs-bone rs-tail" d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
         <circle class="rs-vert" cx="190" cy="55" r="1.1"/>
@@ -247,25 +273,36 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <circle class="rs-vert" cx="207" cy="36" r="1.1"/>
         <circle class="rs-vert" cx="208" cy="26" r="1.1"/>
         <circle class="rs-vert" cx="205" cy="18" r="1.1"/>
-        <!-- skull -->
+        <!-- skull (with hinged jaw that drops at peak) -->
         <g class="rs-skull">
           <!-- cranium -->
           <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+          <!-- cranium suture lines (skull plates) -->
+          <path class="rs-suture" d="M28 32 Q44 28 64 32" stroke-width="0.5" opacity="0.5"/>
+          <path class="rs-suture" d="M46 22 L46 48" stroke-width="0.5" opacity="0.4"/>
           <!-- ears -->
           <path d="M30 30 L28 18 L36 26"/>
           <path d="M58 28 L62 17 L54 24"/>
-          <!-- jaw -->
-          <path d="M32 48 Q40 58 56 56 Q60 53 60 48"/>
-          <!-- nose triangle -->
+          <!-- nose triangle (fixed to upper skull) -->
           <path d="M32 44 L30 48 L34 48 Z" fill="#e8eef5"/>
-          <!-- teeth -->
-          <path d="M36 52 L36 55 M40 53 L40 56 M44 53 L44 56 M48 53 L48 56 M52 53 L52 56" stroke-width="0.9"/>
           <!-- eye sockets -->
           <ellipse class="rs-eye-socket" cx="40" cy="36" rx="4" ry="5"/>
           <ellipse class="rs-eye-socket" cx="54" cy="36" rx="4" ry="5"/>
           <!-- glowing pupils -->
           <circle class="rs-eye" cx="40" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
           <circle class="rs-eye" cx="54" cy="36" r="2.2" fill="url(#rs-eye-glow)" stroke="none"/>
+          <!-- HINGED JAW — separate group, rotates open at peak -->
+          <g class="rs-jaw">
+            <path d="M32 48 Q40 58 56 56 Q60 53 60 48"/>
+            <!-- lower teeth -->
+            <path d="M36 52 L36 55 M40 53 L40 56 M44 53 L44 56 M48 53 L48 56 M52 53 L52 56" stroke-width="0.9"/>
+            <!-- fangs (sharper, longer) -->
+            <path class="rs-fang" d="M37 51 L36 58" stroke-width="1.3"/>
+            <path class="rs-fang" d="M55 51 L56 58" stroke-width="1.3"/>
+          </g>
+          <!-- upper fangs (fixed to skull, point down) -->
+          <path class="rs-fang-upper" d="M37 48 L36 54" stroke-width="1.3"/>
+          <path class="rs-fang-upper" d="M55 48 L56 54" stroke-width="1.3"/>
           <!-- whisker dots (sockets) -->
           <circle cx="34" cy="46" r="0.5" fill="#e8eef5"/>
           <circle cx="34" cy="49" r="0.5" fill="#e8eef5"/>
@@ -972,6 +1009,120 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     0%, 100% { opacity: 0.7; r: 1.6; }
     50% { opacity: 1; r: 2; }
   }
+
+  /* SPIRIT CORE: glowing heart in the ribcage, beats with breath */
+  .rs-spirit-core { mix-blend-mode: screen; }
+  .rs-spirit-aura {
+    transform-origin: 105px 62px;
+    transform-box: fill-box;
+    animation: rs-spirit-aura-pulse var(--rs-prowl-dur, 16s) linear infinite;
+    opacity: 0.7;
+  }
+  @keyframes rs-spirit-aura-pulse {
+    0%, 100% { transform: scale(0.6); opacity: 0.4; }
+    36% { transform: scale(1); opacity: 0.7; }
+    40% { transform: scale(2.5); opacity: 1; } /* peak burst */
+    44% { transform: scale(2.2); opacity: 0.9; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    60% { transform: scale(0.4); opacity: 0.2; } /* dim during apparate-flip */
+    66% { transform: scale(1); opacity: 0.7; }
+  }
+  .rs-spirit-orb {
+    transform-origin: 105px 62px;
+    transform-box: fill-box;
+    animation: rs-spirit-beat 1.2s ease-in-out infinite;
+  }
+  @keyframes rs-spirit-beat {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    20% { transform: scale(1.4); opacity: 1; } /* systole */
+    30% { transform: scale(0.95); opacity: 0.9; }
+    40% { transform: scale(1.25); opacity: 1; } /* diastole */
+    60% { transform: scale(1); opacity: 0.85; }
+  }
+  .rs-spirit-orb-inner {
+    animation: rs-spirit-flicker 0.6s ease-in-out infinite;
+  }
+  @keyframes rs-spirit-flicker {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; r: 1.6; }
+  }
+
+  /* Spine vertebrae beads — pulse with breath */
+  .rs-spine-vert {
+    fill: #e8eef5;
+    animation: rs-vert-pulse 3.4s ease-in-out infinite;
+  }
+  .rs-spine-vert:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-spine-vert:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-spine-vert:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-spine-vert:nth-of-type(5) { animation-delay: 0.20s; }
+  @keyframes rs-vert-pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  /* Sternum + scapulae: static structural support, subtle glow */
+  .rs-sternum, .rs-scapula {
+    stroke-width: 1.1;
+    opacity: 0.85;
+  }
+
+  /* HINGED JAW: drops open at peak (40-46%), revealing teeth */
+  .rs-jaw {
+    transform-origin: 32px 48px; /* hinge at jaw joint */
+    transform-box: fill-box;
+    animation: rs-jaw-drop var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes rs-jaw-drop {
+    0%, 36%, 50%, 100% { transform: rotate(0deg); }
+    38% { transform: rotate(8deg); } /* small open */
+    40% { transform: rotate(28deg); } /* WIDE open — hiss */
+    42% { transform: rotate(35deg); } /* peak hiss */
+    44% { transform: rotate(28deg); }
+    46% { transform: rotate(12deg); }
+  }
+
+  /* FANGS: emphasis at peak — scale up */
+  .rs-fang, .rs-fang-upper {
+    transform-origin: top center;
+    transform-box: fill-box;
+    animation: rs-fang-bare var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  @keyframes rs-fang-bare {
+    0%, 36%, 50%, 100% { stroke-width: 1.3; opacity: 0.9; }
+    40% { stroke-width: 2; opacity: 1; }
+    42% { stroke-width: 2.2; opacity: 1; }
+    44% { stroke-width: 1.8; opacity: 1; }
+  }
+
+  /* CLAWS: extend at peak — scale Y from 0 to 1 */
+  .rs-claws {
+    opacity: 0;
+    animation: rs-claws-extend var(--rs-prowl-dur, 16s) linear infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes rs-claws-extend {
+    0%, 35%, 50%, 100% { opacity: 0; }
+    38% { opacity: 0.6; }
+    40% { opacity: 1; }
+    44% { opacity: 1; }
+    46% { opacity: 0.7; }
+    48% { opacity: 0.3; }
+  }
+  .rs-claw {
+    stroke-dasharray: 8;
+    stroke-dashoffset: 8;
+    animation: rs-claw-stab var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  @keyframes rs-claw-stab {
+    0%, 36%, 50%, 100% { stroke-dashoffset: 8; }
+    40% { stroke-dashoffset: 0; }
+    44% { stroke-dashoffset: 0; }
+    48% { stroke-dashoffset: 8; }
+  }
+
+  /* Cranial sutures — barely-visible plate divisions */
+  .rs-suture { stroke-dasharray: 1.5 1; }
 
   @media (prefers-reduced-motion: reduce) {
     .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
