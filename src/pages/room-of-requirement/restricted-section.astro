@@ -466,6 +466,23 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <circle class="rs-eye-burst" cx="32" cy="33" r="11" fill="url(#rs-eye-burst)"/>
         <circle class="rs-eye-burst" cx="44" cy="33" r="11" fill="url(#rs-eye-burst)"/>
       </g>
+      <!-- Twinkling sparkles along bones at peak — enchanted artifact glitter -->
+      <g class="rs-bone-sparkles">
+        <circle class="rs-sparkle" cx="48" cy="32" r="0.8"/>
+        <circle class="rs-sparkle" cx="64" cy="48" r="0.7"/>
+        <circle class="rs-sparkle" cx="86" cy="44" r="0.9"/>
+        <circle class="rs-sparkle" cx="108" cy="46" r="0.8"/>
+        <circle class="rs-sparkle" cx="128" cy="48" r="0.7"/>
+        <circle class="rs-sparkle" cx="150" cy="51" r="0.8"/>
+        <circle class="rs-sparkle" cx="172" cy="54" r="0.9"/>
+        <circle class="rs-sparkle" cx="78" cy="68" r="0.7"/>
+        <circle class="rs-sparkle" cx="98" cy="72" r="0.8"/>
+        <circle class="rs-sparkle" cx="118" cy="70" r="0.7"/>
+        <circle class="rs-sparkle" cx="68" cy="86" r="0.7"/>
+        <circle class="rs-sparkle" cx="178" cy="86" r="0.7"/>
+        <circle class="rs-sparkle" cx="200" cy="36" r="0.9"/>
+        <circle class="rs-sparkle" cx="38" cy="38" r="0.7"/>
+      </g>
       <!-- Lightning crackles along spine at apparation — jagged white bolts -->
       <g class="rs-lightning" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" filter="url(#rs-bone-glow)">
         <path class="rs-bolt rs-bolt-1" d="M58 46 L62 44 L60 50 L66 48 L64 54 L70 52"/>
@@ -2103,6 +2120,36 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   /* Cranial sutures — barely-visible plate divisions */
   .rs-suture { stroke-dasharray: 1.5 1; }
+
+  /* Bone sparkles — twinkling stars across the skeleton */
+  .rs-bone-sparkles { mix-blend-mode: screen; }
+  .rs-sparkle {
+    fill: #ffffff;
+    opacity: 0;
+    animation: rs-sparkle-twinkle var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    filter: drop-shadow(0 0 2px rgba(155, 231, 255, 0.9));
+  }
+  .rs-sparkle:nth-of-type(1)  { animation-delay: -0.05s; }
+  .rs-sparkle:nth-of-type(2)  { animation-delay: -0.20s; }
+  .rs-sparkle:nth-of-type(3)  { animation-delay: -0.35s; }
+  .rs-sparkle:nth-of-type(4)  { animation-delay: -0.50s; }
+  .rs-sparkle:nth-of-type(5)  { animation-delay: -0.65s; }
+  .rs-sparkle:nth-of-type(6)  { animation-delay: -0.80s; }
+  .rs-sparkle:nth-of-type(7)  { animation-delay: -0.95s; }
+  .rs-sparkle:nth-of-type(8)  { animation-delay: -1.10s; }
+  .rs-sparkle:nth-of-type(9)  { animation-delay: -1.25s; }
+  .rs-sparkle:nth-of-type(10) { animation-delay: -1.40s; }
+  .rs-sparkle:nth-of-type(11) { animation-delay: -0.10s; }
+  .rs-sparkle:nth-of-type(12) { animation-delay: -0.30s; }
+  .rs-sparkle:nth-of-type(13) { animation-delay: -0.55s; }
+  .rs-sparkle:nth-of-type(14) { animation-delay: -0.85s; }
+  @keyframes rs-sparkle-twinkle {
+    0%, 28%, 60%, 100% { opacity: 0; transform: scale(0.5); }
+    32% { opacity: 0.4; transform: scale(0.8); }
+    44% { opacity: 1; transform: scale(1.4); } /* SCREECH peak */
+    47% { opacity: 0.8; transform: scale(1.2); }
+    55% { opacity: 0.3; transform: scale(0.9); }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
