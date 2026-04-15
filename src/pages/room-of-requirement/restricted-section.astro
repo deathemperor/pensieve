@@ -1286,6 +1286,24 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     50% { opacity: 1; transform: scale(1.15); }
   }
 
+  /* Eye scaler — kicks the pupils brighter and bigger at SCREECH peak */
+  .rs-eye {
+    /* Extra animation layered on top: scale at peak */
+    /* Note: combining with existing rs-eye-blink + rs-eye-pulse */
+  }
+  .rs-skull .rs-eye {
+    animation:
+      rs-eye-blink 4.7s steps(1, end) infinite,
+      rs-eye-pulse 1.8s ease-in-out infinite,
+      rs-eye-screech var(--rs-prowl-dur, 16s) ease-in-out infinite;
+  }
+  @keyframes rs-eye-screech {
+    0%, 36%, 60%, 100% { fill: url(#rs-eye-glow); transform: scale(1); }
+    44% { transform: scale(1.6); filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px #9be7ff) drop-shadow(0 0 22px rgba(155, 231, 255, 0.9)); } /* SCREECH burst */
+    47% { transform: scale(1.5); }
+    52% { transform: scale(1.1); }
+  }
+
   /* The bones get a subtle turbulence flicker — only at PEAK, not always */
   .rs-skeleton-cat:hover .rs-cat-bones,
   .rs-skeleton-cat .rs-cat-bones {
@@ -1544,19 +1562,21 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     opacity: 0.85;
   }
 
-  /* HINGED JAW: drops open at peak (40-46%), revealing teeth */
+  /* HINGED JAW: extended dramatic screech sequence (38-58%) */
   .rs-jaw {
-    transform-origin: 22px 42px; /* hinge at jaw joint (new skull coords) */
+    transform-origin: 22px 42px; /* hinge at jaw joint */
     transform-box: fill-box;
     animation: rs-jaw-drop var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   @keyframes rs-jaw-drop {
-    0%, 36%, 50%, 100% { transform: rotate(0deg); }
-    38% { transform: rotate(8deg); } /* small open */
-    40% { transform: rotate(28deg); } /* WIDE open — hiss */
-    42% { transform: rotate(35deg); } /* peak hiss */
-    44% { transform: rotate(28deg); }
-    46% { transform: rotate(12deg); }
+    0%, 36%, 60%, 100% { transform: rotate(0deg); }
+    38% { transform: rotate(10deg); } /* small open */
+    41% { transform: rotate(28deg); } /* WIDE open */
+    44% { transform: rotate(40deg); } /* SCREECH peak — jaw fully agape */
+    47% { transform: rotate(38deg); } /* hold the screech */
+    50% { transform: rotate(32deg); }
+    54% { transform: rotate(20deg); }
+    58% { transform: rotate(8deg); }
   }
 
   /* FANGS: emphasis at peak — scale up */
@@ -1579,12 +1599,13 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     transform-origin: center bottom;
   }
   @keyframes rs-claws-extend {
-    0%, 35%, 50%, 100% { opacity: 0; }
+    0%, 35%, 60%, 100% { opacity: 0; }
     38% { opacity: 0.6; }
-    40% { opacity: 1; }
+    41% { opacity: 1; }
     44% { opacity: 1; }
-    46% { opacity: 0.7; }
-    48% { opacity: 0.3; }
+    50% { opacity: 1; } /* hold extended through screech */
+    54% { opacity: 0.7; }
+    58% { opacity: 0.3; }
   }
   .rs-claw {
     stroke-dasharray: 8;
@@ -1592,10 +1613,11 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     animation: rs-claw-stab var(--rs-prowl-dur, 16s) linear infinite;
   }
   @keyframes rs-claw-stab {
-    0%, 36%, 50%, 100% { stroke-dashoffset: 8; }
+    0%, 36%, 60%, 100% { stroke-dashoffset: 8; }
     40% { stroke-dashoffset: 0; }
     44% { stroke-dashoffset: 0; }
-    48% { stroke-dashoffset: 8; }
+    50% { stroke-dashoffset: 0; } /* claws extended through screech */
+    56% { stroke-dashoffset: 8; }
   }
 
   /* Cranial sutures — barely-visible plate divisions */
