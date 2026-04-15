@@ -228,6 +228,41 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Orbital particles spinning around portrait */}
+				<div class="portrait-orbits" aria-hidden="true">
+					<div class="orbit orbit-outer">
+						<span class="orbit-dot" style="--orb-angle: 0deg;" />
+						<span class="orbit-dot" style="--orb-angle: 72deg;" />
+						<span class="orbit-dot" style="--orb-angle: 144deg;" />
+						<span class="orbit-dot" style="--orb-angle: 216deg;" />
+						<span class="orbit-dot" style="--orb-angle: 288deg;" />
+					</div>
+					<div class="orbit orbit-inner">
+						<span class="orbit-dot orbit-dot-small" style="--orb-angle: 45deg;" />
+						<span class="orbit-dot orbit-dot-small" style="--orb-angle: 135deg;" />
+						<span class="orbit-dot orbit-dot-small" style="--orb-angle: 225deg;" />
+						<span class="orbit-dot orbit-dot-small" style="--orb-angle: 315deg;" />
+					</div>
+				</div>
+
+				{/* Apparition lightning bolts — jagged gold cracks fire every 18s */}
+				<div class="portrait-lightning" aria-hidden="true">
+					<svg class="lightning-bolt lightning-1" viewBox="0 0 100 200" preserveAspectRatio="none" aria-hidden="true">
+						<defs>
+							<linearGradient id="boltGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+								<stop offset="0%" stop-color="#fff0c2" stop-opacity="0" />
+								<stop offset="30%" stop-color="#fff0c2" stop-opacity="1" />
+								<stop offset="70%" stop-color="#f0c75e" stop-opacity="1" />
+								<stop offset="100%" stop-color="#f0c75e" stop-opacity="0" />
+							</linearGradient>
+						</defs>
+						<path d="M50 0 L45 30 L55 55 L40 85 L52 110 L38 140 L50 170 L48 200" fill="none" stroke="url(#boltGrad1)" stroke-width="2" stroke-linecap="round" />
+					</svg>
+					<svg class="lightning-bolt lightning-2" viewBox="0 0 100 200" preserveAspectRatio="none" aria-hidden="true">
+						<path d="M50 0 L58 35 L42 60 L56 90 L44 120 L55 150 L48 180 L52 200" fill="none" stroke="url(#boltGrad1)" stroke-width="2" stroke-linecap="round" />
+					</svg>
+				</div>
+
 				{/* Patronus burst — 12 rays explode from center every 15s */}
 				<div class="portrait-patronus" aria-hidden="true">
 					<div class="patronus-core" />
@@ -582,6 +617,101 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Orbital gold particles spinning around the portrait */
+	.portrait-orbits {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		z-index: 7;
+	}
+
+	.orbit {
+		position: absolute;
+		left: 0;
+		top: 0;
+		transform-origin: 0 0;
+	}
+
+	.orbit-outer {
+		animation: orbit-spin 18s linear infinite;
+	}
+
+	.orbit-inner {
+		animation: orbit-spin 12s linear infinite reverse;
+	}
+
+	@keyframes orbit-spin {
+		to { transform: rotate(360deg); }
+	}
+
+	.orbit-dot {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 8px;
+		height: 8px;
+		margin: -4px 0 0 -4px;
+		border-radius: 50%;
+		background: #fff0c2;
+		box-shadow:
+			0 0 4px #fff0c2,
+			0 0 10px rgba(240, 199, 94, 0.9),
+			0 0 20px rgba(240, 199, 94, 0.5);
+		transform: rotate(var(--orb-angle)) translateY(-190px);
+		transform-origin: 50% 50%;
+	}
+
+	.orbit-dot-small {
+		width: 5px;
+		height: 5px;
+		margin: -2.5px 0 0 -2.5px;
+		transform: rotate(var(--orb-angle)) translateY(-155px);
+	}
+
+	/* Apparition-style lightning bolts firing from above */
+	.portrait-lightning {
+		position: absolute;
+		top: -20px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 100px;
+		height: 400px;
+		pointer-events: none;
+		z-index: 8;
+	}
+
+	.lightning-bolt {
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 100%;
+		height: 100%;
+		filter: drop-shadow(0 0 6px rgba(240, 199, 94, 1)) drop-shadow(0 0 14px rgba(240, 199, 94, 0.6));
+		opacity: 0;
+		stroke-dasharray: 400;
+		stroke-dashoffset: 400;
+	}
+
+	.lightning-1 {
+		animation: lightning-strike 18s ease-out infinite;
+	}
+
+	.lightning-2 {
+		animation: lightning-strike 18s ease-out 9s infinite;
+	}
+
+	@keyframes lightning-strike {
+		0%, 92% { opacity: 0; stroke-dashoffset: 400; }
+		93% { opacity: 1; stroke-dashoffset: 0; }
+		95% { opacity: 1; }
+		98% { opacity: 0.3; }
+		100% { opacity: 0; }
 	}
 
 	/* Patronus burst — 12 rays explode from center periodically */
@@ -940,7 +1070,7 @@ function formatGHDate(iso: string) {
 		50% { opacity: 1; transform: scale(1.4); }
 	}
 
-	/* Photo: soft warm treatment inside the frame */
+	/* Photo: soft warm treatment + gentle breathing scale */
 	.profile-photo {
 		display: block;
 		width: 100%;
@@ -948,6 +1078,12 @@ function formatGHDate(iso: string) {
 		object-fit: cover;
 		border-radius: 2px;
 		filter: contrast(1.05) brightness(1.02) saturate(1.05);
+		animation: photo-breathe 8s ease-in-out infinite;
+	}
+
+	@keyframes photo-breathe {
+		0%, 100% { transform: scale(1); filter: contrast(1.05) brightness(1.02) saturate(1.05); }
+		50% { transform: scale(1.03); filter: contrast(1.08) brightness(1.08) saturate(1.15); }
 	}
 
 	/* Vignette on photo */
