@@ -228,6 +228,44 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* SVG defs for turbulence displacement filter applied to photo */}
+				<svg class="portrait-filters" aria-hidden="true" width="0" height="0">
+					<defs>
+						<filter id="magicalShimmer" x="-10%" y="-10%" width="120%" height="120%">
+							<feTurbulence type="fractalNoise" baseFrequency="0.015 0.02" numOctaves="2" seed="3">
+								<animate attributeName="baseFrequency" dur="20s" values="0.015 0.02;0.025 0.03;0.015 0.02" repeatCount="indefinite" />
+							</feTurbulence>
+							<feDisplacementMap in="SourceGraphic" scale="3" />
+						</filter>
+					</defs>
+				</svg>
+
+				{/* Crystalline geometric pattern overlay */}
+				<svg class="portrait-crystal" viewBox="0 0 280 350" preserveAspectRatio="none" aria-hidden="true">
+					<g stroke="currentColor" stroke-width="0.6" fill="none">
+						<polygon points="140,50 200,175 140,300 80,175" />
+						<polygon points="140,100 180,175 140,250 100,175" />
+						<line x1="140" y1="50" x2="140" y2="300" />
+						<line x1="80" y1="175" x2="200" y2="175" />
+					</g>
+				</svg>
+
+				{/* Phoenix feathers drifting around */}
+				<div class="portrait-feathers" aria-hidden="true">
+					<svg class="feather feather-1" viewBox="0 0 30 80" aria-hidden="true">
+						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
+						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
+					</svg>
+					<svg class="feather feather-2" viewBox="0 0 30 80" aria-hidden="true">
+						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
+						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
+					</svg>
+					<svg class="feather feather-3" viewBox="0 0 30 80" aria-hidden="true">
+						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
+						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
+					</svg>
+				</div>
+
 				{/* Gold rain falling from top */}
 				<div class="portrait-rain" aria-hidden="true">
 					{Array.from({ length: 16 }).map((_, i) => (
@@ -723,6 +761,71 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Crystalline geometric pattern overlay on photo */
+	.portrait-crystal {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+		width: auto;
+		height: auto;
+		pointer-events: none;
+		z-index: 4;
+		color: rgba(240, 199, 94, 0.18);
+		filter: drop-shadow(0 0 2px rgba(240, 199, 94, 0.6));
+		mix-blend-mode: overlay;
+		animation: crystal-shimmer 10s ease-in-out infinite;
+	}
+
+	@keyframes crystal-shimmer {
+		0%, 100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+		50% { opacity: 0.9; transform: scale(1.02) rotate(1deg); }
+	}
+
+	/* Phoenix feathers drifting slowly */
+	.portrait-feathers {
+		position: absolute;
+		inset: -60px;
+		pointer-events: none;
+		z-index: 5;
+		overflow: visible;
+	}
+
+	.feather {
+		position: absolute;
+		width: 28px;
+		height: 75px;
+		filter: drop-shadow(0 2px 6px rgba(240, 199, 94, 0.7)) drop-shadow(0 0 12px rgba(240, 199, 94, 0.4));
+	}
+
+	.feather-1 {
+		top: 0;
+		left: 10%;
+		animation: feather-drift 14s ease-in-out infinite;
+	}
+
+	.feather-2 {
+		top: 30%;
+		right: 5%;
+		animation: feather-drift 16s ease-in-out 4s infinite;
+	}
+
+	.feather-3 {
+		top: 60%;
+		left: 5%;
+		animation: feather-drift 12s ease-in-out 8s infinite;
+	}
+
+	@keyframes feather-drift {
+		0% { opacity: 0; transform: translate(0, -40px) rotate(-10deg) scale(0.8); }
+		15% { opacity: 0.9; transform: translate(10px, 40px) rotate(5deg) scale(1); }
+		35% { opacity: 0.8; transform: translate(-15px, 120px) rotate(-12deg) scale(0.95); }
+		60% { opacity: 0.7; transform: translate(20px, 220px) rotate(18deg) scale(1.05); }
+		85% { opacity: 0.3; transform: translate(-8px, 320px) rotate(-8deg) scale(0.9); }
+		100% { opacity: 0; transform: translate(15px, 420px) rotate(10deg) scale(0.7); }
 	}
 
 	/* Gold rain falling from above the portrait */
@@ -1605,20 +1708,30 @@ function formatGHDate(iso: string) {
 		50% { opacity: 1; transform: scale(1.4); }
 	}
 
-	/* Photo: soft warm treatment + gentle breathing scale */
+	/* Photo: soft warm treatment + breathing + magical turbulence shimmer */
 	.profile-photo {
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		border-radius: 2px;
-		filter: contrast(1.05) brightness(1.02) saturate(1.05);
+		filter:
+			contrast(1.05) brightness(1.02) saturate(1.05)
+			url(#magicalShimmer);
 		animation: photo-breathe 8s ease-in-out infinite;
 	}
 
 	@keyframes photo-breathe {
-		0%, 100% { transform: scale(1); filter: contrast(1.05) brightness(1.02) saturate(1.05); }
-		50% { transform: scale(1.03); filter: contrast(1.08) brightness(1.08) saturate(1.15); }
+		0%, 100% { transform: scale(1); }
+		50% { transform: scale(1.03); }
+	}
+
+	/* Hidden SVG filter container */
+	.portrait-filters {
+		position: absolute;
+		width: 0;
+		height: 0;
+		overflow: hidden;
 	}
 
 	/* Vignette on photo */
