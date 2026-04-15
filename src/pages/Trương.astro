@@ -228,6 +228,25 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Patronus burst — 12 rays explode from center every 15s */}
+				<div class="portrait-patronus" aria-hidden="true">
+					<div class="patronus-core" />
+					{[...Array(12)].map((_, i) => (
+						<span class="patronus-ray" style={`--pray-angle: ${i * 30}deg;`} />
+					))}
+				</div>
+
+				{/* Random sparkles that twinkle into existence */}
+				<div class="portrait-sparkles" aria-hidden="true">
+					<span class="sparkle" style="--sx: 8%; --sy: 15%; --sd: 0s;" />
+					<span class="sparkle" style="--sx: 92%; --sy: 22%; --sd: 1.7s;" />
+					<span class="sparkle" style="--sx: 14%; --sy: 72%; --sd: 3.2s;" />
+					<span class="sparkle" style="--sx: 88%; --sy: 80%; --sd: 4.8s;" />
+					<span class="sparkle" style="--sx: 50%; --sy: 10%; --sd: 2.5s;" />
+					<span class="sparkle" style="--sx: 5%; --sy: 45%; --sd: 6.2s;" />
+					<span class="sparkle" style="--sx: 95%; --sy: 52%; --sd: 7.5s;" />
+				</div>
+
 				{/* Pensieve-vortex conic gradient slowly spinning behind */}
 				<div class="portrait-vortex" aria-hidden="true" />
 
@@ -563,6 +582,115 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Patronus burst — 12 rays explode from center periodically */
+	.portrait-patronus {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		z-index: 7;
+	}
+
+	.patronus-core {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 40px;
+		height: 40px;
+		margin: -20px 0 0 -20px;
+		border-radius: 50%;
+		background: radial-gradient(circle, #fff 0%, rgba(255, 240, 200, 0.9) 30%, rgba(240, 199, 94, 0.5) 60%, transparent 80%);
+		box-shadow:
+			0 0 40px rgba(255, 240, 200, 0.9),
+			0 0 80px rgba(240, 199, 94, 0.6);
+		transform: scale(0);
+		opacity: 0;
+		animation: patronus-core-flash 12s ease-out infinite;
+	}
+
+	@keyframes patronus-core-flash {
+		0%, 85% { transform: scale(0); opacity: 0; }
+		88% { transform: scale(0.3); opacity: 1; }
+		92% { transform: scale(2); opacity: 1; }
+		100% { transform: scale(5); opacity: 0; }
+	}
+
+	.patronus-ray {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 3px;
+		height: 180px;
+		margin-left: -1.5px;
+		transform-origin: 50% 0%;
+		transform: rotate(var(--pray-angle)) scaleY(0);
+		background: linear-gradient(
+			to bottom,
+			rgba(255, 240, 200, 1),
+			rgba(240, 199, 94, 0.7) 50%,
+			transparent 100%
+		);
+		filter: blur(1.5px) drop-shadow(0 0 6px rgba(240, 199, 94, 0.9));
+		opacity: 0;
+		animation: patronus-ray-burst 12s ease-out infinite;
+	}
+
+	@keyframes patronus-ray-burst {
+		0%, 85% { opacity: 0; transform: rotate(var(--pray-angle)) scaleY(0); }
+		90% { opacity: 1; transform: rotate(var(--pray-angle)) scaleY(1.1); }
+		100% { opacity: 0; transform: rotate(var(--pray-angle)) scaleY(2.5) translateY(30px); }
+	}
+
+	/* Twinkling sparkles scattered around portrait */
+	.portrait-sparkles {
+		position: absolute;
+		inset: -40px;
+		pointer-events: none;
+		z-index: 6;
+	}
+
+	.sparkle {
+		position: absolute;
+		left: var(--sx);
+		top: var(--sy);
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: #fff0c2;
+		box-shadow:
+			0 0 6px #fff0c2,
+			0 0 14px rgba(240, 199, 94, 0.9),
+			0 0 26px rgba(240, 199, 94, 0.5);
+		opacity: 0;
+		animation: sparkle-twinkle 4.5s ease-in-out infinite;
+		animation-delay: var(--sd);
+	}
+
+	.sparkle::before, .sparkle::after {
+		content: "";
+		position: absolute;
+		background: rgba(255, 240, 200, 0.9);
+		filter: blur(0.5px);
+	}
+	.sparkle::before {
+		width: 22px; height: 1.5px;
+		top: 50%; left: 50%;
+		transform: translate(-50%, -50%);
+	}
+	.sparkle::after {
+		width: 1.5px; height: 22px;
+		top: 50%; left: 50%;
+		transform: translate(-50%, -50%);
+	}
+
+	@keyframes sparkle-twinkle {
+		0%, 70%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+		80% { opacity: 1; transform: scale(1.2) rotate(45deg); }
+		90% { opacity: 0.6; transform: scale(0.9) rotate(90deg); }
 	}
 
 	/* Conic-gradient vortex behind portrait — pensieve-like rotation */
