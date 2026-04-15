@@ -104,6 +104,37 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-moonbeam rs-moonbeam-2"></span>
       <span class="rs-moonbeam rs-moonbeam-3"></span>
     </div>
+    <!-- Scampering skeleton kitten — runs across the floor occasionally -->
+    <svg class="rs-scamp-kitten" viewBox="0 0 100 50" aria-hidden="true">
+      <g stroke="rgba(155, 231, 255, 0.85)" stroke-width="0.8" fill="none" stroke-linecap="round">
+        <!-- spine -->
+        <path d="M22 22 Q40 18 60 20 Q72 21 82 24"/>
+        <!-- ribs -->
+        <path d="M30 21 Q31 28 34 32"/>
+        <path d="M40 19 Q41 28 44 33"/>
+        <path d="M50 19 Q51 28 54 32"/>
+        <path d="M60 20 Q61 28 64 32"/>
+        <!-- legs -->
+        <path d="M30 32 L28 42 L32 46"/>
+        <path d="M36 32 L38 42 L34 46"/>
+        <path d="M62 32 L64 42 L60 46"/>
+        <path d="M68 32 L66 42 L70 46"/>
+        <!-- tail -->
+        <path d="M82 24 Q90 20 94 12 Q96 6 92 4"/>
+        <!-- skull -->
+        <path d="M14 22 Q9 18 11 12 Q15 6 22 6 Q28 6 30 12 Q30 18 28 21 Z"/>
+        <!-- ears -->
+        <path d="M14 9 L12 2 L18 6"/>
+        <path d="M26 8 L30 1 L24 5"/>
+        <!-- jaw -->
+        <path d="M11 18 Q16 24 26 22 Q28 20 28 18"/>
+        <!-- eyes -->
+        <ellipse cx="17" cy="14" rx="1.6" ry="2" fill="#0a0d18"/>
+        <ellipse cx="24" cy="14" rx="1.6" ry="2" fill="#0a0d18"/>
+        <circle cx="17" cy="14" r="0.9" fill="#9be7ff"/>
+        <circle cx="24" cy="14" r="0.9" fill="#9be7ff"/>
+      </g>
+    </svg>
     <!-- Floating spell book — open in mid-air, pages flip slowly -->
     <div class="rs-spellbook" aria-hidden="true">
       <div class="rs-book-base"></div>
@@ -877,6 +908,35 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 100%;
     opacity: 0.4;
     mix-blend-mode: overlay;
+  }
+
+  /* Scampering skeleton kitten — runs L→R every cycle (long delay) */
+  .rs-scamp-kitten {
+    position: absolute;
+    bottom: 12px;
+    left: -100px;
+    width: 80px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    animation: rs-scamp-run 22s linear infinite;
+    animation-delay: -7s;
+    filter: drop-shadow(0 2px 4px rgba(0,8,20,0.5)) drop-shadow(0 0 6px rgba(155,231,255,0.4));
+  }
+  @keyframes rs-scamp-run {
+    0%, 76%, 100% { left: -100px; opacity: 0; }
+    78% { opacity: 0.85; }
+    79% { transform: translateY(0); }
+    80% { transform: translateY(-2px); } /* mini bounce */
+    81% { transform: translateY(0); }
+    83% { transform: translateY(-2px); }
+    84% { transform: translateY(0); }
+    86% { transform: translateY(-2px); }
+    87% { transform: translateY(0); }
+    90% { left: 50%; transform: translateY(0); }
+    94% { left: 110%; opacity: 0.7; }
+    95% { left: 110%; opacity: 0; }
   }
 
   /* Floating spell book — open, mid-air, pages flip lazily */
