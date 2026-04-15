@@ -228,6 +228,45 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Animated compass / celestial dial rotating behind */}
+				<svg class="portrait-compass" viewBox="0 0 400 400" aria-hidden="true">
+					<g stroke="currentColor" stroke-width="0.8" fill="none">
+						<circle cx="200" cy="200" r="180" stroke-dasharray="2 4" />
+						<circle cx="200" cy="200" r="160" />
+						<circle cx="200" cy="200" r="140" stroke-dasharray="1 6" />
+						{Array.from({ length: 24 }).map((_, i) => (
+							<line x1="200" y1="20" x2="200" y2="40" transform={`rotate(${i * 15} 200 200)`} stroke-width={i % 6 === 0 ? 2 : 0.6} />
+						))}
+					</g>
+					<g fill="currentColor" opacity="0.9">
+						<polygon points="200,40 195,200 200,205 205,200" />
+						<polygon points="200,360 195,200 200,195 205,200" opacity="0.5" />
+					</g>
+				</svg>
+
+				{/* Flowing ribbon weaving around portrait */}
+				<svg class="portrait-ribbon" viewBox="0 0 400 500" preserveAspectRatio="none" aria-hidden="true">
+					<defs>
+						<linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+							<stop offset="0%" stop-color="#f0c75e" stop-opacity="0" />
+							<stop offset="20%" stop-color="#ffe6a8" stop-opacity="0.8" />
+							<stop offset="50%" stop-color="#fff0c2" />
+							<stop offset="80%" stop-color="#ffe6a8" stop-opacity="0.8" />
+							<stop offset="100%" stop-color="#f0c75e" stop-opacity="0" />
+						</linearGradient>
+					</defs>
+					<path class="ribbon-path" d="M20 100 Q60 40, 200 80 T380 100 Q350 250, 380 400 Q280 380, 200 420 Q100 380, 20 400 Q50 250, 20 100 Z"
+						fill="none" stroke="url(#ribbonGrad)" stroke-width="3" stroke-linecap="round" />
+				</svg>
+
+				{/* Gold liquid drips down frame edges */}
+				<div class="portrait-drips" aria-hidden="true">
+					<span class="drip" style="--drx: 15%; --drd: 0s; --drh: 50px;" />
+					<span class="drip" style="--drx: 35%; --drd: 2s; --drh: 70px;" />
+					<span class="drip" style="--drx: 65%; --drd: 3.5s; --drh: 45px;" />
+					<span class="drip" style="--drx: 85%; --drd: 5s; --drh: 60px;" />
+				</div>
+
 				{/* Soundwave pulsing rings — 6 concentric rings expanding */}
 				<div class="portrait-soundwaves" aria-hidden="true">
 					<span class="soundwave" style="--swd: 0s;" />
@@ -829,6 +868,102 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Animated compass / celestial dial */
+	.portrait-compass {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 450px;
+		height: 450px;
+		margin-left: -225px;
+		margin-top: -225px;
+		pointer-events: none;
+		z-index: 0;
+		color: rgba(240, 199, 94, 0.22);
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.4));
+		animation: compass-rotate 90s linear infinite;
+	}
+
+	@keyframes compass-rotate {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Flowing ribbon weaving around */
+	.portrait-ribbon {
+		position: absolute;
+		top: -50px;
+		left: 50%;
+		width: 400px;
+		height: 500px;
+		margin-left: -200px;
+		pointer-events: none;
+		z-index: 3;
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.7));
+	}
+
+	.ribbon-path {
+		stroke-dasharray: 2400;
+		stroke-dashoffset: 2400;
+		animation: ribbon-flow 20s linear infinite;
+	}
+
+	@keyframes ribbon-flow {
+		0% { stroke-dashoffset: 2400; }
+		100% { stroke-dashoffset: -2400; }
+	}
+
+	/* Gold liquid drips from top edge of frame */
+	.portrait-drips {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 140px;
+		pointer-events: none;
+		z-index: 5;
+		overflow: hidden;
+	}
+
+	.drip {
+		position: absolute;
+		top: 0;
+		left: var(--drx);
+		width: 3px;
+		height: var(--drh);
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			rgba(255, 240, 200, 0.5) 20%,
+			rgba(240, 199, 94, 0.9) 60%,
+			rgba(240, 199, 94, 1) 100%
+		);
+		border-radius: 0 0 50% 50%;
+		filter: blur(0.5px) drop-shadow(0 0 4px rgba(240, 199, 94, 0.7));
+		transform-origin: 0 0;
+		transform: scaleY(0);
+		animation: drip-fall 7s ease-in infinite;
+		animation-delay: var(--drd);
+	}
+
+	.drip::after {
+		content: "";
+		position: absolute;
+		left: -3px;
+		bottom: -4px;
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: radial-gradient(circle at 30% 30%, #fff0c2, #f0c75e);
+		box-shadow: 0 0 6px rgba(240, 199, 94, 0.8);
+	}
+
+	@keyframes drip-fall {
+		0% { transform: scaleY(0); opacity: 1; }
+		30% { transform: scaleY(1); opacity: 1; }
+		70% { transform: scaleY(1) translateY(0); opacity: 1; }
+		100% { transform: scaleY(1) translateY(80px); opacity: 0; }
 	}
 
 	/* Soundwave pulsing rings */
@@ -2048,7 +2183,7 @@ function formatGHDate(iso: string) {
 		50% { opacity: 1; transform: scale(1.4); }
 	}
 
-	/* Photo: soft warm treatment + breathing + magical turbulence shimmer */
+	/* Photo: soft warm treatment + breathing + Ken Burns pan/zoom + turbulence shimmer */
 	.profile-photo {
 		display: block;
 		width: 100%;
@@ -2058,12 +2193,15 @@ function formatGHDate(iso: string) {
 		filter:
 			contrast(1.05) brightness(1.02) saturate(1.05)
 			url(#magicalShimmer);
-		animation: photo-breathe 8s ease-in-out infinite;
+		animation: photo-ken-burns 24s ease-in-out infinite;
 	}
 
-	@keyframes photo-breathe {
-		0%, 100% { transform: scale(1); }
-		50% { transform: scale(1.03); }
+	@keyframes photo-ken-burns {
+		0% { transform: scale(1) translate(0, 0); }
+		25% { transform: scale(1.06) translate(-2%, -1%); }
+		50% { transform: scale(1.08) translate(1%, 2%); }
+		75% { transform: scale(1.06) translate(2%, -1%); }
+		100% { transform: scale(1) translate(0, 0); }
 	}
 
 	/* Hidden SVG filter container */
