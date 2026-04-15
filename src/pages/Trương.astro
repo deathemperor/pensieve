@@ -582,43 +582,50 @@ function formatGHDate(iso: string) {
 	.portrait-stage {
 		position: relative;
 		width: 100%;
-		max-width: 380px;
+		max-width: 340px;
 		aspect-ratio: 4 / 5;
+		/* Generous padding so rays/embers can extend well beyond the frame */
+		padding: 40px;
+		margin: -40px;
+		overflow: visible;
 	}
 
-	/* Radial light rays — 6 beams rotating slowly from center, each fading in sequence */
+	/* Radial light rays — thicker, brighter, more visible */
 	.portrait-rays {
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
 		z-index: 0;
-		animation: rays-rotate 60s linear infinite;
+		animation: rays-rotate 40s linear infinite;
 	}
 
 	.portrait-rays span {
 		position: absolute;
 		left: 50%;
 		top: 50%;
-		width: 2px;
-		height: 60%;
-		margin-left: -1px;
-		margin-top: -30%;
+		width: 4px;
+		height: 110%;
+		margin-left: -2px;
+		margin-top: -55%;
 		transform-origin: 50% 50%;
 		transform: rotate(var(--ray-angle));
 		background: linear-gradient(
 			to top,
 			transparent 0%,
-			rgba(240, 199, 94, 0.35) 50%,
+			rgba(240, 199, 94, 0.15) 30%,
+			rgba(255, 220, 150, 0.75) 50%,
+			rgba(240, 199, 94, 0.15) 70%,
 			transparent 100%
 		);
-		filter: blur(3px);
+		filter: blur(4px);
 		opacity: 0;
-		animation: ray-breathe 7.2s ease-in-out infinite;
+		mix-blend-mode: screen;
+		animation: ray-breathe 6s ease-in-out infinite;
 		animation-delay: var(--ray-delay);
 	}
 
 	@keyframes ray-breathe {
-		0%, 80%, 100% { opacity: 0; }
+		0%, 75%, 100% { opacity: 0; }
 		15%, 50% { opacity: 1; }
 	}
 
@@ -626,7 +633,7 @@ function formatGHDate(iso: string) {
 		to { transform: rotate(360deg); }
 	}
 
-	/* Expanding ripples — circular waves emanating outward */
+	/* Expanding ripples — golden waves emanating outward, brighter */
 	.portrait-ripples {
 		position: absolute;
 		inset: 0;
@@ -638,26 +645,29 @@ function formatGHDate(iso: string) {
 		position: absolute;
 		left: 50%;
 		top: 50%;
-		width: 60%;
-		height: 60%;
+		width: 80%;
+		height: 80%;
 		transform: translate(-50%, -50%) scale(0);
-		border: 1px solid rgba(240, 199, 94, 0.4);
+		border: 2px solid rgba(240, 199, 94, 0.7);
 		border-radius: 50%;
 		opacity: 0;
-		animation: ripple-expand 7.5s ease-out infinite;
+		box-shadow:
+			0 0 24px rgba(240, 199, 94, 0.3),
+			inset 0 0 24px rgba(240, 199, 94, 0.2);
+		animation: ripple-expand 6s ease-out infinite;
 		animation-delay: var(--ripple-delay);
 	}
 
 	@keyframes ripple-expand {
-		0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; border-width: 2px; }
-		15% { opacity: 0.9; }
-		100% { transform: translate(-50%, -50%) scale(2); opacity: 0; border-width: 0.5px; }
+		0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; border-width: 3px; }
+		10% { opacity: 1; }
+		100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; border-width: 0.5px; }
 	}
 
-	/* Embers — floating gold particles drifting upward */
+	/* Embers — larger, brighter, more visible floating gold particles */
 	.portrait-embers {
 		position: absolute;
-		inset: 0;
+		inset: -10%;
 		pointer-events: none;
 		z-index: 1;
 		overflow: visible;
@@ -665,74 +675,78 @@ function formatGHDate(iso: string) {
 
 	.portrait-embers span {
 		position: absolute;
-		bottom: 10%;
+		bottom: 5%;
 		left: var(--ex);
-		width: 3px;
-		height: 3px;
+		width: 5px;
+		height: 5px;
 		border-radius: 50%;
-		background: rgba(255, 220, 140, 0.9);
+		background: rgba(255, 230, 160, 1);
 		box-shadow:
-			0 0 6px rgba(240, 199, 94, 0.8),
-			0 0 12px rgba(240, 199, 94, 0.5);
+			0 0 4px rgba(255, 230, 160, 1),
+			0 0 10px rgba(240, 199, 94, 0.9),
+			0 0 20px rgba(240, 199, 94, 0.6),
+			0 0 30px rgba(240, 199, 94, 0.3);
 		opacity: 0;
-		animation: ember-rise 9s ease-in-out infinite;
+		animation: ember-rise 8s ease-in-out infinite;
 		animation-delay: var(--ed);
 	}
 
 	@keyframes ember-rise {
-		0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
-		10% { opacity: 1; transform: translate(calc(var(--edx) * 0.2), calc(var(--eh) * -0.15)) scale(1); }
-		50% { opacity: 0.9; transform: translate(calc(var(--edx) * 0.6), calc(var(--eh) * -0.55)) scale(0.9); }
-		85% { opacity: 0.4; }
-		100% { opacity: 0; transform: translate(var(--edx), calc(var(--eh) * -1)) scale(0.4); }
+		0% { opacity: 0; transform: translate(0, 0) scale(0.2); }
+		8% { opacity: 1; transform: translate(calc(var(--edx) * 0.15), calc(var(--eh) * -0.1)) scale(1.2); }
+		40% { opacity: 1; transform: translate(calc(var(--edx) * 0.55), calc(var(--eh) * -0.5)) scale(1); }
+		75% { opacity: 0.5; transform: translate(calc(var(--edx) * 0.85), calc(var(--eh) * -0.85)) scale(0.7); }
+		100% { opacity: 0; transform: translate(var(--edx), calc(var(--eh) * -1.1)) scale(0.3); }
 	}
 
-	/* Main portrait frame */
+	/* Main portrait frame — anchored inside the stage (accounts for stage padding) */
 	.portrait-frame {
 		position: absolute;
-		inset: 0;
-		padding: 16px;
+		inset: 40px;
+		padding: 14px;
 		color: #f0c75e;
 		border-radius: 3px;
 		background:
 			linear-gradient(
 				135deg,
-				rgba(240, 199, 94, 0.22) 0%,
-				rgba(180, 140, 60, 0.08) 35%,
-				rgba(240, 199, 94, 0.12) 50%,
-				rgba(180, 140, 60, 0.08) 65%,
-				rgba(240, 199, 94, 0.22) 100%
+				rgba(255, 230, 170, 0.4) 0%,
+				rgba(180, 140, 60, 0.1) 30%,
+				rgba(240, 199, 94, 0.2) 50%,
+				rgba(180, 140, 60, 0.1) 70%,
+				rgba(255, 230, 170, 0.4) 100%
 			);
 		box-shadow:
-			inset 0 0 0 1px rgba(240, 199, 94, 0.4),
-			inset 0 0 0 9px rgba(10, 10, 12, 0.5),
-			inset 0 1px 0 rgba(255, 230, 170, 0.3),
-			0 1px 0 rgba(240, 199, 94, 0.25),
-			0 40px 100px -20px rgba(0, 0, 0, 0.6),
-			0 0 80px -10px rgba(240, 199, 94, 0.25);
+			inset 0 0 0 1px rgba(255, 230, 170, 0.6),
+			inset 0 0 0 9px rgba(10, 10, 12, 0.6),
+			inset 0 0 0 10px rgba(240, 199, 94, 0.4),
+			inset 0 2px 0 rgba(255, 240, 200, 0.5),
+			0 0 0 1px rgba(240, 199, 94, 0.3),
+			0 40px 100px -20px rgba(0, 0, 0, 0.7),
+			0 0 140px -20px rgba(240, 199, 94, 0.55);
 		z-index: 2;
 	}
 
-	/* Pulsing halo aura */
+	/* Pulsing halo aura — much larger and brighter */
 	.portrait-aura {
 		position: absolute;
-		inset: -32px;
+		inset: -60px;
 		border-radius: inherit;
 		background: radial-gradient(
-			ellipse at 50% 40%,
-			rgba(240, 199, 94, 0.35) 0%,
-			rgba(240, 199, 94, 0.1) 40%,
-			transparent 70%
+			ellipse at 50% 45%,
+			rgba(240, 199, 94, 0.5) 0%,
+			rgba(240, 199, 94, 0.22) 30%,
+			rgba(240, 199, 94, 0.08) 55%,
+			transparent 75%
 		);
-		filter: blur(24px);
-		opacity: 0.75;
+		filter: blur(32px);
+		opacity: 0.9;
 		z-index: -1;
-		animation: portrait-pulse 5s ease-in-out infinite;
+		animation: portrait-pulse 4s ease-in-out infinite;
 	}
 
 	@keyframes portrait-pulse {
-		0%, 100% { opacity: 0.6; transform: scale(1); }
-		50% { opacity: 1; transform: scale(1.06); }
+		0%, 100% { opacity: 0.7; transform: scale(1); }
+		50% { opacity: 1; transform: scale(1.1); }
 	}
 
 	/* Diagonal sheen sweeping across the frame */
@@ -786,79 +800,74 @@ function formatGHDate(iso: string) {
 		height: 100%;
 		object-fit: cover;
 		display: block;
-		filter:
-			grayscale(16%)
-			contrast(1.08)
-			brightness(0.94)
-			sepia(8%);
+		filter: contrast(1.06) brightness(1.02) saturate(1.05);
 		transition:
 			filter 700ms ease,
 			transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
 	}
 
 	.about-hero-photo:hover .profile-photo {
-		filter:
-			grayscale(2%)
-			contrast(1.1)
-			brightness(1.04)
-			sepia(2%);
-		transform: scale(1.03);
+		filter: contrast(1.1) brightness(1.08) saturate(1.15);
+		transform: scale(1.04);
 	}
 
-	/* Vignette with warm gold top-light */
+	/* Subtle vignette — just darkens far corners, lets photo breathe */
 	.portrait-vignette {
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
 		background:
 			radial-gradient(
-				ellipse at 50% 40%,
-				transparent 35%,
-				rgba(0, 0, 0, 0.35) 85%,
-				rgba(0, 0, 0, 0.55) 100%
+				ellipse at 50% 50%,
+				transparent 55%,
+				rgba(0, 0, 0, 0.2) 90%,
+				rgba(0, 0, 0, 0.35) 100%
 			),
 			linear-gradient(
 				180deg,
-				rgba(240, 199, 94, 0.1) 0%,
-				transparent 25%,
-				transparent 75%,
-				rgba(10, 10, 12, 0.25) 100%
+				rgba(240, 199, 94, 0.08) 0%,
+				transparent 20%,
+				transparent 80%,
+				rgba(0, 0, 0, 0.12) 100%
 			);
-		mix-blend-mode: multiply;
 	}
 
-	/* Ornate SVG corner filigrees */
+	/* Ornate SVG corner filigrees — larger, brighter */
 	.portrait-corner {
 		position: absolute;
-		width: 28px;
-		height: 28px;
-		color: rgba(240, 199, 94, 0.9);
-		filter: drop-shadow(0 0 6px rgba(240, 199, 94, 0.5));
+		width: 36px;
+		height: 36px;
+		color: rgba(255, 230, 160, 1);
+		filter:
+			drop-shadow(0 0 6px rgba(240, 199, 94, 0.8))
+			drop-shadow(0 0 14px rgba(240, 199, 94, 0.5));
 		z-index: 5;
-		animation: corner-glow 4s ease-in-out infinite;
+		animation: corner-glow 3.5s ease-in-out infinite;
 	}
 
-	.portrait-corner circle { filter: drop-shadow(0 0 3px rgba(240, 199, 94, 0.8)); }
-	.portrait-corner-tl { top: 4px; left: 4px; }
-	.portrait-corner-tr { top: 4px; right: 4px; animation-delay: 1s; }
-	.portrait-corner-bl { bottom: 4px; left: 4px; animation-delay: 2s; }
-	.portrait-corner-br { bottom: 4px; right: 4px; animation-delay: 3s; }
+	.portrait-corner circle { filter: drop-shadow(0 0 4px rgba(255, 230, 160, 1)); }
+	.portrait-corner-tl { top: 2px; left: 2px; }
+	.portrait-corner-tr { top: 2px; right: 2px; animation-delay: 0.9s; }
+	.portrait-corner-bl { bottom: 2px; left: 2px; animation-delay: 1.8s; }
+	.portrait-corner-br { bottom: 2px; right: 2px; animation-delay: 2.7s; }
 
 	@keyframes corner-glow {
-		0%, 100% { filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.4)); }
-		50% { filter: drop-shadow(0 0 10px rgba(240, 199, 94, 0.7)); }
+		0%, 100% { filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.5)) drop-shadow(0 0 8px rgba(240, 199, 94, 0.3)); }
+		50% { filter: drop-shadow(0 0 12px rgba(240, 199, 94, 1)) drop-shadow(0 0 20px rgba(240, 199, 94, 0.6)); }
 	}
 
 	/* Bottom plaque - decorative engraving below image */
 	.portrait-plaque {
 		position: absolute;
-		bottom: -18px;
+		bottom: -22px;
 		left: 50%;
 		transform: translateX(-50%);
-		width: 60%;
-		height: 20px;
-		color: rgba(240, 199, 94, 0.75);
-		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 4px rgba(240, 199, 94, 0.4));
+		width: 70%;
+		height: 24px;
+		color: rgba(255, 220, 140, 0.95);
+		filter:
+			drop-shadow(0 3px 8px rgba(0, 0, 0, 0.7))
+			drop-shadow(0 0 8px rgba(240, 199, 94, 0.7));
 		z-index: 6;
 	}
 
