@@ -228,6 +228,23 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
+				{/* Ghost echo — photo silhouette pulses outward like Priori Incantatem */}
+				<div class="portrait-echo" aria-hidden="true" />
+
+				{/* Shooting stars streaking across the frame */}
+				<div class="portrait-shooting-stars" aria-hidden="true">
+					<span class="shooting-star" style="--ss-x: 20%; --ss-y: 30%; --ss-rot: 35deg; --ss-d: 0s;" />
+					<span class="shooting-star" style="--ss-x: 70%; --ss-y: 60%; --ss-rot: -25deg; --ss-d: 4s;" />
+					<span class="shooting-star" style="--ss-x: 40%; --ss-y: 80%; --ss-rot: 50deg; --ss-d: 8.5s;" />
+				</div>
+
+				{/* Floo-style rising gold mist at bottom */}
+				<div class="portrait-mist" aria-hidden="true">
+					<span class="mist-plume" style="--mx: 25%; --md: 0s;" />
+					<span class="mist-plume" style="--mx: 55%; --md: 2.5s;" />
+					<span class="mist-plume" style="--mx: 80%; --md: 5s;" />
+				</div>
+
 				{/* Orbital particles spinning around portrait */}
 				<div class="portrait-orbits" aria-hidden="true">
 					<div class="orbit orbit-outer">
@@ -617,6 +634,110 @@ function formatGHDate(iso: string) {
 		margin: 0;
 		padding: 0;
 		width: 280px;
+	}
+
+	/* Priori-Incantatem ghost echo — portrait silhouette pulses outward */
+	.portrait-echo {
+		position: absolute;
+		top: 175px;
+		left: 50%;
+		width: 280px;
+		height: 350px;
+		margin-left: -140px;
+		margin-top: -175px;
+		pointer-events: none;
+		z-index: 1;
+		border: 2px solid rgba(240, 199, 94, 0.4);
+		border-radius: 4px;
+		box-shadow: 0 0 40px rgba(240, 199, 94, 0.3), inset 0 0 30px rgba(240, 199, 94, 0.2);
+		transform: scale(1);
+		opacity: 0;
+		animation: echo-pulse 10s ease-out infinite;
+	}
+
+	@keyframes echo-pulse {
+		0% { transform: scale(1); opacity: 0.6; border-width: 2px; }
+		60% { transform: scale(1.3); opacity: 0.3; border-width: 1px; }
+		100% { transform: scale(1.6); opacity: 0; border-width: 0.5px; }
+	}
+
+	/* Shooting stars streaking across */
+	.portrait-shooting-stars {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 7;
+		overflow: hidden;
+	}
+
+	.shooting-star {
+		position: absolute;
+		left: var(--ss-x);
+		top: var(--ss-y);
+		width: 80px;
+		height: 2px;
+		transform: rotate(var(--ss-rot));
+		background: linear-gradient(to right, transparent 0%, rgba(255, 240, 200, 0.9) 50%, #fff 95%, transparent 100%);
+		filter: blur(0.5px) drop-shadow(0 0 4px rgba(255, 240, 200, 0.9)) drop-shadow(0 0 10px rgba(240, 199, 94, 0.7));
+		opacity: 0;
+		animation: shooting-star-fly 12s ease-out infinite;
+		animation-delay: var(--ss-d);
+	}
+
+	.shooting-star::after {
+		content: "";
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 0 10px #fff, 0 0 20px rgba(240, 199, 94, 0.9);
+	}
+
+	@keyframes shooting-star-fly {
+		0%, 88% { opacity: 0; transform: rotate(var(--ss-rot)) translateX(-100px) scaleX(0.3); }
+		92% { opacity: 1; transform: rotate(var(--ss-rot)) translateX(0) scaleX(1); }
+		100% { opacity: 0; transform: rotate(var(--ss-rot)) translateX(200px) scaleX(1.5); }
+	}
+
+	/* Floo-style rising gold mist plumes at bottom */
+	.portrait-mist {
+		position: absolute;
+		bottom: -40px;
+		left: 0;
+		right: 0;
+		height: 200px;
+		pointer-events: none;
+		z-index: 3;
+	}
+
+	.mist-plume {
+		position: absolute;
+		bottom: 0;
+		left: var(--mx);
+		width: 80px;
+		height: 80px;
+		margin-left: -40px;
+		border-radius: 50%;
+		background: radial-gradient(
+			circle at center,
+			rgba(240, 199, 94, 0.6) 0%,
+			rgba(255, 230, 170, 0.3) 40%,
+			transparent 70%
+		);
+		filter: blur(8px);
+		opacity: 0;
+		animation: mist-bloom 7s ease-out infinite;
+		animation-delay: var(--md);
+	}
+
+	@keyframes mist-bloom {
+		0% { opacity: 0; transform: translate(0, 40px) scale(0.3); }
+		30% { opacity: 1; transform: translate(0, 0) scale(1); }
+		100% { opacity: 0; transform: translate(var(--mdx, 10px), -120px) scale(2.5); }
 	}
 
 	/* Orbital gold particles spinning around the portrait */
