@@ -104,6 +104,17 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-moonbeam rs-moonbeam-2"></span>
       <span class="rs-moonbeam rs-moonbeam-3"></span>
     </div>
+    <!-- Floating dust motes — tiny specks catching the moonlight -->
+    <div class="rs-dust" aria-hidden="true">
+      <span class="rs-mote" style="--x:14%; --y:25%; --d:0s; --dur:18s;"></span>
+      <span class="rs-mote" style="--x:22%; --y:48%; --d:-3s; --dur:22s;"></span>
+      <span class="rs-mote" style="--x:38%; --y:38%; --d:-5s; --dur:26s;"></span>
+      <span class="rs-mote" style="--x:46%; --y:60%; --d:-8s; --dur:24s;"></span>
+      <span class="rs-mote" style="--x:58%; --y:32%; --d:-11s; --dur:20s;"></span>
+      <span class="rs-mote" style="--x:68%; --y:55%; --d:-14s; --dur:23s;"></span>
+      <span class="rs-mote" style="--x:78%; --y:42%; --d:-2s; --dur:19s;"></span>
+      <span class="rs-mote" style="--x:86%; --y:28%; --d:-7s; --dur:25s;"></span>
+    </div>
     <!-- Permanent summoning sigil — always visible, brightens at peak -->
     <div class="rs-sigil" aria-hidden="true">
       <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
@@ -857,6 +868,35 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     height: 100%;
     opacity: 0.4;
     mix-blend-mode: overlay;
+  }
+
+  /* Floating dust motes — tiny specks slowly drifting in the air */
+  .rs-dust {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .rs-mote {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 245, 200, 0.9), rgba(255, 230, 150, 0.4) 50%, transparent 80%);
+    box-shadow: 0 0 4px rgba(255, 230, 150, 0.5);
+    opacity: 0;
+    animation: rs-mote-drift var(--dur, 22s) ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-mote-drift {
+    0%, 100% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    20% { opacity: 0.9; transform: translate(-8px, -12px) scale(1); }
+    50% { opacity: 1; transform: translate(-15px, -25px) scale(1.2); }
+    80% { opacity: 0.6; transform: translate(-22px, -40px) scale(0.8); }
   }
 
   /* Moonlight beams — diagonal slabs of cool light from upper-left */
