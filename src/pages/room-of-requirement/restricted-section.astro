@@ -135,6 +135,11 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         <circle cx="24" cy="14" r="0.9" fill="#9be7ff"/>
       </g>
     </svg>
+    <!-- Cat caption — fades in briefly to identify Mrs. Norris -->
+    <div class="rs-cat-caption" aria-hidden="true">
+      <span class="rs-cap-name">Mrs. Norris</span>
+      <span class="rs-cap-meta">— Familiar of the Restricted Section</span>
+    </div>
     <!-- Floating spell book — open in mid-air, pages flip slowly -->
     <div class="rs-spellbook" aria-hidden="true">
       <div class="rs-book-base"></div>
@@ -983,6 +988,43 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     90% { left: 50%; transform: translateY(0); }
     94% { left: 110%; opacity: 0.7; }
     95% { left: 110%; opacity: 0; }
+  }
+
+  /* Cat caption — small text label fades in during cat's settled phase */
+  .rs-cat-caption {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 5;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    color: rgba(180, 220, 250, 0.85);
+    text-shadow: 0 0 6px rgba(126, 200, 255, 0.5);
+    opacity: 0;
+    animation: rs-caption-fade var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    white-space: nowrap;
+  }
+  .rs-cap-name {
+    color: rgba(255, 230, 150, 0.95);
+    font-weight: 600;
+    margin-right: 4px;
+    text-shadow: 0 0 8px rgba(255, 200, 100, 0.6);
+  }
+  .rs-cap-meta {
+    color: rgba(180, 220, 250, 0.65);
+    font-style: italic;
+  }
+  @keyframes rs-caption-fade {
+    0%, 22%, 70%, 100% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    32% { opacity: 0.9; transform: translateX(-50%) translateY(0); }
+    44% { opacity: 0.7; } /* dim during peak so it doesn't compete with spell */
+    52% { opacity: 0.95; transform: translateX(-50%) translateY(0); }
+    65% { opacity: 0.4; transform: translateX(-50%) translateY(-4px); }
   }
 
   /* Floating spell book — open, mid-air, pages flip lazily */
