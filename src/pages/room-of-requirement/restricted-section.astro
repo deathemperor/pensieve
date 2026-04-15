@@ -61,19 +61,72 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
           : "Design specs and implementation plans — every architecture decision captured from brainstorming sessions."}
       </p>
     </div>
+    <!-- Spectral aura traveling with the cat: ground shadow + ectoplasm haze -->
+    <div class="rs-cat-aura" aria-hidden="true">
+      <div class="rs-cat-shadow"></div>
+      <div class="rs-cat-haze"></div>
+    </div>
+    <!-- Trailing ectoplasm wisps spawned in CSS along the prowl path -->
+    <div class="rs-cat-trail" aria-hidden="true">
+      <span class="rs-wisp" style="--i:0"></span>
+      <span class="rs-wisp" style="--i:1"></span>
+      <span class="rs-wisp" style="--i:2"></span>
+      <span class="rs-wisp" style="--i:3"></span>
+      <span class="rs-wisp" style="--i:4"></span>
+      <span class="rs-wisp" style="--i:5"></span>
+      <span class="rs-wisp" style="--i:6"></span>
+      <span class="rs-wisp" style="--i:7"></span>
+    </div>
+    <!-- Detached bone shards floating up like fireflies -->
+    <div class="rs-bone-shards" aria-hidden="true">
+      <span class="rs-shard rs-shard-rib" style="--i:0"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:1"></span>
+      <span class="rs-shard rs-shard-rib" style="--i:2"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:3"></span>
+      <span class="rs-shard rs-shard-rib" style="--i:4"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:5"></span>
+    </div>
     <svg class="rs-skeleton-cat" viewBox="0 0 220 110" aria-hidden="true">
       <defs>
         <radialGradient id="rs-eye-glow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#9be7ff" stop-opacity="1"/>
-          <stop offset="60%" stop-color="#5ab8ff" stop-opacity="0.55"/>
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="35%" stop-color="#9be7ff" stop-opacity="0.95"/>
+          <stop offset="75%" stop-color="#5ab8ff" stop-opacity="0.4"/>
           <stop offset="100%" stop-color="#1a4a7a" stop-opacity="0"/>
         </radialGradient>
+        <radialGradient id="rs-eye-burst" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+          <stop offset="40%" stop-color="#9be7ff" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#5ab8ff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="rs-bone-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#b8d4ec" stop-opacity="0.9"/>
+        </linearGradient>
         <filter id="rs-bone-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="0.6" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          <feGaussianBlur stdDeviation="0.8" result="b1"/>
+          <feGaussianBlur stdDeviation="2.5" in="SourceGraphic" result="b2"/>
+          <feFlood flood-color="#7ec8ff" flood-opacity="0.9" result="rim"/>
+          <feComposite in="rim" in2="b2" operator="in" result="halo"/>
+          <feMerge>
+            <feMergeNode in="halo"/>
+            <feMergeNode in="b1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="rs-cat-flicker" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise">
+            <animate attributeName="seed" values="3;7;1;5;3" dur="2.4s" repeatCount="indefinite"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6"/>
         </filter>
       </defs>
-      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="#e8eef5" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Aura halo behind the eyes — pulses at peak moments -->
+      <g class="rs-eye-burst-group">
+        <circle class="rs-eye-burst" cx="40" cy="36" r="14" fill="url(#rs-eye-burst)"/>
+        <circle class="rs-eye-burst" cx="54" cy="36" r="14" fill="url(#rs-eye-burst)"/>
+      </g>
+      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
         <!-- spine: nape to hips -->
         <path class="rs-bone rs-spine" d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
         <!-- ribs: 7 curved arcs hanging from spine -->
@@ -208,34 +261,190 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     overflow: hidden;
   }
 
-  /* Skeleton Cat — Mrs. Norris in bone form, prowling the Restricted Section */
+  /* ═══ Skeleton Cat — Mrs. Norris in bone form, prowling the Restricted Section ═══ */
+  /* Architecture: 4 synchronized layers all share the rs-cat-prowl timing
+     - aura (ground shadow + ectoplasm haze) travels with cat
+     - trail (ectoplasm wisps) emit from cat's body, drift up
+     - shards (rib/vertebra particles) detach and float up with eye-burst peaks
+     - cat (svg bones) is the focal point with its own micro-animations  */
+
   .rs-skeleton-cat {
     position: absolute;
-    bottom: 6px;
-    left: -240px;
-    width: 220px;
-    height: 110px;
+    bottom: 4px;
+    left: -280px;
+    width: 280px;
+    height: 140px;
     pointer-events: none;
     opacity: 0;
-    animation: rs-cat-prowl 28s linear infinite;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     transform-origin: 50% 100%;
-    z-index: 1;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45));
+    z-index: 2;
+    filter: drop-shadow(0 6px 10px rgba(0, 8, 20, 0.7))
+            drop-shadow(0 0 18px rgba(126, 200, 255, 0.35));
+    will-change: left, opacity, transform, filter;
   }
 
   @keyframes rs-cat-prowl {
-    0%   { left: -240px; opacity: 0; transform: scaleX(1); }
-    4%   { opacity: 0.85; }
-    20%  { left: 28%; transform: scaleX(1) translateY(0); }
-    21%  { transform: scaleX(1) translateY(-1px); } /* paw step */
-    35%  { left: 52%; transform: scaleX(1) translateY(0); }
-    50%  { left: 70%; transform: scaleX(1); opacity: 0.9; }
-    55%  { left: 70%; opacity: 0; }
-    56%  { left: 70%; transform: scaleX(-1); } /* turn around (vanish + flip) */
-    60%  { left: 70%; opacity: 0.9; }
-    80%  { left: 18%; transform: scaleX(-1); }
-    96%  { left: -240px; transform: scaleX(-1); opacity: 0.4; }
-    100% { left: -240px; opacity: 0; transform: scaleX(1); }
+    /* Phase 1: apparate in from left edge */
+    0%   { left: -280px; opacity: 0; transform: scaleX(1) scaleY(0.92); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0)) blur(6px); }
+    3%   { left: -180px; opacity: 0.15; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 28px rgba(126,200,255,0.6)) blur(3px); }
+    6%   { left: -100px; opacity: 0.95; transform: scaleX(1) scaleY(1); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)) blur(0); }
+    /* Phase 2: prowl rightward, slight body sway */
+    18%  { left: 22%; transform: scaleX(1) scaleY(1) translateY(0); }
+    24%  { transform: scaleX(1) scaleY(0.99) translateY(-1.5px); } /* breath */
+    30%  { left: 38%; transform: scaleX(1) scaleY(1) translateY(0); }
+    /* Phase 3: PEAK — center stage, eye burst, glow surge */
+    40%  { left: 50%; opacity: 1; filter: drop-shadow(0 8px 14px rgba(0,8,20,0.8)) drop-shadow(0 0 38px rgba(155, 231, 255, 0.85)) drop-shadow(0 0 70px rgba(90, 184, 255, 0.4)); }
+    44%  { left: 52%; transform: scaleX(1) scaleY(1.02) translateY(-2px); }
+    48%  { left: 58%; opacity: 0.95; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
+    /* Phase 4: continue prowl to right side */
+    55%  { left: 72%; transform: scaleX(1) scaleY(1); opacity: 0.92; }
+    /* Phase 5: vanishing-cabinet style flip — apparate out, flip, apparate back */
+    58%  { left: 75%; opacity: 0.6; filter: blur(2px) drop-shadow(0 0 30px rgba(255,255,255,0.6)); }
+    60%  { left: 75%; opacity: 0; transform: scaleX(0.05) scaleY(1.4); filter: blur(6px) drop-shadow(0 0 50px rgba(255,255,255,0.8)); }
+    62%  { left: 75%; opacity: 0; transform: scaleX(-0.05) scaleY(1.4); }
+    64%  { left: 75%; opacity: 0.6; transform: scaleX(-1) scaleY(1); filter: blur(2px) drop-shadow(0 0 30px rgba(255,255,255,0.6)); }
+    66%  { left: 73%; opacity: 0.95; transform: scaleX(-1) scaleY(1); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
+    /* Phase 6: prowl leftward back home */
+    78%  { left: 32%; transform: scaleX(-1) scaleY(1); opacity: 0.95; }
+    88%  { left: 8%; transform: scaleX(-1) scaleY(1); opacity: 0.9; }
+    /* Phase 7: apparate out at left edge */
+    93%  { left: -100px; opacity: 0.5; transform: scaleX(-1) scaleY(0.96); filter: blur(3px) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
+    97%  { left: -200px; opacity: 0.1; filter: blur(6px); }
+    100% { left: -280px; opacity: 0; transform: scaleX(1) scaleY(0.9); filter: blur(8px); }
+  }
+
+  /* Ground shadow + ectoplasm haze — moves with cat */
+  .rs-cat-aura {
+    position: absolute;
+    bottom: -10px;
+    left: -280px;
+    width: 280px;
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-cat-shadow {
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.2) 60%, transparent 75%);
+    filter: blur(4px);
+    animation: rs-shadow-pulse 0.8s ease-in-out infinite;
+  }
+  @keyframes rs-shadow-pulse {
+    0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+    50%      { transform: scaleX(1.08) scaleY(0.85); opacity: 1; }
+  }
+  .rs-cat-haze {
+    position: absolute;
+    bottom: 8px;
+    left: 15%;
+    width: 70%;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 70%, rgba(126, 200, 255, 0.18), rgba(90, 184, 255, 0.06) 40%, transparent 70%);
+    filter: blur(8px);
+    animation: rs-haze-breathe 3.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-haze-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50%      { transform: scale(1.15); opacity: 1; }
+  }
+
+  /* Trailing ectoplasm wisps — emit behind the cat, drift up */
+  .rs-cat-trail {
+    position: absolute;
+    bottom: 20px;
+    left: -280px;
+    width: 280px;
+    height: 90px;
+    pointer-events: none;
+    z-index: 2;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-wisp {
+    position: absolute;
+    bottom: 4px;
+    left: 38%;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(200, 230, 255, 0.6), rgba(126, 200, 255, 0.2) 50%, transparent 75%);
+    filter: blur(3px);
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: rs-wisp-rise 2.8s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.34s);
+  }
+  @keyframes rs-wisp-rise {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+    25%  { opacity: 0.85; transform: translate(-10px, -16px) scale(1); }
+    100% { opacity: 0; transform: translate(-32px, -56px) scale(1.6); }
+  }
+
+  /* Detached bone shards — float up from the cat */
+  .rs-bone-shards {
+    position: absolute;
+    bottom: 30px;
+    left: -280px;
+    width: 280px;
+    height: 100px;
+    pointer-events: none;
+    z-index: 3;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-shard {
+    position: absolute;
+    bottom: 0;
+    left: calc(30% + var(--i) * 6%);
+    background: linear-gradient(180deg, #ffffff, #b8d4ec);
+    box-shadow: 0 0 4px rgba(155, 231, 255, 0.8), 0 0 10px rgba(90, 184, 255, 0.4);
+    opacity: 0;
+    animation: rs-shard-float 4.2s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.6s);
+  }
+  .rs-shard-rib {
+    width: 8px;
+    height: 2px;
+    border-radius: 1px;
+    transform-origin: center;
+  }
+  .rs-shard-vert {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+  }
+  @keyframes rs-shard-float {
+    0%   { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+    15%  { opacity: 1; transform: translate(-4px, -10px) rotate(45deg); }
+    60%  { opacity: 0.7; transform: translate(-18px, -50px) rotate(220deg); }
+    100% { opacity: 0; transform: translate(-30px, -90px) rotate(420deg); }
+  }
+
+  /* Eye-burst aura — pulses at PEAK (40-44% of prowl) */
+  .rs-eye-burst-group { opacity: 0; }
+  .rs-eye-burst {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rs-eye-burst-pulse 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    mix-blend-mode: screen;
+  }
+  .rs-skeleton-cat .rs-eye-burst-group { animation: rs-eye-burst-fade 24s linear infinite; }
+  @keyframes rs-eye-burst-fade {
+    0%, 36%, 50%, 100% { opacity: 0; }
+    40%, 44% { opacity: 1; }
+  }
+  @keyframes rs-eye-burst-pulse {
+    0%, 36%, 50%, 100% { transform: scale(0.4); }
+    40% { transform: scale(2.2); }
+    44% { transform: scale(2.8); }
   }
 
   /* Bones flicker as if barely held together */
@@ -321,11 +530,12 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     stroke-width: 0.9;
   }
 
-  /* Glowing pupils with blink */
+  /* Glowing pupils with blink + radial pulse */
   .rs-eye {
     transform-origin: center;
+    transform-box: fill-box;
     animation: rs-eye-blink 4.7s steps(1, end) infinite, rs-eye-pulse 1.8s ease-in-out infinite;
-    filter: drop-shadow(0 0 3px #6ec8ff) drop-shadow(0 0 6px #4aa8ff);
+    filter: drop-shadow(0 0 4px #9be7ff) drop-shadow(0 0 10px #5ab8ff) drop-shadow(0 0 18px rgba(90, 184, 255, 0.6));
   }
   @keyframes rs-eye-blink {
     0%, 92%, 100% { transform: scaleY(1); }
@@ -333,8 +543,14 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     94% { transform: scaleY(0.05); }
   }
   @keyframes rs-eye-pulse {
-    0%, 100% { opacity: 0.9; }
-    50% { opacity: 1; }
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  /* The bones get a subtle turbulence flicker — only at PEAK, not always */
+  .rs-skeleton-cat:hover .rs-cat-bones,
+  .rs-skeleton-cat .rs-cat-bones {
+    /* base look already has the rs-bone-glow filter; turbulence is too jittery to leave on always */
   }
 
   /* Joints: subtle pulse so paws look alive */
@@ -348,14 +564,16 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .rs-skeleton-cat,
-    .rs-cat-bones,
-    .rs-spine, .rs-rib,
+    .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
+    .rs-cat-bones, .rs-spine, .rs-rib,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
-    .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint {
+    .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
+    .rs-eye-burst, .rs-eye-burst-group,
+    .rs-cat-shadow, .rs-cat-haze, .rs-wisp, .rs-shard {
       animation: none;
     }
     .rs-skeleton-cat { left: 80px; opacity: 0.7; }
+    .rs-cat-aura { left: 80px; opacity: 0.5; }
   }
 
   .rs-page-inner {
