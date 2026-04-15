@@ -61,11 +61,37 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
           : "Design specs and implementation plans — every architecture decision captured from brainstorming sessions."}
       </p>
     </div>
+    <!-- Hero-wide atmospheric glow — pulses brightest at peak -->
+    <div class="rs-stage-glow" aria-hidden="true"></div>
+    <!-- Concentric hiss soundwaves — fire from mouth at peak -->
+    <div class="rs-hiss-waves" aria-hidden="true">
+      <span class="rs-hiss-wave" style="--i:0"></span>
+      <span class="rs-hiss-wave" style="--i:1"></span>
+      <span class="rs-hiss-wave" style="--i:2"></span>
+      <span class="rs-hiss-wave" style="--i:3"></span>
+    </div>
     <!-- Spectral aura traveling with the cat: ground shadow + ectoplasm haze -->
     <div class="rs-cat-aura" aria-hidden="true">
       <div class="rs-cat-shadow"></div>
       <div class="rs-cat-haze"></div>
     </div>
+    <!-- Ghost double — translucent cat-shape that lags behind for echo effect -->
+    <svg class="rs-cat-ghost" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette"/>
+    </svg>
+    <!-- Hidden symbol for ghost double to reuse cat outline -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="rs-cat-silhouette" viewBox="0 0 220 110">
+        <g stroke="#9be7ff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6">
+          <path d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+          <path d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
+          <path d="M68 76 L66 92 L70 100 M76 76 L78 92 L74 100"/>
+          <path d="M170 75 L173 92 L168 100 M180 76 L182 92 L186 100"/>
+          <path d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
+          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+        </g>
+      </symbol>
+    </svg>
     <!-- Trailing ectoplasm wisps spawned in CSS along the prowl path -->
     <div class="rs-cat-trail" aria-hidden="true">
       <span class="rs-wisp" style="--i:0"></span>
@@ -323,33 +349,127 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   }
 
   @keyframes rs-cat-prowl {
-    /* Phase 1: apparate in from left edge */
+    /* Phase 1: APPARATE IN from left edge with ice-blue aura */
     0%   { left: -280px; opacity: 0; transform: scaleX(1) scaleY(0.92); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0)) blur(6px); }
     3%   { left: -180px; opacity: 0.15; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 28px rgba(126,200,255,0.6)) blur(3px); }
     6%   { left: -100px; opacity: 0.95; transform: scaleX(1) scaleY(1); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)) blur(0); }
-    /* Phase 2: prowl rightward, slight body sway */
-    18%  { left: 22%; transform: scaleX(1) scaleY(1) translateY(0); }
-    24%  { transform: scaleX(1) scaleY(0.99) translateY(-1.5px); } /* breath */
-    30%  { left: 38%; transform: scaleX(1) scaleY(1) translateY(0); }
-    /* Phase 3: PEAK — center stage, eye burst, glow surge */
-    40%  { left: 50%; opacity: 1; filter: drop-shadow(0 8px 14px rgba(0,8,20,0.8)) drop-shadow(0 0 38px rgba(155, 231, 255, 0.85)) drop-shadow(0 0 70px rgba(90, 184, 255, 0.4)); }
-    44%  { left: 52%; transform: scaleX(1) scaleY(1.02) translateY(-2px); }
-    48%  { left: 58%; opacity: 0.95; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
+    /* Phase 2: PROWL rightward — color shifts from ice to violet */
+    18%  { left: 22%; transform: scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(168,140,255,0.45)); }
+    24%  { transform: scaleX(1) scaleY(0.99) translateY(-1.5px); }
+    30%  { left: 38%; transform: scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(168,140,255,0.55)); }
+    /* Phase 3: PEAK PAUSE — freeze mid-stage, ARCH back, hiss, full burst */
+    36%  { left: 48%; transform: scaleX(1) scaleY(1) translateY(0); }
+    38%  { left: 50%; transform: scaleX(1) scaleY(1.05) translateY(-3px) skewX(-2deg); } /* recoil */
+    40%  { left: 50%; opacity: 1; transform: scaleX(1) scaleY(1.18) translateY(-8px) skewX(-4deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 50px rgba(255, 100, 200, 0.95)) drop-shadow(0 0 90px rgba(255, 60, 160, 0.5)); } /* ARCH + violet-pink burst */
+    42%  { left: 50%; transform: scaleX(1) scaleY(1.22) translateY(-10px) skewX(-5deg) rotate(-4deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 60px rgba(255, 230, 100, 1)) drop-shadow(0 0 110px rgba(255, 200, 60, 0.6)); } /* PEAK gold flash */
+    44%  { left: 50%; transform: scaleX(1) scaleY(1.18) translateY(-8px) skewX(-3deg) rotate(-2deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 50px rgba(155, 231, 255, 0.9)) drop-shadow(0 0 80px rgba(90, 184, 255, 0.4)); } /* settle to ice blue */
+    47%  { left: 51%; transform: scaleX(1) scaleY(1.05) translateY(-3px) skewX(0); }
+    50%  { left: 54%; opacity: 0.95; transform: scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
     /* Phase 4: continue prowl to right side */
     55%  { left: 72%; transform: scaleX(1) scaleY(1); opacity: 0.92; }
-    /* Phase 5: vanishing-cabinet style flip — apparate out, flip, apparate back */
+    /* Phase 5: VANISHING-CABINET flip */
     58%  { left: 75%; opacity: 0.6; filter: blur(2px) drop-shadow(0 0 30px rgba(255,255,255,0.6)); }
     60%  { left: 75%; opacity: 0; transform: scaleX(0.05) scaleY(1.4); filter: blur(6px) drop-shadow(0 0 50px rgba(255,255,255,0.8)); }
     62%  { left: 75%; opacity: 0; transform: scaleX(-0.05) scaleY(1.4); }
     64%  { left: 75%; opacity: 0.6; transform: scaleX(-1) scaleY(1); filter: blur(2px) drop-shadow(0 0 30px rgba(255,255,255,0.6)); }
     66%  { left: 73%; opacity: 0.95; transform: scaleX(-1) scaleY(1); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
-    /* Phase 6: prowl leftward back home */
-    78%  { left: 32%; transform: scaleX(-1) scaleY(1); opacity: 0.95; }
-    88%  { left: 8%; transform: scaleX(-1) scaleY(1); opacity: 0.9; }
-    /* Phase 7: apparate out at left edge */
+    /* Phase 6: prowl leftward back home — emerald cast */
+    78%  { left: 32%; transform: scaleX(-1) scaleY(1); opacity: 0.95; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(63,185,80,0.5)); }
+    88%  { left: 8%; transform: scaleX(-1) scaleY(1); opacity: 0.9; filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
+    /* Phase 7: APPARATE OUT at left edge */
     93%  { left: -100px; opacity: 0.5; transform: scaleX(-1) scaleY(0.96); filter: blur(3px) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
     97%  { left: -200px; opacity: 0.1; filter: blur(6px); }
     100% { left: -280px; opacity: 0; transform: scaleX(1) scaleY(0.9); filter: blur(8px); }
+  }
+
+  /* Hero-wide atmospheric stage glow — pulses brightest at peak */
+  .rs-stage-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(126, 200, 255, 0.10), rgba(168, 140, 255, 0.06) 30%, transparent 60%);
+    opacity: 0;
+    animation: rs-stage-glow-pulse 24s linear infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-stage-glow-pulse {
+    0%, 5%, 95%, 100%        { opacity: 0; background: radial-gradient(ellipse at 50% 100%, rgba(126,200,255,0.10), transparent 60%); }
+    8%                       { opacity: 0.6; background: radial-gradient(ellipse at 10% 100%, rgba(126,200,255,0.18), transparent 60%); }
+    20%                      { opacity: 0.5; background: radial-gradient(ellipse at 25% 100%, rgba(168,140,255,0.16), transparent 60%); }
+    36%                      { opacity: 0.7; background: radial-gradient(ellipse at 50% 100%, rgba(255,100,200,0.20), transparent 60%); }
+    40%                      { opacity: 1;   background: radial-gradient(ellipse at 50% 100%, rgba(255,230,100,0.30), rgba(255,100,200,0.18) 35%, transparent 65%); } /* PEAK gold-pink flood */
+    44%                      { opacity: 0.9; background: radial-gradient(ellipse at 50% 100%, rgba(155,231,255,0.25), transparent 60%); }
+    55%                      { opacity: 0.5; background: radial-gradient(ellipse at 75% 100%, rgba(126,200,255,0.16), transparent 60%); }
+    65%                      { opacity: 0.7; background: radial-gradient(ellipse at 75% 100%, rgba(255,255,255,0.20), transparent 60%); } /* flip flash */
+    80%                      { opacity: 0.5; background: radial-gradient(ellipse at 25% 100%, rgba(63,185,80,0.18), transparent 60%); }
+  }
+
+  /* Hiss soundwaves — concentric arcs from cat's mouth at peak */
+  .rs-hiss-waves {
+    position: absolute;
+    bottom: 60px;
+    left: -280px;
+    width: 280px;
+    height: 0;
+    pointer-events: none;
+    z-index: 2;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-hiss-wave {
+    position: absolute;
+    left: 18%;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 230, 100, 0.7);
+    box-shadow: 0 0 12px rgba(255, 200, 60, 0.6), inset 0 0 8px rgba(255, 230, 100, 0.4);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    animation: rs-hiss-pulse 24s linear infinite;
+    animation-delay: calc(var(--i) * 0.08s);
+  }
+  @keyframes rs-hiss-pulse {
+    0%, 38%, 50%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    40% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); border-width: 3px; }
+    44% { opacity: 0.7; transform: translate(-50%, -50%) scale(2.5); border-width: 1.5px; }
+    48% { opacity: 0; transform: translate(-50%, -50%) scale(4); border-width: 0.5px; }
+  }
+
+  /* Ghost double — translucent cat-shape lagging behind */
+  .rs-cat-ghost {
+    position: absolute;
+    bottom: 4px;
+    left: -280px;
+    width: 280px;
+    height: 140px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+    animation: rs-cat-prowl 24s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -0.4s; /* trails behind by 0.4s */
+    mix-blend-mode: screen;
+    filter: blur(2.5px) drop-shadow(0 0 12px rgba(155, 231, 255, 0.6));
+    transform-origin: 50% 100%;
+  }
+  /* Ghost is fainter than the cat — override the cat's full opacity */
+  .rs-cat-ghost { animation-name: rs-cat-prowl-ghost; }
+  @keyframes rs-cat-prowl-ghost {
+    0%, 6%   { left: -280px; opacity: 0; transform: scaleX(1); }
+    9%       { left: -100px; opacity: 0.45; transform: scaleX(1); }
+    21%      { left: 22%; opacity: 0.4; transform: scaleX(1); }
+    33%      { left: 38%; opacity: 0.4; transform: scaleX(1); }
+    40%      { left: 50%; opacity: 0.6; transform: scaleX(1) scaleY(1.18) translateY(-8px); }
+    44%      { left: 50%; opacity: 0.5; transform: scaleX(1) scaleY(1.18) translateY(-8px); }
+    50%      { left: 54%; opacity: 0.4; transform: scaleX(1); }
+    58%      { left: 75%; opacity: 0.3; }
+    60%, 64% { left: 75%; opacity: 0; }
+    69%      { left: 73%; opacity: 0.45; transform: scaleX(-1); }
+    81%      { left: 32%; opacity: 0.4; transform: scaleX(-1); }
+    91%      { left: 8%; opacity: 0.35; transform: scaleX(-1); }
+    96%      { left: -100px; opacity: 0.2; }
+    100%     { left: -280px; opacity: 0; transform: scaleX(1); }
   }
 
   /* Ground shadow + ectoplasm haze — moves with cat */
@@ -783,6 +903,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   @media (prefers-reduced-motion: reduce) {
     .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
     .rs-summon-circle, .rs-ray-burst, .rs-paw-trail,
+    .rs-stage-glow, .rs-hiss-waves, .rs-hiss-wave, .rs-cat-ghost,
     .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
     .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
