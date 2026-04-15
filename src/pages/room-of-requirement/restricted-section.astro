@@ -168,6 +168,34 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
       <span class="rs-candle-flame"></span>
       <span class="rs-candle-glow"></span>
     </div>
+    <!-- Floating Hogwarts candles — drifting in mid-air across hero -->
+    <div class="rs-floating-candles" aria-hidden="true">
+      <span class="rs-fcandle" style="--x:12%; --y:30%; --d:0s; --dur:9s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:28%; --y:18%; --d:-2s; --dur:11s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:62%; --y:22%; --d:-4s; --dur:10s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:80%; --y:34%; --d:-6s; --dur:13s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:48%; --y:14%; --d:-1s; --dur:12s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+    </div>
     <!-- Concentric hiss soundwaves — fire from mouth at peak -->
     <div class="rs-hiss-waves" aria-hidden="true">
       <span class="rs-hiss-wave" style="--i:0"></span>
@@ -793,6 +821,75 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
   @keyframes rs-candle-glow-pulse {
     0%, 100% { opacity: 0.7; transform: translate(-50%, 30%) scale(1); }
     50% { opacity: 1; transform: translate(-50%, 30%) scale(1.1); }
+  }
+
+  /* Floating Hogwarts candles — drift in mid-air with parallax sway */
+  .rs-floating-candles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .rs-fcandle {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 14px;
+    height: 22px;
+    pointer-events: none;
+    animation: rs-fcandle-drift var(--dur, 10s) ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes rs-fcandle-drift {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-6px, -8px); }
+    50% { transform: translate(8px, -4px); }
+    75% { transform: translate(-3px, 6px); }
+  }
+  .rs-fcandle-stick {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 14px;
+    background: linear-gradient(180deg, #f0e2bf 0%, #d4be8a 50%, #a88c54 100%);
+    border-radius: 1px;
+    box-shadow: inset -1px 0 1px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .rs-fcandle-flame {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    width: 6px;
+    height: 11px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 80%, #fff7a8 0%, #ffc857 35%, #ff8a3d 65%, #d4451a 90%);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    box-shadow: 0 0 8px rgba(255, 200, 100, 0.8), 0 0 16px rgba(255, 150, 60, 0.6);
+    animation: rs-candle-flicker 0.5s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    filter: blur(0.3px);
+    mix-blend-mode: screen;
+  }
+  .rs-fcandle:nth-child(2) .rs-fcandle-flame { animation-delay: -0.15s; }
+  .rs-fcandle:nth-child(3) .rs-fcandle-flame { animation-delay: -0.30s; }
+  .rs-fcandle:nth-child(4) .rs-fcandle-flame { animation-delay: -0.45s; }
+  .rs-fcandle:nth-child(5) .rs-fcandle-flame { animation-delay: -0.60s; }
+  .rs-fcandle-halo {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -10%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.16), transparent 60%);
+    pointer-events: none;
+    animation: rs-candle-glow-pulse 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px);
   }
 
   /* Hero-wide atmospheric stage glow — pulses brightest at peak */
@@ -1510,6 +1607,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     .rs-cat-mini, .rs-cat-mini-1, .rs-cat-mini-2, .rs-title-shake,
     .rs-cat-reflection, .rs-floor-fog, .rs-fog-band, .rs-papers,
     .rs-paper, .rs-candle, .rs-candle-flame, .rs-candle-glow,
+    .rs-floating-candles, .rs-fcandle, .rs-fcandle-flame, .rs-fcandle-halo,
     .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
     .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
     .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
