@@ -61,6 +61,8 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
           : "Design specs and implementation plans — every architecture decision captured from brainstorming sessions."}
       </p>
     </div>
+    <!-- Peak-moment dim overlay — darkens hero except cat at SCREECH -->
+    <div class="rs-peak-dim" aria-hidden="true"></div>
     <!-- Bookshelf silhouette — establishes the library setting -->
     <div class="rs-bookshelves" aria-hidden="true">
       <svg viewBox="0 0 1200 360" preserveAspectRatio="xMidYEnd slice">
@@ -618,7 +620,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     opacity: 0;
     animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
     transform-origin: 50% 100%;
-    z-index: 2;
+    z-index: 4; /* above peak-dim layer (z:3) so cat stays bright */
     filter: drop-shadow(0 6px 10px rgba(0, 8, 20, 0.7))
             drop-shadow(0 0 18px rgba(126, 200, 255, 0.35));
     will-change: opacity, transform, filter;
@@ -658,6 +660,25 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     85%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
     /* Phase 8: REST — empty hero, anticipation rebuilds (85-100%) */
     100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+  }
+
+  /* Peak-moment dim — hero darkens except cat zone during SCREECH */
+  .rs-peak-dim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    background: radial-gradient(ellipse at 50% 65%, transparent 18%, rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.55) 100%);
+    opacity: 0;
+    animation: rs-peak-dim-flash var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: multiply;
+  }
+  @keyframes rs-peak-dim-flash {
+    0%, 38%, 58%, 100% { opacity: 0; }
+    41% { opacity: 0.4; }
+    44% { opacity: 0.85; } /* SCREECH peak — siblings dim hard */
+    47% { opacity: 0.7; }
+    52% { opacity: 0.3; }
   }
 
   /* ═══ Atmospheric environment — bookshelves, fog, candles, papers ═══ */
@@ -736,7 +757,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     overflow: hidden;
   }
   .rs-paper {
@@ -776,7 +797,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     width: 8px;
     height: 36px;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     background: linear-gradient(180deg, #f0e6d0 0%, #d8c498 50%, #b8a070 100%);
     border-radius: 2px 2px 1px 1px;
     box-shadow: inset -2px 0 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -925,7 +946,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     width: var(--rs-cat-w, 320px);
     height: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-hiss-wave {
@@ -955,7 +976,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     bottom: 4px;
     pointer-events: none;
     opacity: 0;
-    z-index: 2;
+    z-index: 4;
     transform-origin: 50% 100%;
     filter: drop-shadow(0 4px 6px rgba(0, 8, 20, 0.6))
             drop-shadow(0 0 12px rgba(126, 200, 255, 0.3));
@@ -1104,7 +1125,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     width: var(--rs-cat-w, 320px);
     height: 90px;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-wisp {
@@ -1370,7 +1391,7 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
     width: var(--rs-cat-w, 320px);
     height: 0;
     pointer-events: none;
-    z-index: 2;
+    z-index: 4;
     animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
   .rs-ray-burst::before {
