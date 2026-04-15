@@ -229,6 +229,20 @@ function formatGHDate(iso: string) {
 			</div>
 			<figure class="about-hero-photo" aria-hidden="false">
 				<div class="portrait-stage">
+					{/* One-shot reveal shockwave on page load */}
+					<div class="portrait-reveal" aria-hidden="true">
+						<span class="reveal-flash" />
+						<span class="reveal-shockwave" />
+						<span class="reveal-shockwave reveal-shockwave-2" />
+					</div>
+
+					{/* Patronus-style burst on hover */}
+					<div class="portrait-burst" aria-hidden="true">
+						<span class="burst-core" />
+						{[...Array(12)].map((_, i) => (
+							<span class="burst-ray" style={`--burst-angle: ${i * 30}deg;`} />
+						))}
+					</div>
 					{/* Radial light rays emanating from behind */}
 					<div class="portrait-rays" aria-hidden="true">
 						<span style="--ray-angle: 0deg; --ray-delay: 0s;" />
@@ -576,6 +590,132 @@ function formatGHDate(iso: string) {
 		gap: var(--spacing-5);
 		margin: 0;
 		padding: 0;
+		animation: portrait-materialize 1.8s cubic-bezier(0.16, 0.7, 0.24, 1) both;
+	}
+
+	@keyframes portrait-materialize {
+		0% {
+			opacity: 0;
+			transform: translateY(40px) scale(0.88);
+			filter: blur(16px) brightness(0.3);
+		}
+		30% {
+			opacity: 0.5;
+			filter: blur(8px) brightness(0.7);
+		}
+		60% {
+			opacity: 1;
+			transform: translateY(0) scale(1.03);
+			filter: blur(0) brightness(1.15);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+			filter: blur(0) brightness(1);
+		}
+	}
+
+	/* Dramatic reveal animation on page load (fires once) */
+	.portrait-reveal {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 10;
+	}
+
+	.reveal-flash {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(circle at 50% 50%, rgba(255,230,160,0.9) 0%, rgba(240,199,94,0.4) 30%, transparent 60%);
+		opacity: 0;
+		animation: reveal-flash 2.2s cubic-bezier(0.12, 0.8, 0.3, 1) 0.3s both;
+	}
+
+	.reveal-shockwave {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 40px;
+		height: 40px;
+		margin: -20px 0 0 -20px;
+		border: 3px solid rgba(240, 199, 94, 1);
+		border-radius: 50%;
+		box-shadow: 0 0 40px rgba(240, 199, 94, 0.8), inset 0 0 20px rgba(240, 199, 94, 0.4);
+		transform: scale(0);
+		opacity: 0;
+		animation: reveal-shockwave 2s cubic-bezier(0.16, 0.7, 0.24, 1) 0.4s both;
+	}
+
+	.reveal-shockwave-2 { animation-delay: 0.7s; }
+
+	@keyframes reveal-flash {
+		0% { opacity: 0; transform: scale(0.5); }
+		20% { opacity: 1; transform: scale(1.2); }
+		100% { opacity: 0; transform: scale(1.8); }
+	}
+
+	@keyframes reveal-shockwave {
+		0% { transform: scale(0); opacity: 0; border-width: 3px; }
+		10% { opacity: 1; }
+		100% { transform: scale(14); opacity: 0; border-width: 0.5px; }
+	}
+
+	/* Patronus-style burst on hover */
+	.portrait-burst {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+		z-index: 9;
+	}
+
+	.burst-core {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 40px;
+		height: 40px;
+		margin: -20px 0 0 -20px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(255,240,200,1) 0%, rgba(240,199,94,0.8) 40%, transparent 70%);
+		transform: scale(0);
+		opacity: 0;
+	}
+
+	.burst-ray {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 2px;
+		height: 150px;
+		margin-left: -1px;
+		transform-origin: 50% 0%;
+		transform: rotate(var(--burst-angle)) scaleY(0);
+		background: linear-gradient(to bottom, rgba(255,240,200,1), rgba(240,199,94,0.7) 50%, transparent 100%);
+		filter: blur(1.5px) drop-shadow(0 0 6px rgba(240,199,94,0.8));
+		opacity: 0;
+	}
+
+	.about-hero-photo:hover .burst-core {
+		animation: burst-core 1.4s cubic-bezier(0.16, 0.7, 0.24, 1);
+	}
+
+	.about-hero-photo:hover .burst-ray {
+		animation: burst-ray 1.4s cubic-bezier(0.16, 0.7, 0.24, 1);
+	}
+
+	@keyframes burst-core {
+		0% { transform: scale(0); opacity: 1; }
+		30% { transform: scale(4); opacity: 1; }
+		100% { transform: scale(10); opacity: 0; }
+	}
+
+	@keyframes burst-ray {
+		0% { opacity: 0; transform: rotate(var(--burst-angle)) scaleY(0); }
+		25% { opacity: 1; transform: rotate(var(--burst-angle)) scaleY(1); }
+		100% { opacity: 0; transform: rotate(var(--burst-angle)) scaleY(2.5) translateY(20px); }
 	}
 
 	/* Stage — contains atmospheric effects outside the frame */
