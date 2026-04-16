@@ -28285,6 +28285,23 @@
 					"primary_session_id": "",
 					"language": "en"
 				}
+			},
+			{
+				"id": "marauders-map",
+				"slug": "marauders-map",
+				"status": "published",
+				"data": {
+					"title": "Marauder's Map",
+					"description": "A parchment unfolds in three panels, ink strokes draw the castle corridors, and a trail of footprints appears one by one — crossing Hogwarts to reveal \"Harry Potter\" on the tag.",
+					"tags": [
+						"svg",
+						"sequence",
+						"harry-potter"
+					],
+					"hero_component": "src/animations/marauders-map/index.astro",
+					"primary_session_id": "",
+					"language": "en"
+				}
 			}
 		]
 	}
