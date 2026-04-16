@@ -131,3 +131,25 @@ test("buildSourceHistory flags a checksum mismatch", () => {
     /checksum mismatch/i,
   );
 });
+
+test("buildSourceHistory handles <repo>/-prefixed paths from redacted entries", () => {
+  const entries: RedactedEntry[] = [
+    {
+      cursor: 0,
+      ts: "t0",
+      kind: "tool",
+      tool: "Write",
+      input: {
+        file_path: "<repo>/src/animations/demo/index.astro",
+        content: "hello",
+      },
+      output: {},
+    },
+  ];
+  const history = buildSourceHistory(entries, SLUG_PREFIX);
+  assert.equal(
+    history.cursors[0].files["src/animations/demo/index.astro"],
+    "hello",
+    "state key is normalized repo-relative",
+  );
+});

@@ -30,6 +30,13 @@ function applyEdit(prev: string | undefined, oldStr: string, newStr: string): st
   return prev.slice(0, idx) + newStr + prev.slice(idx + oldStr.length);
 }
 
+/** The redactor rewrites absolute paths to "<repo>/src/..." — strip the
+ * prefix so slug comparison works across pre- and post-redaction entries. */
+function normalizeToRepoRelative(filePath: string): string {
+  if (filePath.startsWith("<repo>/")) return filePath.slice("<repo>/".length);
+  return filePath;
+}
+
 export function buildSourceHistory(
   entries: RedactedEntry[],
   slugPrefix: string,
@@ -43,8 +50,10 @@ export function buildSourceHistory(
     if (entry.tool !== "Write" && entry.tool !== "Edit") continue;
 
     const input = entry.input as Record<string, unknown>;
-    const filePath = typeof input.file_path === "string" ? input.file_path : undefined;
-    if (!filePath || !filePath.startsWith(slugPrefix)) continue;
+    const rawPath = typeof input.file_path === "string" ? input.file_path : undefined;
+    if (!rawPath) continue;
+    const filePath = normalizeToRepoRelative(rawPath);
+    if (!filePath.startsWith(slugPrefix)) continue;
 
     if (entry.tool === "Write") {
       const content = typeof input.content === "string" ? input.content : "";
@@ -56,7 +65,7 @@ export function buildSourceHistory(
     }
 
     if (opts.verifyChecksums && entry.postStateChecksum) {
-      const expected = entry.postStateChecksum[filePath];
+      const expected = entry.postStateChecksum[filePath] ?? entry.postStateChecksum[rawPath];
       const actual = sha(state[filePath]);
       if (expected && expected !== actual) {
         throw new Error(
