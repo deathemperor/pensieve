@@ -4,6 +4,7 @@ export const prerender = false;
 import PlaceholderHero from "../../animations/placeholder/index.astro";
 import SnitchTrailHero from "../../animations/snitch-trail/index.astro";
 import MaraudersMapHero from "../../animations/marauders-map/index.astro";
+import CatWalkHero from "../../animations/cat-walk/index.astro";
 
 const { slug } = Astro.params;
 if (!slug) return new Response("Not Found", { status: 404 });
@@ -12,6 +13,7 @@ const HERO_COMPONENTS = {
   placeholder: PlaceholderHero,
   "snitch-trail": SnitchTrailHero,
   "marauders-map": MaraudersMapHero,
+  "cat-walk": CatWalkHero,
 } as const;
 
 const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
