@@ -16,6 +16,7 @@ import { env } from "cloudflare:workers";
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
 import SnitchTrailHero from "../../../animations/snitch-trail/index.astro";
 import MaraudersMapHero from "../../../animations/marauders-map/index.astro";
+import CatWalkHero from "../../../animations/cat-walk/index.astro";
 
 interface AnimationData {
   title: string;
@@ -54,6 +55,7 @@ const HERO_COMPONENTS = {
   placeholder: PlaceholderHero,
   "snitch-trail": SnitchTrailHero,
   "marauders-map": MaraudersMapHero,
+  "cat-walk": CatWalkHero,
 } as const;
 
 const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
