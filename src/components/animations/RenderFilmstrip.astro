@@ -1,0 +1,122 @@
+---
+// Render filmstrip — displays the PNG snapshots captured at each cursor
+// as a horizontal strip under the timeline. Click a frame to jump.
+// Data comes from <renders>/manifest.json on R2 via the page's loader.
+interface RenderEntry { cursor_index: number; r2_key: string; }
+interface Props {
+  slug: string;
+  renders: RenderEntry[];
+  mediaBase: string; // e.g. "/media" — public R2 bucket path
+}
+const { slug, renders, mediaBase } = Astro.props;
+const sorted = [...renders].sort((a, b) => a.cursor_index - b.cursor_index);
+---
+
+{sorted.length > 0 && (
+  <section class="render-filmstrip" aria-label="Snapshot filmstrip">
+    <div class="fs-head">
+      <h3>Snapshots</h3>
+      <p class="fs-sub">{sorted.length} renders captured during the build. Click to jump.</p>
+    </div>
+    <ol class="fs-frames" role="list">
+      {sorted.map((r) => (
+        <li class="fs-frame" data-cursor={r.cursor_index}>
+          <a href={`#cursor-${r.cursor_index}`} aria-label={`Jump to cursor ${r.cursor_index}`}>
+            <img
+              src={`${mediaBase}/${r.r2_key}`}
+              alt={`${slug} at cursor ${r.cursor_index}`}
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="fs-label">#{r.cursor_index}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+)}
+
+<style>
+  .render-filmstrip {
+    margin: 0 0 2rem;
+    padding: 1rem 1.25rem 1.25rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background: var(--elevated, #141516);
+  }
+  .fs-head { margin-bottom: 0.75rem; }
+  .fs-head h3 { margin: 0; font-size: 1rem; }
+  .fs-sub { margin: 0.2rem 0 0; color: var(--muted, #62666d); font-size: 0.8125rem; }
+  .fs-frames {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0 0.5rem;
+    margin: 0;
+    list-style: none;
+    scrollbar-width: thin;
+  }
+  .fs-frame { flex: 0 0 auto; }
+  .fs-frame a {
+    display: block;
+    width: 160px;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    transition: transform 120ms ease, border-color 120ms ease;
+  }
+  .fs-frame a:hover, .fs-frame a:focus-visible {
+    border-color: var(--accent, #5e6ad2);
+    transform: translateY(-2px);
+  }
+  .fs-frame.is-current a {
+    border-color: var(--accent, #5e6ad2);
+    box-shadow: 0 0 0 1px var(--accent, #5e6ad2);
+  }
+  .fs-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .fs-label {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.625rem;
+    padding: 0.15rem 0.35rem;
+    background: rgba(0, 0, 0, 0.75);
+    color: var(--text, #f7f8f8);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .fs-frame a { width: 120px; }
+  }
+</style>
+
+<script>
+  // Sync .is-current class on filmstrip frames when cursor changes
+  document.addEventListener("DOMContentLoaded", () => {
+    const frames = Array.from(document.querySelectorAll<HTMLElement>(".fs-frame"));
+    if (frames.length === 0) return;
+    const sync = () => {
+      const m = /#cursor-(\d+)/.exec(window.location.hash);
+      if (!m) return;
+      const target = parseInt(m[1], 10);
+      let bestCursor = -1;
+      for (const f of frames) {
+        const c = Number(f.dataset.cursor);
+        if (c <= target && c > bestCursor) bestCursor = c;
+      }
+      for (const f of frames) {
+        f.classList.toggle("is-current", Number(f.dataset.cursor) === bestCursor);
+      }
+    };
+    window.addEventListener("hashchange", sync);
+    sync();
+  });
+</script>

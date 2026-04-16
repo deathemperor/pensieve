@@ -11,8 +11,14 @@ export interface SourceHistory {
   cursors: Record<string, SourceHistoryCursor>;
 }
 
+export interface RenderEntry {
+  cursor_index: number;
+  r2_key: string;
+}
+
 export interface LoadedWithHistory extends LoadedFixture {
   sourceHistory?: SourceHistory;
+  renders?: RenderEntry[];
 }
 
 interface CloudflareEnv {
@@ -43,14 +49,34 @@ export async function loadFromR2(
 ): Promise<LoadedWithHistory> {
   if (!env) return loadFixture(slug);
 
-  const session = await env.DB
-    .prepare(
-      `SELECT id, transcript_r2_key FROM animation_sessions
-       WHERE animation_slug = ?1 AND published = 1
-       ORDER BY created_at DESC LIMIT 1`,
-    )
+  // Pick the session: first honor ec_animations.primary_session_id (explicit
+  // pointer — set by the publisher or manually via D1), else fall back to
+  // the most-recent animation_sessions row with animation_slug = <slug>.
+  const animEntry = await env.DB
+    .prepare(`SELECT primary_session_id FROM ec_animations WHERE slug = ?1 LIMIT 1`)
     .bind(slug)
-    .first<{ id: string; transcript_r2_key: string }>();
+    .first<{ primary_session_id: string | null }>();
+
+  let session: { id: string; transcript_r2_key: string; renders_manifest_r2_key: string | null } | null = null;
+  if (animEntry?.primary_session_id) {
+    session = await env.DB
+      .prepare(
+        `SELECT id, transcript_r2_key, renders_manifest_r2_key FROM animation_sessions
+         WHERE id = ?1 AND published = 1 LIMIT 1`,
+      )
+      .bind(animEntry.primary_session_id)
+      .first<{ id: string; transcript_r2_key: string; renders_manifest_r2_key: string | null }>();
+  }
+  if (!session) {
+    session = await env.DB
+      .prepare(
+        `SELECT id, transcript_r2_key, renders_manifest_r2_key FROM animation_sessions
+         WHERE animation_slug = ?1 AND published = 1
+         ORDER BY created_at DESC LIMIT 1`,
+      )
+      .bind(slug)
+      .first<{ id: string; transcript_r2_key: string; renders_manifest_r2_key: string | null }>();
+  }
 
   if (!session) return loadFixture(slug);
 
@@ -94,5 +120,22 @@ export async function loadFromR2(
     }
   }
 
-  return { transcript, chapters, sourceHistory };
+  // Fetch renders manifest (if any) — small JSON describing the PNG filmstrip
+  let renders: RenderEntry[] | undefined;
+  if (session.renders_manifest_r2_key) {
+    const manifestObj = await env.MEDIA.get(session.renders_manifest_r2_key);
+    if (manifestObj) {
+      try {
+        const text = await manifestObj.text();
+        const parsed = JSON.parse(text) as Array<{ cursor_index: number; r2_key: string }>;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          renders = parsed;
+        }
+      } catch {
+        // malformed manifest — ignore, filmstrip stays hidden
+      }
+    }
+  }
+
+  return { transcript, chapters, sourceHistory, renders };
 }
