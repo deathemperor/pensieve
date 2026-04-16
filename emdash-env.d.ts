@@ -5,6 +5,23 @@
 
 import type { ContentBylineCredit, PortableTextBlock } from "emdash";
 
+export interface Animation {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  description?: string;
+  tags?: unknown;
+  hero_component: string;
+  og_image?: { id: string; src?: string; alt?: string; width?: number; height?: number };
+  primary_session_id?: string;
+  language?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  bylines?: ContentBylineCredit[];
+}
+
 export interface DiaryEntry {
   id: string;
   slug: string | null;
@@ -78,6 +95,7 @@ export interface Post {
 
 declare module "emdash" {
   interface EmDashCollections {
+    animations: Animation;
     diary: DiaryEntry;
     lessons: Lesson;
     pages: Page;

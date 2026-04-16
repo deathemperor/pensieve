@@ -1,0 +1,139 @@
+---
+// Snitch trail — a golden snitch following an SVG path with a fading
+// gold-sparkle trail. First real animation on the Quidditch playground.
+---
+
+<div class="snitch-stage">
+  <svg viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet" aria-labelledby="snitch-title">
+    <title id="snitch-title">A golden snitch tracing a figure-eight flight path with a shimmering trail</title>
+
+    <defs>
+      <path id="flight-path" d="M 80 300 Q 200 100, 400 225 T 720 150" />
+      <radialGradient id="snitch-gradient" cx="35%" cy="30%" r="60%">
+        <stop offset="0%" stop-color="#ffd88a" />
+        <stop offset="55%" stop-color="#d4a02a" />
+        <stop offset="100%" stop-color="#8a6416" />
+      </radialGradient>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="3" />
+      </filter>
+    </defs>
+
+    <!-- Flight path (subtle guide, disabled by default) -->
+    <use href="#flight-path" class="path-guide" />
+
+    <!-- Trail sparkles: same offset-path, staggered delay, fading opacity -->
+    <circle class="trail trail-1" r="4" />
+    <circle class="trail trail-2" r="3" />
+    <circle class="trail trail-3" r="2" />
+    <circle class="trail trail-4" r="1.5" />
+    <circle class="trail trail-5" r="1" />
+
+    <!-- Snitch body -->
+    <g class="snitch">
+      <circle class="snitch-glow" r="14" />
+      <circle class="snitch-body" r="9" fill="url(#snitch-gradient)" />
+      <g class="wing wing-left">
+        <ellipse rx="10" ry="4" />
+      </g>
+      <g class="wing wing-right">
+        <ellipse rx="10" ry="4" />
+      </g>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .snitch-stage {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: radial-gradient(circle at 50% 50%, #1b1c1d 0%, #08090a 70%);
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .path-guide {
+    fill: none;
+    stroke: rgba(212, 160, 42, 0.08);
+    stroke-width: 1;
+    stroke-dasharray: 2 6;
+  }
+
+  .snitch,
+  .trail {
+    /* v2: follow the flight path. offset-path mirrors the SVG <path>. */
+    offset-path: path("M 80 300 Q 200 100, 400 225 T 720 150");
+    animation: fly 7s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  }
+
+  .snitch {
+    offset-rotate: auto;
+  }
+
+  /* Trails: each staggered slightly behind the snitch with decreasing opacity. */
+  .trail {
+    fill: #ffd88a;
+    filter: url(#glow);
+    mix-blend-mode: screen;
+  }
+  .trail-1 { animation-delay: -0.12s; opacity: 0.7; }
+  .trail-2 { animation-delay: -0.24s; opacity: 0.55; }
+  .trail-3 { animation-delay: -0.36s; opacity: 0.4; }
+  .trail-4 { animation-delay: -0.48s; opacity: 0.25; }
+  .trail-5 { animation-delay: -0.6s;  opacity: 0.15; }
+
+  @keyframes fly {
+    0%   { offset-distance: 0%; }
+    45%  { offset-distance: 100%; }
+    55%  { offset-distance: 100%; }
+    100% { offset-distance: 0%; }
+  }
+
+  .snitch-glow {
+    fill: #d4a02a;
+    filter: url(#glow);
+    opacity: 0.5;
+  }
+
+  .snitch-body {
+    stroke: rgba(255, 216, 138, 0.4);
+    stroke-width: 0.5;
+  }
+
+  .wing ellipse {
+    fill: rgba(247, 248, 248, 0.82);
+    stroke: rgba(255, 255, 255, 0.4);
+    stroke-width: 0.3;
+  }
+
+  .wing-left  { transform: translate(-10px, 0); animation: flap-left  0.16s ease-in-out infinite alternate; }
+  .wing-right { transform: translate( 10px, 0); animation: flap-right 0.16s ease-in-out infinite alternate; }
+
+  @keyframes flap-left {
+    from { transform: translate(-10px, 0) rotate(-22deg) scaleY(0.9); }
+    to   { transform: translate(-10px, 0) rotate(-6deg)  scaleY(1.1); }
+  }
+  @keyframes flap-right {
+    from { transform: translate(10px, 0) rotate(22deg) scaleY(0.9); }
+    to   { transform: translate(10px, 0) rotate(6deg)  scaleY(1.1); }
+  }
+
+  /* Accessibility: freeze motion for users who ask for reduced motion.
+     Snitch sits mid-path so the stage still reads as "snitch in flight." */
+  @media (prefers-reduced-motion: reduce) {
+    .snitch, .trail, .wing-left, .wing-right {
+      animation: none;
+    }
+    .snitch {
+      offset-distance: 50%;
+    }
+    .trail {
+      display: none;
+    }
+  }
+</style>
