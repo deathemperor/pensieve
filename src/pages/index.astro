@@ -126,10 +126,21 @@ export const prerender = false;
           </span>
         </li>
         <li>
-          <a class="project" href="/hogwarts/quidditch/">
+          <a class="project project-quidditch" href="/hogwarts/quidditch/">
             <div>
               <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 28 Q6 20 12 16 Q16 13 16 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><path d="M26 28 Q26 20 20 16 Q16 13 16 8" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><circle cx="16" cy="5" r="3" fill="none" stroke="currentColor" stroke-width="2" /></svg>Quidditch Pitch</h2>
+                <h2 class="project-name">
+                  <svg class="project-icon snitch-icon" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">
+                    <g class="snitch-wing snitch-wing-left">
+                      <ellipse cx="11" cy="16" rx="6" ry="2" fill="currentColor" opacity="0.5" />
+                    </g>
+                    <g class="snitch-wing snitch-wing-right">
+                      <ellipse cx="21" cy="16" rx="6" ry="2" fill="currentColor" opacity="0.5" />
+                    </g>
+                    <circle class="snitch-orb" cx="16" cy="16" r="4.5" fill="#d4a02a" stroke="#ffd88a" stroke-width="0.5" />
+                    <circle class="snitch-spark" cx="14.5" cy="14.5" r="1.2" fill="#ffffff" opacity="0.9" />
+                  </svg>Quidditch Pitch
+                </h2>
                 <span class="project-meta">Animation playground</span>
               </div>
               <p class="project-desc">
@@ -283,6 +294,50 @@ export const prerender = false;
   .project:hover {
     border-color: rgba(255, 255, 255, 0.18);
     transform: translateY(-1px);
+  }
+
+  /* Animated snitch micro-icon on the Quidditch tile */
+  .snitch-icon {
+    overflow: visible;
+    transform-origin: center;
+  }
+  .snitch-orb {
+    filter: drop-shadow(0 0 3px rgba(212, 160, 42, 0.55));
+    animation: snitch-pulse 2.4s ease-in-out infinite;
+  }
+  .snitch-spark {
+    animation: snitch-spark 2.4s ease-in-out infinite;
+  }
+  .snitch-wing {
+    transform-origin: 16px 16px;
+    animation: snitch-flap 0.24s ease-in-out infinite alternate;
+  }
+  .snitch-wing-left { transform: scaleX(-1); }
+
+  @keyframes snitch-pulse {
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(212, 160, 42, 0.45)); }
+    50%      { filter: drop-shadow(0 0 6px rgba(255, 216, 138, 0.9)); }
+  }
+  @keyframes snitch-spark {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+  @keyframes snitch-flap {
+    from { transform: scaleY(0.55); }
+    to   { transform: scaleY(1);    }
+  }
+
+  .project-quidditch:hover .snitch-orb {
+    animation-duration: 1.2s;
+  }
+  .project-quidditch:hover .snitch-wing {
+    animation-duration: 0.12s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .snitch-orb, .snitch-spark, .snitch-wing {
+      animation: none;
+    }
   }
 
   .project-head {
