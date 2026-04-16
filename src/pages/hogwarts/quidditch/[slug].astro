@@ -8,6 +8,8 @@ import { loadFromR2 } from "../../../lib/animations/load-from-r2.ts";
 import RawViewer from "../../../components/animations/RawViewer.astro";
 import LiveRender from "../../../components/animations/LiveRender.astro";
 import RenderFilmstrip from "../../../components/animations/RenderFilmstrip.astro";
+import LessonCard from "../../../components/animations/LessonCard.astro";
+import { LESSONS } from "../../../data/animation-lessons.ts";
 import { env } from "cloudflare:workers";
 
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
@@ -79,6 +81,8 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
         </div>
       )}
     </section>
+
+    {LESSONS[slug] && <LessonCard lesson={LESSONS[slug]} />}
 
     <section class="intro-banner" aria-label="About this recording">
       <div class="intro-inner">

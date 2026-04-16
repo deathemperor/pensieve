@@ -1,0 +1,203 @@
+---
+import type { AnimationLesson } from "../../data/animation-lessons.ts";
+import { TECHNIQUES } from "../../data/animation-lessons.ts";
+
+interface Props {
+  lesson: AnimationLesson;
+}
+
+const { lesson } = Astro.props;
+---
+
+<section class="lesson-card" aria-label="What you'll learn">
+  <div class="lc-head">
+    <span class={`lc-difficulty lc-${lesson.difficulty}`}>{lesson.difficulty}</span>
+    <span class="lc-duration">{lesson.duration}</span>
+  </div>
+
+  <h2 class="lc-subtitle">{lesson.subtitle}</h2>
+
+  {lesson.whyItMatters && (
+    <blockquote class="lc-matters">
+      <span class="lc-matters-label">Why this matters</span>
+      {lesson.whyItMatters}
+    </blockquote>
+  )}
+
+  <div class="lc-grid">
+    <div class="lc-block">
+      <h3 class="lc-label">What you'll learn</h3>
+      <ul class="lc-learnings">
+        {lesson.learnings.map((point) => <li>{point}</li>)}
+      </ul>
+    </div>
+
+    <div class="lc-block">
+      <h3 class="lc-label">Techniques used</h3>
+      <ul class="lc-techniques">
+        {lesson.techniques.map((t) => {
+          const tech = TECHNIQUES[t];
+          return (
+            <li>
+              <a href={`/hogwarts/quidditch/techniques/${tech.slug}`} class="tech-chip" title={tech.blurb}>
+                {tech.name}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    {lesson.prerequisites.length > 0 && (
+      <div class="lc-block lc-prereqs">
+        <h3 class="lc-label">You should be comfortable with</h3>
+        <ul>
+          {lesson.prerequisites.map((p) => <li>{p}</li>)}
+        </ul>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .lesson-card {
+    margin: 0 0 2.5rem;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(94, 106, 210, 0.04) 0%, transparent 60%),
+      var(--elevated, #141516);
+  }
+
+  .lc-head {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .lc-difficulty {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+  }
+  .lc-beginner     { background: rgba(63, 185, 80, 0.16);  color: #55d37a; }
+  .lc-intermediate { background: rgba(94, 106, 210, 0.18); color: #8d99f0; }
+  .lc-advanced     { background: rgba(247, 161, 60, 0.16); color: #f7b86a; }
+  .lc-duration {
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+  }
+
+  .lc-subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 1rem;
+    line-height: 1.4;
+    max-width: 64ch;
+    color: var(--text, #f7f8f8);
+  }
+
+  .lc-matters {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border-left: 2px solid var(--accent, #5e6ad2);
+    background: rgba(94, 106, 210, 0.05);
+    color: var(--secondary, #8a8f98);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .lc-matters-label {
+    display: block;
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent, #5e6ad2);
+    margin-bottom: 0.25rem;
+    font-style: normal;
+  }
+
+  .lc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+  .lc-block {}
+  .lc-label {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted, #62666d);
+    margin: 0 0 0.5rem;
+    font-weight: normal;
+  }
+
+  .lc-learnings {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .lc-learnings li {
+    position: relative;
+    padding-left: 1.25rem;
+    color: var(--secondary, #8a8f98);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .lc-learnings li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--accent, #5e6ad2);
+    font-weight: 600;
+  }
+
+  .lc-techniques {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .tech-chip {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+    border-radius: 999px;
+    color: var(--secondary, #8a8f98);
+    font-size: 0.75rem;
+    font-family: var(--mono, ui-monospace);
+    text-decoration: none;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  }
+  .tech-chip:hover {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+    background: rgba(94, 106, 210, 0.08);
+  }
+
+  .lc-prereqs ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .lc-prereqs li {
+    color: var(--muted, #62666d);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+</style>
