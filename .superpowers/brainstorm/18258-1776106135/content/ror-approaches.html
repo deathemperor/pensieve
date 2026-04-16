@@ -1,0 +1,40 @@
+<h2>Room of Requirement: Restructure Approaches</h2>
+<p class="subtitle">The page has 7 sections and growing. Which strategy handles scale best?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Hub + Sub-pages</h3>
+      <p>RoR index becomes a <strong>compact dashboard</strong> with summary cards linking to dedicated sub-pages. Each growing section (Task Observatory, Restricted Section, House-Elves) gets its own page. Index stays short — just hero + summary grid.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Index never grows — new sections = new sub-pages</li><li>Each page loads only what it needs</li><li>Already have the pattern (Task Observatory)</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Loses the "one glance" overview feel</li><li>More navigation clicks</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Sticky Section Nav</h3>
+      <p>Keep all sections on one page but add a <strong>sticky horizontal nav bar</strong> below the hero. Anchor links jump to sections. Scrollspy highlights the current section. Page stays long but navigable.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Everything on one page — no context switching</li><li>Fast jump to any section</li><li>Common pattern (Linear, Vercel docs)</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Page keeps getting longer</li><li>Needs JS for scrollspy (or CSS-only with scroll-margin)</li><li>Mobile nav gets crowded with 7+ items</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Hybrid: Hub Dashboard + Expandable Panels</h3>
+      <p>RoR index is a <strong>dense grid of summary panels</strong>. Each panel shows key stats inline (like a dashboard). Clicking a panel either expands it in-place or navigates to its sub-page for growing sections. Static sections (hero, roles, source) stay collapsed/inline.</p>
+      <div class="pros-cons" style="margin-top: 12px;">
+        <div class="pros"><h4>Pros</h4><ul><li>Best of both — overview at a glance, depth on demand</li><li>Growing sections get sub-pages; static sections stay inline</li><li>Scales infinitely</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>More design work upfront</li><li>Need to decide which sections expand vs navigate</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

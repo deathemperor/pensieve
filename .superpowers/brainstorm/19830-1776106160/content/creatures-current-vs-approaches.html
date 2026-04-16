@@ -1,0 +1,103 @@
+<h2>Magical Creatures — Full Rewrite</h2>
+<p class="subtitle">Current state vs. three approaches for better SVGs + animations</p>
+
+<div class="section">
+  <h3>Current Creatures (for reference)</h3>
+  <p class="subtitle">Ghostly SVG strokes at 18% opacity — traverse screen every 45-90s</p>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;padding:24px 0;">
+    <div style="text-align:center;">
+      <svg viewBox="0 0 56 40" width="80" height="57" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M8 28 Q6 26 7 23 Q8 18 12 16 L16 14 Q20 12 24 12 L32 13 Q36 14 38 16 Q40 18 40 22 L42 28 Q42 30 40 30 L38 24 Q37 22 36 24 L34 30 M24 16 L22 22 Q21 24 20 28 L18 30 M22 22 Q23 24 24 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 14 L14 8 L12 5 M14 8 L16 5 M16 14 L18 9 L17 5 M18 9 L20 6 M18 9 L21 8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 16 Q10 15 9 16 Q8 17 9 18 Q10 18 12 17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 18 Q43 16 44 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Stag</div>
+    </div>
+    <div style="text-align:center;">
+      <svg viewBox="0 0 56 36" width="80" height="51" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M24 18 Q20 16 20 20 Q20 24 24 26 Q28 28 32 26 Q36 24 36 20 Q36 16 32 18 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 20 Q14 14 6 12 Q3 12 2 14 Q4 16 8 18 Q12 20 20 22 M36 20 Q42 14 50 12 Q53 12 54 14 Q52 16 48 18 Q44 20 36 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M25 19 Q26 18 27 19 M30 19 Q31 18 32 19 M28 21 L29 22 L28 23" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M23 16 L21 12 M33 16 L35 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Owl</div>
+    </div>
+    <div style="text-align:center;">
+      <svg viewBox="0 0 60 36" width="80" height="48" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M20 16 Q22 14 26 14 Q30 14 32 16 Q34 18 34 20 Q34 22 32 22 Q28 22 24 20 Q22 18 20 16 Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M22 16 Q16 10 8 6 Q5 5 4 7 Q6 10 10 14 Q14 17 22 18 M32 16 Q38 10 46 6 Q49 5 50 7 Q48 10 44 14 Q40 17 32 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M34 20 Q38 22 42 26 Q44 28 48 30 Q50 32 54 30 M34 21 Q37 24 40 28 Q42 30 46 32 Q48 34 52 34 M34 20 Q36 23 38 28 Q39 30 42 33" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M20 16 L18 12 Q17 10 18 9 M20 15 L17 11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Phoenix</div>
+    </div>
+    <div style="text-align:center;">
+      <svg viewBox="0 0 52 32" width="80" height="49" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M12 18 Q14 14 18 13 Q22 12 26 13 Q30 13 34 14 Q38 16 38 20 L40 26 M34 14 Q33 18 32 22 L30 26 M18 13 Q17 16 16 20 L14 26 M26 13 Q25 16 26 20 L28 26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 16 Q8 14 8 12 Q8 10 10 10 Q12 8 14 10 Q14 12 14 14 Q13 16 12 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 12 L7 6 L10 10 M13 10 L15 5 L14 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38 18 Q42 14 44 10 Q45 8 46 8 Q47 9 46 12 Q45 14 44 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Cat</div>
+    </div>
+    <div style="text-align:center;">
+      <svg viewBox="0 0 56 28" width="80" height="40" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M8 16 Q10 12 14 11 Q18 10 22 11 Q26 11 30 12 Q34 12 36 14 Q38 16 38 18 L40 22 M30 12 Q29 16 28 20 L26 22 M22 11 Q21 14 20 18 L18 22 M14 11 Q13 14 12 18 L10 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 14 Q4 12 4 10 Q4 8 6 8 Q8 8 9 10 Q9 12 8 14 Q7 16 6 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38 16 Q42 14 46 14 Q50 14 52 16 Q53 17 52 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 12 L2 10 M5 13 L2 13 M5 14 L2 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Otter</div>
+    </div>
+    <div style="text-align:center;">
+      <svg viewBox="0 0 56 38" width="80" height="54" style="color:rgba(192,210,235,0.6);filter:drop-shadow(0 0 8px rgba(192,210,235,0.3))">
+        <path d="M12 22 Q14 16 18 14 Q22 12 26 12 Q30 12 34 14 Q38 16 40 20 L42 28 Q42 30 40 30 L38 24 M34 14 Q33 18 32 22 L30 28 Q30 30 28 30 M18 14 Q17 18 16 22 L14 28 Q14 30 12 30 M26 12 Q25 16 24 20 L22 28 Q22 30 20 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 20 Q8 18 6 18 Q4 18 3 20 Q3 22 5 22 Q7 22 8 20 L10 20 Q12 18 14 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 18 Q6 14 4 12 Q3 11 4 13 Q5 15 7 17 M12 16 Q12 12 10 10 Q9 9 10 12 Q10 14 12 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M40 18 Q44 14 46 10 Q47 8 48 8 Q49 9 48 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div style="font-size:11px;color:#888;margin-top:4px;">Dog</div>
+    </div>
+  </div>
+</div>
+
+<h3>Approaches</h3>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Filled Silhouettes + CSS Animations</h3>
+      <p>Replace stroke-only paths with <strong>filled silhouette SVGs</strong> — solid shapes that read as recognizable animals even at small sizes and low opacity. Keep all animations in pure CSS (no JS library). Upgrade easing to <code>cubic-bezier(.23,1,.32,1)</code>, add proper enter/exit with opacity fades, and use <code>prefers-reduced-motion</code>.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Zero dependencies</li><li>GPU-accelerated (transform + opacity only)</li><li>Smallest bundle</li><li>Animals actually look like animals</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Hand-drawing filled SVG paths is harder</li><li>No interruptible animations</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Filled Silhouettes + Stroke-Draw Effect</h3>
+      <p>Same filled silhouettes, but creatures <strong>draw themselves into existence</strong> using <code>stroke-dasharray</code>/<code>stroke-dashoffset</code> animation as they enter, then fill in. The "patronus forming" effect — lines trace the shape, then it solidifies. Still pure CSS.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Looks magical — matches Patronus lore</li><li>Still zero dependencies</li><li>More visual interest during traversal</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Needs well-structured paths for the draw to look good</li><li>More CSS complexity</li><li>stroke-dashoffset isn't GPU-accelerated</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Particle/Glow Patronus (Canvas)</h3>
+      <p>Draw creatures on a hidden canvas, sample points from the silhouette, render as <strong>glowing particles</strong> that shimmer and drift. True Patronus aesthetic — the animal is made of light, not lines. Higher visual ceiling but more code.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul><li>Most visually impressive</li><li>True "made of light" feel</li><li>Organic, living quality</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Heavier — canvas runs every frame</li><li>More code to maintain</li><li>Battery drain on mobile</li><li>Harder to get right</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px;text-align:center;">My recommendation: <strong>B</strong> — the stroke-draw effect is the sweet spot between visual impact and simplicity. It gives you the "patronus forming" moment without the weight of canvas rendering.</p>

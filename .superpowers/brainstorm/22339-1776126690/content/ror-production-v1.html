@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+  /* ── Dashboard layout (production-identical) ── */
+  .dash-grid {
+    max-width: 800px; margin: 24px auto; padding: 16px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+
+  /* Stage wrapper — holds particles, doesn't animate */
+  .dash-stage {
+    position: relative;
+    border-radius: 12px;
+  }
+  .dash-stage-full { grid-column: 1 / -1; }
+
+  /* Panel base */
+  .dash-panel {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 20px; border-radius: 12px;
+    background: #161b22; border: 1px solid rgba(255,255,255,0.06);
+    text-decoration: none; color: inherit; cursor: pointer;
+    position: relative; z-index: 2;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .dash-panel:hover {
+    border-color: rgba(88,166,255,0.3);
+    transform: translateY(-1px);
+  }
+
+  /* Shimmer border */
+  .dash-nav::before {
+    content: ''; position: absolute; inset: -1px; border-radius: 12px;
+    background: conic-gradient(from 0deg, #58a6ff, #7c3aed, #d4a843, #58a6ff);
+    opacity: 0; transition: opacity 0.3s; z-index: 1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; -webkit-mask-composite: xor;
+    padding: 1px;
+  }
+  .dash-nav:hover::before { opacity: 0.4; }
+
+  .panel-title { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .panel-meta { font-size: 10px; color: #484f58; font-family: monospace; }
+  .panel-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+  .panel-dot { display: flex; align-items: center; gap: 4px; font-size: 10px; }
+
+  /* Materialize */
+  .dash-stage {
+    opacity: 0;
+    animation: materialize 0.4s ease-out forwards;
+  }
+  .dash-stage:nth-child(1) { animation-delay: 0ms; }
+  .dash-stage:nth-child(2) { animation-delay: 80ms; }
+  .dash-stage:nth-child(3) { animation-delay: 160ms; }
+  .dash-stage:nth-child(4) { animation-delay: 240ms; }
+  .dash-stage:nth-child(5) { animation-delay: 320ms; }
+  .dash-stage:nth-child(6) { animation-delay: 400ms; }
+  .dash-stage:nth-child(7) { animation-delay: 480ms; }
+
+  @keyframes materialize {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══ 1. WAND TRACE DOOR ═══ */
+  .dash-stage-door { perspective: 1000px; }
+  .dash-stage-door .dash-panel {
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    transition: transform 0.8s cubic-bezier(0.32, 0, 0.15, 1);
+    backface-visibility: hidden;
+  }
+  .door-trace {
+    position: absolute; inset: -1px; border-radius: 13px;
+    pointer-events: none; z-index: 5; opacity: 0;
+    overflow: hidden;
+  }
+  .door-trace-inner {
+    position: absolute; inset: 0;
+    border: 2px solid transparent;
+    border-radius: 13px;
+    background: conic-gradient(from 0deg, #58a6ff, #7c3aed, #d4a843, #58a6ff) border-box;
+    mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude; -webkit-mask-composite: xor;
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 0s;
+  }
+  .dash-stage-door.tracing .door-trace-inner {
+    animation: traceClip 0.8s ease-out forwards;
+  }
+  @keyframes traceClip {
+    0% { clip-path: inset(0 100% 0 0); }
+    100% { clip-path: inset(0 0 0 0); }
+  }
+  .door-glow {
+    position: absolute; inset: -4px; border-radius: 16px;
+    background: conic-gradient(from 0deg, rgba(88,166,255,0.1), rgba(124,58,237,0.1), rgba(212,168,67,0.1), rgba(88,166,255,0.1));
+    filter: blur(8px); opacity: 0; z-index: 0;
+    transition: opacity 0.4s;
+  }
+  .door-room {
+    position: absolute; inset: 0; z-index: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #161b22; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .door-room-title { font-size: 16px; font-weight: 600; color: #58a6ff; letter-spacing: -0.02em; opacity: 0; transform: translateY(6px); transition: all 0.4s; }
+  .door-room-hint { font-size: 10px; color: #484f58; font-family: monospace; opacity: 0; transition: opacity 0.3s; }
+
+  .dash-stage-door.tracing .door-trace { opacity: 1; }
+  .dash-stage-door.tracing .door-glow { opacity: 1; }
+  .dash-stage-door.door-open .dash-panel { transform: rotateY(-105deg); }
+  .dash-stage-door.door-open .door-room { opacity: 1; transition-delay: 0.3s; }
+  .dash-stage-door.door-open .door-room-title { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+  .dash-stage-door.door-open .door-room-hint { opacity: 1; transition-delay: 0.7s; }
+
+  /* ═══ 2. PENSIEVE DIVE ═══ */
+  .diving { animation: pensieveDive 1.2s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes pensieveDive {
+    0% { transform: scale(1); border-color: rgba(255,255,255,0.06); }
+    15% { transform: scale(1.03); border-color: #58a6ff; box-shadow: 0 0 24px rgba(88,166,255,0.25), inset 0 0 24px rgba(88,166,255,0.06); }
+    35% { transform: scale(1.03); }
+    55% { transform: scale(0.92) translateY(6px); }
+    75% { transform: scale(0.3) translateY(24px); opacity: 0.3; filter: blur(3px); }
+    100% { transform: scale(0) translateY(50px); opacity: 0; filter: blur(10px); }
+  }
+  .pensieve-ripple {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(88,166,255,0.3);
+    pointer-events: none; z-index: 3;
+    animation: rippleOut 1.2s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0% { width: 20px; height: 20px; opacity: 0.8; transform: translate(-50%, -50%); }
+    100% { width: 350px; height: 350px; opacity: 0; transform: translate(-50%, -50%); }
+  }
+
+  /* ═══ 3. FLOO NETWORK ═══ */
+  .burning { animation: flooBurn 1s ease-in forwards !important; }
+  @keyframes flooBurn {
+    0% { border-color: rgba(255,255,255,0.06); }
+    10% { border-color: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.2); }
+    30% { box-shadow: 0 0 30px rgba(63,185,80,0.4), inset 0 -30px 30px rgba(63,185,80,0.15); }
+    60% { box-shadow: 0 0 50px rgba(63,185,80,0.3), inset 0 -60px 40px rgba(63,185,80,0.25); transform: scale(1.02); }
+    80% { opacity: 0.5; transform: scale(0.98) translateY(-8px); filter: blur(2px); }
+    100% { opacity: 0; transform: scale(0.9) translateY(-30px); filter: blur(6px); }
+  }
+  .floo-flame {
+    position: absolute; width: 6px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    pointer-events: none; filter: blur(1px); z-index: 3;
+  }
+  .floo-flame.lit { animation: flameRise 0.8s ease-out forwards; }
+  @keyframes flameRise {
+    0% { opacity: 0.8; transform: translateY(0) scale(1); }
+    50% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-80px) scale(0.3); }
+  }
+
+  /* ═══ 4. PATRONUS BURST ═══ */
+  .casting { animation: patronusBurst 1.3s ease-out forwards !important; }
+  @keyframes patronusBurst {
+    0% { border-color: rgba(255,255,255,0.06); }
+    15% { border-color: rgba(200,220,255,0.6); box-shadow: 0 0 12px rgba(200,220,255,0.2); }
+    30% { box-shadow: 0 0 40px rgba(200,220,255,0.4), inset 0 0 30px rgba(200,220,255,0.1); transform: scale(1.02); }
+    50% { box-shadow: 0 0 80px rgba(200,220,255,0.5); background: rgba(200,220,255,0.05); }
+    70% { opacity: 0.6; transform: scale(1.05); filter: blur(1px); }
+    100% { opacity: 0; filter: blur(8px); transform: scale(1.2); }
+  }
+  .patronus-ray {
+    position: absolute; height: 1px; transform-origin: left center;
+    background: linear-gradient(90deg, rgba(200,220,255,0.7), transparent);
+    pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .patronus-ray.burst { animation: rayBurst 0.8s ease-out forwards; }
+  @keyframes rayBurst { 0% { opacity: 0.9; width: 0; } 100% { opacity: 0; width: 200px; } }
+
+  /* ═══ 5. APPARITION ═══ */
+  .apparating { animation: apparate 0.9s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes apparate {
+    0% { transform: scale(1, 1); opacity: 1; }
+    20% { transform: scale(1.02, 0.98); }
+    40% { transform: scale(0.3, 1.8); opacity: 0.7; filter: blur(2px); }
+    60% { transform: scale(0.1, 2.5); opacity: 0.4; filter: blur(4px); }
+    80% { transform: scale(0.05, 3); opacity: 0.2; filter: blur(6px); }
+    100% { transform: scale(0, 4); opacity: 0; filter: blur(8px); }
+  }
+  .apparition-crack {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: white; pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .apparition-crack.pop { animation: crackPop 0.3s ease-out forwards; }
+  @keyframes crackPop {
+    0% { opacity: 1; transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 30px rgba(255,255,255,0.9); }
+    100% { opacity: 0; transform: translate(-50%,-50%) scale(10); box-shadow: 0 0 60px rgba(255,255,255,0); }
+  }
+
+  /* ═══ 6. PORTKEY ═══ */
+  .pulling { animation: portkeyPull 1s cubic-bezier(0.4,0,0.2,1) forwards !important; }
+  @keyframes portkeyPull {
+    0% { transform: rotate(0deg) scale(1); border-color: rgba(255,255,255,0.06); }
+    15% { border-color: #d4a843; box-shadow: 0 0 12px rgba(212,168,67,0.3); }
+    30% { transform: rotate(2deg) scale(1.01); box-shadow: 0 0 20px rgba(212,168,67,0.4); }
+    50% { transform: rotate(-1deg) scale(1.02); }
+    65% { transform: rotate(3deg) scale(0.95); }
+    80% { transform: rotate(-5deg) scale(0.7); opacity: 0.6; filter: blur(2px); }
+    100% { transform: rotate(720deg) scale(0); opacity: 0; filter: blur(6px); }
+  }
+  .portkey-swirl {
+    position: absolute; width: 120px; height: 120px; border-radius: 50%;
+    border: 1px solid rgba(212,168,67,0.3);
+    pointer-events: none; z-index: 3; opacity: 0;
+  }
+  .portkey-swirl.active { animation: swirlSpin 1s ease-in forwards; }
+  @keyframes swirlSpin {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); }
+    30% { opacity: 0.7; }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(540deg) scale(2.5); }
+  }
+
+  /* ═══ 7. VANISHING CABINET ═══ */
+  .vanishing { animation: vanishPhase 1.2s ease-in-out forwards !important; }
+  @keyframes vanishPhase {
+    0% { opacity: 1; } 10% { opacity: 0.3; } 20% { opacity: 0.9; }
+    30% { opacity: 0.2; } 40% { opacity: 0.8; transform: scale(1.01); }
+    50% { opacity: 0.1; } 60% { opacity: 0.6; }
+    70% { opacity: 0.05; filter: blur(1px); }
+    80% { opacity: 0.4; filter: blur(0); }
+    90% { opacity: 0.02; filter: blur(3px); }
+    100% { opacity: 0; filter: blur(4px); transform: scale(0.98); }
+  }
+
+  .reset-hint {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: #484f58; font-family: monospace;
+    background: #161b22; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<div class="dash-grid">
+
+  <!-- 1: Wand Trace Door → Task Observatory -->
+  <div class="dash-stage dash-stage-door" id="stage-door">
+    <div class="door-glow"></div>
+    <div class="door-trace">
+      <div class="door-trace-inner"></div>
+    </div>
+    <a class="dash-panel dash-nav" onclick="magic.door(event)">
+      <span class="panel-title">Task Observatory</span>
+      <div class="panel-dots">
+        <span class="panel-dot"><span style="width:6px;height:6px;border-radius:50%;background:#e5534b;display:inline-block"></span> <span style="color:#e5534b">Remembrall</span></span>
+        <span class="panel-dot"><span style="width:6px;height:6px;border-radius:50%;background:#d4a843;display:inline-block"></span> <span style="color:#d4a843">Map</span></span>
+        <span class="panel-dot"><span style="width:6px;height:6px;border-radius:50%;background:#7c3aed;display:inline-block"></span> <span style="color:#7c3aed">O.W.L.s</span></span>
+      </div>
+      <span class="panel-meta">6 systems &rarr;</span>
+    </a>
+    <div class="door-room">
+      <div style="text-align:center">
+        <div class="door-room-title">Task Observatory</div>
+        <div class="door-room-hint">entering...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Pensieve Dive → Restricted Section -->
+  <div class="dash-stage" id="stage-pensieve">
+    <a class="dash-panel dash-nav" onclick="magic.pensieve(event)">
+      <span class="panel-title">The Restricted Section</span>
+      <div style="display:flex;gap:8px">
+        <span style="font-size:10px;padding:1px 6px;border-radius:3px;color:#7c3aed;background:rgba(124,58,237,0.12)">2 specs</span>
+        <span style="font-size:10px;padding:1px 6px;border-radius:3px;color:#d4a843;background:rgba(212,168,67,0.12)">2 plans</span>
+      </div>
+      <span class="panel-meta">2 projects &middot; 3,089 lines &rarr;</span>
+    </a>
+  </div>
+
+  <!-- 3: Floo Network → Plugins -->
+  <div class="dash-stage" id="stage-floo">
+    <a class="dash-panel dash-nav" onclick="magic.floo(event)">
+      <span class="panel-title">Plugins</span>
+      <span style="font-size:10px;color:#8b949e">resend &middot; forms &middot; webhook-notifier &middot; pensieve-engage</span>
+      <span class="panel-meta">4 plugins &rarr;</span>
+    </a>
+  </div>
+
+  <!-- 4: Patronus Burst → House-Elves -->
+  <div class="dash-stage" id="stage-patronus">
+    <a class="dash-panel dash-nav" onclick="magic.patronus(event)">
+      <span class="panel-title">House-Elves</span>
+      <span style="font-size:10px;color:#8b949e">session-logger &middot; moderate-comments &middot; Explore &middot; Plan &middot; geminio &middot; argus-filch</span>
+      <span class="panel-meta">6 agents &rarr;</span>
+    </a>
+  </div>
+
+  <!-- 5: Apparition → Architecture -->
+  <div class="dash-stage" id="stage-apparition">
+    <a class="dash-panel dash-nav" onclick="magic.apparition(event)">
+      <span class="panel-title">Architecture</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="font-size:10px;padding:2px 8px;border-left:2px solid #FF5D01;background:rgba(255,93,1,0.06);border-radius:4px;color:#FF5D01">Astro</span>
+        <span style="font-size:10px;padding:2px 8px;border-left:2px solid #58a6ff;background:rgba(88,166,255,0.06);border-radius:4px;color:#58a6ff">EmDash</span>
+        <span style="font-size:10px;padding:2px 8px;border-left:2px solid #F6821F;background:rgba(246,130,31,0.06);border-radius:4px;color:#F6821F">Workers</span>
+      </div>
+      <span class="panel-meta">6 services &rarr;</span>
+    </a>
+  </div>
+
+  <!-- 6: Portkey → Source -->
+  <div class="dash-stage" id="stage-portkey">
+    <a class="dash-panel dash-nav" onclick="magic.portkey(event)">
+      <span class="panel-title">Source</span>
+      <span style="font-size:12px;font-family:monospace;color:#e6edf3">deathemperor/pensieve</span>
+    </a>
+  </div>
+
+  <!-- 7: Vanishing Cabinet → What CC Does -->
+  <div class="dash-stage dash-stage-full" id="stage-vanish">
+    <a class="dash-panel" onclick="magic.vanish(event)">
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#58a6ff;display:inline-block"></span>
+          <span style="font-size:11px;font-weight:600;color:#58a6ff">Claude Code</span>
+          <span style="font-size:11px;color:#484f58">7 roles</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="width:6px;height:6px;border-radius:50%;background:#3fb950;display:inline-block"></span>
+          <span style="font-size:11px;font-weight:600;color:#3fb950">Human</span>
+          <span style="font-size:11px;color:#484f58">5 roles</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+<div class="reset-hint">Click any panel to play animation. Click again to reset.</div>
+
+<script>
+const active = {};
+
+function reset(id) {
+  const stage = document.getElementById(id);
+  const panel = stage.querySelector('.dash-panel');
+  // Reset panel
+  panel.className = panel.className.replace(/\s*(diving|burning|casting|apparating|pulling|vanishing)\b/g, '');
+  panel.style.cssText = '';
+  // Remove particles
+  stage.querySelectorAll('.pensieve-ripple,.floo-flame,.patronus-ray,.apparition-crack,.portkey-swirl').forEach(e => e.remove());
+  // Reset door
+  stage.classList.remove('tracing', 'door-open');
+  // Reset door room elements
+  const roomTitle = stage.querySelector('.door-room-title');
+  const roomHint = stage.querySelector('.door-room-hint');
+  if (roomTitle) { roomTitle.style = ''; }
+  if (roomHint) { roomHint.style = ''; }
+}
+
+function spawn(stage, className, styles, lifetime) {
+  const el = document.createElement('div');
+  el.className = className;
+  Object.assign(el.style, styles);
+  stage.appendChild(el);
+  if (lifetime) setTimeout(() => el.remove(), lifetime);
+  return el;
+}
+
+const magic = {
+  door(e) {
+    e.preventDefault();
+    const id = 'stage-door';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    stage.classList.add('tracing');
+    setTimeout(() => stage.classList.add('door-open'), 800);
+  },
+
+  pensieve(e) {
+    e.preventDefault();
+    const id = 'stage-pensieve';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('diving');
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => spawn(stage, 'pensieve-ripple', { left: '50%', top: '50%' }, 1200), i * 250 + 300);
+    }
+  },
+
+  floo(e) {
+    e.preventDefault();
+    const id = 'stage-floo';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('burning');
+    for (let i = 0; i < 14; i++) {
+      setTimeout(() => {
+        const f = spawn(stage, 'floo-flame', {
+          left: (20 + Math.random() * 60) + '%',
+          bottom: '10%',
+          height: (10 + Math.random() * 16) + 'px',
+          background: Math.random() > 0.4 ? '#3fb950' : '#2ea043',
+        });
+        requestAnimationFrame(() => f.classList.add('lit'));
+        setTimeout(() => f.remove(), 800);
+      }, i * 50 + 80);
+    }
+  },
+
+  patronus(e) {
+    e.preventDefault();
+    const id = 'stage-patronus';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('casting');
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => {
+        const r = spawn(stage, 'patronus-ray', {
+          left: '50%', top: '50%',
+          transform: `rotate(${i * 30}deg)`,
+          transformOrigin: 'left center',
+        });
+        requestAnimationFrame(() => r.classList.add('burst'));
+        setTimeout(() => r.remove(), 800);
+      }, 350 + i * 25);
+    }
+  },
+
+  apparition(e) {
+    e.preventDefault();
+    const id = 'stage-apparition';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('apparating');
+    setTimeout(() => {
+      const c = spawn(stage, 'apparition-crack', { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' });
+      requestAnimationFrame(() => c.classList.add('pop'));
+      setTimeout(() => c.remove(), 400);
+    }, 500);
+  },
+
+  portkey(e) {
+    e.preventDefault();
+    const id = 'stage-portkey';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('pulling');
+    setTimeout(() => {
+      const sw = spawn(stage, 'portkey-swirl', { left: '50%', top: '50%' });
+      requestAnimationFrame(() => sw.classList.add('active'));
+      setTimeout(() => sw.remove(), 1000);
+    }, 200);
+  },
+
+  vanish(e) {
+    e.preventDefault();
+    const id = 'stage-vanish';
+    if (active[id]) { reset(id); active[id] = false; return; }
+    active[id] = true;
+    const stage = document.getElementById(id);
+    const panel = stage.querySelector('.dash-panel');
+    panel.classList.add('vanishing');
+  },
+};
+</script>
+</body>
+</html>
