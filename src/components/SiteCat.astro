@@ -11,14 +11,14 @@
 <style>
   .site-cat {
     position: fixed;
-    left: -15%;
+    left: -18%;
     bottom: 0;
-    width: 96px;
-    height: 80px;
+    width: 144px;
+    height: 96px;
     pointer-events: auto;
     z-index: 5;
     display: block;
-    animation: site-cat-cross 38s linear infinite;
+    animation: site-cat-cross 42s linear infinite;
     animation-delay: 4s;
     text-decoration: none;
     /* Not draggable or selectable */
@@ -34,17 +34,17 @@
     height: 100%;
     background-image: url("/sprites/cat/walk.png");
     background-repeat: no-repeat;
-    background-size: 576px 80px;  /* 6 frames × 96px */
+    background-size: 1152px 96px;   /* 8 frames × 144px (3× scale from 48×32) */
     background-position: 0 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    animation: site-cat-walk 0.72s steps(6) infinite;
+    animation: site-cat-walk 0.72s steps(8) infinite;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
   }
 
   @keyframes site-cat-walk {
     from { background-position: 0 0; }
-    to   { background-position: -576px 0; }
+    to   { background-position: -1152px 0; }
   }
 
   @keyframes site-cat-cross {

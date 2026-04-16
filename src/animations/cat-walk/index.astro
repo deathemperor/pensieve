@@ -51,30 +51,31 @@
   .cat-walker {
     position: absolute;
     bottom: calc(22% + 4px);
-    left: -12%;
-    width: 144px;
-    height: 120px;
-    animation: cross-stage 9s linear infinite;
+    left: -15%;
+    width: 192px;
+    height: 128px;
+    animation: cross-stage 11s linear infinite;
   }
 
   /* The sprite itself: one frame visible at a time via background-position
-     stepping across the sheet using CSS steps(). */
+     stepping across the sheet using CSS steps(). Hand-crafted sprite —
+     48×32 per frame × 8 frames = 384×32 source, scaled 4× via pixelated. */
   .cat-sprite {
-    width: 144px;
-    height: 120px;
+    width: 192px;
+    height: 128px;
     background-image: url("/sprites/cat/walk.png");
     background-repeat: no-repeat;
-    background-size: 864px 120px;   /* 6 frames × 144px wide (2× scale from 432×60) */
+    background-size: 1536px 128px;   /* 8 frames × 192px wide (4× scale from 384×32) */
     background-position: 0 0;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    animation: cat-walk-cycle 0.72s steps(6) infinite;
+    animation: cat-walk-cycle 0.72s steps(8) infinite;
   }
 
-  /* Each step() advances the background by one frame width (144px). */
+  /* Each step() advances the background by one frame width (192px). */
   @keyframes cat-walk-cycle {
     from { background-position: 0 0; }
-    to   { background-position: -864px 0; }
+    to   { background-position: -1536px 0; }
   }
 
   /* The cat enters from the left, walks across, exits right, then loops */
