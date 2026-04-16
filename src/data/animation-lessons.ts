@@ -32,7 +32,10 @@ export type TechniqueSlug =
   | "css-3d-transform"
   | "prefers-reduced-motion"
   | "staggered-animation"
-  | "radial-gradient";
+  | "radial-gradient"
+  | "css-steps"
+  | "sprite-sheet"
+  | "image-rendering-pixelated";
 
 export interface Technique {
   slug: TechniqueSlug;
@@ -101,6 +104,23 @@ export const TECHNIQUES: Record<TechniqueSlug, Technique> = {
     blurb: "Gradient that radiates from a point. Used for the snitch body highlight, the parchment vignette, and the stage atmosphere.",
     mdnUrl: "https://developer.mozilla.org/en-US/docs/Web/CSS/gradient/radial-gradient",
   },
+  "css-steps": {
+    slug: "css-steps",
+    name: "steps() timing function",
+    blurb: "Snaps an animation to discrete frames instead of interpolating smoothly. The core trick behind sprite-sheet animation — each step jumps one frame.",
+    mdnUrl: "https://developer.mozilla.org/en-US/docs/Web/CSS/easing-function/steps",
+  },
+  "sprite-sheet": {
+    slug: "sprite-sheet",
+    name: "Sprite sheet animation",
+    blurb: "Pack N frames into one image, then animate background-position across them. 1970s arcade technique, still the lightest way to do pixel-art motion on the web.",
+  },
+  "image-rendering-pixelated": {
+    slug: "image-rendering-pixelated",
+    name: "image-rendering: pixelated",
+    blurb: "Tells the browser to use nearest-neighbor scaling instead of bilinear smoothing. Mandatory for pixel-art — without it, upscaled sprites turn to mush.",
+    mdnUrl: "https://developer.mozilla.org/en-US/docs/Web/CSS/image-rendering",
+  },
 };
 
 export const LESSONS: Record<string, AnimationLesson> = {
@@ -129,6 +149,21 @@ export const LESSONS: Record<string, AnimationLesson> = {
     ],
     prerequisites: ["Basic CSS keyframes", "Reading an SVG <path> d-attribute"],
     whyItMatters: "offset-path is the cleanest way to do path-following animation on the web. Once you see it, you stop reaching for JS tween libraries for this class of problem.",
+  },
+  "cat-walk": {
+    difficulty: "beginner",
+    subtitle: "A pixel-art cat walks across the ground — six-frame sprite sheet, pure CSS steps().",
+    duration: "~2 min",
+    techniques: ["sprite-sheet", "css-steps", "image-rendering-pixelated", "css-keyframes", "prefers-reduced-motion"],
+    learnings: [
+      "How steps(N) snaps background-position to discrete frames instead of tweening between them",
+      "The background-size trick: set it to the TOTAL sheet width, not one frame, so the animation advances by frame width per step",
+      "Why image-rendering: pixelated is mandatory when scaling pixel art — bilinear smoothing kills the look",
+      "Composing TWO animations on the same element (the frame-step cycle + the cross-screen translate)",
+      "How to vendor a CC0 sprite asset responsibly (license file, provenance note, attribution as courtesy)",
+    ],
+    prerequisites: ["Basic CSS animation", "Understanding of background-image / background-position"],
+    whyItMatters: "This is the oldest trick in animation — flipbook frames advanced at fixed intervals — ported to the browser in 8 lines of CSS. Every pixel-art website, itch.io game, and retro UI uses this pattern.",
   },
   "marauders-map": {
     difficulty: "advanced",
