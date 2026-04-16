@@ -1,6 +1,7 @@
 ---
-// Snitch trail — a golden snitch following an SVG path with a fading
-// gold-sparkle trail. First real animation on the Quidditch playground.
+// Snitch trail — a golden snitch tracing a figure-eight flight path with a
+// bright shimmering trail on a darkened Quidditch sky. First real animation
+// on the Quidditch playground, polished for first-impression impact.
 ---
 
 <div class="snitch-stage">
@@ -8,37 +9,71 @@
     <title id="snitch-title">A golden snitch tracing a figure-eight flight path with a shimmering trail</title>
 
     <defs>
-      <path id="flight-path" d="M 80 300 Q 200 100, 400 225 T 720 150" />
-      <radialGradient id="snitch-gradient" cx="35%" cy="30%" r="60%">
-        <stop offset="0%" stop-color="#ffd88a" />
-        <stop offset="55%" stop-color="#d4a02a" />
-        <stop offset="100%" stop-color="#8a6416" />
+      <path id="flight-path" d="M 60 320 C 180 90, 380 360, 520 180 S 760 330, 740 120" />
+      <radialGradient id="snitch-gradient" cx="35%" cy="30%" r="65%">
+        <stop offset="0%" stop-color="#fff4c7" />
+        <stop offset="30%" stop-color="#ffd88a" />
+        <stop offset="70%" stop-color="#d4a02a" />
+        <stop offset="100%" stop-color="#7a5412" />
       </radialGradient>
-      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur stdDeviation="3" />
+      <radialGradient id="trail-gradient" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#fff2a8" stop-opacity="1" />
+        <stop offset="70%" stop-color="#ffd88a" stop-opacity="0.6" />
+        <stop offset="100%" stop-color="#d4a02a" stop-opacity="0" />
+      </radialGradient>
+      <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="3.5" />
+      </filter>
+      <filter id="soft-glow" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="8" />
       </filter>
     </defs>
 
-    <!-- Flight path (subtle guide, disabled by default) -->
+    <!-- Subtle flight path guide -->
     <use href="#flight-path" class="path-guide" />
 
-    <!-- Trail sparkles: same offset-path, staggered delay, fading opacity -->
-    <circle class="trail trail-1" r="4" />
-    <circle class="trail trail-2" r="3" />
-    <circle class="trail trail-3" r="2" />
-    <circle class="trail trail-4" r="1.5" />
-    <circle class="trail trail-5" r="1" />
+    <!-- Star-field: scattered fixed sparkles for atmosphere -->
+    <g class="starfield" aria-hidden="true">
+      <circle cx="120" cy="80" r="1" class="star" style="animation-delay:0s" />
+      <circle cx="670" cy="60" r="1.2" class="star" style="animation-delay:-0.6s" />
+      <circle cx="380" cy="45" r="0.8" class="star" style="animation-delay:-1.2s" />
+      <circle cx="750" cy="270" r="0.9" class="star" style="animation-delay:-1.8s" />
+      <circle cx="80" cy="180" r="1.1" class="star" style="animation-delay:-2.4s" />
+      <circle cx="220" cy="390" r="0.7" class="star" style="animation-delay:-3.0s" />
+      <circle cx="580" cy="400" r="1" class="star" style="animation-delay:-3.6s" />
+    </g>
+
+    <!-- Trail: 10 staggered gold orbs with glow + mix-blend-mode: screen -->
+    <circle class="trail trail-1" r="7" fill="url(#trail-gradient)" />
+    <circle class="trail trail-2" r="6" fill="url(#trail-gradient)" />
+    <circle class="trail trail-3" r="5" fill="url(#trail-gradient)" />
+    <circle class="trail trail-4" r="4" fill="url(#trail-gradient)" />
+    <circle class="trail trail-5" r="3.5" fill="url(#trail-gradient)" />
+    <circle class="trail trail-6" r="3" fill="url(#trail-gradient)" />
+    <circle class="trail trail-7" r="2.5" fill="url(#trail-gradient)" />
+    <circle class="trail trail-8" r="2" fill="url(#trail-gradient)" />
+    <circle class="trail trail-9" r="1.5" fill="url(#trail-gradient)" />
+    <circle class="trail trail-10" r="1" fill="url(#trail-gradient)" />
 
     <!-- Snitch body -->
     <g class="snitch">
-      <circle class="snitch-glow" r="14" />
-      <circle class="snitch-body" r="9" fill="url(#snitch-gradient)" />
+      <!-- Outer halo -->
+      <circle class="snitch-halo" r="22" />
+      <!-- Inner glow -->
+      <circle class="snitch-glow" r="15" />
+      <!-- Wings behind body -->
       <g class="wing wing-left">
-        <ellipse rx="10" ry="4" />
+        <ellipse rx="14" ry="5" />
+        <ellipse class="wing-detail" rx="10" ry="2.5" />
       </g>
       <g class="wing wing-right">
-        <ellipse rx="10" ry="4" />
+        <ellipse rx="14" ry="5" />
+        <ellipse class="wing-detail" rx="10" ry="2.5" />
       </g>
+      <!-- Body -->
+      <circle class="snitch-body" r="10" fill="url(#snitch-gradient)" />
+      <!-- Highlight spark -->
+      <circle class="snitch-spark" cx="-3" cy="-3" r="3" />
     </g>
   </svg>
 </div>
@@ -48,7 +83,10 @@
     display: block;
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: radial-gradient(circle at 50% 50%, #1b1c1d 0%, #08090a 70%);
+    background:
+      radial-gradient(circle at 30% 20%, rgba(94, 106, 210, 0.08) 0%, transparent 45%),
+      radial-gradient(circle at 70% 80%, rgba(212, 160, 42, 0.06) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, #1b1c1d 0%, #08090a 70%);
   }
 
   svg {
@@ -59,81 +97,113 @@
 
   .path-guide {
     fill: none;
-    stroke: rgba(212, 160, 42, 0.08);
+    stroke: rgba(212, 160, 42, 0.1);
     stroke-width: 1;
-    stroke-dasharray: 2 6;
+    stroke-dasharray: 2 8;
+    animation: path-fade 6s ease-in-out infinite;
   }
 
+  @keyframes path-fade {
+    0%, 100% { stroke-opacity: 0.04; }
+    50%      { stroke-opacity: 0.14; }
+  }
+
+  /* Star-field */
+  .star {
+    fill: #ffd88a;
+    filter: url(#glow);
+    animation: twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; }
+    50%      { opacity: 0.75; }
+  }
+
+  /* Flight path motion */
   .snitch,
   .trail {
-    /* v2: follow the flight path. offset-path mirrors the SVG <path>. */
-    offset-path: path("M 80 300 Q 200 100, 400 225 T 720 150");
-    animation: fly 7s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+    offset-path: path("M 60 320 C 180 90, 380 360, 520 180 S 760 330, 740 120");
+    animation: fly 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
   }
 
   .snitch {
     offset-rotate: auto;
   }
 
-  /* Trails: each staggered slightly behind the snitch with decreasing opacity. */
+  /* Trail — 10 orbs with screen blend for bright gold shimmer */
   .trail {
-    fill: #ffd88a;
     filter: url(#glow);
     mix-blend-mode: screen;
+    pointer-events: none;
   }
-  .trail-1 { animation-delay: -0.12s; opacity: 0.7; }
-  .trail-2 { animation-delay: -0.24s; opacity: 0.55; }
-  .trail-3 { animation-delay: -0.36s; opacity: 0.4; }
-  .trail-4 { animation-delay: -0.48s; opacity: 0.25; }
-  .trail-5 { animation-delay: -0.6s;  opacity: 0.15; }
+  .trail-1  { animation-delay: -0.10s; }
+  .trail-2  { animation-delay: -0.20s; }
+  .trail-3  { animation-delay: -0.30s; }
+  .trail-4  { animation-delay: -0.40s; }
+  .trail-5  { animation-delay: -0.50s; }
+  .trail-6  { animation-delay: -0.60s; }
+  .trail-7  { animation-delay: -0.72s; }
+  .trail-8  { animation-delay: -0.86s; }
+  .trail-9  { animation-delay: -1.00s; }
+  .trail-10 { animation-delay: -1.15s; }
 
   @keyframes fly {
-    0%   { offset-distance: 0%; }
-    45%  { offset-distance: 100%; }
-    55%  { offset-distance: 100%; }
-    100% { offset-distance: 0%; }
+    0%   { offset-distance: 0%;   }
+    48%  { offset-distance: 100%; }
+    52%  { offset-distance: 100%; }
+    100% { offset-distance: 0%;   }
   }
 
-  .snitch-glow {
+  /* Snitch body parts */
+  .snitch-halo {
     fill: #d4a02a;
-    filter: url(#glow);
-    opacity: 0.5;
+    filter: url(#soft-glow);
+    opacity: 0.35;
   }
-
+  .snitch-glow {
+    fill: #ffd88a;
+    filter: url(#glow);
+    opacity: 0.55;
+  }
   .snitch-body {
-    stroke: rgba(255, 216, 138, 0.4);
+    stroke: rgba(255, 244, 199, 0.5);
     stroke-width: 0.5;
   }
+  .snitch-spark {
+    fill: #ffffff;
+    opacity: 0.75;
+    filter: url(#glow);
+  }
 
+  /* Wings */
   .wing ellipse {
-    fill: rgba(247, 248, 248, 0.82);
-    stroke: rgba(255, 255, 255, 0.4);
+    fill: rgba(250, 250, 252, 0.78);
+    stroke: rgba(255, 255, 255, 0.5);
     stroke-width: 0.3;
   }
+  .wing .wing-detail {
+    fill: rgba(255, 255, 255, 0.28);
+    stroke: none;
+  }
 
-  .wing-left  { transform: translate(-10px, 0); animation: flap-left  0.16s ease-in-out infinite alternate; }
-  .wing-right { transform: translate( 10px, 0); animation: flap-right 0.16s ease-in-out infinite alternate; }
+  .wing-left  { transform: translate(-14px, 0); animation: flap-left  0.14s ease-in-out infinite alternate; }
+  .wing-right { transform: translate( 14px, 0); animation: flap-right 0.14s ease-in-out infinite alternate; }
 
   @keyframes flap-left {
-    from { transform: translate(-10px, 0) rotate(-22deg) scaleY(0.9); }
-    to   { transform: translate(-10px, 0) rotate(-6deg)  scaleY(1.1); }
+    from { transform: translate(-14px, 0) rotate(-24deg) scaleY(0.85); }
+    to   { transform: translate(-14px, 0) rotate(-4deg)  scaleY(1.15); }
   }
   @keyframes flap-right {
-    from { transform: translate(10px, 0) rotate(22deg) scaleY(0.9); }
-    to   { transform: translate(10px, 0) rotate(6deg)  scaleY(1.1); }
+    from { transform: translate(14px, 0) rotate(24deg) scaleY(0.85); }
+    to   { transform: translate(14px, 0) rotate(4deg)  scaleY(1.15); }
   }
 
-  /* Accessibility: freeze motion for users who ask for reduced motion.
-     Snitch sits mid-path so the stage still reads as "snitch in flight." */
+  /* Reduced motion — freeze mid-flight, hide trail + wings */
   @media (prefers-reduced-motion: reduce) {
-    .snitch, .trail, .wing-left, .wing-right {
+    .snitch, .trail, .wing-left, .wing-right, .star, .path-guide {
       animation: none;
     }
-    .snitch {
-      offset-distance: 50%;
-    }
-    .trail {
-      display: none;
-    }
+    .snitch { offset-distance: 50%; }
+    .trail { display: none; }
   }
 </style>
