@@ -11,6 +11,7 @@ import { env } from "cloudflare:workers";
 
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
 import SnitchTrailHero from "../../../animations/snitch-trail/index.astro";
+import MaraudersMapHero from "../../../animations/marauders-map/index.astro";
 
 interface AnimationData {
   title: string;
@@ -48,6 +49,7 @@ const fixture = await loadFromR2(
 const HERO_COMPONENTS = {
   placeholder: PlaceholderHero,
   "snitch-trail": SnitchTrailHero,
+  "marauders-map": MaraudersMapHero,
 } as const;
 
 const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
@@ -77,6 +79,27 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
       )}
     </section>
 
+    <section class="intro-banner" aria-label="About this recording">
+      <div class="intro-inner">
+        <p class="intro-kicker">{isVi ? "Bản ghi phiên dựng" : "Build recording"}</p>
+        <h2 class="intro-lede">
+          {isVi
+            ? "Đây là toàn bộ phiên Claude Code dựng animation này."
+            : "This is the full Claude Code session that built this animation."}
+        </h2>
+        <p class="intro-body">
+          {isVi
+            ? "Mỗi tool call, mỗi prompt, mỗi chỉnh sửa — được ghi lại. Bấm ▶ hoặc Space để xem nó tự tái dựng. Kéo thanh thời gian để nhảy đến bất kỳ khoảnh khắc nào. Khung Live Render sẽ cập nhật theo."
+            : "Every tool call, every prompt, every edit — captured. Press ▶ or Space to watch it rebuild itself. Drag the timeline to jump to any moment. The Live Render pane updates as you scrub."}
+        </p>
+        <p class="intro-hint" aria-hidden="true">
+          <kbd>Space</kbd> <span>play/pause</span>
+          <kbd>←</kbd><kbd>→</kbd> <span>step</span>
+          <kbd>Shift</kbd>+<kbd>click</kbd> <span class="copy-hint">a chapter to share it</span>
+        </p>
+      </div>
+    </section>
+
     <section class="diary-section" aria-label="Build diary">
       <div class="section-head">
         <h2>{isVi ? "Nhật ký dựng" : "Build diary"}</h2>
@@ -85,6 +108,10 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
             ? "Toàn bộ phiên Claude Code. Dùng ← → hoặc click chapter để di chuyển."
             : "Full Claude Code session. Use ← → or click a chapter to scrub."}
         </p>
+        <button type="button" class="share-btn" data-share aria-live="polite">
+          <span class="share-icon" aria-hidden="true">🔗</span>
+          <span class="share-label">{isVi ? "Sao chép liên kết đến điểm này" : "Copy link to this moment"}</span>
+        </button>
       </div>
       <RawViewer transcript={fixture.transcript} chapters={fixture.chapters} />
     </section>
@@ -113,8 +140,119 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
     font-size: 0.875rem;
   }
 
+  /* Intro banner */
+  .intro-banner {
+    margin: 0 0 2.5rem;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(94, 106, 210, 0.08) 0%, transparent 60%),
+      var(--elevated, #141516);
+  }
+  .intro-kicker {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent, #5e6ad2);
+    margin: 0 0 0.5rem;
+  }
+  .intro-lede {
+    font-size: clamp(1rem, 2.4vw, 1.25rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 0.75rem;
+    line-height: 1.35;
+    max-width: 60ch;
+  }
+  .intro-body {
+    color: var(--secondary, #8a8f98);
+    max-width: 64ch;
+    margin: 0 0 1rem;
+    line-height: 1.6;
+    font-size: 0.9375rem;
+  }
+  .intro-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+    align-items: center;
+    margin: 0;
+    color: var(--muted, #62666d);
+    font-size: 0.75rem;
+    font-family: var(--mono, ui-monospace);
+  }
+  .intro-hint kbd {
+    display: inline-block;
+    padding: 0.125rem 0.4rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text, #f7f8f8);
+    font-size: 0.7rem;
+    font-family: inherit;
+    margin-right: 0.2rem;
+  }
+
+  /* Share button */
+  .share-btn {
+    margin-top: 0.75rem;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    color: var(--secondary, #8a8f98);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  }
+  .share-btn:hover {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+    background: rgba(94, 106, 210, 0.08);
+  }
+  .share-btn.is-copied {
+    border-color: #3fb950;
+    color: #3fb950;
+  }
+  .share-btn.is-copied .share-icon::before { content: "✓"; }
+  .share-btn.is-copied .share-icon { font-size: 0 0; }
+  .share-btn.is-copied .share-icon::before { font-size: 0.9rem; }
+
   .diary-section { margin-top: 2rem; }
   .section-head { margin-bottom: 1.25rem; }
   .section-head h2 { margin: 0 0 0.25rem; font-size: 1.125rem; }
   .section-sub { color: var(--muted, #62666d); margin: 0; font-size: 0.875rem; }
 </style>
+
+<script>
+  // Share button — copies current page URL with the active #cursor-N
+  // hash to clipboard. Shows ✓ "Copied!" for 1.5s.
+  (function attachShareButton() {
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.querySelector<HTMLButtonElement>("[data-share]");
+      if (!btn) return;
+      const label = btn.querySelector<HTMLElement>(".share-label");
+      const originalText = label?.textContent ?? "";
+      btn.addEventListener("click", async () => {
+        const url = window.location.origin + window.location.pathname + window.location.hash;
+        try {
+          await navigator.clipboard.writeText(url);
+          btn.classList.add("is-copied");
+          if (label) label.textContent = "Copied!";
+          window.setTimeout(() => {
+            btn.classList.remove("is-copied");
+            if (label) label.textContent = originalText;
+          }, 1500);
+        } catch {
+          // clipboard API unavailable — do nothing
+        }
+      });
+    });
+  })();
+</script>
