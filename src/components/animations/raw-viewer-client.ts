@@ -18,9 +18,16 @@ function init(): void {
     return m ? parseInt(m[1], 10) : 0;
   };
 
+  const timelineDots = Array.from(
+    document.querySelectorAll<HTMLElement>(".timeline-dot"),
+  );
+
   const setCurrent = (cursor: number): void => {
     for (const e of entries) {
       e.classList.toggle("is-current", Number(e.dataset.cursor) === cursor);
+    }
+    for (const d of timelineDots) {
+      d.classList.toggle("is-current", Number(d.dataset.cursor) === cursor);
     }
 
     const chapterCursors = chapterLinks
@@ -47,6 +54,43 @@ function init(): void {
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
     setCurrent(next);
   };
+
+  // Filter pills — set data-filter on the viewer root; CSS handles visibility.
+  const FILTER_STORAGE_KEY = "raw-viewer-filter";
+  const VALID_FILTERS = ["all", "signal", "edits", "prompts"] as const;
+  type Filter = (typeof VALID_FILTERS)[number];
+  const isValidFilter = (v: string | null): v is Filter =>
+    !!v && (VALID_FILTERS as readonly string[]).includes(v);
+
+  const pills = Array.from(viewer.querySelectorAll<HTMLButtonElement>(".pill"));
+  const applyFilter = (filter: Filter): void => {
+    viewer.setAttribute("data-filter", filter);
+    for (const p of pills) {
+      p.classList.toggle("is-active", p.dataset.filter === filter);
+    }
+    try {
+      window.localStorage.setItem(FILTER_STORAGE_KEY, filter);
+    } catch {
+      // localStorage may be disabled — that's fine, filter still applies for this session
+    }
+  };
+
+  const savedFilter = (() => {
+    try {
+      return window.localStorage.getItem(FILTER_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  })();
+  const initialFilter: Filter = isValidFilter(savedFilter) ? savedFilter : "signal";
+  applyFilter(initialFilter);
+
+  for (const pill of pills) {
+    pill.addEventListener("click", () => {
+      const f = pill.dataset.filter;
+      if (isValidFilter(f ?? null)) applyFilter(f as Filter);
+    });
+  }
 
   window.addEventListener("hashchange", () => setCurrent(cursorFromHash()));
 
