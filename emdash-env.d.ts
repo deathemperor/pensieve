@@ -5,6 +5,46 @@
 
 import type { ContentBylineCredit, PortableTextBlock } from "emdash";
 
+export interface DiaryEntry {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  date: string;
+  entry_type: string;
+  prompt?: string;
+  summary?: string;
+  model?: string;
+  claude_code?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  cache_read?: number;
+  cost?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  bylines?: ContentBylineCredit[];
+}
+
+export interface Lesson {
+  id: string;
+  slug: string | null;
+  status: string;
+  title: string;
+  description?: string;
+  featured_image?: { id: string; src?: string; alt?: string; width?: number; height?: number };
+  duration?: string;
+  objectives?: string;
+  difficulty?: string;
+  order?: number;
+  language?: string;
+  slides?: unknown;
+  createdAt: Date;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  bylines?: ContentBylineCredit[];
+}
+
 export interface Page {
   id: string;
   slug: string | null;
@@ -25,6 +65,11 @@ export interface Post {
   featured_image?: { id: string; src?: string; alt?: string; width?: number; height?: number };
   content?: PortableTextBlock[];
   excerpt?: string;
+  source?: string;
+  source_id?: string;
+  language?: string;
+  original_language?: string;
+  notify_subscribers?: boolean;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -33,6 +78,8 @@ export interface Post {
 
 declare module "emdash" {
   interface EmDashCollections {
+    diary: DiaryEntry;
+    lessons: Lesson;
     pages: Page;
     posts: Post;
   }
