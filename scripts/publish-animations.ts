@@ -2,6 +2,7 @@
 import { readFile, readdir, unlink, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
+import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { redactAll, type RawEntry } from "./redact-transcript.ts";
 import {
@@ -131,9 +132,16 @@ async function main(): Promise<void> {
       repoRoot: REPO_ROOT,
     });
 
+    // Content-hash suffix makes keys immutable per content — any edge cache
+    // or wrangler fetch-caching keys off the path, so the same path never
+    // serves stale bytes. Pay the cost of storing old versions (tiny) in
+    // exchange for zero cache-invalidation pain.
+    const hash = (buf: Uint8Array): string =>
+      createHash("sha256").update(buf).digest("hex").slice(0, 10);
+
     const r2Prefix = `animations/${desc.slug}/${desc.sessionId}`;
-    const transcriptKey = `${r2Prefix}/transcript.jsonl.gz`;
-    const sourceHistoryKey = `${r2Prefix}/source-history.json.gz`;
+    const transcriptKey = `${r2Prefix}/transcript-${hash(prepared.transcriptGz)}.jsonl.gz`;
+    const sourceHistoryKey = `${r2Prefix}/source-history-${hash(prepared.sourceHistoryGz)}.json.gz`;
 
     const tmp1 = `/tmp/transcript-${desc.sessionId}.gz`;
     const tmp2 = `/tmp/source-history-${desc.sessionId}.gz`;
@@ -174,6 +182,15 @@ async function main(): Promise<void> {
 
     console.error("inserting D1 session row...");
     d1Run(insertSql);
+
+    // Link the animation entry to this session — the per-animation page's
+    // loadFromR2 ordering picks the most-recent session anyway, but setting
+    // primary_session_id explicitly makes the intent durable and enables
+    // future features (cross-session compare, diff views, etc).
+    console.error("linking ec_animations.primary_session_id...");
+    d1Run(
+      `UPDATE ec_animations SET primary_session_id = '${esc(desc.sessionId)}' WHERE slug = '${esc(desc.slug)}'`,
+    );
 
     const insightsPath = join(REPO_ROOT, ".session/insights.jsonl");
     try {
