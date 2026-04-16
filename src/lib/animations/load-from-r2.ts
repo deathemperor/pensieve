@@ -1,6 +1,20 @@
 import { parseTranscript, type TranscriptEntry } from "./transcript.ts";
 import { loadFixture, type FixtureChapter, type LoadedFixture } from "./load-fixture.ts";
 
+export interface SourceHistoryCursor {
+  cursor: number;
+  files: Record<string, string>;
+}
+
+export interface SourceHistory {
+  slugPrefix: string;
+  cursors: Record<string, SourceHistoryCursor>;
+}
+
+export interface LoadedWithHistory extends LoadedFixture {
+  sourceHistory?: SourceHistory;
+}
+
 interface CloudflareEnv {
   DB: {
     prepare: (sql: string) => {
@@ -26,7 +40,7 @@ async function gunzipString(gz: Uint8Array): Promise<string> {
 export async function loadFromR2(
   slug: string,
   env: CloudflareEnv | undefined,
-): Promise<LoadedFixture> {
+): Promise<LoadedWithHistory> {
   if (!env) return loadFixture(slug);
 
   const session = await env.DB
@@ -61,5 +75,24 @@ export async function loadFromR2(
     description: r.description ?? undefined,
   }));
 
-  return { transcript, chapters };
+  // Source-history key is derived from the transcript key (same prefix).
+  // Try v2 first (post-bugfix), fall back to v1 for sessions published
+  // before the fix. Either returns null means we skip the live pane.
+  const transcriptKey = session.transcript_r2_key;
+  const basePrefix = transcriptKey.replace(/transcript\.jsonl\.gz$/, "");
+  let sourceHistory: SourceHistory | undefined;
+  for (const variant of ["source-history.v2.json.gz", "source-history.json.gz"]) {
+    const shObj = await env.MEDIA.get(`${basePrefix}${variant}`);
+    if (shObj) {
+      const shGz = new Uint8Array(await shObj.arrayBuffer());
+      const shRaw = await gunzipString(shGz);
+      const parsed = JSON.parse(shRaw) as SourceHistory;
+      if (Object.keys(parsed.cursors).length > 0) {
+        sourceHistory = parsed;
+        break;
+      }
+    }
+  }
+
+  return { transcript, chapters, sourceHistory };
 }
