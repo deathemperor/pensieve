@@ -1,0 +1,168 @@
+---
+export const prerender = false;
+import Base from "../../../../layouts/Base.astro";
+import { TECHNIQUES, LESSONS, animationsByTechnique } from "../../../../data/animation-lessons.ts";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+// Sort techniques by how many animations reference them (pedagogy-first: lead with the well-covered ones)
+const rows = Object.values(TECHNIQUES).map((t) => ({
+  tech: t,
+  animations: animationsByTechnique(LESSONS, t.slug),
+})).sort((a, b) => b.animations.length - a.animations.length);
+---
+
+<Base
+  title={isVi ? "Kỹ thuật Animation — Quidditch" : "Animation Techniques — Quidditch"}
+  description={isVi
+    ? "Danh sách các kỹ thuật CSS/SVG được dùng trong các animation — mỗi kỹ thuật liên kết đến các bản ghi thực tế demo nó."
+    : "Index of CSS/SVG techniques used across the animations — each entry links to the recorded builds that demonstrate it."}
+  breadcrumbs={[
+    { label: "Hogwarts", href: "/" },
+    { label: isVi ? "Học viện Animation" : "Animation Academy", href: "/hogwarts/quidditch/" },
+    { label: isVi ? "Kỹ thuật" : "Techniques" },
+  ]}
+>
+  <section class="tech-hero">
+    <span class="room-label">Academy</span>
+    <h1 class="room-title">{isVi ? "Các kỹ thuật" : "Techniques"}</h1>
+    <p class="room-subtitle">
+      {isVi
+        ? "Mỗi kỹ thuật được demo sống động trong ít nhất một bản ghi. Click để xem các animation dùng nó."
+        : "Every technique listed here is demonstrated live in at least one recording. Click through to the builds that use it."}
+    </p>
+  </section>
+
+  <ul class="tech-list" role="list">
+    {rows.map(({ tech, animations }) => (
+      <li class="tech-row">
+        <div class="tech-head">
+          <h2 class="tech-name">{tech.name}</h2>
+          <span class="tech-count">{animations.length} recording{animations.length === 1 ? "" : "s"}</span>
+        </div>
+        <p class="tech-blurb">{tech.blurb}</p>
+        <div class="tech-footer">
+          <div class="tech-animations">
+            {animations.length === 0 ? (
+              <span class="tech-empty">no recordings yet</span>
+            ) : (
+              animations.map((slug) => (
+                <a class="anim-pill" href={`/hogwarts/quidditch/${slug}`}>{slug.replace(/-/g, " ")}</a>
+              ))
+            )}
+          </div>
+          {tech.mdnUrl && (
+            <a class="mdn-link" href={tech.mdnUrl} target="_blank" rel="noopener">
+              MDN reference &rarr;
+            </a>
+          )}
+        </div>
+      </li>
+    ))}
+  </ul>
+</Base>
+
+<style>
+  .tech-hero { margin: 3rem 0 2.5rem; }
+  .room-label {
+    display: inline-block;
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted, #62666d);
+    margin-bottom: 0.75rem;
+  }
+  .room-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .room-subtitle {
+    max-width: 60ch;
+    color: var(--secondary, #8a8f98);
+    line-height: 1.6;
+  }
+
+  .tech-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .tech-row {
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background: var(--elevated, #141516);
+    transition: border-color 120ms ease;
+  }
+  .tech-row:hover { border-color: rgba(255, 255, 255, 0.14); }
+
+  .tech-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.375rem;
+  }
+  .tech-name { margin: 0; font-size: 1.0625rem; letter-spacing: -0.01em; }
+  .tech-count {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+    color: var(--muted, #62666d);
+    white-space: nowrap;
+  }
+
+  .tech-blurb {
+    color: var(--secondary, #8a8f98);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0 0 0.875rem;
+  }
+
+  .tech-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .tech-animations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .anim-pill {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    border-radius: 999px;
+    color: var(--secondary, #8a8f98);
+    text-decoration: none;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .anim-pill:hover {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+  }
+  .tech-empty {
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+  }
+  .mdn-link {
+    color: var(--muted, #62666d);
+    font-size: 0.75rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .mdn-link:hover { color: var(--text, #f7f8f8); }
+</style>
