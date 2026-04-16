@@ -1,0 +1,45 @@
+---
+export const prerender = false;
+
+import PlaceholderHero from "../../animations/placeholder/index.astro";
+
+const { slug } = Astro.params;
+if (!slug) return new Response("Not Found", { status: 404 });
+
+const HERO_COMPONENTS = {
+  placeholder: PlaceholderHero,
+} as const;
+
+const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
+if (!Hero) return new Response(`No hero for slug "${slug}"`, { status: 404 });
+
+// Bare headless preview route used by Plan B's snap-animation.sh helper.
+// Not meant for public discovery — blocked via robots.
+Astro.response.headers.set("cache-control", "no-store");
+Astro.response.headers.set("x-robots-tag", "noindex, nofollow");
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{slug} preview</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      html, body { margin: 0; padding: 0; background: #08090a; height: 100vh; }
+      .stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+      }
+      .stage > * { max-width: min(1080px, 90vw); width: 100%; }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <Hero />
+    </main>
+  </body>
+</html>

@@ -10,6 +10,7 @@
 		{ "path": "/room-of-requirement/restricted-section", "title": "The Restricted Section", "priority": "0.6" },
 		{ "path": "/room-of-requirement/house-elves", "title": "House-Elves", "priority": "0.6" },
 		{ "path": "/room-of-requirement/plugins", "title": "Plugins", "priority": "0.6" },
+		{ "path": "/hogwarts/quidditch/", "title": "Quidditch Pitch", "priority": "0.7" },
 		{ "path": "/Trương", "title": "Trương Hữu Lộc — About", "priority": "0.8" }
 	],
 	"feeds": [
@@ -19,6 +20,7 @@
 	],
 	"collections": {
 		"posts": { "basePath": "/pensieve/memories", "priority": "0.7" },
-		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" }
+		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" },
+		"animations": { "basePath": "/hogwarts/quidditch", "priority": "0.7" }
 	}
 }
