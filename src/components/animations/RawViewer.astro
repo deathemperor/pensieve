@@ -1,0 +1,137 @@
+---
+import type { TranscriptEntry } from "../../lib/animations/transcript.ts";
+import type { FixtureChapter } from "../../lib/animations/load-fixture.ts";
+import { renderEntryLabel } from "../../lib/animations/render-entry.ts";
+
+interface Props {
+  transcript: TranscriptEntry[];
+  chapters: FixtureChapter[];
+}
+
+const { transcript, chapters } = Astro.props;
+const chaptersByIndex = new Map(chapters.map((c) => [c.cursor_index, c]));
+---
+
+<section class="raw-viewer" aria-label="Build session transcript">
+  <nav class="chapters" aria-label="Chapters">
+    <h2>Chapters</h2>
+    <ol>
+      {chapters.map((ch) => (
+        <li>
+          <a href={`#cursor-${ch.cursor_index}`} data-cursor={ch.cursor_index}>
+            <span class="label">{ch.label}</span>
+            {ch.description && <span class="desc">{ch.description}</span>}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <ol class="stream" role="list">
+    {transcript.map((entry) => {
+      const chapter = chaptersByIndex.get(entry.cursor);
+      return (
+        <li
+          id={`cursor-${entry.cursor}`}
+          class:list={["entry", `kind-${entry.kind}`, chapter && "has-chapter"]}
+          data-cursor={entry.cursor}
+        >
+          {chapter && (
+            <div class="chapter-marker" aria-label={`Chapter: ${chapter.label}`}>
+              ▸ {chapter.label}
+            </div>
+          )}
+          <details>
+            <summary>
+              <span class="cursor">#{entry.cursor}</span>
+              <span class="label">{renderEntryLabel(entry)}</span>
+              <time class="ts">{entry.ts}</time>
+            </summary>
+            <pre class="body">{JSON.stringify(entry, null, 2)}</pre>
+          </details>
+        </li>
+      );
+    })}
+  </ol>
+</section>
+
+<style>
+  .raw-viewer {
+    display: grid;
+    grid-template-columns: minmax(200px, 260px) 1fr;
+    gap: 2rem;
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.8125rem;
+    color: var(--text, #f7f8f8);
+  }
+
+  .chapters { position: sticky; top: 2rem; align-self: start; }
+  .chapters h2 {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted, #62666d);
+    margin: 0 0 0.75rem;
+  }
+  .chapters ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .chapters a {
+    display: block;
+    color: var(--secondary, #8a8f98);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  }
+  .chapters a:hover,
+  .chapters a[aria-current="true"] {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+  }
+  .chapters .label { display: block; font-weight: 500; }
+  .chapters .desc { display: block; font-size: 0.75rem; color: var(--muted, #62666d); margin-top: 0.25rem; }
+
+  .stream { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .entry {
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+    scroll-margin-top: 2rem;
+  }
+  .entry.is-current {
+    border-left-color: var(--accent, #5e6ad2);
+    background: rgba(94, 106, 210, 0.08);
+  }
+
+  .chapter-marker { margin: 1rem 0 0.25rem; color: var(--accent, #5e6ad2); font-weight: 500; }
+
+  details > summary {
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 3em 1fr auto;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.3rem 0;
+  }
+  .cursor { color: var(--muted, #62666d); }
+  .ts { color: var(--muted, #62666d); font-size: 0.6875rem; }
+  .body {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.75rem;
+    background: var(--elevated, #141516);
+    border-radius: 6px;
+    overflow-x: auto;
+    color: var(--secondary, #8a8f98);
+  }
+
+  .kind-prompt .label::before { content: "▸ "; color: var(--accent, #5e6ad2); }
+  .kind-assistant .label::before { content: "◂ "; color: var(--muted, #62666d); }
+
+  @media (max-width: 768px) {
+    .raw-viewer { grid-template-columns: 1fr; }
+    .chapters { position: static; }
+  }
+</style>
+
+<script>
+  import "./raw-viewer-client.ts";
+</script>
