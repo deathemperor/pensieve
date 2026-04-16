@@ -1,6 +1,7 @@
-Cat sprite artwork — CC0 (Public Domain)
-Original author: Shepardskin
-Source: https://opengameart.org/content/cat-sprites
-License: https://creativecommons.org/publicdomain/zero/1.0/
+Cat sprite artwork — hand-crafted pixel art
+Author: built for pensieve (procedurally drawn, pixel-by-pixel Python + PIL)
+Source script: docs/assets/craft-cat.py (archived in pensieve repo)
+License: CC0 / public domain — do as you wish, attribution appreciated.
 
-No attribution required, but credit preserved here as courtesy.
+Previous asset (Shepardskin CC0 silhouette) replaced on 2026-04-16 after
+visual review deemed it too minimal to read as a cat at any scale.
