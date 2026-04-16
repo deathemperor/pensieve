@@ -28268,6 +28268,23 @@
 					"primary_session_id": "fixture-0000",
 					"language": "en"
 				}
+			},
+			{
+				"id": "snitch-trail",
+				"slug": "snitch-trail",
+				"status": "published",
+				"data": {
+					"title": "Snitch Trail",
+					"description": "A golden snitch traces a figure-eight flight path with a trailing shimmer of gold sparkles. First animation built with the Quidditch capture pipeline — transcript + renders + source-history all published to R2/D1 on git push.",
+					"tags": [
+						"svg",
+						"offset-path",
+						"quidditch"
+					],
+					"hero_component": "src/animations/snitch-trail/index.astro",
+					"primary_session_id": "",
+					"language": "en"
+				}
 			}
 		]
 	}

@@ -9,6 +9,7 @@ import RawViewer from "../../../components/animations/RawViewer.astro";
 import { env } from "cloudflare:workers";
 
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
+import SnitchTrailHero from "../../../animations/snitch-trail/index.astro";
 
 interface AnimationData {
   title: string;
@@ -45,6 +46,7 @@ const fixture = await loadFromR2(
 // tree-shaking correct.
 const HERO_COMPONENTS = {
   placeholder: PlaceholderHero,
+  "snitch-trail": SnitchTrailHero,
 } as const;
 
 const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
