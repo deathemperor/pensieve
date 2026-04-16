@@ -1,0 +1,7 @@
+[
+  { "cursor_index": 2, "label": "v1 static snitch", "description": "Static SVG-like shape, no motion yet" },
+  { "cursor_index": 4, "label": "v2 basic orbit", "description": "Linear orbit — mechanical feel" },
+  { "cursor_index": 6, "label": "v3 natural easing", "description": "Cubic-bezier to simulate inertia" },
+  { "cursor_index": 7, "label": "v4 flapping wings", "description": "Secondary wing motion for life" },
+  { "cursor_index": 9, "label": "v5 a11y polish", "description": "prefers-reduced-motion fallback" }
+]
