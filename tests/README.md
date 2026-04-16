@@ -32,3 +32,24 @@ Safe example:
 ## Layout
 
 Tests mirror `src/` paths under `tests/`. Fixture data lives in `src/fixtures/<feature>/`.
+
+## Lighthouse baselines
+
+### Quidditch Pitch (Plan A acceptance)
+
+Start the dev server:
+
+    bun run dev
+
+Then run Lighthouse:
+
+    npx --yes lighthouse http://localhost:4321/hogwarts/quidditch/ \
+      --preset=desktop \
+      --only-categories=performance,accessibility,seo \
+      --chrome-flags="--headless" \
+      --output=json \
+      --output-path=./lighthouse-quidditch.json
+
+Targets: performance ≥ 90, accessibility ≥ 90, seo ≥ 90.
+
+Baseline on 2026-04-16 (placeholder-only content): **performance 93, accessibility 95, seo 100**.
