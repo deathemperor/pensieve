@@ -26,9 +26,16 @@ const { entries, cacheHint } = result as unknown as {
 };
 
 // Animations are language-neutral — code is code. Show all published regardless of lang.
+// updatedAt can arrive as a Date object or ISO string depending on path;
+// coerce to a sortable string before comparing.
+const toSortKey = (v: unknown): string => {
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === "string") return v;
+  return "";
+};
 const visible = entries
   .filter((e) => (e.status ?? "published") === "published")
-  .sort((a, b) => (b.data.updatedAt ?? "").localeCompare(a.data.updatedAt ?? ""));
+  .sort((a, b) => toSortKey(b.data.updatedAt).localeCompare(toSortKey(a.data.updatedAt)));
 
 if (cacheHint) Astro.cache.set(cacheHint as never);
 ---
