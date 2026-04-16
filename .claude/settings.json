@@ -7,6 +7,10 @@
           {
             "type": "command",
             "command": ".claude/hooks/log-prompt.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/user-prompt-submit-animation.sh"
           }
         ]
       }
@@ -33,6 +37,15 @@
           {
             "type": "command",
             "command": ".claude/hooks/post-pr-logs.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-tool-use-animation.sh"
           }
         ]
       }

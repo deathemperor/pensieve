@@ -10,6 +10,19 @@ REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # Only care about git push
 echo "$COMMAND" | grep -qE '^\s*git\s+push' || exit 0
 
+# --- Animation capture publisher ---
+# If any finished animation sessions exist, publish them to R2 + D1 before
+# the normal diary flow. Failure aborts the push so we never ship partial
+# or corrupted captures.
+ANIM_DESCRIPTORS="$REPO_ROOT/.session/animation-transcripts"
+if [ -d "$ANIM_DESCRIPTORS" ] && compgen -G "$ANIM_DESCRIPTORS/*.session.json" > /dev/null; then
+  echo "Publishing finished animation sessions..." >&2
+  if ! (cd "$REPO_ROOT" && node --import tsx scripts/publish-animations.ts); then
+    echo "animation publish failed -- aborting push" >&2
+    exit 2
+  fi
+fi
+
 PROMPTS="$REPO_ROOT/.session/prompts.jsonl"
 INSIGHTS="$REPO_ROOT/.session/insights.jsonl"
 PLANS="$REPO_ROOT/.session/plans.jsonl"
