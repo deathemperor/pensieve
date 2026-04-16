@@ -4,8 +4,9 @@ export const prerender = false;
 import Base from "../../../layouts/Base.astro";
 import { getEmDashEntry } from "emdash";
 import { getCurrentLang } from "../../../utils/lang";
-import { loadFixture } from "../../../lib/animations/load-fixture.ts";
+import { loadFromR2 } from "../../../lib/animations/load-from-r2.ts";
 import RawViewer from "../../../components/animations/RawViewer.astro";
+import { env } from "cloudflare:workers";
 
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
 
@@ -30,9 +31,14 @@ const cacheHint = (entryResult as unknown as { cacheHint?: unknown }).cacheHint;
 if (!entry) return new Response("Not Found", { status: 404 });
 if (cacheHint) Astro.cache.set(cacheHint as never);
 
-// Plan A: load transcript/chapters from the on-disk fixture for this slug.
-// Plan B replaces this with an R2 fetch keyed on entry.data.primary_session_id.
-const fixture = loadFixture(slug);
+// Plan B: R2-backed loader queries animation_sessions in D1, fetches the
+// latest published transcript.jsonl.gz from R2 MEDIA, and returns the same
+// shape the fixture did. Falls back to the on-disk fixture when R2 has no
+// data yet — preserves the placeholder during rollout.
+const fixture = await loadFromR2(
+  slug,
+  env as Parameters<typeof loadFromR2>[1],
+);
 
 // Hero component registry — explicit map. Astro can't dynamically import
 // user-authored components from a runtime-computed path while keeping
