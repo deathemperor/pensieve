@@ -1,0 +1,109 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { getEmDashEntry } from "emdash";
+import { getCurrentLang } from "../../../utils/lang";
+import { loadFixture } from "../../../lib/animations/load-fixture.ts";
+import RawViewer from "../../../components/animations/RawViewer.astro";
+
+import PlaceholderHero from "../../../animations/placeholder/index.astro";
+
+interface AnimationData {
+  title: string;
+  description?: string;
+  tags?: string[];
+  hero_component?: string;
+  primary_session_id?: string;
+  language?: string;
+}
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/hogwarts/quidditch/");
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+const entryResult = await getEmDashEntry("animations" as never, slug, { locale: "en" } as never);
+const entry = (entryResult as unknown as { entry?: { id: string; data: AnimationData }; cacheHint?: unknown }).entry;
+const cacheHint = (entryResult as unknown as { cacheHint?: unknown }).cacheHint;
+if (!entry) return new Response("Not Found", { status: 404 });
+if (cacheHint) Astro.cache.set(cacheHint as never);
+
+// Plan A: load transcript/chapters from the on-disk fixture for this slug.
+// Plan B replaces this with an R2 fetch keyed on entry.data.primary_session_id.
+const fixture = loadFixture(slug);
+
+// Hero component registry — explicit map. Astro can't dynamically import
+// user-authored components from a runtime-computed path while keeping
+// tree-shaking correct.
+const HERO_COMPONENTS = {
+  placeholder: PlaceholderHero,
+} as const;
+
+const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
+---
+
+<Base
+  title={`${entry.data.title} — Quidditch`}
+  description={entry.data.description ?? "Animation playground artifact"}
+  breadcrumbs={[
+    { label: "Hogwarts", href: "/" },
+    { label: isVi ? "Sân Quidditch" : "Quidditch Pitch", href: "/hogwarts/quidditch/" },
+    { label: entry.data.title },
+  ]}
+>
+  <article class="animation-page">
+    <header class="anim-head">
+      <h1>{entry.data.title}</h1>
+      {entry.data.description && <p class="anim-desc">{entry.data.description}</p>}
+    </header>
+
+    <section class="hero-stage" aria-label="Hero animation">
+      {Hero ? <Hero /> : (
+        <div class="hero-missing">
+          No hero component registered for slug "{slug}". Add it to
+          HERO_COMPONENTS in src/pages/hogwarts/quidditch/[slug].astro.
+        </div>
+      )}
+    </section>
+
+    <section class="diary-section" aria-label="Build diary">
+      <div class="section-head">
+        <h2>{isVi ? "Nhật ký dựng" : "Build diary"}</h2>
+        <p class="section-sub">
+          {isVi
+            ? "Toàn bộ phiên Claude Code. Dùng ← → hoặc click chapter để di chuyển."
+            : "Full Claude Code session. Use ← → or click a chapter to scrub."}
+        </p>
+      </div>
+      <RawViewer transcript={fixture.transcript} chapters={fixture.chapters} />
+    </section>
+  </article>
+</Base>
+
+<style>
+  .animation-page { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .anim-head { margin-bottom: 2rem; }
+  .anim-head h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin: 0 0 0.5rem; letter-spacing: -0.02em; }
+  .anim-desc { color: var(--secondary, #8a8f98); max-width: 60ch; margin: 0; line-height: 1.6; }
+
+  .hero-stage {
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+  .hero-missing {
+    padding: 3rem;
+    text-align: center;
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.875rem;
+  }
+
+  .diary-section { margin-top: 2rem; }
+  .section-head { margin-bottom: 1.25rem; }
+  .section-head h2 { margin: 0 0 0.25rem; font-size: 1.125rem; }
+  .section-sub { color: var(--muted, #62666d); margin: 0; font-size: 0.875rem; }
+</style>
