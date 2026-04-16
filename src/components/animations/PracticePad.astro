@@ -1,0 +1,275 @@
+---
+// PracticePad — embedded try-it-yourself editor. Ships the animation's
+// final source (or the state at a chosen cursor) into a <textarea>;
+// live preview in a sandboxed <iframe> updates as the learner types.
+// No Monaco or heavy deps — just textarea + debounced srcdoc swap.
+import type { SourceHistory } from "../../lib/animations/load-from-r2.ts";
+
+interface Props {
+  slug: string;
+  sourceHistory?: SourceHistory;
+
+}
+
+const { slug, sourceHistory } = Astro.props;
+
+// Pick the final state (last cursor) as the starting point for practice
+function pickFinalSource(
+  history: SourceHistory | undefined,
+  slug: string,
+): { source: string; path: string } | null {
+  if (!history) return null;
+  const cursors = Object.keys(history.cursors).map(Number).sort((a, b) => a - b);
+  if (cursors.length === 0) return null;
+  const lastFiles = history.cursors[String(cursors[cursors.length - 1])]?.files;
+  if (!lastFiles) return null;
+  const prefix = `src/animations/${slug}/`;
+  const entries = Object.entries(lastFiles).filter(
+    ([p]) => p.startsWith(prefix) && p.endsWith(".astro"),
+  );
+  const idx = entries.find(([p]) => p.endsWith("/index.astro"));
+  const [path, source] = idx ?? entries[0] ?? ["", ""];
+  if (!source) return null;
+  return { source, path };
+}
+
+const final = pickFinalSource(sourceHistory, slug);
+const hasSource = !!final;
+
+// Pass source history to client so "Reset to cursor N" can reload from there
+const historyPayload = sourceHistory
+  ? JSON.stringify({
+      slug,
+      cursors: Object.fromEntries(
+        Object.entries(sourceHistory.cursors).map(([k, v]) => {
+          const prefix = `src/animations/${slug}/`;
+          const hero = Object.entries(v.files).find(
+            ([p]) => p.startsWith(prefix) && p.endsWith(".astro"),
+          );
+          return [k, hero ? hero[1] : ""];
+        }),
+      ),
+    })
+  : "null";
+---
+
+<section class="practice-pad" aria-label="Try it yourself">
+  <div class="pp-head">
+    <div class="pp-title-row">
+      <h2 class="pp-title">
+        <span class="pp-label">Practice</span>
+        Try it yourself
+      </h2>
+      <div class="pp-actions">
+        <select class="pp-reset-select" aria-label="Reset to cursor" data-pp-reset>
+          <option value="">Reset from...</option>
+          <option value="final">Final version</option>
+        </select>
+        <button type="button" class="pp-run-btn" data-pp-run aria-label="Run (Cmd/Ctrl+Enter)">
+          Run
+        </button>
+      </div>
+    </div>
+    <p class="pp-sub">
+      Edit the code on the left, see the result on the right. Your edits are scratch-only —
+      reload resets to the last saved version. Auto-runs when you pause typing; hit
+      <kbd>Cmd</kbd>+<kbd>Enter</kbd> (or the Run button) to force it.
+    </p>
+  </div>
+
+  {hasSource ? (
+    <div class="pp-workspace">
+      <div class="pp-editor-pane">
+        <div class="pp-editor-head">
+          <span class="pp-filename">{final.path}</span>
+          <span class="pp-status" data-pp-status aria-live="polite">ready</span>
+        </div>
+        <textarea
+          class="pp-editor"
+          data-pp-editor
+          spellcheck="false"
+          autocapitalize="off"
+          autocorrect="off"
+          wrap="off"
+          aria-label={`${slug} source code editor`}
+        >{final.source}</textarea>
+      </div>
+      <div class="pp-preview-pane">
+        <div class="pp-preview-head">
+          <span class="pp-preview-label">Preview</span>
+        </div>
+        <iframe
+          class="pp-preview"
+          data-pp-preview
+          sandbox="allow-scripts"
+          title={`${slug} practice preview`}
+        ></iframe>
+      </div>
+    </div>
+  ) : (
+    <div class="pp-empty">
+      No source history yet — practice pad loads once this animation has a published
+      recording with source-history captured.
+    </div>
+  )}
+</section>
+
+<script is:inline set:html={`window.__PP_HISTORY_${slug.replace(/-/g, "_")} = ${historyPayload};`} />
+
+<style>
+  .practice-pad {
+    margin: 0 0 3rem;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background: var(--elevated, #141516);
+  }
+  .pp-head { margin-bottom: 1rem; }
+  .pp-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .pp-title {
+    margin: 0;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .pp-label {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent, #5e6ad2);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(94, 106, 210, 0.15);
+    font-weight: 500;
+  }
+  .pp-sub {
+    margin: 0;
+    color: var(--muted, #62666d);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    max-width: 72ch;
+  }
+  .pp-sub kbd {
+    display: inline-block;
+    padding: 0 0.35rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text, #f7f8f8);
+    font-size: 0.7rem;
+    font-family: var(--mono, ui-monospace);
+    margin: 0 0.1rem;
+  }
+
+  .pp-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .pp-reset-select, .pp-run-btn {
+    appearance: none;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    background: transparent;
+    color: var(--secondary, #8a8f98);
+    font-family: inherit;
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .pp-reset-select { padding-right: 1.5rem; }
+  .pp-run-btn {
+    background: rgba(94, 106, 210, 0.1);
+    border-color: rgba(94, 106, 210, 0.35);
+    color: var(--text, #f7f8f8);
+  }
+  .pp-run-btn:hover { background: rgba(94, 106, 210, 0.18); }
+
+  .pp-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    min-height: 420px;
+  }
+  @media (max-width: 900px) {
+    .pp-workspace { grid-template-columns: 1fr; }
+    .pp-editor-pane, .pp-preview-pane { min-height: 280px; }
+  }
+
+  .pp-editor-pane, .pp-preview-pane {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0a0b0c;
+  }
+  .pp-editor-head, .pp-preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.7rem;
+    color: var(--muted, #62666d);
+  }
+  .pp-filename { color: var(--secondary, #8a8f98); }
+  .pp-status { color: var(--muted, #62666d); }
+  .pp-status.is-running { color: #f7a13c; }
+  .pp-status.is-ok      { color: #3fb950; }
+  .pp-status.is-error   { color: #e5534b; }
+
+  .pp-editor {
+    flex: 1;
+    width: 100%;
+    resize: vertical;
+    border: 0;
+    outline: none;
+    padding: 0.75rem;
+    background: #0a0b0c;
+    color: var(--text, #f7f8f8);
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+  }
+  .pp-editor:focus {
+    outline: 2px solid var(--accent, #5e6ad2);
+    outline-offset: -2px;
+  }
+
+  .pp-preview {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #08090a;
+  }
+
+  .pp-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+</style>
+
+<script>
+  import "./practice-pad-client.ts";
+</script>

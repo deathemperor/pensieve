@@ -9,6 +9,7 @@ import RawViewer from "../../../components/animations/RawViewer.astro";
 import LiveRender from "../../../components/animations/LiveRender.astro";
 import RenderFilmstrip from "../../../components/animations/RenderFilmstrip.astro";
 import LessonCard from "../../../components/animations/LessonCard.astro";
+import PracticePad from "../../../components/animations/PracticePad.astro";
 import { LESSONS } from "../../../data/animation-lessons.ts";
 import { env } from "cloudflare:workers";
 
@@ -126,6 +127,8 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
     {fixture.renders && fixture.renders.length > 0 && (
       <RenderFilmstrip slug={slug} renders={fixture.renders} mediaBase="/api/animation-render" />
     )}
+
+    <PracticePad slug={slug} sourceHistory={fixture.sourceHistory} />
   </article>
 </Base>
 
