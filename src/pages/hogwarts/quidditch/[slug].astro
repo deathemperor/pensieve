@@ -89,7 +89,7 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
       <RawViewer transcript={fixture.transcript} chapters={fixture.chapters} />
     </section>
 
-    <LiveRender slug={slug} sourceHistory={fixture.sourceHistory} initialCursor={0} />
+    <LiveRender slug={slug} sourceHistory={fixture.sourceHistory} />
   </article>
 </Base>
 
