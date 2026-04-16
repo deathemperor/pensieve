@@ -6,6 +6,7 @@ import { getEmDashEntry } from "emdash";
 import { getCurrentLang } from "../../../utils/lang";
 import { loadFromR2 } from "../../../lib/animations/load-from-r2.ts";
 import RawViewer from "../../../components/animations/RawViewer.astro";
+import LiveRender from "../../../components/animations/LiveRender.astro";
 import { env } from "cloudflare:workers";
 
 import PlaceholderHero from "../../../animations/placeholder/index.astro";
@@ -87,6 +88,8 @@ const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
       </div>
       <RawViewer transcript={fixture.transcript} chapters={fixture.chapters} />
     </section>
+
+    <LiveRender slug={slug} sourceHistory={fixture.sourceHistory} initialCursor={0} />
   </article>
 </Base>
 
