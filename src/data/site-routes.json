@@ -8,6 +8,7 @@
 		{ "path": "/room-of-requirement/task-observatory", "title": "Task Observatory", "priority": "0.6" },
 		{ "path": "/room-of-requirement/daily-prophet", "title": "The Daily Prophet", "priority": "0.6" },
 		{ "path": "/hogwarts/library", "title": "The Library", "priority": "0.7" },
+		{ "path": "/hogwarts/quidditch/", "title": "Quidditch Pitch", "priority": "0.7" },
 		{ "path": "/Trương", "title": "Trương Hữu Lộc — About", "priority": "0.8" }
 	],
 	"feeds": [
@@ -17,6 +18,7 @@
 	],
 	"collections": {
 		"posts": { "basePath": "/pensieve/memories", "priority": "0.7" },
-		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" }
+		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" },
+		"animations": { "basePath": "/hogwarts/quidditch", "priority": "0.7" }
 	}
 }
