@@ -21,6 +21,8 @@ function init(): void {
   const timelineDots = Array.from(
     document.querySelectorAll<HTMLElement>(".timeline-dot"),
   );
+  const timeline = document.querySelector<HTMLElement>(".tool-timeline");
+  const cursorNow = document.querySelector<HTMLElement>(".cursor-now");
 
   const setCurrent = (cursor: number): void => {
     for (const e of entries) {
@@ -29,6 +31,7 @@ function init(): void {
     for (const d of timelineDots) {
       d.classList.toggle("is-current", Number(d.dataset.cursor) === cursor);
     }
+    if (cursorNow) cursorNow.textContent = String(cursor);
 
     const chapterCursors = chapterLinks
       .map((a) => Number(a.dataset.cursor))
@@ -92,16 +95,82 @@ function init(): void {
     });
   }
 
+  // Transport controls — play/pause, prev/next, speed.
+  const SPEEDS = [1, 2, 4] as const;
+  let speedIdx = 0;
+  let playTimer: number | null = null;
+  const speedLabel = document.querySelector<HTMLElement>(".speed-label");
+  const playBtn = document.querySelector<HTMLButtonElement>('.transport-btn[data-transport="play"]');
+  const prevBtn = document.querySelector<HTMLButtonElement>('.transport-btn[data-transport="prev"]');
+  const nextBtn = document.querySelector<HTMLButtonElement>('.transport-btn[data-transport="next"]');
+  const speedBtn = document.querySelector<HTMLButtonElement>('.transport-btn[data-transport="speed"]');
+
+  const stopPlay = (): void => {
+    if (playTimer !== null) {
+      window.clearInterval(playTimer);
+      playTimer = null;
+    }
+    timeline?.classList.remove("is-playing");
+    if (playBtn) playBtn.setAttribute("aria-label", "Play");
+  };
+
+  const startPlay = (): void => {
+    stopPlay();
+    const maxCursor = entries.length - 1;
+    // If we're at the end, restart from the beginning on play
+    if (cursorFromHash() >= maxCursor) {
+      setCurrent(0);
+    }
+    timeline?.classList.add("is-playing");
+    if (playBtn) playBtn.setAttribute("aria-label", "Pause");
+    const intervalMs = Math.max(60, 500 / SPEEDS[speedIdx]);
+    playTimer = window.setInterval(() => {
+      const c = cursorFromHash();
+      if (c >= maxCursor) {
+        stopPlay();
+        return;
+      }
+      step(1);
+    }, intervalMs);
+  };
+
+  playBtn?.addEventListener("click", () => {
+    if (playTimer !== null) stopPlay();
+    else startPlay();
+  });
+
+  prevBtn?.addEventListener("click", () => {
+    stopPlay();
+    step(-1);
+  });
+  nextBtn?.addEventListener("click", () => {
+    stopPlay();
+    step(1);
+  });
+
+  speedBtn?.addEventListener("click", () => {
+    speedIdx = (speedIdx + 1) % SPEEDS.length;
+    if (speedLabel) speedLabel.textContent = `${SPEEDS[speedIdx]}×`;
+    // If currently playing, restart with new speed
+    if (playTimer !== null) startPlay();
+  });
+
   window.addEventListener("hashchange", () => setCurrent(cursorFromHash()));
 
   document.addEventListener("keydown", (ev: KeyboardEvent) => {
     if (ev.target && (ev.target as HTMLElement).closest("input,textarea,select")) return;
     if (ev.key === "ArrowRight" || ev.key === "ArrowDown") {
       ev.preventDefault();
+      stopPlay();
       step(1);
     } else if (ev.key === "ArrowLeft" || ev.key === "ArrowUp") {
       ev.preventDefault();
+      stopPlay();
       step(-1);
+    } else if (ev.key === " " || ev.key === "Spacebar") {
+      ev.preventDefault();
+      if (playTimer !== null) stopPlay();
+      else startPlay();
     }
   });
 
