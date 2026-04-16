@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .subtitle { font-size: 13px; color: #8b949e; margin-bottom: 32px; }
+
+  .demos { display: flex; flex-direction: column; gap: 48px; max-width: 700px; margin: 0 auto; }
+  .demo-section { display: flex; flex-direction: column; gap: 12px; }
+  .demo-label { font-size: 14px; font-weight: 600; color: #e6edf3; display: flex; align-items: center; gap: 8px; }
+  .demo-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tag-fixed { color: #3fb950; background: rgba(63,185,80,0.12); }
+  .tag-kept { color: #58a6ff; background: rgba(88,166,255,0.12); }
+  .tag-new { color: #d4a843; background: rgba(212,168,67,0.12); }
+  .demo-desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .demo-tech { font-size: 11px; color: #484f58; font-family: monospace; margin-top: 4px; }
+  .demo-stage {
+    background: #0d1117; border: 1px solid #21262d; border-radius: 12px;
+    padding: 40px; display: flex; justify-content: center; align-items: center;
+    min-height: 180px; position: relative; overflow: hidden;
+  }
+
+  /* ── A: Wand Trace Door (FIXED) ── */
+  .door-container {
+    position: relative; width: 220px; height: 100px;
+    perspective: 1000px;
+  }
+
+  .door-panel {
+    width: 100%; height: 100%; background: #161b22;
+    border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    transition: transform 0.8s cubic-bezier(0.32, 0, 0.15, 1);
+    z-index: 2;
+  }
+  .door-panel-inner {
+    font-size: 12px; color: #e6edf3; font-weight: 500;
+    backface-visibility: hidden;
+  }
+
+  /* Trace border overlay */
+  .door-trace {
+    position: absolute; inset: -2px; border-radius: 10px;
+    pointer-events: none; z-index: 3;
+    opacity: 0;
+  }
+  .door-trace svg { width: 100%; height: 100%; }
+  .door-trace rect {
+    fill: none; stroke: url(#traceGrad); stroke-width: 2;
+    stroke-dasharray: 640;
+    stroke-dashoffset: 640;
+    rx: 10; ry: 10;
+  }
+  .tracing .door-trace { opacity: 1; }
+  .tracing .door-trace rect {
+    animation: drawTrace 0.7s ease-out forwards;
+  }
+  @keyframes drawTrace {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Glow behind during trace */
+  .door-glow {
+    position: absolute; inset: -6px; border-radius: 14px;
+    background: conic-gradient(from 0deg, rgba(88,166,255,0.12), rgba(124,58,237,0.12), rgba(212,168,67,0.12), rgba(88,166,255,0.12));
+    filter: blur(10px); opacity: 0; z-index: 1;
+    transition: opacity 0.4s;
+  }
+  .tracing .door-glow { opacity: 1; }
+
+  /* Door swing */
+  .door-open .door-panel {
+    transform: rotateY(-105deg);
+  }
+
+  /* Room behind the door */
+  .door-room {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #161b22; border-radius: 8px;
+    border: 1px solid #21262d;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .door-open .door-room { opacity: 1; transition-delay: 0.3s; }
+  .door-room-content {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .door-room-title {
+    font-size: 15px; color: #58a6ff; font-weight: 600; letter-spacing: -0.02em;
+    opacity: 0; transform: translateY(6px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .door-open .door-room-title { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+  .door-room-hint {
+    font-size: 10px; color: #484f58; font-family: monospace;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .door-open .door-room-hint { opacity: 1; transition-delay: 0.7s; }
+
+  /* ── B: Pensieve Dive (kept) ── */
+  .pensieve-stage { flex-direction: column; }
+
+  .pensieve-panel {
+    width: 220px; height: 100px; background: #161b22;
+    border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .pensieve-panel-inner { font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 2; }
+
+  .pensieve-panel.diving {
+    animation: pensieveDive 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes pensieveDive {
+    0% { transform: scale(1); border-color: #21262d; }
+    15% { transform: scale(1.03); border-color: #58a6ff; box-shadow: 0 0 24px rgba(88,166,255,0.25), inset 0 0 24px rgba(88,166,255,0.06); }
+    35% { transform: scale(1.03); }
+    55% { transform: scale(0.92) translateY(6px); }
+    75% { transform: scale(0.3) translateY(24px); opacity: 0.3; filter: blur(3px); }
+    100% { transform: scale(0) translateY(50px); opacity: 0; filter: blur(10px); }
+  }
+
+  .pensieve-ripple {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(88,166,255,0.25);
+    pointer-events: none;
+    animation: rippleOut 1.2s ease-out forwards;
+  }
+  @keyframes rippleOut {
+    0% { width: 20px; height: 20px; opacity: 0.7; transform: translate(-50%, -50%); }
+    100% { width: 350px; height: 350px; opacity: 0; transform: translate(-50%, -50%); }
+  }
+
+  /* Silvery surface line */
+  .pensieve-surface {
+    position: absolute; bottom: 40%; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(88,166,255,0.3), rgba(124,58,237,0.3), rgba(88,166,255,0.3), transparent);
+    opacity: 0; z-index: 1;
+  }
+  .pensieve-surface.visible {
+    animation: surfaceAppear 0.8s ease-in-out forwards;
+  }
+  @keyframes surfaceAppear {
+    0% { opacity: 0; transform: scaleX(0.3); }
+    50% { opacity: 1; transform: scaleX(1); }
+    100% { opacity: 0.4; transform: scaleX(1); }
+  }
+
+  .pensieve-dest {
+    position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    opacity: 0; transform: translateY(12px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 3;
+  }
+  .pensieve-dest.visible { opacity: 1; transform: translateY(0); }
+  .pensieve-dest-title {
+    font-size: 15px; color: #58a6ff; font-weight: 600; letter-spacing: -0.02em;
+  }
+  .pensieve-dest-hint {
+    font-size: 10px; color: #484f58; font-family: monospace;
+  }
+
+  /* ── C: Marauder's Map Ink (improved) ── */
+  .map-panel {
+    width: 220px; height: 100px; background: #161b22;
+    border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .map-panel-inner {
+    font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 2;
+    transition: all 0.4s;
+  }
+
+  /* Parchment wash from click point */
+  .map-wash {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at var(--cx, 50%) var(--cy, 50%),
+      rgba(210, 166, 121, 0.08) 0%, transparent 0%);
+    transition: background 1s ease-out;
+    z-index: 1;
+  }
+  .map-wash.spreading {
+    background: radial-gradient(circle at var(--cx, 50%) var(--cy, 50%),
+      rgba(210, 166, 121, 0.08) 100%, transparent 100%);
+  }
+
+  /* Ink elements */
+  .map-ink-layer {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0; z-index: 2;
+  }
+  .map-ink-layer.visible { animation: inkReveal 0.4s ease-out 0.3s forwards; }
+  @keyframes inkReveal { to { opacity: 1; } }
+
+  .map-ink-text {
+    position: absolute; font-family: 'Georgia', serif; color: rgba(210, 166, 121, 0.6);
+    white-space: nowrap;
+  }
+  .map-ink-text.t1 { font-size: 11px; font-style: italic; top: 15%; left: 12%; animation: inkWrite 0.5s ease-out 0.4s both; }
+  .map-ink-text.t2 { font-size: 8px; top: 72%; right: 12%; animation: inkWrite 0.4s ease-out 0.7s both; }
+  .map-ink-title {
+    position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Georgia', serif; font-size: 14px; font-weight: 600;
+    color: rgba(210, 166, 121, 0.8); letter-spacing: 0.02em;
+    animation: inkWrite 0.6s ease-out 0.5s both;
+  }
+
+  @keyframes inkWrite {
+    0% { opacity: 0; filter: blur(4px); }
+    100% { opacity: 1; filter: blur(0); }
+  }
+
+  /* Footprint dots */
+  .map-footprint {
+    position: absolute; width: 3px; height: 3px; border-radius: 50%;
+    background: rgba(210, 166, 121, 0.4);
+  }
+  .fp1 { bottom: 20%; left: 20%; animation: fpAppear 0.3s ease-out 0.8s both; }
+  .fp2 { bottom: 25%; left: 28%; animation: fpAppear 0.3s ease-out 0.9s both; }
+  .fp3 { bottom: 22%; left: 36%; animation: fpAppear 0.3s ease-out 1s both; }
+  .fp4 { bottom: 27%; left: 44%; animation: fpAppear 0.3s ease-out 1.1s both; }
+  @keyframes fpAppear { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+
+  /* Thin ink lines */
+  .map-line {
+    position: absolute; height: 1px;
+    background: rgba(210, 166, 121, 0.15);
+    transform-origin: left;
+  }
+  .ml1 { top: 32%; left: 8%; width: 84%; animation: lineDraw 0.6s ease-out 0.35s both; }
+  .ml2 { top: 55%; left: 8%; width: 60%; animation: lineDraw 0.5s ease-out 0.55s both; }
+  .ml3 { top: 85%; left: 8%; width: 84%; animation: lineDraw 0.6s ease-out 0.45s both; }
+  @keyframes lineDraw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+</style>
+</head>
+<body>
+<h2>Magical Transitions — v3</h2>
+<p class="subtitle">A is fixed, B is kept, C is reworked with parchment ink aesthetic. Click to play, click again to reset.</p>
+
+<div class="demos">
+
+  <!-- A: Wand Trace Door (FIXED) -->
+  <div class="demo-section">
+    <div class="demo-label">A — Wand Trace Door <span class="demo-tag tag-fixed">fixed</span></div>
+    <div class="demo-desc">SVG stroke-dashoffset draws the border trace smoothly. CSS 3D perspective with proper transform-style for the door swing. Glow radiates during trace. Sub-page content fades in behind the opened door.</div>
+    <div class="demo-stage">
+      <div class="door-container" id="doorContainer" onclick="demoA()">
+        <div class="door-glow"></div>
+        <div class="door-trace">
+          <svg viewBox="0 0 224 104" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="traceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#58a6ff" />
+                <stop offset="40%" stop-color="#7c3aed" />
+                <stop offset="70%" stop-color="#d4a843" />
+                <stop offset="100%" stop-color="#58a6ff" />
+              </linearGradient>
+            </defs>
+            <rect x="1" y="1" width="222" height="102" />
+          </svg>
+        </div>
+        <div class="door-panel">
+          <div class="door-panel-inner">Task Observatory &rarr;</div>
+        </div>
+        <div class="door-room">
+          <div class="door-room-content">
+            <div class="door-room-title">Task Observatory</div>
+            <div class="door-room-hint">6 systems &middot; entering...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-tech">SVG stroke-dashoffset trace + CSS perspective rotateY + transition delays</div>
+  </div>
+
+  <!-- B: Pensieve Dive (kept) -->
+  <div class="demo-section">
+    <div class="demo-label">B — Pensieve Dive <span class="demo-tag tag-kept">kept</span></div>
+    <div class="demo-desc">Panel pulses with blue energy, shrinks and sinks with blur. Concentric ripples emanate like the pensieve basin surface. Sub-page title surfaces from below.</div>
+    <div class="demo-stage pensieve-stage" id="stageB">
+      <div class="pensieve-panel" id="pensievePanel" onclick="demoB()">
+        <div class="pensieve-panel-inner">Restricted Section &rarr;</div>
+      </div>
+      <div class="pensieve-surface" id="pensieveSurface"></div>
+      <div class="pensieve-dest" id="pensieveDest">
+        <div class="pensieve-dest-title">The Restricted Section</div>
+        <div class="pensieve-dest-hint">4 docs &middot; 2 projects</div>
+      </div>
+    </div>
+    <div class="demo-tech">CSS keyframe scale+blur+translateY + JS-spawned ripple elements</div>
+  </div>
+
+  <!-- C: Marauder's Map Ink (reworked) -->
+  <div class="demo-section">
+    <div class="demo-label">C — Marauder's Map Ink <span class="demo-tag tag-new">reworked</span></div>
+    <div class="demo-desc">Parchment-toned wash spreads from the click point. Sepia ink writes the sub-page title in serif. Thin cartographic lines draw themselves. Tiny footprint dots trace a path. The "I solemnly swear" aesthetic.</div>
+    <div class="demo-stage" id="stageC">
+      <div class="map-panel" id="mapPanel" onclick="demoC(event)">
+        <div class="map-panel-inner" id="mapInner">House-Elves &rarr;</div>
+        <div class="map-wash" id="mapWash"></div>
+        <div class="map-ink-layer" id="mapInk">
+          <div class="map-line ml1"></div>
+          <div class="map-line ml2"></div>
+          <div class="map-line ml3"></div>
+          <div class="map-ink-text t1">I solemnly swear...</div>
+          <div class="map-ink-title">House-Elves</div>
+          <div class="map-ink-text t2">6 agents bound to duty</div>
+          <div class="map-footprint fp1"></div>
+          <div class="map-footprint fp2"></div>
+          <div class="map-footprint fp3"></div>
+          <div class="map-footprint fp4"></div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-tech">CSS radial-gradient expand + serif ink-write + stroke footprints</div>
+  </div>
+
+</div>
+
+<script>
+let aOpen = false, bOpen = false, cOpen = false;
+
+function demoA() {
+  const container = document.getElementById('doorContainer');
+  if (aOpen) {
+    container.classList.remove('tracing', 'door-open');
+    aOpen = false;
+    return;
+  }
+  aOpen = true;
+  container.classList.add('tracing');
+  setTimeout(() => container.classList.add('door-open'), 700);
+}
+
+function demoB() {
+  const panel = document.getElementById('pensievePanel');
+  const dest = document.getElementById('pensieveDest');
+  const surface = document.getElementById('pensieveSurface');
+  const stage = document.getElementById('stageB');
+  if (bOpen) {
+    panel.classList.remove('diving');
+    panel.style.display = '';
+    dest.classList.remove('visible');
+    surface.classList.remove('visible');
+    stage.querySelectorAll('.pensieve-ripple').forEach(r => r.remove());
+    bOpen = false;
+    return;
+  }
+  bOpen = true;
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+      const ripple = document.createElement('div');
+      ripple.className = 'pensieve-ripple';
+      ripple.style.left = '50%';
+      ripple.style.top = '50%';
+      stage.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 1200);
+    }, i * 250 + 300);
+  }
+  panel.classList.add('diving');
+  setTimeout(() => surface.classList.add('visible'), 400);
+  setTimeout(() => dest.classList.add('visible'), 1000);
+}
+
+function demoC(e) {
+  const panel = document.getElementById('mapPanel');
+  const wash = document.getElementById('mapWash');
+  const ink = document.getElementById('mapInk');
+  const inner = document.getElementById('mapInner');
+  if (cOpen) {
+    wash.classList.remove('spreading');
+    ink.classList.remove('visible');
+    inner.style.opacity = '';
+    cOpen = false;
+    return;
+  }
+  cOpen = true;
+  const rect = panel.getBoundingClientRect();
+  const cx = ((e.clientX - rect.left) / rect.width * 100) + '%';
+  const cy = ((e.clientY - rect.top) / rect.height * 100) + '%';
+  wash.style.setProperty('--cx', cx);
+  wash.style.setProperty('--cy', cy);
+  wash.classList.add('spreading');
+  inner.style.opacity = '0';
+  setTimeout(() => ink.classList.add('visible'), 200);
+}
+</script>
+</body>
+</html>

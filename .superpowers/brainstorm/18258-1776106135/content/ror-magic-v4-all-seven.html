@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; color: #e6edf3; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #8b949e; margin-bottom: 28px; }
+  .demos { display: flex; flex-direction: column; gap: 36px; max-width: 720px; margin: 0 auto; }
+  .demo-section { display: flex; flex-direction: column; gap: 8px; }
+  .demo-header { display: flex; align-items: baseline; gap: 10px; }
+  .demo-label { font-size: 14px; font-weight: 600; color: #e6edf3; }
+  .demo-panel-name { font-size: 11px; font-family: monospace; color: #484f58; }
+  .demo-desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+  .demo-stage {
+    background: #0d1117; border: 1px solid #21262d; border-radius: 12px;
+    padding: 40px; display: flex; justify-content: center; align-items: center;
+    min-height: 170px; position: relative; overflow: hidden;
+  }
+
+  /* Shared panel base */
+  .panel {
+    width: 220px; height: 96px; background: #161b22;
+    border: 1px solid #21262d; border-radius: 8px;
+    position: relative; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2;
+  }
+  .panel-text { font-size: 12px; color: #e6edf3; font-weight: 500; z-index: 3; position: relative; }
+  .dest-text {
+    position: absolute; z-index: 4;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+  }
+  .dest-text.visible { opacity: 1; transform: translateY(0); }
+  .dest-title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+  .dest-hint { font-size: 10px; color: #484f58; font-family: monospace; margin-top: 4px; }
+
+  /* ═══════════════════════════════════════
+     1. WAND TRACE DOOR → Task Observatory
+     ═══════════════════════════════════════ */
+  .door-container { position: relative; width: 220px; height: 96px; perspective: 1000px; }
+  .door-panel { transform-style: preserve-3d; transform-origin: left center; transition: transform 0.8s cubic-bezier(0.32, 0, 0.15, 1); }
+  .door-trace { position: absolute; inset: -2px; border-radius: 10px; pointer-events: none; z-index: 5; opacity: 0; }
+  .door-trace svg { width: 100%; height: 100%; }
+  .door-trace rect { fill: none; stroke: url(#traceGrad); stroke-width: 2; stroke-dasharray: 632; stroke-dashoffset: 632; rx: 10; ry: 10; }
+  .door-glow { position: absolute; inset: -6px; border-radius: 14px; background: conic-gradient(from 0deg, rgba(88,166,255,0.12), rgba(124,58,237,0.12), rgba(212,168,67,0.12), rgba(88,166,255,0.12)); filter: blur(10px); opacity: 0; z-index: 1; transition: opacity 0.4s; }
+  .door-room { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #161b22; border-radius: 8px; border: 1px solid #21262d; z-index: 0; opacity: 0; transition: opacity 0.3s; }
+  .tracing .door-trace { opacity: 1; }
+  .tracing .door-trace rect { animation: drawTrace 0.7s ease-out forwards; }
+  .tracing .door-glow { opacity: 1; }
+  .door-open .door-panel { transform: rotateY(-105deg); }
+  .door-open .door-room { opacity: 1; transition-delay: 0.3s; }
+  @keyframes drawTrace { to { stroke-dashoffset: 0; } }
+
+  /* ═══════════════════════════════════════
+     2. PENSIEVE DIVE → Restricted Section
+     ═══════════════════════════════════════ */
+  .pensieve-panel.diving { animation: pensieveDive 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes pensieveDive {
+    0% { transform: scale(1); border-color: #21262d; }
+    15% { transform: scale(1.03); border-color: #58a6ff; box-shadow: 0 0 24px rgba(88,166,255,0.25), inset 0 0 24px rgba(88,166,255,0.06); }
+    35% { transform: scale(1.03); }
+    55% { transform: scale(0.92) translateY(6px); }
+    75% { transform: scale(0.3) translateY(24px); opacity: 0.3; filter: blur(3px); }
+    100% { transform: scale(0) translateY(50px); opacity: 0; filter: blur(10px); }
+  }
+  .pensieve-ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(88,166,255,0.25); pointer-events: none; animation: rippleOut 1.2s ease-out forwards; }
+  @keyframes rippleOut { 0% { width: 20px; height: 20px; opacity: 0.7; transform: translate(-50%, -50%); } 100% { width: 350px; height: 350px; opacity: 0; transform: translate(-50%, -50%); } }
+
+  /* ═══════════════════════════════════════
+     3. FLOO NETWORK → Plugins
+     ═══════════════════════════════════════ */
+  .floo-panel.burning { animation: flooBurn 1s ease-in forwards; }
+  @keyframes flooBurn {
+    0% { border-color: #21262d; }
+    10% { border-color: #3fb950; box-shadow: 0 0 8px rgba(63,185,80,0.2); }
+    30% { box-shadow: 0 0 30px rgba(63,185,80,0.4), inset 0 -30px 30px rgba(63,185,80,0.15); }
+    60% { box-shadow: 0 0 50px rgba(63,185,80,0.3), inset 0 -60px 40px rgba(63,185,80,0.25); transform: scale(1.02); }
+    80% { opacity: 0.5; transform: scale(0.98) translateY(-8px); filter: blur(2px); }
+    100% { opacity: 0; transform: scale(0.9) translateY(-30px); filter: blur(6px); }
+  }
+  /* Flame particles */
+  .floo-flame {
+    position: absolute; width: 6px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: #3fb950; pointer-events: none; opacity: 0;
+    filter: blur(1px);
+  }
+  .floo-flame.lit { animation: flameRise 0.8s ease-out forwards; }
+  @keyframes flameRise {
+    0% { opacity: 0.8; transform: translateY(0) scale(1); }
+    50% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(-60px) scale(0.3); }
+  }
+
+  /* ═══════════════════════════════════════
+     4. PATRONUS BURST → House-Elves
+     ═══════════════════════════════════════ */
+  .patronus-panel.casting { animation: patronusCast 1.3s ease-out forwards; }
+  @keyframes patronusCast {
+    0% { border-color: #21262d; }
+    15% { border-color: rgba(200,220,255,0.6); box-shadow: 0 0 12px rgba(200,220,255,0.2); }
+    30% { box-shadow: 0 0 40px rgba(200,220,255,0.4), inset 0 0 30px rgba(200,220,255,0.1); transform: scale(1.02); }
+    50% { box-shadow: 0 0 80px rgba(200,220,255,0.5); background: rgba(200,220,255,0.05); }
+    70% { opacity: 0.6; transform: scale(1.05); filter: blur(1px); background: rgba(200,220,255,0.08); }
+    85% { opacity: 0.3; filter: blur(4px); }
+    100% { opacity: 0; filter: blur(8px); transform: scale(1.2); }
+  }
+  /* Light rays */
+  .patronus-ray {
+    position: absolute; height: 1px; transform-origin: left center;
+    background: linear-gradient(90deg, rgba(200,220,255,0.6), transparent);
+    pointer-events: none; opacity: 0;
+  }
+  .patronus-ray.burst { animation: rayBurst 0.7s ease-out forwards; }
+  @keyframes rayBurst { 0% { opacity: 0.8; width: 0; } 100% { opacity: 0; width: 150px; } }
+
+  /* ═══════════════════════════════════════
+     5. APPARITION → Architecture
+     ═══════════════════════════════════════ */
+  .apparition-panel.apparating { animation: apparate 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes apparate {
+    0% { transform: scale(1, 1); opacity: 1; }
+    20% { transform: scale(1.02, 0.98); }
+    40% { transform: scale(0.3, 1.8); opacity: 0.7; filter: blur(2px); }
+    60% { transform: scale(0.1, 2.5); opacity: 0.4; filter: blur(4px); }
+    80% { transform: scale(0.05, 3); opacity: 0.2; filter: blur(6px); }
+    100% { transform: scale(0, 4); opacity: 0; filter: blur(8px); }
+  }
+  /* Pop crack */
+  .apparition-crack {
+    position: absolute; width: 4px; height: 4px; border-radius: 50%;
+    background: white; pointer-events: none; opacity: 0;
+  }
+  .apparition-crack.pop {
+    animation: crackPop 0.3s ease-out forwards;
+  }
+  @keyframes crackPop {
+    0% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px rgba(255,255,255,0.8); }
+    100% { opacity: 0; transform: scale(8); box-shadow: 0 0 40px rgba(255,255,255,0); }
+  }
+
+  /* ═══════════════════════════════════════
+     6. PORTKEY → Source
+     ═══════════════════════════════════════ */
+  .portkey-panel.pulling { animation: portkeyPull 1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  @keyframes portkeyPull {
+    0% { transform: rotate(0deg) scale(1); border-color: #21262d; }
+    15% { border-color: #d4a843; box-shadow: 0 0 12px rgba(212,168,67,0.3); }
+    30% { transform: rotate(2deg) scale(1.01); box-shadow: 0 0 20px rgba(212,168,67,0.4); }
+    50% { transform: rotate(-1deg) scale(1.02); }
+    65% { transform: rotate(3deg) scale(0.95); }
+    80% { transform: rotate(-5deg) scale(0.7); opacity: 0.6; filter: blur(2px); }
+    100% { transform: rotate(720deg) scale(0); opacity: 0; filter: blur(6px); }
+  }
+  /* Golden swirl */
+  .portkey-swirl {
+    position: absolute; width: 120px; height: 120px; border-radius: 50%;
+    border: 1px solid rgba(212,168,67,0.2);
+    pointer-events: none; opacity: 0;
+  }
+  .portkey-swirl.active { animation: swirlSpin 1s ease-in forwards; }
+  @keyframes swirlSpin {
+    0% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.3); }
+    30% { opacity: 0.6; }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(540deg) scale(2); }
+  }
+
+  /* ═══════════════════════════════════════
+     7. VANISHING CABINET → What CC Does
+     ═══════════════════════════════════════ */
+  .vanish-panel.vanishing { animation: vanishPhase 1.2s ease-in-out forwards; }
+  @keyframes vanishPhase {
+    0% { opacity: 1; }
+    10% { opacity: 0.3; }
+    20% { opacity: 0.9; }
+    30% { opacity: 0.2; }
+    40% { opacity: 0.8; transform: scale(1.01); }
+    50% { opacity: 0.1; }
+    60% { opacity: 0.6; }
+    70% { opacity: 0.05; filter: blur(1px); }
+    80% { opacity: 0.4; filter: blur(0); }
+    90% { opacity: 0.02; filter: blur(3px); }
+    100% { opacity: 0; filter: blur(4px); transform: scale(0.98); }
+  }
+</style>
+</head>
+<body>
+<h2>Seven Rooms, Seven Magics</h2>
+<p class="subtitle">Each panel gets its own HP-themed transition. Click to play, click again to reset.</p>
+
+<div class="demos">
+
+  <!-- 1: Wand Trace Door → Task Observatory -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">1. Wand Trace Door</span>
+      <span class="demo-panel-name">→ Task Observatory</span>
+    </div>
+    <div class="demo-desc">A golden trace draws a doorframe. The panel swings open on a hinge. The room behind is revealed.</div>
+    <div class="demo-stage">
+      <div class="door-container" id="door1" onclick="demoA()">
+        <div class="door-glow"></div>
+        <div class="door-trace">
+          <svg viewBox="0 0 224 100" preserveAspectRatio="none">
+            <defs><linearGradient id="traceGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#58a6ff"/><stop offset="40%" stop-color="#7c3aed"/><stop offset="70%" stop-color="#d4a843"/><stop offset="100%" stop-color="#58a6ff"/></linearGradient></defs>
+            <rect x="1" y="1" width="222" height="98"/>
+          </svg>
+        </div>
+        <div class="panel door-panel"><div class="panel-text">Task Observatory &rarr;</div></div>
+        <div class="door-room"><div class="dest-text visible"><div class="dest-title" style="color:#58a6ff">Task Observatory</div><div class="dest-hint">6 systems &middot; entering...</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2: Pensieve Dive → Restricted Section -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">2. Pensieve Dive</span>
+      <span class="demo-panel-name">→ Restricted Section</span>
+    </div>
+    <div class="demo-desc">Panel pulses, shrinks and sinks with blur. Concentric ripples emanate. Sub-page surfaces from below.</div>
+    <div class="demo-stage" id="stage2">
+      <div class="panel pensieve-panel" id="pp2" onclick="demoB()"><div class="panel-text">Restricted Section &rarr;</div></div>
+      <div class="dest-text" id="pd2"><div class="dest-title" style="color:#7c3aed">The Restricted Section</div><div class="dest-hint">4 docs &middot; 2 projects</div></div>
+    </div>
+  </div>
+
+  <!-- 3: Floo Network → Plugins -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">3. Floo Network</span>
+      <span class="demo-panel-name">→ Plugins</span>
+    </div>
+    <div class="demo-desc">Green flames engulf the panel from below, rising upward. The panel dissolves in emerald fire. Destination appears through the clearing smoke.</div>
+    <div class="demo-stage" id="stage3">
+      <div class="panel floo-panel" id="fp3" onclick="demoC()"><div class="panel-text">Plugins &rarr;</div></div>
+      <div class="dest-text" id="fd3"><div class="dest-title" style="color:#3fb950">Plugins</div><div class="dest-hint">4 plugins &middot; entering fireplace...</div></div>
+    </div>
+  </div>
+
+  <!-- 4: Patronus Burst → House-Elves -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">4. Patronus Burst</span>
+      <span class="demo-panel-name">→ House-Elves</span>
+    </div>
+    <div class="demo-desc">Silvery-white light builds inside the panel, then erupts outward in all directions. Light rays shoot from center. Panel dissolves into pure protective energy.</div>
+    <div class="demo-stage" id="stage4">
+      <div class="panel patronus-panel" id="pp4" onclick="demoD()"><div class="panel-text">House-Elves &rarr;</div></div>
+      <div class="dest-text" id="pd4"><div class="dest-title" style="color:rgba(200,220,255,0.9)">House-Elves</div><div class="dest-hint">6 agents &middot; summoning...</div></div>
+    </div>
+  </div>
+
+  <!-- 5: Apparition → Architecture -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">5. Apparition</span>
+      <span class="demo-panel-name">→ Architecture</span>
+    </div>
+    <div class="demo-desc">Panel squeezes through a tight tube — stretches vertically while compressing horizontally. A white crack-flash at the moment of disapparation. Destination pops in.</div>
+    <div class="demo-stage" id="stage5">
+      <div class="panel apparition-panel" id="ap5" onclick="demoE()"><div class="panel-text">Architecture &rarr;</div></div>
+      <div class="dest-text" id="ad5"><div class="dest-title" style="color:#d4a843">Architecture</div><div class="dest-hint">6 services &middot; *crack*</div></div>
+    </div>
+  </div>
+
+  <!-- 6: Portkey → Source -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">6. Portkey</span>
+      <span class="demo-panel-name">→ Source</span>
+    </div>
+    <div class="demo-desc">Panel wobbles as the portkey activates — shuddering, then spinning violently with a golden swirl before vanishing. The "navel hook" pull.</div>
+    <div class="demo-stage" id="stage6">
+      <div class="panel portkey-panel" id="pk6" onclick="demoF()"><div class="panel-text">Source &rarr;</div></div>
+      <div class="dest-text" id="pkd6"><div class="dest-title" style="color:#d4a843">Source</div><div class="dest-hint">deathemperor/pensieve</div></div>
+    </div>
+  </div>
+
+  <!-- 7: Vanishing Cabinet → What CC Does -->
+  <div class="demo-section">
+    <div class="demo-header">
+      <span class="demo-label">7. Vanishing Cabinet</span>
+      <span class="demo-panel-name">→ What CC Does</span>
+    </div>
+    <div class="demo-desc">Panel flickers in and out of existence — phasing between visible and invisible, each time less solid. Finally vanishes for good, leaving the destination behind. The Draco Malfoy method.</div>
+    <div class="demo-stage" id="stage7">
+      <div class="panel vanish-panel" id="vp7" onclick="demoG()"><div class="panel-text">What CC Does &rarr;</div></div>
+      <div class="dest-text" id="vd7"><div class="dest-title" style="color:#8b949e">Roles</div><div class="dest-hint">7 CC &middot; 5 Human</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const states = { a:false, b:false, c:false, d:false, e:false, f:false, g:false };
+
+function demoA() {
+  const c = document.getElementById('door1');
+  if (states.a) { c.classList.remove('tracing','door-open'); states.a=false; return; }
+  states.a=true; c.classList.add('tracing');
+  setTimeout(() => c.classList.add('door-open'), 700);
+}
+
+function demoB() {
+  const p=document.getElementById('pp2'), d=document.getElementById('pd2'), s=document.getElementById('stage2');
+  if (states.b) { p.classList.remove('diving'); p.style.display=''; d.classList.remove('visible'); s.querySelectorAll('.pensieve-ripple').forEach(r=>r.remove()); states.b=false; return; }
+  states.b=true;
+  for (let i=0;i<3;i++) setTimeout(()=>{ const r=document.createElement('div'); r.className='pensieve-ripple'; r.style.left='50%'; r.style.top='50%'; s.appendChild(r); setTimeout(()=>r.remove(),1200); }, i*250+300);
+  p.classList.add('diving');
+  setTimeout(()=>d.classList.add('visible'), 1000);
+}
+
+function demoC() {
+  const p=document.getElementById('fp3'), d=document.getElementById('fd3'), s=document.getElementById('stage3');
+  if (states.c) { p.classList.remove('burning'); p.style.display=''; d.classList.remove('visible'); s.querySelectorAll('.floo-flame').forEach(f=>f.remove()); states.c=false; return; }
+  states.c=true;
+  // Spawn flames
+  for (let i=0;i<12;i++) {
+    setTimeout(()=>{
+      const f=document.createElement('div'); f.className='floo-flame';
+      f.style.left=(30+Math.random()*40)+'%';
+      f.style.bottom='20%';
+      f.style.height=(8+Math.random()*12)+'px';
+      f.style.background=Math.random()>0.5?'#3fb950':'#2ea043';
+      s.appendChild(f);
+      requestAnimationFrame(()=>f.classList.add('lit'));
+      setTimeout(()=>f.remove(),800);
+    }, i*60+100);
+  }
+  p.classList.add('burning');
+  setTimeout(()=>d.classList.add('visible'), 900);
+}
+
+function demoD() {
+  const p=document.getElementById('pp4'), d=document.getElementById('pd4'), s=document.getElementById('stage4');
+  if (states.d) { p.classList.remove('casting'); p.style.display=''; d.classList.remove('visible'); s.querySelectorAll('.patronus-ray').forEach(r=>r.remove()); states.d=false; return; }
+  states.d=true;
+  // Spawn light rays
+  for (let i=0;i<8;i++) {
+    setTimeout(()=>{
+      const r=document.createElement('div'); r.className='patronus-ray';
+      r.style.left='50%'; r.style.top='50%';
+      r.style.transform=`rotate(${i*45}deg)`;
+      r.style.transformOrigin='left center';
+      s.appendChild(r);
+      requestAnimationFrame(()=>r.classList.add('burst'));
+      setTimeout(()=>r.remove(),700);
+    }, 400+i*30);
+  }
+  p.classList.add('casting');
+  setTimeout(()=>d.classList.add('visible'), 1100);
+}
+
+function demoE() {
+  const p=document.getElementById('ap5'), d=document.getElementById('ad5'), s=document.getElementById('stage5');
+  if (states.e) { p.classList.remove('apparating'); p.style.display=''; d.classList.remove('visible'); s.querySelectorAll('.apparition-crack').forEach(c=>c.remove()); states.e=false; return; }
+  states.e=true;
+  p.classList.add('apparating');
+  // Flash crack at the squeeze point
+  setTimeout(()=>{
+    const c=document.createElement('div'); c.className='apparition-crack';
+    c.style.left='50%'; c.style.top='50%'; c.style.transform='translate(-50%,-50%)';
+    s.appendChild(c);
+    requestAnimationFrame(()=>c.classList.add('pop'));
+    setTimeout(()=>c.remove(),400);
+  }, 500);
+  setTimeout(()=>d.classList.add('visible'), 800);
+}
+
+function demoF() {
+  const p=document.getElementById('pk6'), d=document.getElementById('pkd6'), s=document.getElementById('stage6');
+  if (states.f) { p.classList.remove('pulling'); p.style.display=''; d.classList.remove('visible'); s.querySelectorAll('.portkey-swirl').forEach(sw=>sw.remove()); states.f=false; return; }
+  states.f=true;
+  // Golden swirl
+  setTimeout(()=>{
+    const sw=document.createElement('div'); sw.className='portkey-swirl';
+    sw.style.left='50%'; sw.style.top='50%';
+    s.appendChild(sw);
+    requestAnimationFrame(()=>sw.classList.add('active'));
+    setTimeout(()=>sw.remove(),1000);
+  }, 200);
+  p.classList.add('pulling');
+  setTimeout(()=>d.classList.add('visible'), 900);
+}
+
+function demoG() {
+  const p=document.getElementById('vp7'), d=document.getElementById('vd7');
+  if (states.g) { p.classList.remove('vanishing'); p.style.display=''; d.classList.remove('visible'); states.g=false; return; }
+  states.g=true;
+  p.classList.add('vanishing');
+  setTimeout(()=>d.classList.add('visible'), 1100);
+}
+</script>
+</body>
+</html>
