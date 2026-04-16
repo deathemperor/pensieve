@@ -2,12 +2,14 @@
 export const prerender = false;
 
 import PlaceholderHero from "../../animations/placeholder/index.astro";
+import SnitchTrailHero from "../../animations/snitch-trail/index.astro";
 
 const { slug } = Astro.params;
 if (!slug) return new Response("Not Found", { status: 404 });
 
 const HERO_COMPONENTS = {
   placeholder: PlaceholderHero,
+  "snitch-trail": SnitchTrailHero,
 } as const;
 
 const Hero = (HERO_COMPONENTS as Record<string, typeof PlaceholderHero>)[slug];
