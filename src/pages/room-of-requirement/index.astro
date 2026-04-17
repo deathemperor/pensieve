@@ -128,6 +128,27 @@ if (db) {
 } else {
   taskSystems = hpSystemDefs.map(sys => ({ ...sys, open: 0, done: 0 }));
 }
+
+const restrictedSection = [
+  {
+    slug: "steve-jobs",
+    name: "Steve Jobs",
+    craft: isVi
+      ? "Sản phẩm · Chi tiết · Giá trị người dùng"
+      : "Product · Details · User Value",
+    essence: isVi
+      ? "Người dùng là thiêng liêng. Chi tiết là đạo đức. Nói không một ngàn lần."
+      : "The user is sacred. Details are moral. Say no a thousand times.",
+    skills: [
+      "product-critique",
+      "feature-pruning",
+      "narrative-reveal",
+      "user-value-test",
+      "naming",
+    ],
+    color: "#a1a1a6",
+  },
+];
 ---
 
 <Base title="Room of Requirement" description={isVi ? "Trang web này được xây dựng như thế nào, từng phiên Claude Code" : "How this site is built, one Claude Code session at a time"} breadcrumbs={[{ label: "Room of Requirement" }]}>
@@ -243,6 +264,29 @@ if (db) {
       </a>
     </div>
   </section>
+
+	<section class="room-section">
+		<div class="room-inner">
+			<h2 class="section-heading">{isVi ? "Khu Vực Cấm" : "The Restricted Section"}</h2>
+			<p class="section-desc">
+				{isVi
+					? "Kho báu bị khóa của các bậc thầy. Những lăng kính hiếm Claude Code triệu hồi khi công việc đòi hỏi một thiên tài cụ thể — không phải nghề, mà là người."
+					: "Locked archives of the masters. Rare lenses Claude Code channels when a task calls for a specific genius — not a profession, but a person."}
+			</p>
+			<div class="tech-grid">
+				{restrictedSection.map(p => (
+					<div class="tech-card persona-card" style={`--persona-color: ${p.color};`}>
+						<span class="tech-name">{p.name}</span>
+						<span class="tech-role" style={`color: ${p.color};`}>{p.craft}</span>
+						<span class="tech-desc persona-essence">{p.essence}</span>
+						<div class="persona-skills">
+							{p.skills.map(s => <span class="persona-skill">{s}</span>)}
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	</section>
 
 	<section class="room-section">
 		<div class="room-inner">
@@ -487,6 +531,44 @@ if (db) {
 		font-size: var(--font-size-sm);
 		color: var(--color-text-secondary);
 		line-height: var(--leading-relaxed);
+	}
+
+	/* Persona card (Restricted Section) */
+	.persona-card {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.persona-card::before {
+		content: "";
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: var(--persona-color);
+	}
+
+	.persona-essence {
+		font-style: italic;
+		margin-top: var(--spacing-1);
+	}
+
+	.persona-skills {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-top: var(--spacing-3);
+	}
+
+	.persona-skill {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		padding: 3px 8px;
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		color: var(--color-muted);
+		line-height: 1.4;
 	}
 
 	/* Repo card */
