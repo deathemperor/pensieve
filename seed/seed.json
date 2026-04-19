@@ -369,6 +369,10 @@
 					"label": "English Learning"
 				},
 				{
+					"slug": "education",
+					"label": "Education"
+				},
+				{
 					"slug": "family-vignette",
 					"label": "Family Vignette"
 				},
