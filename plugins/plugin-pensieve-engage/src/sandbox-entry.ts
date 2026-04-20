@@ -410,9 +410,26 @@ export default definePlugin({
 						(await ctx.kv.get<string>("settings:welcomeBody")) ??
 						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
 
+					// Diagnostic: capture the shape of ctx so we know why email is missing.
+					const c = ctx as any;
+					const ctxKeys = Object.keys(c).sort();
+					const hasEmail = !!c.email;
+					const hasEmailSend = typeof c.email?.send === "function";
+					const pluginIdSeen = c.plugin?.id ?? "unknown";
+					// Which capability-gated fields are actually defined?
+					const capProbe = {
+						content: typeof c.content,
+						media: typeof c.media,
+						http: typeof c.http,
+						users: typeof c.users,
+						email: typeof c.email,
+						cron: typeof c.cron,
+					};
 					try {
 						if (!ctx.email) {
-							throw new Error("ctx.email is not available on the plugin context");
+							throw new Error(
+								`ctx.email missing — keys=[${ctxKeys.join(",")}] pluginId=${pluginIdSeen}`,
+							);
 						}
 						await ctx.email.send(
 							{
@@ -434,6 +451,11 @@ export default definePlugin({
 								email,
 								errorName: errName,
 								errorMessage: errMsg,
+								ctxKeys,
+								hasEmail,
+								hasEmailSend,
+								pluginIdSeen,
+								capProbe,
 								at: new Date().toISOString(),
 							});
 						} catch {
