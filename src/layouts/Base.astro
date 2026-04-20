@@ -1509,15 +1509,20 @@ const isLoggedIn = !!Astro.locals.user;
 							headers: { 'Content-Type': 'application/json' },
 							body: JSON.stringify({ email }),
 						});
-						const data = await res.json();
+						const payload = await res.json();
+						// Plugin runtime wraps handler returns as {data: ...} and framework
+						// errors as {error: {code, message}}. Unwrap both.
+						const handler = res.ok ? (payload.data || {}) : {};
+						const envelopeError = res.ok ? null : payload.error;
 						const isVi = document.documentElement.lang === 'vi';
-						if (data.success) {
+						if (handler.success) {
 							fStatus.textContent = isVi ? 'Cú đã bay!' : 'Owl dispatched!';
 							fStatus.style.color = '#3fb950';
 							fForm.reset();
 						} else {
-							const errMsg = typeof data.error === 'string' ? data.error : data.error?.message;
-							fStatus.textContent = errMsg || (isVi ? 'Có lỗi xảy ra' : 'Something went wrong');
+							const handlerErr = typeof handler.error === 'string' ? handler.error : handler.error?.message;
+							const envErr = typeof envelopeError === 'string' ? envelopeError : envelopeError?.message;
+							fStatus.textContent = handlerErr || envErr || (isVi ? 'Có lỗi xảy ra' : 'Something went wrong');
 							fStatus.style.color = '#e5534b';
 						}
 					} catch {
