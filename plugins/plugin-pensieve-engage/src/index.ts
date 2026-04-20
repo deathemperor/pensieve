@@ -7,7 +7,8 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 		format: "standard",
 		entrypoint: "plugin-pensieve-engage/sandbox",
 		options: {},
-		capabilities: ["email:send", "read:content", "read:users"],
+		capabilities: ["email:send", "read:content", "read:users", "network:fetch"],
+		allowedHosts: ["api.resend.com"],
 		storage: {
 			subscribers: {
 				indexes: ["email", "status", "createdAt"],
