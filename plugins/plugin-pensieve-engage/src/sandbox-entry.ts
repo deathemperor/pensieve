@@ -442,6 +442,8 @@ export default definePlugin({
 						} else if (!ctx.http) {
 							ctx.log.info(`Welcome email skipped for ${email}: ctx.http missing (network:fetch capability?)`);
 						} else {
+							const unsubscribeUrl = `https://huuloc.com/_emdash/api/plugins/pensieve-engage/unsubscribe?email=${encodeURIComponent(email)}`;
+							const bodyWithFooter = `${welcomeBody}\n\n—\nUnsubscribe: ${unsubscribeUrl}`;
 							const res = await ctx.http.fetch("https://api.resend.com/emails", {
 								method: "POST",
 								headers: {
@@ -452,7 +454,14 @@ export default definePlugin({
 									from: fromEmail,
 									to: email,
 									subject: welcomeSubject,
-									text: welcomeBody,
+									text: bodyWithFooter,
+									headers: {
+										// Enables Gmail/Apple Mail's native "Unsubscribe" button and
+										// RFC 8058 one-click POST unsubscribe (required for bulk
+										// senders, good hygiene for small ones).
+										"List-Unsubscribe": `<${unsubscribeUrl}>`,
+										"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+									},
 								}),
 							});
 							if (!res.ok) {
@@ -487,19 +496,19 @@ export default definePlugin({
 				if (!email) {
 					return new Response(
 						"<html><body><h1>Missing email parameter</h1></body></html>",
-						{ headers: { "Content-Type": "text/html" } },
+						{ status: 400, headers: { "Content-Type": "text/html" } },
 					);
 				}
 
-				const existing = await ctx.storage.subscribers.query({
-					where: { email },
-				});
-				const existingItems = existing.items ?? existing ?? [];
+				// Full scan + filter — same pattern we use in subscribe to avoid
+				// depending on collection indexes that may not exist yet.
+				const all = await ctx.storage.subscribers.query({});
+				const items = all.items ?? all ?? [];
+				const existing = items.find((s: any) => s.email === email);
 
-				if (existingItems.length > 0) {
-					const sub = existingItems[0] as any;
-					await ctx.storage.subscribers.put(sub.id ?? hashEmail(email), {
-						...sub,
+				if (existing) {
+					await ctx.storage.subscribers.put(existing.id ?? hashEmail(email), {
+						...existing,
 						status: "unsubscribed",
 					});
 				}
