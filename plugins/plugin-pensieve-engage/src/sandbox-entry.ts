@@ -410,57 +410,43 @@ export default definePlugin({
 						(await ctx.kv.get<string>("settings:welcomeBody")) ??
 						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
 
-					// Diagnostic: capture the shape of ctx so we know why email is missing.
-					const c = ctx as any;
-					const ctxKeys = Object.keys(c).sort();
-					const hasEmail = !!c.email;
-					const hasEmailSend = typeof c.email?.send === "function";
-					const pluginIdSeen = c.plugin?.id ?? "unknown";
-					// Which capability-gated fields are actually defined?
-					const capProbe = {
-						content: typeof c.content,
-						media: typeof c.media,
-						http: typeof c.http,
-						users: typeof c.users,
-						email: typeof c.email,
-						cron: typeof c.cron,
-					};
+					// Send welcome email via Resend directly. We can't use ctx.email.send
+					// from a route handler because EmDash's runtime builds the route
+					// context with only {db}, so the email pipeline is never wired up.
+					// See middleware.mjs: `new PluginRouteRegistry({ db: this.db })`.
 					try {
-						if (!ctx.email) {
-							throw new Error(
-								`ctx.email missing — keys=[${ctxKeys.join(",")}] pluginId=${pluginIdSeen}`,
-							);
+						const resendApiKey = await ctx.kv.get<string>("settings:resendApiKey");
+						const fromEmail =
+							(await ctx.kv.get<string>("settings:fromEmail")) ??
+							"Pensieve <noreply@huuloc.com>";
+						if (!resendApiKey) {
+							ctx.log.info(`Welcome email skipped for ${email}: no resendApiKey in engage KV`);
+						} else if (!ctx.http) {
+							ctx.log.info(`Welcome email skipped for ${email}: ctx.http missing (network:fetch capability?)`);
+						} else {
+							const res = await ctx.http.fetch("https://api.resend.com/emails", {
+								method: "POST",
+								headers: {
+									Authorization: `Bearer ${resendApiKey}`,
+									"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+									from: fromEmail,
+									to: email,
+									subject: welcomeSubject,
+									text: welcomeBody,
+								}),
+							});
+							if (!res.ok) {
+								const body = await res.text();
+								ctx.log.info(
+									`Welcome email Resend error ${res.status} for ${email}: ${body.slice(0, 200)}`,
+								);
+							}
 						}
-						await ctx.email.send(
-							{
-								to: email,
-								subject: welcomeSubject,
-								text: welcomeBody,
-							},
-							"pensieve-engage",
-						);
 					} catch (err) {
 						const errMsg = err instanceof Error ? err.message : String(err);
-						const errName = err instanceof Error ? err.name : "UnknownError";
-						ctx.log.info(`Welcome email failed for ${email}: ${errName}: ${errMsg}`);
-						// Diagnostic: stash last welcome-email error for offline inspection.
-						try {
-							await ctx.storage.email_sends.put(`welcome_err_${Date.now()}`, {
-								id: `welcome_err_${Date.now()}`,
-								diag: true,
-								email,
-								errorName: errName,
-								errorMessage: errMsg,
-								ctxKeys,
-								hasEmail,
-								hasEmailSend,
-								pluginIdSeen,
-								capProbe,
-								at: new Date().toISOString(),
-							});
-						} catch {
-							// ignore diagnostic-storage failure
-						}
+						ctx.log.info(`Welcome email failed for ${email}: ${errMsg}`);
 					}
 
 					ctx.log.info(`New subscriber: ${email}`);
