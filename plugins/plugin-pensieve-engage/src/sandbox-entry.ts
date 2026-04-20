@@ -411,6 +411,9 @@ export default definePlugin({
 						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
 
 					try {
+						if (!ctx.email) {
+							throw new Error("ctx.email is not available on the plugin context");
+						}
 						await ctx.email.send(
 							{
 								to: email,
@@ -420,7 +423,22 @@ export default definePlugin({
 							"pensieve-engage",
 						);
 					} catch (err) {
-						ctx.log.info(`Welcome email failed for ${email}: ${err}`);
+						const errMsg = err instanceof Error ? err.message : String(err);
+						const errName = err instanceof Error ? err.name : "UnknownError";
+						ctx.log.info(`Welcome email failed for ${email}: ${errName}: ${errMsg}`);
+						// Diagnostic: stash last welcome-email error for offline inspection.
+						try {
+							await ctx.storage.email_sends.put(`welcome_err_${Date.now()}`, {
+								id: `welcome_err_${Date.now()}`,
+								diag: true,
+								email,
+								errorName: errName,
+								errorMessage: errMsg,
+								at: new Date().toISOString(),
+							});
+						} catch {
+							// ignore diagnostic-storage failure
+						}
 					}
 
 					ctx.log.info(`New subscriber: ${email}`);
