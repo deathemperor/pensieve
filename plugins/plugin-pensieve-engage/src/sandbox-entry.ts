@@ -410,9 +410,16 @@ export default definePlugin({
 						(await ctx.kv.get<string>("settings:welcomeBody")) ??
 						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
 
+					// Diagnostic: capture the shape of ctx so we know why email is missing.
+					const ctxKeys = Object.keys(ctx as any).sort();
+					const hasEmail = !!(ctx as any).email;
+					const hasEmailSend = typeof (ctx as any).email?.send === "function";
+					const pluginIdSeen = (ctx as any).plugin?.id ?? "unknown";
 					try {
 						if (!ctx.email) {
-							throw new Error("ctx.email is not available on the plugin context");
+							throw new Error(
+								`ctx.email missing — keys=[${ctxKeys.join(",")}] pluginId=${pluginIdSeen}`,
+							);
 						}
 						await ctx.email.send(
 							{
@@ -434,6 +441,10 @@ export default definePlugin({
 								email,
 								errorName: errName,
 								errorMessage: errMsg,
+								ctxKeys,
+								hasEmail,
+								hasEmailSend,
+								pluginIdSeen,
 								at: new Date().toISOString(),
 							});
 						} catch {
