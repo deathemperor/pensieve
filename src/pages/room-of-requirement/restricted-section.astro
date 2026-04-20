@@ -39,6 +39,50 @@ const totalSpecs = designDocs.filter(d => d.doc_type === 'spec').length;
 const totalPlans = designDocs.filter(d => d.doc_type === 'plan').length;
 const totalLines = designDocs.reduce((sum, d) => sum + (d.line_count ?? 0), 0);
 
+// Masters — rare lenses Claude Code channels when a task calls for a specific genius
+const masters = [
+  {
+    slug: "steve-jobs",
+    name: "Steve Jobs",
+    craft: isVi ? "Sản phẩm · Chi tiết · Giá trị người dùng" : "Product · Details · User Value",
+    essence: isVi
+      ? "Người dùng là thiêng liêng. Chi tiết là đạo đức. Nói không một ngàn lần."
+      : "The user is sacred. Details are moral. Say no a thousand times.",
+    skills: ["product-critique", "feature-pruning", "narrative-reveal", "user-value-test", "naming"],
+    color: "#a1a1a6",
+  },
+  {
+    slug: "jony-ive",
+    name: "Jony Ive",
+    craft: isVi ? "Vật liệu · Hình khối · Sự thống nhất" : "Material · Form · Unity",
+    essence: isVi
+      ? "Sự quan tâm là chất liệu. Hình phải tôn trọng vật liệu. Mặt khuất phải đẹp như mặt hiện."
+      : "Care is the material. The form must honor it. The unseen surface must be as considered as the seen.",
+    skills: ["material-critique", "form-refinement", "surface-integrity", "reductive-review", "unity-audit"],
+    color: "#d4a89a",
+  },
+  {
+    slug: "john-carmack",
+    name: "John Carmack",
+    craft: isVi ? "Hệ thống · Hiệu năng · Nguyên lý gốc" : "Systems · Performance · First Principles",
+    essence: isVi
+      ? "Đo trước khi nói. Đơn giản là kết quả của hiểu sâu. Công cụ chính là sản phẩm."
+      : "Measure before opinion. Simplicity is the result of deep understanding. Tools are product.",
+    skills: ["performance-audit", "first-principles-decomposition", "simplification-by-understanding", "tool-building", "benchmark-discipline"],
+    color: "#cc2222",
+  },
+  {
+    slug: "chris-metzen",
+    name: "Chris Metzen",
+    craft: isVi ? "Chuyện kể · Nhân vật · Huyền thoại" : "Narrative · Character · Myth",
+    essence: isVi
+      ? "Câu chuyện là lời hứa. Mỗi nhân vật phải có vết thương. Thế giới tồn tại trước người hùng."
+      : "Story is a contract. Every character carries a wound. The world existed before the hero.",
+    skills: ["character-wounding", "arc-design", "tonal-integrity", "villain-construction", "earned-payoff"],
+    color: "#c8892f",
+  },
+];
+
 const title = isVi ? "Khu Cấm" : "The Restricted Section";
 const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : "Design specs and implementation plans";
 ---
@@ -604,6 +648,29 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
         </g>
       </g>
     </svg>
+  </section>
+
+  <section class="rs-page-section rs-masters-section">
+    <div class="rs-page-inner">
+      <h2 class="rs-masters-heading">{isVi ? "Bậc Thầy" : "The Masters"}</h2>
+      <p class="rs-masters-desc">
+        {isVi
+          ? "Những lăng kính hiếm Claude Code triệu hồi khi công việc đòi hỏi một thiên tài cụ thể — không phải nghề, mà là người."
+          : "Rare lenses Claude Code channels when a task calls for a specific genius — not a profession, but a person."}
+      </p>
+      <div class="rs-masters-grid">
+        {masters.map(p => (
+          <div class="rs-master-card" style={`--persona-color: ${p.color};`}>
+            <span class="rs-master-name">{p.name}</span>
+            <span class="rs-master-craft" style={`color: ${p.color};`}>{p.craft}</span>
+            <span class="rs-master-essence">{p.essence}</span>
+            <div class="rs-master-skills">
+              {p.skills.map(s => <span class="rs-master-skill">{s}</span>)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   </section>
 
   <section class="rs-page-section">
@@ -2335,6 +2402,90 @@ const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : 
 
   .rs-page-section {
     border-bottom: 1px solid var(--color-border);
+  }
+
+  .rs-masters-section .rs-page-inner {
+    padding-top: var(--spacing-10);
+    padding-bottom: var(--spacing-10);
+  }
+
+  .rs-masters-heading {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--spacing-2) 0;
+    color: var(--color-text);
+  }
+
+  .rs-masters-desc {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+    margin: 0 0 var(--spacing-6) 0;
+    max-width: 60ch;
+    line-height: 1.5;
+  }
+
+  .rs-masters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--spacing-4);
+  }
+
+  .rs-master-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    padding: var(--spacing-5);
+    border: 1px solid var(--color-border);
+    border-left: 2px solid var(--persona-color, var(--color-border));
+    background: var(--color-surface, transparent);
+    border-radius: 4px;
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+
+  .rs-master-card:hover {
+    border-color: var(--persona-color, var(--color-border));
+    transform: translateY(-1px);
+  }
+
+  .rs-master-name {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .rs-master-craft {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    letter-spacing: 0.02em;
+  }
+
+  .rs-master-essence {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+    line-height: 1.5;
+    margin-top: var(--spacing-1);
+  }
+
+  .rs-master-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: var(--spacing-2);
+  }
+
+  .rs-master-skill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-muted);
+    padding: 2px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    letter-spacing: 0.02em;
   }
 
   .rs-empty {
