@@ -198,6 +198,19 @@ const isLoggedIn = !!Astro.locals.user;
 							</>
 						);
 					})}
+					<details class="nav-lang breadcrumb-lang">
+						<summary>
+							{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
+						</summary>
+						<div class="nav-dropdown">
+							<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
+								Tiếng Việt
+							</a>
+							<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
+								English
+							</a>
+						</div>
+					</details>
 				</nav>
 			</header>
 		) : (
@@ -738,6 +751,9 @@ const isLoggedIn = !!Astro.locals.user;
 				font-size: var(--font-size-xs);
 				height: var(--nav-height);
 			}
+
+			/* Language switcher in breadcrumb header sits on the right edge */
+			.breadcrumb-lang { margin-left: auto; }
 
 			.breadcrumb-home {
 				display: inline-flex;
