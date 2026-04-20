@@ -388,17 +388,20 @@ export default definePlugin({
 					}
 
 					// Full scan + filter avoids depending on indexes that may not
-					// exist yet for a never-written collection.
+					// exist yet for a never-written collection. Note: query() returns
+					// rows shaped {id, data:{...fields}}, not flat — we must reach
+					// into .data to see the email/status fields.
 					const all = await ctx.storage.subscribers.query({});
 					const items = all.items ?? all ?? [];
-					const existing = items.find((s: any) => s.email === email);
+					const existing = items.find((s: any) => s.data?.email === email);
 
 					if (existing) {
-						if (existing.status === "active") {
+						const existingData = existing.data;
+						if (existingData.status === "active") {
 							return { success: true, message: "Already subscribed" };
 						}
-						await ctx.storage.subscribers.put(existing.id ?? hashEmail(email), {
-							...existing,
+						await ctx.storage.subscribers.put(existing.id, {
+							...existingData,
 							status: "active",
 						});
 						return { success: true, message: "Subscription reactivated" };
@@ -490,52 +493,50 @@ export default definePlugin({
 		unsubscribe: {
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const diagId = `unsub_diag_${Date.now()}`;
-				let diag: any = { id: diagId, diag: true, at: new Date().toISOString() };
 				try {
 					const url = new URL(routeCtx.request.url);
 					const email = url.searchParams.get("email")?.trim().toLowerCase();
-					diag.method = routeCtx.request.method;
-					diag.email = email ?? null;
 
 					if (!email) {
-						diag.outcome = "missing_email";
-						await ctx.storage.email_sends.put(diagId, diag);
-						return { error: "Missing email parameter" };
+						return new Response(
+							"<html><body><h1>Missing email parameter</h1></body></html>",
+							{ status: 400, headers: { "Content-Type": "text/html" } },
+						);
 					}
 
+					// Same shape note as subscribe: query() returns {id, data:{...}}.
 					const all = await ctx.storage.subscribers.query({});
 					const items = all.items ?? all ?? [];
-					diag.allCount = items.length;
-					diag.emailsSeen = items.slice(0, 5).map((s: any) => s.email);
-
-					const existing = items.find((s: any) => s.email === email);
-					diag.foundExisting = !!existing;
-					diag.existingId = existing?.id ?? null;
-					diag.existingStatus = existing?.status ?? null;
+					const existing = items.find((s: any) => s.data?.email === email);
 
 					if (existing) {
-						const newId = existing.id ?? hashEmail(email);
-						await ctx.storage.subscribers.put(newId, {
-							...existing,
+						await ctx.storage.subscribers.put(existing.id, {
+							...existing.data,
 							status: "unsubscribed",
 						});
-						diag.putId = newId;
-						diag.outcome = "unsubscribed";
-					} else {
-						diag.outcome = "not_found_noop";
 					}
 
 					ctx.log.info(`Unsubscribed: ${email}`);
-					await ctx.storage.email_sends.put(diagId, diag);
-					return { success: true, message: "Unsubscribed", email };
+
+					return new Response(
+						`<html>
+<head><title>Unsubscribed</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:480px;margin:80px auto;text-align:center;">
+	<h1>Unsubscribed</h1>
+	<p>You've been unsubscribed from Pensieve updates.</p>
+	<p style="color:#666;">If this was a mistake, you can subscribe again at any time.</p>
+</body>
+</html>`,
+						{ headers: { "Content-Type": "text/html" } },
+					);
 				} catch (err) {
-					diag.outcome = "error";
-					diag.errorMessage = err instanceof Error ? err.message : String(err);
-					try {
-						await ctx.storage.email_sends.put(diagId, diag);
-					} catch {}
-					return { error: "Unsubscribe failed" };
+					ctx.log.info(
+						`Unsubscribe handler failed: ${err instanceof Error ? err.message : String(err)}`,
+					);
+					return new Response(
+						"<html><body><h1>Unsubscribe failed, please try again.</h1></body></html>",
+						{ status: 500, headers: { "Content-Type": "text/html" } },
+					);
 				}
 			},
 		},
