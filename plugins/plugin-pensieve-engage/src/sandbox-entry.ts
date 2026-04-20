@@ -411,10 +411,20 @@ export default definePlugin({
 						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
 
 					// Diagnostic: capture the shape of ctx so we know why email is missing.
-					const ctxKeys = Object.keys(ctx as any).sort();
-					const hasEmail = !!(ctx as any).email;
-					const hasEmailSend = typeof (ctx as any).email?.send === "function";
-					const pluginIdSeen = (ctx as any).plugin?.id ?? "unknown";
+					const c = ctx as any;
+					const ctxKeys = Object.keys(c).sort();
+					const hasEmail = !!c.email;
+					const hasEmailSend = typeof c.email?.send === "function";
+					const pluginIdSeen = c.plugin?.id ?? "unknown";
+					// Which capability-gated fields are actually defined?
+					const capProbe = {
+						content: typeof c.content,
+						media: typeof c.media,
+						http: typeof c.http,
+						users: typeof c.users,
+						email: typeof c.email,
+						cron: typeof c.cron,
+					};
 					try {
 						if (!ctx.email) {
 							throw new Error(
@@ -445,6 +455,7 @@ export default definePlugin({
 								hasEmail,
 								hasEmailSend,
 								pluginIdSeen,
+								capProbe,
 								at: new Date().toISOString(),
 							});
 						} catch {
