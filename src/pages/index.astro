@@ -2,16 +2,64 @@
 export const prerender = false;
 // huuloc.com landing page — standalone, no Base layout
 import SiteCat from "../components/SiteCat.astro";
+import { getCurrentLang } from "../utils/lang";
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+const copy = {
+  description: isVi
+    ? "Kỹ sư senior, viết song ngữ, Việt Nam. Dự án và bài viết dài lưu ở đây."
+    : "Senior engineer, bilingual writer, Vietnam. Projects and long-form writing live here.",
+  role: isVi
+    ? "Kỹ sư phần mềm senior. Viết song ngữ. Sống ở Việt Nam."
+    : "Senior software engineer. Bilingual writer. Based in Vietnam.",
+  bio: isVi
+    ? "Ở VNG từ 2006, xây hệ thống session và nền tảng phát hành game."
+    : "At VNG from 2006, building session systems and game publishing platforms.",
+  bioPapaya: isVi
+    ? "Giờ ở "
+    : "Now at ",
+  bioPapayaRest: isVi
+    ? ", đưa các tác tử AI vào phần thủ công của việc làm phần mềm. Viết dài bằng tiếng Việt và tiếng Anh — chủ yếu về ký ức, gia đình, cá, và những điều đáng giữ lại."
+    : ", putting AI agents to work on the craft side of software. Writes long-form in Vietnamese and English — mostly about memory, family, fish, and the things worth keeping.",
+  sectionGrounds: isVi ? "Khuôn Viên" : "The Grounds",
+  sectionHogwarts: "Hogwarts",
+  sectionBeyond: isVi ? "Ngoài Cổng Trường" : "Beyond the Gates",
+  pensieveMeta: isVi ? "VI · EN · 130 bài" : "VI · EN · 130 posts",
+  pensieveDesc: isVi
+    ? "Những câu chuyện dài cứu về từ Facebook, sắp xếp theo chủ đề và có cả hai phiên bản tiếng Việt và tiếng Anh."
+    : "Long-form narratives rescued from Facebook, sorted into themed categories with every post available in both Vietnamese and English.",
+  rorMeta: isVi ? "Nhật ký xây dựng" : "Build diary",
+  rorDesc: isVi
+    ? "Trang này được xây như thế nào — kiến trúc, tech stack, và Priori Incantatem: dòng thời gian mọi phiên Claude Code."
+    : "How this site is built — architecture, tech stack, and Priori Incantatem: a timeline of every Claude Code session.",
+  truongMeta: isVi ? "Giới thiệu" : "About",
+  truongDesc: isVi
+    ? "Câu chuyện khởi đầu, liên kết hồ sơ, và hoạt động GitHub trực tiếp."
+    : "Origin story, profile links, and live GitHub activity.",
+  libraryMeta: isVi ? "Slide giáo dục" : "Education slides",
+  libraryDesc: isVi
+    ? "Bài giảng trình chiếu — lớp AI dựa trên phim ảnh, chạy bằng Reveal.js. Ai cần PowerPoint?"
+    : "Slide decks for teaching — movie-based AI lessons, powered by Reveal.js. Who needs PowerPoint?",
+  greatHallMeta: isVi ? "Sắp có" : "Coming soon",
+  greatHallDesc: isVi
+    ? "Khoá học, bài giảng từ trường học và đại học — kho lưu trữ học thuật."
+    : "Courses, lectures, and lessons from schools and universities — the academic archive.",
+  quidditchMeta: isVi ? "Sân chơi animation" : "Animation playground",
+  quidditchDesc: isVi
+    ? "Các animation web, mỗi cái đi kèm nhật ký xây Claude Code đầy đủ — lướt qua từng prompt và chỉnh sửa."
+    : "Web animations, each paired with a full Claude Code build diary — scrub through every prompt and edit.",
+  soonBadge: isVi ? "sắp" : "soon",
+};
 ---
 
-<html lang="en">
+<html lang={isVi ? "vi" : "en"}>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Trương Hữu Lộc</title>
-<meta name="description" content="Senior engineer, bilingual writer, Vietnam. Projects and long-form writing live here." />
+<meta name="description" content={copy.description} />
 <meta property="og:title" content="Trương Hữu Lộc" />
-<meta property="og:description" content="Senior engineer, bilingual writer, Vietnam. Projects and long-form writing live here." />
+<meta property="og:description" content={copy.description} />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://huuloc.com/" />
 <meta name="ai-content-declaration" content="site-code:ai-generated; content:human-written" />
@@ -22,6 +70,13 @@ import SiteCat from "../components/SiteCat.astro";
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <details class="lang-toggle">
+    <summary>{isVi ? "VI" : "EN"} <span class="arrow">▾</span></summary>
+    <div class="lang-menu">
+      <a href="#" class="lang-item" data-switch-lang="vi" data-active={isVi}>Tiếng Việt</a>
+      <a href="#" class="lang-item" data-switch-lang="en" data-active={!isVi}>English</a>
+    </div>
+  </details>
   <main class="page">
     <section class="hero">
       <div class="eyebrow">
@@ -34,29 +89,24 @@ import SiteCat from "../components/SiteCat.astro";
       </div>
 
       <h1 class="name">Trương Hữu Lộc</h1>
-      <p class="role">Senior software engineer. Bilingual writer. Based in Vietnam.</p>
+      <p class="role">{copy.role}</p>
       <p class="bio">
-        At VNG from 2006, building session systems and game publishing platforms.
-        Now at <a href="https://papaya.asia" rel="noopener">Papaya</a>, putting AI agents
-        to work on the craft side of software. Writes long-form in Vietnamese and English —
-        mostly about memory, family, fish, and the things worth keeping.
+        {copy.bio}
+        {copy.bioPapaya}<a href="https://papaya.asia" rel="noopener">Papaya</a>{copy.bioPapayaRest}
       </p>
     </section>
 
     <section class="section">
-      <span class="section-label">The Grounds</span>
+      <span class="section-label">{copy.sectionGrounds}</span>
       <ul class="project-list">
         <li>
           <a href="/pensieve/" class="project">
             <div>
               <div class="project-head">
                 <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" /></svg>Pensieve</h2>
-                <span class="project-meta">VI · EN · 130 posts</span>
+                <span class="project-meta">{copy.pensieveMeta}</span>
               </div>
-              <p class="project-desc">
-                Long-form narratives rescued from Facebook, sorted into themed
-                categories with every post available in both Vietnamese and English.
-              </p>
+              <p class="project-desc">{copy.pensieveDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
@@ -66,12 +116,9 @@ import SiteCat from "../components/SiteCat.astro";
             <div>
               <div class="project-head">
                 <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 28 V10 Q16 2 23 10 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><circle cx="20" cy="18" r="1.5" fill="currentColor" /></svg>Room of Requirement</h2>
-                <span class="project-meta">Build diary</span>
+                <span class="project-meta">{copy.rorMeta}</span>
               </div>
-              <p class="project-desc">
-                How this site is built — architecture, tech stack, and
-                Priori Incantatem: a timeline of every Claude Code session.
-              </p>
+              <p class="project-desc">{copy.rorDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
@@ -81,11 +128,9 @@ import SiteCat from "../components/SiteCat.astro";
             <div>
               <div class="project-head">
                 <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /></svg>Trương</h2>
-                <span class="project-meta">About</span>
+                <span class="project-meta">{copy.truongMeta}</span>
               </div>
-              <p class="project-desc">
-                Origin story, profile links, and live GitHub activity.
-              </p>
+              <p class="project-desc">{copy.truongDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
@@ -94,19 +139,16 @@ import SiteCat from "../components/SiteCat.astro";
     </section>
 
     <section class="section">
-      <span class="section-label">Hogwarts</span>
+      <span class="section-label">{copy.sectionHogwarts}</span>
       <ul class="project-list">
         <li>
           <a href="/hogwarts/library/" class="project">
             <div>
               <div class="project-head">
                 <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4 h20 v24 H6 Z" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><line x1="10" y1="9" x2="22" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><line x1="10" y1="14" x2="22" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><line x1="10" y1="19" x2="18" y2="19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>The Library</h2>
-                <span class="project-meta">Education slides</span>
+                <span class="project-meta">{copy.libraryMeta}</span>
               </div>
-              <p class="project-desc">
-                Slide decks for teaching — movie-based AI lessons,
-                powered by Reveal.js. Who needs PowerPoint?
-              </p>
+              <p class="project-desc">{copy.libraryDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
@@ -116,14 +158,11 @@ import SiteCat from "../components/SiteCat.astro";
             <div>
               <div class="project-head">
                 <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28 V12 L16 4 L24 12 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><line x1="16" y1="4" x2="16" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" /><rect x="13" y="18" width="6" height="6" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Great Hall</h2>
-                <span class="project-meta">Coming soon</span>
+                <span class="project-meta">{copy.greatHallMeta}</span>
               </div>
-              <p class="project-desc">
-                Courses, lectures, and lessons from schools and universities
-                — the academic archive.
-              </p>
+              <p class="project-desc">{copy.greatHallDesc}</p>
             </div>
-            <span class="project-arrow coming-badge">soon</span>
+            <span class="project-arrow coming-badge">{copy.soonBadge}</span>
           </span>
         </li>
         <li>
@@ -142,12 +181,9 @@ import SiteCat from "../components/SiteCat.astro";
                     <circle class="snitch-spark" cx="14.5" cy="14.5" r="1.2" fill="#ffffff" opacity="0.9" />
                   </svg>Quidditch Pitch
                 </h2>
-                <span class="project-meta">Animation playground</span>
+                <span class="project-meta">{copy.quidditchMeta}</span>
               </div>
-              <p class="project-desc">
-                Web animations, each paired with a full Claude Code build
-                diary — scrub through every prompt and edit.
-              </p>
+              <p class="project-desc">{copy.quidditchDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
@@ -156,7 +192,7 @@ import SiteCat from "../components/SiteCat.astro";
     </section>
 
     <section class="section">
-      <span class="section-label">Beyond the Gates</span>
+      <span class="section-label">{copy.sectionBeyond}</span>
       <div class="links-row">
         <a href="https://github.com/deathemperor" rel="noopener" class="link-item">GitHub</a>
         <a href="https://www.linkedin.com/in/deathemperor/" rel="noopener" class="link-item">LinkedIn</a>
@@ -169,6 +205,19 @@ import SiteCat from "../components/SiteCat.astro";
     </footer>
   </main>
   <SiteCat />
+  <script>
+    // Set pref_lang cookie + reload on click. Matches Base.astro's global handler
+    // so the same switcher UX works on this standalone page.
+    document.querySelectorAll<HTMLAnchorElement>('[data-switch-lang]').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const v = a.dataset.switchLang || 'en';
+        const secure = location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `pref_lang=${v}; path=/; max-age=${3600 * 24 * 365}; SameSite=Lax${secure}`;
+        location.reload();
+      });
+    });
+  </script>
 </body>
 </html>
 
@@ -200,6 +249,53 @@ import SiteCat from "../components/SiteCat.astro";
 </style>
 
 <style>
+  /* Language toggle — top-right, minimal, mirrors the Base.astro nav-lang styling */
+  .lang-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .lang-toggle > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--elevated);
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .lang-toggle > summary:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+  .lang-toggle > summary::-webkit-details-marker { display: none; }
+  .lang-toggle .arrow { font-size: 0.7em; opacity: 0.6; }
+  .lang-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 0.25rem;
+    background: var(--elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.25rem;
+    min-width: 8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  .lang-item {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--secondary);
+    font-size: 0.8125rem;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .lang-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .lang-item[data-active="true"] { color: var(--text); font-weight: 500; }
+
   .page {
     max-width: 640px;
     margin: 0 auto;
