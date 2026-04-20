@@ -368,8 +368,11 @@ export default definePlugin({
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
 				try {
-					const body = await routeCtx.request.json().catch(() => ({}));
-					const email = body?.email?.trim().toLowerCase();
+					// The runtime pre-parses the request body into routeCtx.input;
+					// calling request.json() again would fail because the body stream
+					// has already been consumed.
+					const body = (routeCtx.input ?? {}) as { email?: string };
+					const email = body.email?.trim().toLowerCase();
 
 					if (!email || !isValidEmail(email)) {
 						return { error: "Invalid email address" };

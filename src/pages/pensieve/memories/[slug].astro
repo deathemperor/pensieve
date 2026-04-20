@@ -502,8 +502,12 @@ const publishDate =
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ email }),
 				});
-				const data = await res.json();
-				if (data.success) {
+				const payload = await res.json();
+				// Plugin runtime wraps handler returns as {data: ...} and framework
+				// errors as {error: {code, message}}. Unwrap both.
+				const handler = res.ok ? (payload.data || {}) : {};
+				const envelopeError = res.ok ? null : payload.error;
+				if (handler.success) {
 					status.textContent = document.documentElement.lang === 'vi'
 						? 'Cú đã bay! Kiểm tra email chào mừng.'
 						: 'Owl dispatched! Check for your welcome letter.';
@@ -511,8 +515,9 @@ const publishDate =
 					form.reset();
 				} else {
 					const fallback = document.documentElement.lang === 'vi' ? 'Có lỗi xảy ra' : 'Something went wrong';
-					const errMsg = typeof data.error === 'string' ? data.error : data.error?.message;
-					status.textContent = errMsg || fallback;
+					const handlerErr = typeof handler.error === 'string' ? handler.error : handler.error?.message;
+					const envErr = typeof envelopeError === 'string' ? envelopeError : envelopeError?.message;
+					status.textContent = handlerErr || envErr || fallback;
 					status.classList.add('error');
 				}
 			} catch {
