@@ -233,10 +233,19 @@ export default definePlugin({
 
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
-				await ctx.kv.set("settings:welcomeSubject", "Welcome to Pensieve");
+				await ctx.kv.set("settings:welcomeSubject", "Owl Post — welcome");
 				await ctx.kv.set(
 					"settings:welcomeBody",
-					"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.",
+					[
+						"Hi friend,",
+						"",
+						"You've been added to the Pensieve owl route. Expect a letter whenever a new memory is pensieved — no schedule, no noise, and no dark magic.",
+						"",
+						"Bạn đã ghé vào Cú Bưu Điện. Cú sẽ tìm bạn khi có ký ức mới, không spam, không phép thuật đen.",
+						"",
+						"— Loc",
+						"https://huuloc.com/pensieve",
+					].join("\n"),
 				);
 			},
 		},
@@ -405,10 +414,19 @@ export default definePlugin({
 
 					const welcomeSubject =
 						(await ctx.kv.get<string>("settings:welcomeSubject")) ??
-						"Welcome to Pensieve";
+						"Owl Post — welcome";
 					const welcomeBody =
 						(await ctx.kv.get<string>("settings:welcomeBody")) ??
-						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
+						[
+							"Hi friend,",
+							"",
+							"You've been added to the Pensieve owl route. Expect a letter whenever a new memory is pensieved — no schedule, no noise, and no dark magic.",
+							"",
+							"Bạn đã ghé vào Cú Bưu Điện. Cú sẽ tìm bạn khi có ký ức mới, không spam, không phép thuật đen.",
+							"",
+							"— Loc",
+							"https://huuloc.com/pensieve",
+						].join("\n");
 
 					// Send welcome email via Resend directly. We can't use ctx.email.send
 					// from a route handler because EmDash's runtime builds the route
