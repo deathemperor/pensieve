@@ -86,12 +86,19 @@ const isTranslation =
 const siblingLang = otherLang(postLang);
 
 let siblingSlug: string | null = null;
-if (post.data.source_id) {
+// Primary match: same Facebook source_id + opposite language (covers FB-imported pairs).
+// Fallback: shared translation_group (EmDash's canonical i18n link, used for pairs
+// created natively without a Facebook source). A group that equals the post's own id
+// is the self-referential "no sibling" state and is skipped.
+const groupId = post.data.translation_group as string | undefined;
+const hasGroupLink = !!groupId && groupId !== post.data.id;
+if (post.data.source_id || hasGroupLink) {
 	const { entries: allPosts } = await getEmDashCollection("posts");
 	const sibling = allPosts.find(
 		(p) =>
-			p.data.source_id === post.data.source_id &&
-			p.data.language === siblingLang,
+			p.data.language === siblingLang &&
+			((post.data.source_id && p.data.source_id === post.data.source_id) ||
+				(hasGroupLink && p.data.translation_group === groupId)),
 	);
 	if (sibling) siblingSlug = sibling.id;
 }
@@ -102,13 +109,19 @@ const bylines = post.data.bylines ?? [];
 // Get reading time
 const readingTime = getReadingTime(post.data.content);
 
-// Get other posts for "More posts" section, with their tags
-// Fetch a few extra in case the current post is among them
+// Get other posts for "More posts" section, with their tags.
+// Fetch extra to account for translation siblings that will be filtered out —
+// every post has two language variants and the listing should show only posts
+// matching the current reader's language (not the post's language — those might
+// differ when viewing a translated variant, but the "more to read" list should
+// stay in the reader's chosen language).
 const { entries: recentPosts } = await getEmDashCollection("posts", {
 	orderBy: { published_at: "desc" },
-	limit: 4,
+	limit: 12,
 });
-const otherPosts = recentPosts.filter((p) => p.id !== post.id).slice(0, 3);
+const otherPosts = recentPosts
+	.filter((p) => p.id !== post.id && p.data.language === postLang)
+	.slice(0, 3);
 
 // Fetch tags for related posts (bylines are already hydrated by getEmDashCollection)
 const otherPostsWithTags = await Promise.all(

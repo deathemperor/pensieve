@@ -8,10 +8,14 @@ import { getReadingTime, extractText } from "../../utils/reading-time";
 import { link } from "../../utils/link";
 import { getCurrentLang } from "../../utils/lang";
 
-const isVi = getCurrentLang(Astro) === "vi";
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
-const { entries: allPosts } = await getEmDashCollection("posts");
+// Restrict search to the current reader's language so translation siblings
+// don't double up in results (every post is stored once per language).
+const { entries: allFetched } = await getEmDashCollection("posts");
+const allPosts = allFetched.filter((p) => p.data.language === currentLang);
 
 // Simple search: match query against title, excerpt, and content
 function matchesQuery(post: (typeof allPosts)[0], q: string): boolean {
