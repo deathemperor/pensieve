@@ -442,6 +442,8 @@ export default definePlugin({
 						} else if (!ctx.http) {
 							ctx.log.info(`Welcome email skipped for ${email}: ctx.http missing (network:fetch capability?)`);
 						} else {
+							const unsubscribeUrl = `https://huuloc.com/_emdash/api/plugins/pensieve-engage/unsubscribe?email=${encodeURIComponent(email)}`;
+							const bodyWithFooter = `${welcomeBody}\n\n—\nUnsubscribe: ${unsubscribeUrl}`;
 							const res = await ctx.http.fetch("https://api.resend.com/emails", {
 								method: "POST",
 								headers: {
@@ -452,7 +454,14 @@ export default definePlugin({
 									from: fromEmail,
 									to: email,
 									subject: welcomeSubject,
-									text: welcomeBody,
+									text: bodyWithFooter,
+									headers: {
+										// Enables Gmail/Apple Mail's native "Unsubscribe" button and
+										// RFC 8058 one-click POST unsubscribe (required for bulk
+										// senders, good hygiene for small ones).
+										"List-Unsubscribe": `<${unsubscribeUrl}>`,
+										"List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+									},
 								}),
 							});
 							if (!res.ok) {
@@ -481,42 +490,53 @@ export default definePlugin({
 		unsubscribe: {
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const url = new URL(routeCtx.request.url);
-				const email = url.searchParams.get("email")?.trim().toLowerCase();
+				const diagId = `unsub_diag_${Date.now()}`;
+				let diag: any = { id: diagId, diag: true, at: new Date().toISOString() };
+				try {
+					const url = new URL(routeCtx.request.url);
+					const email = url.searchParams.get("email")?.trim().toLowerCase();
+					diag.method = routeCtx.request.method;
+					diag.email = email ?? null;
 
-				if (!email) {
-					return new Response(
-						"<html><body><h1>Missing email parameter</h1></body></html>",
-						{ headers: { "Content-Type": "text/html" } },
-					);
+					if (!email) {
+						diag.outcome = "missing_email";
+						await ctx.storage.email_sends.put(diagId, diag);
+						return { error: "Missing email parameter" };
+					}
+
+					const all = await ctx.storage.subscribers.query({});
+					const items = all.items ?? all ?? [];
+					diag.allCount = items.length;
+					diag.emailsSeen = items.slice(0, 5).map((s: any) => s.email);
+
+					const existing = items.find((s: any) => s.email === email);
+					diag.foundExisting = !!existing;
+					diag.existingId = existing?.id ?? null;
+					diag.existingStatus = existing?.status ?? null;
+
+					if (existing) {
+						const newId = existing.id ?? hashEmail(email);
+						await ctx.storage.subscribers.put(newId, {
+							...existing,
+							status: "unsubscribed",
+						});
+						diag.putId = newId;
+						diag.outcome = "unsubscribed";
+					} else {
+						diag.outcome = "not_found_noop";
+					}
+
+					ctx.log.info(`Unsubscribed: ${email}`);
+					await ctx.storage.email_sends.put(diagId, diag);
+					return { success: true, message: "Unsubscribed", email };
+				} catch (err) {
+					diag.outcome = "error";
+					diag.errorMessage = err instanceof Error ? err.message : String(err);
+					try {
+						await ctx.storage.email_sends.put(diagId, diag);
+					} catch {}
+					return { error: "Unsubscribe failed" };
 				}
-
-				const existing = await ctx.storage.subscribers.query({
-					where: { email },
-				});
-				const existingItems = existing.items ?? existing ?? [];
-
-				if (existingItems.length > 0) {
-					const sub = existingItems[0] as any;
-					await ctx.storage.subscribers.put(sub.id ?? hashEmail(email), {
-						...sub,
-						status: "unsubscribed",
-					});
-				}
-
-				ctx.log.info(`Unsubscribed: ${email}`);
-
-				return new Response(
-					`<html>
-<head><title>Unsubscribed</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:480px;margin:80px auto;text-align:center;">
-	<h1>Unsubscribed</h1>
-	<p>You've been unsubscribed from Pensieve updates.</p>
-	<p style="color:#666;">If this was a mistake, you can subscribe again at any time.</p>
-</body>
-</html>`,
-					{ headers: { "Content-Type": "text/html" } },
-				);
 			},
 		},
 
