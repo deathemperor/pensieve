@@ -1516,7 +1516,8 @@ const isLoggedIn = !!Astro.locals.user;
 							fStatus.style.color = '#3fb950';
 							fForm.reset();
 						} else {
-							fStatus.textContent = data.error || (isVi ? 'Có lỗi xảy ra' : 'Something went wrong');
+							const errMsg = typeof data.error === 'string' ? data.error : data.error?.message;
+							fStatus.textContent = errMsg || (isVi ? 'Có lỗi xảy ra' : 'Something went wrong');
 							fStatus.style.color = '#e5534b';
 						}
 					} catch {
