@@ -1,0 +1,68 @@
+---
+// SiteCat — a pixel-art cat that walks across the bottom of the page
+// periodically. Links to the cat-walk academy lesson.
+// Sprite: /sprites/cat/walk.png (CC0, see public/sprites/cat/LICENSE.txt)
+---
+
+<a class="site-cat" href="/hogwarts/quidditch/cat-walk" title="Meet the cat — Animation Academy" aria-label="Pixel-art cat walking across the page — click to see how it's made">
+  <span class="site-cat-sprite" aria-hidden="true"></span>
+</a>
+
+<style>
+  .site-cat {
+    position: fixed;
+    left: -18%;
+    bottom: 0;
+    width: 144px;
+    height: 96px;
+    pointer-events: auto;
+    z-index: 5;
+    display: block;
+    animation: site-cat-cross 42s linear infinite;
+    animation-delay: 4s;
+    text-decoration: none;
+    /* Not draggable or selectable */
+    user-select: none;
+    -webkit-user-drag: none;
+    /* Start hidden so it doesn't flash in at load */
+    opacity: 0;
+  }
+
+  .site-cat-sprite {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-image: url("/sprites/cat/walk-v2.png");
+    background-repeat: no-repeat;
+    background-size: 1152px 96px;   /* 8 frames × 144px (3× scale from 48×32) */
+    background-position: 0 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    animation: site-cat-walk 0.72s steps(8) infinite;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  @keyframes site-cat-walk {
+    from { background-position: 0 0; }
+    to   { background-position: -1152px 0; }
+  }
+
+  @keyframes site-cat-cross {
+    0%   { left: -15%;  opacity: 0; }
+    4%   { opacity: 1; }
+    94%  { opacity: 1; }
+    100% { left: 108%;  opacity: 0; }
+  }
+
+  .site-cat:hover .site-cat-sprite {
+    filter: drop-shadow(0 2px 8px rgba(94, 106, 210, 0.55));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-cat { display: none; }
+  }
+  @media (max-width: 560px) {
+    /* Hide on small screens — takes up too much footer real estate */
+    .site-cat { display: none; }
+  }
+</style>

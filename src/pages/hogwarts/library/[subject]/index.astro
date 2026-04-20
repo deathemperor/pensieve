@@ -1,0 +1,341 @@
+---
+export const prerender = false;
+
+import Base from "../../../../layouts/Base.astro";
+import { getTerm, getEmDashCollection } from "emdash";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+const { subject: subjectSlug } = Astro.params;
+
+if (!subjectSlug) {
+	return Astro.redirect("/hogwarts/library/");
+}
+
+const term = await getTerm("subject", subjectSlug);
+
+if (!term) {
+	return Astro.redirect("/hogwarts/library/");
+}
+
+const { entries: lessons, cacheHint } = await getEmDashCollection("lessons", {
+	status: "published",
+	where: { subject: subjectSlug },
+	orderBy: { created_at: "asc" },
+});
+
+Astro.cache.set(cacheHint);
+
+// Filter by language and sort by order
+const sortedLessons = [...lessons]
+	.filter((l) => l.data.language === currentLang)
+	.sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999));
+
+const difficultyColors: Record<string, string> = {
+	beginner: "#3fb950",
+	intermediate: "#d4a843",
+	advanced: "#e5534b",
+};
+
+const difficultyLabels: Record<string, { en: string; vi: string }> = {
+	beginner: { en: "Beginner", vi: "Cơ bản" },
+	intermediate: { en: "Intermediate", vi: "Trung cấp" },
+	advanced: { en: "Advanced", vi: "Nâng cao" },
+};
+---
+
+<Base
+	title={`${term.label} — ${isVi ? "Thư Viện" : "The Library"} — Pensieve`}
+	description={isVi
+		? `${sortedLessons.length} bài học về ${term.label}`
+		: `${sortedLessons.length} lessons on ${term.label}`}
+	breadcrumbs={[
+		{ label: "Hogwarts", href: "/" },
+		{ label: isVi ? "Thư Viện" : "The Library", href: "/hogwarts/library/" },
+		{ label: term.label },
+	]}
+>
+	<section class="subject-hero">
+		<div class="subject-hero-inner">
+			<div class="room-rule" />
+			<span class="room-label">{isVi ? "Thư Viện" : "The Library"}</span>
+			<h1 class="room-title">{term.label}</h1>
+			<p class="lesson-count-tag">
+				{sortedLessons.length}{" "}
+				{isVi
+					? sortedLessons.length === 1
+						? "bài học"
+						: "bài học"
+					: sortedLessons.length === 1
+						? "lesson"
+						: "lessons"}
+			</p>
+		</div>
+	</section>
+
+	<section class="lessons-section">
+		<div class="lessons-inner">
+			{sortedLessons.length === 0 ? (
+				<p class="empty-state">
+					{isVi ? "Chưa có bài học nào. Quay lại sau nhé." : "No lessons yet. Check back soon."}
+				</p>
+			) : (
+				<ol class="lesson-list">
+					{sortedLessons.map((lesson) => {
+						const order = lesson.data.order ?? "—";
+						const slideCount = Array.isArray(lesson.data.slides)
+							? lesson.data.slides.length
+							: 0;
+						const difficulty = lesson.data.difficulty ?? "beginner";
+						const diffColor = difficultyColors[difficulty] ?? difficultyColors.beginner;
+						const diffLabel = isVi
+							? (difficultyLabels[difficulty]?.vi ?? difficulty)
+							: (difficultyLabels[difficulty]?.en ?? difficulty);
+
+						return (
+							<li class="lesson-card-wrapper">
+								<a
+									href={`/hogwarts/library/${subjectSlug}/${lesson.id}/`}
+									class="lesson-card"
+								>
+									<span class="lesson-order">{String(order).padStart(2, "0")}</span>
+									<div class="lesson-body">
+										<div class="lesson-header">
+											<span class="lesson-title">{lesson.data.title}</span>
+											<span
+												class="difficulty-badge"
+												style={`--diff-color: ${diffColor};`}
+											>
+												{diffLabel}
+											</span>
+										</div>
+										{lesson.data.description && (
+											<p class="lesson-desc">{lesson.data.description}</p>
+										)}
+										<div class="lesson-meta">
+											{slideCount > 0 && (
+												<span class="meta-item">
+													{slideCount} {isVi ? "slide" : "slides"}
+												</span>
+											)}
+											{lesson.data.duration && (
+												<span class="meta-item">{lesson.data.duration}</span>
+											)}
+										</div>
+									</div>
+									<span class="lesson-arrow" aria-hidden="true">&rarr;</span>
+								</a>
+							</li>
+						);
+					})}
+				</ol>
+			)}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.subject-hero {
+		position: relative;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.subject-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-24) var(--spacing-8) var(--spacing-20);
+	}
+
+	.room-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.room-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.room-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-4);
+	}
+
+	.lesson-count-tag {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		margin: 0;
+	}
+
+	/* Lessons section */
+	.lessons-section {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.lessons-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8);
+	}
+
+	/* Lesson list */
+	.lesson-list {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+	}
+
+	.lesson-card-wrapper {
+		display: block;
+	}
+
+	.lesson-card {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--spacing-5);
+		padding: var(--spacing-5) var(--spacing-6);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		text-decoration: none;
+		color: inherit;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.lesson-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
+	.lesson-order {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		flex-shrink: 0;
+		padding-top: 2px;
+		min-width: 2ch;
+	}
+
+	.lesson-body {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-2);
+		min-width: 0;
+	}
+
+	.lesson-header {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		flex-wrap: wrap;
+	}
+
+	.lesson-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.01em;
+	}
+
+	.difficulty-badge {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--diff-color);
+		border: 1px solid color-mix(in srgb, var(--diff-color) 40%, transparent);
+		border-radius: 4px;
+		padding: 1px 6px;
+		flex-shrink: 0;
+	}
+
+	.lesson-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+	}
+
+	.lesson-meta {
+		display: flex;
+		gap: var(--spacing-4);
+	}
+
+	.meta-item {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	.lesson-arrow {
+		font-size: var(--font-size-base);
+		color: var(--color-muted);
+		flex-shrink: 0;
+		padding-top: 2px;
+		transition: color var(--transition-fast), transform var(--transition-fast);
+	}
+
+	.lesson-card:hover .lesson-arrow {
+		color: var(--color-accent);
+		transform: translateX(2px);
+	}
+
+	.empty-state {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		text-align: center;
+		padding: var(--spacing-16) 0;
+	}
+
+	/* Responsive */
+	@media (max-width: 900px) {
+		.subject-hero-inner {
+			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+		}
+
+		.lessons-inner {
+			padding: var(--spacing-12) var(--spacing-6);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.subject-hero-inner {
+			padding: var(--spacing-12) var(--spacing-5);
+		}
+
+		.lessons-inner {
+			padding: var(--spacing-10) var(--spacing-5);
+		}
+
+		.lesson-card {
+			flex-wrap: wrap;
+		}
+
+		.lesson-arrow {
+			display: none;
+		}
+	}
+</style>

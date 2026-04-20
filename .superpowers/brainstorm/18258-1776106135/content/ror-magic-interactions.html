@@ -1,0 +1,49 @@
+<h2>Magical Reveal Patterns</h2>
+<p class="subtitle">How should panels feel when they appear and open? Pick the vibe.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Staggered Materialize</h3>
+      <p>Panels fade in one by one on page load with a slight upward drift — like objects appearing in the Room of Requirement. Each panel delayed 80ms after the previous. Pure CSS <code>@keyframes</code> + <code>animation-delay</code>.</p>
+      <div style="margin-top: 12px; padding: 16px; background: #0d1117; border-radius: 8px;">
+        <div style="display: flex; gap: 8px;">
+          <div style="width: 80px; height: 50px; background: #161b22; border: 1px solid #21262d; border-radius: 6px; opacity: 1; animation: fadeDemo 1.5s infinite;"></div>
+          <div style="width: 80px; height: 50px; background: #161b22; border: 1px solid #21262d; border-radius: 6px; opacity: 1; animation: fadeDemo 1.5s infinite 0.1s;"></div>
+          <div style="width: 80px; height: 50px; background: #161b22; border: 1px solid #21262d; border-radius: 6px; opacity: 1; animation: fadeDemo 1.5s infinite 0.2s;"></div>
+          <div style="width: 80px; height: 50px; background: #161b22; border: 1px solid #21262d; border-radius: 6px; opacity: 1; animation: fadeDemo 1.5s infinite 0.3s;"></div>
+        </div>
+      </div>
+      <style>@keyframes fadeDemo { 0% { opacity: 0; transform: translateY(8px); } 30% { opacity: 1; transform: translateY(0); } 100% { opacity: 1; transform: translateY(0); } }</style>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Zero JS. CSS-only. Subtle and fast.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Shimmer Border on Hover</h3>
+      <p>Navigable panels get a <strong>magical shimmer</strong> along their border on hover — a gradient that sweeps around the edge like a wand trace. Combined with a subtle glow. CSS <code>background: conic-gradient</code> on a pseudo-element.</p>
+      <div style="margin-top: 12px; padding: 16px; background: #0d1117; border-radius: 8px; display: flex; justify-content: center;">
+        <div style="position: relative; width: 180px; height: 70px; background: #161b22; border-radius: 8px; overflow: hidden;">
+          <div style="position: absolute; inset: -2px; border-radius: 10px; background: conic-gradient(from 0deg, transparent, #58a6ff, #7c3aed, #d4a843, transparent); animation: shimmerSpin 2s linear infinite; opacity: 0.6;"></div>
+          <div style="position: absolute; inset: 1px; background: #161b22; border-radius: 7px; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 11px; color: #e6edf3;">Task Observatory &rarr;</span>
+          </div>
+        </div>
+      </div>
+      <style>@keyframes shimmerSpin { to { transform: rotate(360deg); } }</style>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Eye-catching on hover. The "wand trace" effect.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Both: Materialize In + Shimmer Hover</h3>
+      <p>Combine A and B. Panels materialize on load (staggered fade-up). Navigable panels shimmer on hover. The page feels like walking into the Room — things appear, then respond to your presence.</p>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Full magical experience. Still CSS-only. No JS needed.</p>
+    </div>
+  </div>
+</div>

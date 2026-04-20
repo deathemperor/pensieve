@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magical Creatures — Animated Preview</title>
+<style>
+  :root {
+    --ease-out-quint: cubic-bezier(.23, 1, .32, 1);
+    --ease-out-cubic: cubic-bezier(.33, 1, .68, 1);
+    --ease-in-out-cubic: cubic-bezier(.645, .045, .355, 1);
+    --patronus-color: rgba(192, 210, 235, 0.22);
+    --patronus-glow: rgba(192, 210, 235, 0.35);
+    --bg: #0a0c10;
+    --surface: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.06);
+    --text: #e0e4ea;
+    --text-dim: #6b7280;
+    --accent: #4a9eff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  .page { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 40px; }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2 .badge {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  h2 .badge-old { background: rgba(255,80,80,0.15); color: #ff6b6b; }
+  h2 .badge-new { background: rgba(74,158,255,0.15); color: var(--accent); }
+
+  /* ─── Preview Stage ─── */
+  .stage {
+    position: relative;
+    height: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .stage-stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.15), transparent),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.1), transparent),
+      radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.12), transparent),
+      radial-gradient(1px 1px at 70% 40%, rgba(255,255,255,0.08), transparent),
+      radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.14), transparent),
+      radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.1), transparent),
+      radial-gradient(1px 1px at 45% 85%, rgba(255,255,255,0.07), transparent),
+      radial-gradient(1px 1px at 65% 55%, rgba(255,255,255,0.09), transparent),
+      radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.11), transparent);
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .controls button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .controls button:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .controls button.active {
+    background: rgba(74,158,255,0.12);
+    border-color: rgba(74,158,255,0.3);
+    color: var(--accent);
+  }
+
+  /* ─── Creature Traversal (Old) ─── */
+  .creature-old {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    animation: traverse-old 6s ease-in-out forwards;
+    opacity: 0;
+    color: rgba(192, 210, 235, 0.18);
+    filter: drop-shadow(0 0 8px rgba(192, 210, 235, 0.2));
+  }
+  .creature-old .inner {
+    animation: gallop-old 0.35s ease-in-out infinite;
+  }
+  .creature-old .bob {
+    animation: bob-old 2s ease-in-out infinite;
+  }
+  .creature-old.flying .inner {
+    animation: flap-old 0.5s ease-in-out infinite;
+  }
+  .creature-old.flying .bob {
+    animation: bob-old 1.5s ease-in-out infinite;
+  }
+  .creature-old .trail {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    opacity: 0.3; filter: blur(4px);
+    animation: trail-old 1.5s ease-in-out infinite;
+  }
+
+  @keyframes traverse-old {
+    0%   { left: -80px; opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { left: calc(100% + 80px); opacity: 0; }
+  }
+  @keyframes bob-old {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  @keyframes gallop-old {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    20%      { transform: rotate(3deg) translateY(-2px); }
+    50%      { transform: rotate(0deg) translateY(1px); }
+    70%      { transform: rotate(-3deg) translateY(-2px); }
+  }
+  @keyframes flap-old {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    30%      { transform: scaleY(0.8) translateY(2px); }
+    60%      { transform: scaleY(1.05) translateY(-3px); }
+  }
+  @keyframes trail-old {
+    0%, 100% { opacity: 0.2; }
+    50%      { opacity: 0.4; }
+  }
+
+  /* ─── Creature Traversal (New) ─── */
+  .creature-new {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0;
+    color: var(--patronus-color);
+    animation: traverse-new 7s var(--ease-out-quint) forwards;
+  }
+  .creature-new .glow-layer {
+    position: absolute; inset: -8px;
+    filter: blur(12px);
+    opacity: 0;
+    animation: glow-breathe 2.5s ease-in-out infinite;
+  }
+  .creature-new .glow-layer svg { color: var(--patronus-glow); }
+  .creature-new .body {
+    position: relative;
+    filter: drop-shadow(0 0 6px rgba(192, 210, 235, 0.25));
+  }
+  .creature-new .stride {
+    animation: stride-new 0.8s var(--ease-in-out-cubic) infinite;
+    transform-origin: center bottom;
+  }
+  .creature-new.flying .stride {
+    animation: wingbeat-new 0.6s var(--ease-out-cubic) infinite;
+    transform-origin: center center;
+  }
+  .creature-new .float {
+    animation: float-new 2.8s ease-in-out infinite;
+  }
+  .creature-new.flying .float {
+    animation: float-new 2s ease-in-out infinite;
+  }
+
+  @keyframes traverse-new {
+    0%   { left: -80px; opacity: 0; }
+    3%   { opacity: 0; }
+    8%   { opacity: 1; }
+    90%  { opacity: 1; }
+    96%  { opacity: 0; }
+    100% { left: calc(100% + 80px); opacity: 0; }
+  }
+  @keyframes float-new {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-5px); }
+  }
+  @keyframes stride-new {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25%      { transform: rotate(1.5deg) translateY(-1px); }
+    50%      { transform: rotate(0deg) translateY(0.5px); }
+    75%      { transform: rotate(-1.5deg) translateY(-1px); }
+  }
+  @keyframes wingbeat-new {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    40%      { transform: scaleY(0.88) translateY(1.5px); }
+    70%      { transform: scaleY(1.04) translateY(-2px); }
+  }
+  @keyframes glow-breathe {
+    0%, 100% { opacity: 0.15; }
+    50%      { opacity: 0.4; }
+  }
+
+  /* ─── Creature Gallery ─── */
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 640px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+
+  .gallery-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 200ms ease;
+  }
+  .gallery-item:hover { border-color: rgba(255,255,255,0.12); }
+  .gallery-item svg { margin-bottom: 8px; }
+  .gallery-item .name {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-transform: capitalize;
+  }
+  .gallery-item .type-badge {
+    display: inline-block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-top: 4px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-dim);
+  }
+
+  /* ─── Comparison Table ─── */
+  .diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+  .diff-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .diff-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .diff-table .old { color: #888; }
+  .diff-table .new { color: var(--accent); }
+  .diff-table code {
+    font-size: 11px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .section-gap { margin-bottom: 48px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Magical Creatures — Rewrite Preview</h1>
+  <p class="subtitle">Live animated comparison · Click buttons to summon creatures in each stage</p>
+
+  <!-- ─── BEFORE ─── -->
+  <div class="section-gap">
+    <h2><span class="badge badge-old">Current</span> Stroke-only + basic easing</h2>
+    <div class="stage" id="stage-old">
+      <div class="stage-stars"></div>
+    </div>
+    <div class="controls" id="controls-old">
+      <button onclick="summonOld('stag')" class="active">Stag</button>
+      <button onclick="summonOld('owl')">Owl</button>
+      <button onclick="summonOld('phoenix')">Phoenix</button>
+      <button onclick="summonOld('cat')">Cat</button>
+      <button onclick="summonOld('otter')">Otter</button>
+      <button onclick="summonOld('dog')">Dog</button>
+    </div>
+  </div>
+
+  <!-- ─── AFTER ─── -->
+  <div class="section-gap">
+    <h2><span class="badge badge-new">New</span> Filled silhouettes + upgraded animations</h2>
+    <div class="stage" id="stage-new">
+      <div class="stage-stars"></div>
+    </div>
+    <div class="controls" id="controls-new">
+      <button onclick="summonNew('stag')" class="active">Stag</button>
+      <button onclick="summonNew('owl')">Owl</button>
+      <button onclick="summonNew('phoenix')">Phoenix</button>
+      <button onclick="summonNew('cat')">Cat</button>
+      <button onclick="summonNew('otter')">Otter</button>
+      <button onclick="summonNew('dog')">Dog</button>
+    </div>
+  </div>
+
+  <!-- ─── GALLERY ─── -->
+  <div class="section-gap">
+    <h2>New Silhouettes (all 6)</h2>
+    <div class="gallery" id="gallery"></div>
+  </div>
+
+  <!-- ─── DIFF TABLE ─── -->
+  <div class="section-gap">
+    <h2>Animation Changes</h2>
+    <table class="diff-table">
+      <thead>
+        <tr><th>Property</th><th>Current</th><th>New</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Traversal easing</td>
+          <td class="old"><code>ease-in-out</code></td>
+          <td class="new"><code>cubic-bezier(.23,1,.32,1)</code> — fast start, gentle coast</td>
+        </tr>
+        <tr>
+          <td>Fade in</td>
+          <td class="old">Baked into traverse at 5%</td>
+          <td class="new">Separate: 0→8% (300ms feel at 7s)</td>
+        </tr>
+        <tr>
+          <td>Fade out</td>
+          <td class="old">Baked into traverse at 95%</td>
+          <td class="new">Separate: 90→96% (faster exit)</td>
+        </tr>
+        <tr>
+          <td>Ground motion</td>
+          <td class="old"><code>rotate(±3°)</code> at 0.35s — jerky</td>
+          <td class="new"><code>rotate(±1.5°)</code> at 0.8s — gentle tilt</td>
+        </tr>
+        <tr>
+          <td>Flying motion</td>
+          <td class="old"><code>scaleY</code> flap at 0.5s</td>
+          <td class="new"><code>scaleY</code> wingbeat at 0.6s with ease-out-cubic</td>
+        </tr>
+        <tr>
+          <td>Vertical bob</td>
+          <td class="old">±4px at 2s / 1.5s</td>
+          <td class="new">±5px at 2.8s / 2s — slower, dreamier</td>
+        </tr>
+        <tr>
+          <td>Glow</td>
+          <td class="old">Static <code>drop-shadow</code></td>
+          <td class="new">Breathing glow pulse on 2.5s cycle</td>
+        </tr>
+        <tr>
+          <td>Trail</td>
+          <td class="old">Blurred SVG duplicate behind</td>
+          <td class="new">Replaced by glow layer — cleaner, less DOM</td>
+        </tr>
+        <tr>
+          <td>Reduced motion</td>
+          <td class="old">None</td>
+          <td class="new">Fade in/out in place, no traversal</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ─── Old creature data (stroke paths from current creatures.js) ───
+const creaturesOld = {
+  stag: {
+    w: 56, h: 40, type: "ground",
+    paths: [
+      "M8 28 Q6 26 7 23 Q8 18 12 16 L16 14 Q20 12 24 12 L32 13 Q36 14 38 16 Q40 18 40 22 L42 28 Q42 30 40 30 L38 24 Q37 22 36 24 L34 30 M24 16 L22 22 Q21 24 20 28 L18 30 M22 22 Q23 24 24 28",
+      "M16 14 L14 8 L12 5 M14 8 L16 5 M16 14 L18 9 L17 5 M18 9 L20 6 M18 9 L21 8",
+      "M12 16 Q10 15 9 16 Q8 17 9 18 Q10 18 12 17",
+      "M40 18 Q43 16 44 14"
+    ]
+  },
+  owl: {
+    w: 56, h: 36, type: "fly",
+    paths: [
+      "M24 18 Q20 16 20 20 Q20 24 24 26 Q28 28 32 26 Q36 24 36 20 Q36 16 32 18 Z",
+      "M20 20 Q14 14 6 12 Q3 12 2 14 Q4 16 8 18 Q12 20 20 22 M36 20 Q42 14 50 12 Q53 12 54 14 Q52 16 48 18 Q44 20 36 22",
+      "M25 19 Q26 18 27 19 M30 19 Q31 18 32 19 M28 21 L29 22 L28 23",
+      "M23 16 L21 12 M33 16 L35 12"
+    ]
+  },
+  phoenix: {
+    w: 60, h: 36, type: "fly",
+    paths: [
+      "M20 16 Q22 14 26 14 Q30 14 32 16 Q34 18 34 20 Q34 22 32 22 Q28 22 24 20 Q22 18 20 16 Z",
+      "M22 16 Q16 10 8 6 Q5 5 4 7 Q6 10 10 14 Q14 17 22 18 M32 16 Q38 10 46 6 Q49 5 50 7 Q48 10 44 14 Q40 17 32 18",
+      "M34 20 Q38 22 42 26 Q44 28 48 30 Q50 32 54 30 M34 21 Q37 24 40 28 Q42 30 46 32 Q48 34 52 34 M34 20 Q36 23 38 28 Q39 30 42 33",
+      "M20 16 L18 12 Q17 10 18 9 M20 15 L17 11"
+    ]
+  },
+  cat: {
+    w: 52, h: 32, type: "ground",
+    paths: [
+      "M12 18 Q14 14 18 13 Q22 12 26 13 Q30 13 34 14 Q38 16 38 20 L40 26 M34 14 Q33 18 32 22 L30 26 M18 13 Q17 16 16 20 L14 26 M26 13 Q25 16 26 20 L28 26",
+      "M10 16 Q8 14 8 12 Q8 10 10 10 Q12 8 14 10 Q14 12 14 14 Q13 16 12 18",
+      "M9 12 L7 6 L10 10 M13 10 L15 5 L14 10",
+      "M38 18 Q42 14 44 10 Q45 8 46 8 Q47 9 46 12 Q45 14 44 16"
+    ]
+  },
+  otter: {
+    w: 56, h: 28, type: "ground",
+    paths: [
+      "M8 16 Q10 12 14 11 Q18 10 22 11 Q26 11 30 12 Q34 12 36 14 Q38 16 38 18 L40 22 M30 12 Q29 16 28 20 L26 22 M22 11 Q21 14 20 18 L18 22 M14 11 Q13 14 12 18 L10 22",
+      "M6 14 Q4 12 4 10 Q4 8 6 8 Q8 8 9 10 Q9 12 8 14 Q7 16 6 16",
+      "M38 16 Q42 14 46 14 Q50 14 52 16 Q53 17 52 18",
+      "M5 12 L2 10 M5 13 L2 13 M5 14 L2 16"
+    ]
+  },
+  dog: {
+    w: 56, h: 38, type: "ground",
+    paths: [
+      "M12 22 Q14 16 18 14 Q22 12 26 12 Q30 12 34 14 Q38 16 40 20 L42 28 Q42 30 40 30 L38 24 M34 14 Q33 18 32 22 L30 28 Q30 30 28 30 M18 14 Q17 18 16 22 L14 28 Q14 30 12 30 M26 12 Q25 16 24 20 L22 28 Q22 30 20 30",
+      "M10 20 Q8 18 6 18 Q4 18 3 20 Q3 22 5 22 Q7 22 8 20 L10 20 Q12 18 14 18",
+      "M8 18 Q6 14 4 12 Q3 11 4 13 Q5 15 7 17 M12 16 Q12 12 10 10 Q9 9 10 12 Q10 14 12 16",
+      "M40 18 Q44 14 46 10 Q47 8 48 8 Q49 9 48 12"
+    ]
+  }
+};
+
+// ─── New creature data (filled silhouettes) ───
+const creaturesNew = {
+  stag: {
+    w: 80, h: 60, type: "ground",
+    paths: [
+      // Body - solid filled silhouette
+      { d: "M22 42 L22 52 L25 52 L25 44 L30 44 L30 52 L33 52 L33 42 Q34 38 36 36 Q40 32 42 28 Q44 24 44 20 Q44 16 40 14 Q36 12 32 12 Q28 12 24 14 Q20 16 18 20 Q16 24 18 28 Q20 32 22 36 Q24 38 24 42 Z M46 42 L46 52 L49 52 L49 44 L54 44 L54 52 L57 52 L57 42 Q56 38 54 36 Q52 34 48 32", fill: true },
+      // Head
+      { d: "M18 20 Q16 16 14 14 Q12 12 10 12 Q8 14 10 16 Q12 18 14 20 Q16 22 18 22", fill: true },
+      // Antlers
+      { d: "M12 14 L10 8 L8 4 M10 8 L12 5 M12 14 L14 9 L16 5 M14 9 L12 6 M10 12 L6 10 L4 6 M6 10 L8 7", fill: false },
+      // Eye
+      { d: "M12 16 L13 16", fill: false, w: 2 }
+    ]
+  },
+  owl: {
+    w: 64, h: 44, type: "fly",
+    paths: [
+      // Body
+      { d: "M24 18 Q22 14 24 10 Q26 8 32 8 Q38 8 40 10 Q42 14 40 18 Q42 20 42 24 Q42 30 38 34 Q34 36 32 36 Q30 36 26 34 Q22 30 22 24 Q22 20 24 18 Z", fill: true },
+      // Left wing
+      { d: "M22 20 Q16 16 10 14 Q6 13 3 14 Q2 16 4 18 Q8 20 14 22 Q18 24 22 24", fill: true },
+      // Right wing
+      { d: "M42 20 Q48 16 54 14 Q58 13 61 14 Q62 16 60 18 Q56 20 50 22 Q46 24 42 24", fill: true },
+      // Eyes
+      { d: "M27 15 Q28 13 30 15 Q28 16 27 15 Z M34 15 Q35 13 37 15 Q35 16 34 15 Z", fill: true, color: "rgba(0,0,0,0.4)" },
+      // Ear tufts
+      { d: "M26 10 L24 5 M38 10 L40 5", fill: false },
+      // Beak
+      { d: "M31 17 L32 19 L33 17", fill: false }
+    ]
+  },
+  phoenix: {
+    w: 80, h: 44, type: "fly",
+    paths: [
+      // Body
+      { d: "M28 18 Q30 14 34 12 Q38 10 40 12 Q42 14 42 18 Q42 22 38 24 Q34 26 30 24 Q28 22 28 18 Z", fill: true },
+      // Left wing
+      { d: "M28 18 Q22 12 14 8 Q8 5 4 6 Q2 8 4 12 Q8 16 16 20 Q22 23 28 22", fill: true },
+      // Right wing
+      { d: "M42 18 Q48 12 56 8 Q62 5 66 6 Q68 8 66 12 Q62 16 54 20 Q48 23 42 22", fill: true },
+      // Tail feathers
+      { d: "M38 24 Q42 28 46 34 Q48 38 52 40 M38 24 Q44 30 48 36 Q50 40 56 42 M38 24 Q40 30 42 36 Q43 40 46 44", fill: false },
+      // Head crest
+      { d: "M34 12 L32 6 Q31 4 32 5 M34 12 L36 7 Q37 4 36 5", fill: false },
+      // Eye
+      { d: "M34 16 L35 16", fill: false, w: 2 }
+    ]
+  },
+  cat: {
+    w: 60, h: 44, type: "ground",
+    paths: [
+      // Body
+      { d: "M18 30 Q16 26 16 22 Q16 18 20 16 Q24 14 30 14 Q36 14 40 16 Q44 18 44 22 Q44 26 42 30 L44 38 L41 38 L40 32 L36 38 L33 38 L34 32 L26 32 L27 38 L24 38 L22 32 L20 38 L17 38 L18 30 Z", fill: true },
+      // Head
+      { d: "M14 20 Q12 16 10 14 Q8 12 8 10 Q10 8 12 10 Q14 12 16 14 Q18 16 18 18 Q16 20 14 20 Z", fill: true },
+      // Ears
+      { d: "M9 12 L7 5 L11 10 M13 10 L16 4 L15 11", fill: false },
+      // Tail
+      { d: "M44 22 Q48 18 52 16 Q54 15 56 16 Q57 18 55 20 Q52 22 48 24", fill: false },
+      // Eye
+      { d: "M11 15 L12 15", fill: false, w: 2 },
+      // Whiskers
+      { d: "M8 16 L4 14 M8 17 L4 17 M8 18 L4 20", fill: false }
+    ]
+  },
+  otter: {
+    w: 68, h: 36, type: "ground",
+    paths: [
+      // Body - long and sleek
+      { d: "M16 22 Q14 18 14 14 Q14 10 18 8 Q22 6 28 6 Q34 6 38 8 Q42 10 44 14 Q46 16 46 20 L48 28 L45 28 L44 22 L40 28 L37 28 L38 22 L30 22 L28 28 L25 28 L26 22 L20 22 L18 28 L15 28 L16 22 Z", fill: true },
+      // Head
+      { d: "M12 14 Q10 10 8 8 Q6 6 4 6 Q2 8 4 10 Q6 12 8 14 Q10 16 12 16 Q14 16 14 14 Z", fill: true },
+      // Tail
+      { d: "M46 18 Q50 14 54 12 Q58 12 60 14 Q62 16 60 18 Q58 19 56 18", fill: true },
+      // Whiskers
+      { d: "M4 10 L1 8 M4 11 L1 11 M4 12 L1 14", fill: false },
+      // Eye
+      { d: "M7 10 L8 10", fill: false, w: 2 }
+    ]
+  },
+  dog: {
+    w: 70, h: 52, type: "ground",
+    paths: [
+      // Body
+      { d: "M22 34 Q20 28 20 24 Q20 18 24 14 Q28 10 34 10 Q40 10 44 14 Q48 18 48 24 Q48 28 46 34 L48 44 L45 44 L44 36 L40 44 L37 44 L38 36 L30 36 L31 44 L28 44 L26 36 L24 44 L21 44 L22 34 Z", fill: true },
+      // Head
+      { d: "M18 22 Q14 18 12 16 Q10 14 8 14 Q6 16 8 18 Q10 20 12 22 Q14 24 16 24 Q18 24 20 22 Z", fill: true },
+      // Ear (floppy)
+      { d: "M10 16 Q8 12 6 10 Q4 8 2 8 Q2 10 4 14 Q6 16 8 18", fill: true },
+      // Tail
+      { d: "M48 20 Q52 14 54 10 Q55 8 56 8 Q58 10 56 14 Q54 18 50 22", fill: false },
+      // Eye
+      { d: "M12 18 L13 18", fill: false, w: 2 },
+      // Nose
+      { d: "M8 20 Q9 19 10 20 Q9 21 8 20 Z", fill: true, color: "rgba(0,0,0,0.3)" }
+    ]
+  }
+};
+
+function makeSvgOld(c, size) {
+  const scale = size / c.w;
+  const h = Math.round(c.h * scale);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${c.w} ${c.h}`);
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", h);
+  svg.style.display = "block";
+  c.paths.forEach(d => {
+    const p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    p.setAttribute("d", d);
+    p.setAttribute("fill", "none");
+    p.setAttribute("stroke", "currentColor");
+    p.setAttribute("stroke-width", "1.5");
+    p.setAttribute("stroke-linecap", "round");
+    p.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(p);
+  });
+  return svg;
+}
+
+function makeSvgNew(c, size) {
+  const scale = size / c.w;
+  const h = Math.round(c.h * scale);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${c.w} ${c.h}`);
+  svg.setAttribute("width", size);
+  svg.setAttribute("height", h);
+  svg.style.display = "block";
+  c.paths.forEach(p => {
+    const el = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    el.setAttribute("d", p.d);
+    if (p.fill) {
+      el.setAttribute("fill", p.color || "currentColor");
+      el.setAttribute("stroke", "none");
+    } else {
+      el.setAttribute("fill", "none");
+      el.setAttribute("stroke", p.color || "currentColor");
+      el.setAttribute("stroke-width", p.w || "1.5");
+      el.setAttribute("stroke-linecap", "round");
+      el.setAttribute("stroke-linejoin", "round");
+    }
+    svg.appendChild(el);
+  });
+  return svg;
+}
+
+// ─── Spawn old creature ───
+let activeOld = null;
+function summonOld(name) {
+  if (activeOld) activeOld.remove();
+  const stage = document.getElementById('stage-old');
+  const c = creaturesOld[name];
+  const size = 60;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'creature-old' + (c.type === 'fly' ? ' flying' : '');
+
+  const bob = document.createElement('div');
+  bob.className = 'bob';
+  const inner = document.createElement('div');
+  inner.className = 'inner';
+
+  // Trail
+  const trail = document.createElement('div');
+  trail.className = 'trail';
+  trail.appendChild(makeSvgOld(c, size));
+
+  const mainDiv = document.createElement('div');
+  mainDiv.style.position = 'relative';
+  mainDiv.appendChild(trail);
+  mainDiv.appendChild(makeSvgOld(c, size));
+
+  inner.appendChild(mainDiv);
+  bob.appendChild(inner);
+  wrap.appendChild(bob);
+  stage.appendChild(wrap);
+  activeOld = wrap;
+
+  wrap.addEventListener('animationend', (e) => {
+    if (e.animationName === 'traverse-old') wrap.remove();
+  });
+
+  // Update active button
+  document.querySelectorAll('#controls-old button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ─── Spawn new creature ───
+let activeNew = null;
+function summonNew(name) {
+  if (activeNew) activeNew.remove();
+  const stage = document.getElementById('stage-new');
+  const c = creaturesNew[name];
+  const size = 60;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'creature-new' + (c.type === 'fly' ? ' flying' : '');
+
+  const float = document.createElement('div');
+  float.className = 'float';
+  const stride = document.createElement('div');
+  stride.className = 'stride';
+
+  // Glow layer
+  const glow = document.createElement('div');
+  glow.className = 'glow-layer';
+  glow.appendChild(makeSvgNew(c, size));
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  body.appendChild(glow);
+  body.appendChild(makeSvgNew(c, size));
+
+  stride.appendChild(body);
+  float.appendChild(stride);
+  wrap.appendChild(float);
+  stage.appendChild(wrap);
+  activeNew = wrap;
+
+  wrap.addEventListener('animationend', (e) => {
+    if (e.animationName === 'traverse-new') wrap.remove();
+  });
+
+  // Update active button
+  document.querySelectorAll('#controls-new button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ─── Build gallery ───
+function buildGallery() {
+  const gallery = document.getElementById('gallery');
+  Object.entries(creaturesNew).forEach(([name, c]) => {
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+
+    const svgWrap = document.createElement('div');
+    svgWrap.style.color = 'rgba(192, 210, 235, 0.5)';
+    svgWrap.style.filter = 'drop-shadow(0 0 10px rgba(192, 210, 235, 0.3))';
+    svgWrap.style.display = 'inline-block';
+    svgWrap.appendChild(makeSvgNew(c, 80));
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'name';
+    nameEl.textContent = name;
+
+    const badge = document.createElement('div');
+    badge.className = 'type-badge';
+    badge.textContent = c.type === 'fly' ? '🪶 flying' : '🐾 ground';
+
+    item.appendChild(svgWrap);
+    item.appendChild(nameEl);
+    item.appendChild(badge);
+    gallery.appendChild(item);
+  });
+}
+
+// ─── Init ───
+buildGallery();
+setTimeout(() => summonOld('stag'), 500);
+setTimeout(() => summonNew('stag'), 800);
+</script>
+</body>
+</html>

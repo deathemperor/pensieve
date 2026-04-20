@@ -1,0 +1,62 @@
+<h2>Click → Navigate Transition</h2>
+<p class="subtitle">What happens when you click a panel to enter a sub-page?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Panel Expand</h3>
+      <p>The clicked panel <strong>scales up to fill the viewport</strong> while other panels fade out. Then the sub-page content fades in inside it. Like the door growing to full size before you step through.</p>
+      <div style="margin-top: 12px; padding: 16px; background: #0d1117; border-radius: 8px; display: flex; gap: 8px; justify-content: center; align-items: center; min-height: 80px; position: relative; overflow: hidden;">
+        <div id="demoA1" style="width: 60px; height: 40px; background: #161b22; border: 1px solid #21262d; border-radius: 4px; opacity: 0.3; transition: all 0.4s;"></div>
+        <div id="demoA2" style="width: 60px; height: 40px; background: #161b22; border: 1px solid #58a6ff; border-radius: 4px; cursor: pointer; transition: all 0.4s; display: flex; align-items: center; justify-content: center;" onclick="this.style.transform='scale(3)'; this.style.zIndex='10'; this.style.opacity='0.8'; document.getElementById('demoA1').style.opacity='0'; document.getElementById('demoA3').style.opacity='0'; setTimeout(() => { this.style.transform='scale(1)'; this.style.zIndex='0'; this.style.opacity='1'; document.getElementById('demoA1').style.opacity='0.3'; document.getElementById('demoA3').style.opacity='0.3'; }, 1200);">
+          <span style="font-size: 9px; color: #58a6ff;">click me</span>
+        </div>
+        <div id="demoA3" style="width: 60px; height: 40px; background: #161b22; border: 1px solid #21262d; border-radius: 4px; opacity: 0.3; transition: all 0.4s;"></div>
+      </div>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Uses View Transitions API (native in Chrome/Edge, progressive enhancement). Falls back to instant navigation in other browsers.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Flash + Dissolve</h3>
+      <p>A brief <strong>accent-colored flash</strong> ripples from the clicked panel outward, then the entire page dissolves into the sub-page. Like a spell being cast — flash of light, new reality appears.</p>
+      <div style="margin-top: 12px; padding: 16px; background: #0d1117; border-radius: 8px; display: flex; justify-content: center; min-height: 80px; align-items: center;">
+        <div style="width: 120px; height: 50px; background: #161b22; border: 1px solid #21262d; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;" onclick="const r = document.createElement('div'); r.style.cssText='position:absolute;inset:0;background:radial-gradient(circle,rgba(88,166,255,0.4),transparent 70%);animation:flashPulse 0.6s ease-out forwards;'; this.appendChild(r); setTimeout(()=>r.remove(),700);">
+          <span style="font-size: 9px; color: #e6edf3;">click me</span>
+        </div>
+      </div>
+      <style>@keyframes flashPulse { 0% { opacity: 0; transform: scale(0.5); } 30% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(2); } }</style>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Tiny JS for the ripple (click handler), CSS for the animation. View Transitions API for the page dissolve.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Morph Transition</h3>
+      <p>The panel's title and accent color <strong>morph into the sub-page header</strong> using <code>view-transition-name</code>. The panel title flies up to become the page heading. Border color carries over. Everything else cross-fades. The most "seamless" feel — like the room reshaping around you.</p>
+      <div style="margin-top: 12px; padding: 16px; background: #0d1117; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; align-items: center;">
+        <div style="font-size: 10px; color: #8b949e;">Panel title morphs into page heading</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="padding: 8px 12px; background: #161b22; border: 1px solid #21262d; border-radius: 6px;">
+            <span style="font-size: 11px; color: #e6edf3; font-weight: 600;">Task Observatory</span>
+          </div>
+          <span style="color: #484f58;">→</span>
+          <div style="padding: 8px 12px;">
+            <span style="font-size: 16px; color: #e6edf3; font-weight: 700; letter-spacing: -0.02em;">Task Observatory</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size: 11px; color: #8b949e; margin-top: 8px;">Pure View Transitions API — <code>view-transition-name</code> on panel title + page heading. Zero JS beyond navigation. Progressive: falls back to normal page load in Firefox/Safari.</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 20px; padding: 12px 16px; background: rgba(88,166,255,0.08); border-radius: 8px; border-left: 2px solid #58a6ff;">
+  <p style="font-size: 12px; color: #8b949e; margin: 0;">
+    <strong style="color: #e6edf3;">Note:</strong> All options use the <a href="https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API" style="color: #58a6ff;">View Transitions API</a> — a browser-native feature (Chrome 111+, Edge 111+). No frameworks, no FLIP libraries. Falls back gracefully to instant navigation in unsupported browsers.
+  </p>
+</div>

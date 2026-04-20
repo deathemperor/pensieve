@@ -1,0 +1,2592 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+const isVi = getCurrentLang(Astro) === "vi";
+
+// The Restricted Section — design docs from D1
+import { env } from "cloudflare:workers";
+const db = env.DB;
+let designDocs: { id: string; title: string; doc_type: string; project: string; summary: string; prompt: string; file_path: string; notion_url: string; line_count: number; created_at: string }[] = [];
+
+if (db) {
+  try {
+    const docs = await db.prepare(
+      "SELECT * FROM design_docs ORDER BY project, doc_type DESC"
+    ).all();
+    designDocs = (docs.results ?? []) as any[];
+  } catch {
+    designDocs = [];
+  }
+}
+
+// Group docs by project
+const docsByProject = new Map<string, typeof designDocs>();
+for (const doc of designDocs) {
+  const existing = docsByProject.get(doc.project) ?? [];
+  existing.push(doc);
+  docsByProject.set(doc.project, existing);
+}
+
+const projectDisplayNames: Record<string, string> = {
+  "hp-task-management": "HP Task Management",
+  "hogwarts-library": "Hogwarts Library",
+};
+
+// Stats
+const totalSpecs = designDocs.filter(d => d.doc_type === 'spec').length;
+const totalPlans = designDocs.filter(d => d.doc_type === 'plan').length;
+const totalLines = designDocs.reduce((sum, d) => sum + (d.line_count ?? 0), 0);
+
+const title = isVi ? "Khu Cấm" : "The Restricted Section";
+const description = isVi ? "Bản thiết kế và kế hoạch triển khai" : "Design specs and implementation plans";
+---
+
+<Base
+  title={title}
+  description={description}
+  breadcrumbs={[
+    { label: "Room of Requirement", href: "/room-of-requirement" },
+    { label: isVi ? "Khu Cấm" : "The Restricted Section" },
+  ]}
+>
+  <section class="rs-page-hero">
+    <div class="rs-page-inner">
+      <div class="room-rule" />
+      <h1 class="rs-page-title rs-title-shake">{isVi ? "Khu Cấm" : "The Restricted Section"}</h1>
+      <p class="rs-page-desc">
+        {isVi
+          ? "Bản thiết kế và kế hoạch triển khai — mọi quyết định kiến trúc được ghi lại từ các phiên brainstorm."
+          : "Design specs and implementation plans — every architecture decision captured from brainstorming sessions."}
+      </p>
+    </div>
+    <!-- Peak-moment dim overlay — darkens hero except cat at SCREECH -->
+    <div class="rs-peak-dim" aria-hidden="true"></div>
+    <!-- Stage spotlight cone — top-down theatrical light at peak -->
+    <div class="rs-spotlight" aria-hidden="true"></div>
+    <!-- Film-grain noise overlay — vintage photograph texture -->
+    <svg class="rs-grain" aria-hidden="true">
+      <filter id="rs-noise-filter">
+        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" seed="7" stitchTiles="stitch"/>
+        <feColorMatrix values="0 0 0 0 0.9 0 0 0 0 0.9 0 0 0 0 1 0 0 0 0.18 0"/>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#rs-noise-filter)"/>
+    </svg>
+    <!-- Glowing ground cracks — radiate from cat's feet at peak -->
+    <svg class="rs-ground-cracks" viewBox="0 0 400 80" preserveAspectRatio="xMidYEnd meet" aria-hidden="true">
+      <g stroke="url(#rs-crack-gradient)" stroke-width="1.2" fill="none" stroke-linecap="round">
+        <defs>
+          <linearGradient id="rs-crack-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+            <stop offset="0%" stop-color="#ffe064" stop-opacity="1"/>
+            <stop offset="50%" stop-color="#ff6abc" stop-opacity="0.8"/>
+            <stop offset="100%" stop-color="#9be7ff" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- 12 jagged cracks radiating out + down from center -->
+        <path class="rs-crack" d="M200 0 L196 18 L202 32 L194 50 L198 68"/>
+        <path class="rs-crack" d="M200 0 L208 16 L202 30 L210 48 L204 66"/>
+        <path class="rs-crack" d="M200 0 L184 14 L172 26 L160 40 L150 58"/>
+        <path class="rs-crack" d="M200 0 L216 14 L228 26 L240 40 L250 58"/>
+        <path class="rs-crack" d="M200 0 L172 18 L150 32 L128 48 L110 66"/>
+        <path class="rs-crack" d="M200 0 L228 18 L250 32 L272 48 L290 66"/>
+        <path class="rs-crack" d="M200 0 L160 20 L130 36 L100 52 L70 68"/>
+        <path class="rs-crack" d="M200 0 L240 20 L270 36 L300 52 L330 68"/>
+        <path class="rs-crack" d="M200 0 L150 24 L110 40 L75 56 L40 72"/>
+        <path class="rs-crack" d="M200 0 L250 24 L290 40 L325 56 L360 72"/>
+        <path class="rs-crack" d="M200 0 L138 28 L92 42 L48 58 L8 74"/>
+        <path class="rs-crack" d="M200 0 L262 28 L308 42 L352 58 L392 74"/>
+      </g>
+    </svg>
+    <!-- Diagonal moonlight beams — stream through invisible windows -->
+    <div class="rs-moonbeams" aria-hidden="true">
+      <span class="rs-moonbeam rs-moonbeam-1"></span>
+      <span class="rs-moonbeam rs-moonbeam-2"></span>
+      <span class="rs-moonbeam rs-moonbeam-3"></span>
+    </div>
+    <!-- Scampering skeleton kitten — runs across the floor occasionally -->
+    <svg class="rs-scamp-kitten" viewBox="0 0 100 50" aria-hidden="true">
+      <g stroke="rgba(155, 231, 255, 0.85)" stroke-width="0.8" fill="none" stroke-linecap="round">
+        <!-- spine -->
+        <path d="M22 22 Q40 18 60 20 Q72 21 82 24"/>
+        <!-- ribs -->
+        <path d="M30 21 Q31 28 34 32"/>
+        <path d="M40 19 Q41 28 44 33"/>
+        <path d="M50 19 Q51 28 54 32"/>
+        <path d="M60 20 Q61 28 64 32"/>
+        <!-- legs -->
+        <path d="M30 32 L28 42 L32 46"/>
+        <path d="M36 32 L38 42 L34 46"/>
+        <path d="M62 32 L64 42 L60 46"/>
+        <path d="M68 32 L66 42 L70 46"/>
+        <!-- tail -->
+        <path d="M82 24 Q90 20 94 12 Q96 6 92 4"/>
+        <!-- skull -->
+        <path d="M14 22 Q9 18 11 12 Q15 6 22 6 Q28 6 30 12 Q30 18 28 21 Z"/>
+        <!-- ears -->
+        <path d="M14 9 L12 2 L18 6"/>
+        <path d="M26 8 L30 1 L24 5"/>
+        <!-- jaw -->
+        <path d="M11 18 Q16 24 26 22 Q28 20 28 18"/>
+        <!-- eyes -->
+        <ellipse cx="17" cy="14" rx="1.6" ry="2" fill="#0a0d18"/>
+        <ellipse cx="24" cy="14" rx="1.6" ry="2" fill="#0a0d18"/>
+        <circle cx="17" cy="14" r="0.9" fill="#9be7ff"/>
+        <circle cx="24" cy="14" r="0.9" fill="#9be7ff"/>
+      </g>
+    </svg>
+    <!-- Cat caption — fades in briefly to identify Mrs. Norris -->
+    <div class="rs-cat-caption" aria-hidden="true">
+      <span class="rs-cap-name">Mrs. Norris</span>
+      <span class="rs-cap-meta">— Familiar of the Restricted Section</span>
+    </div>
+    <!-- Spell incantation — Latin words float up at SCREECH peak -->
+    <div class="rs-incantation" aria-hidden="true">
+      <span class="rs-incant-word rs-incant-1">Felis</span>
+      <span class="rs-incant-word rs-incant-2">Mortuus</span>
+      <span class="rs-incant-word rs-incant-3">Custos</span>
+    </div>
+    <!-- Floating spell book — open in mid-air, pages flip slowly -->
+    <div class="rs-spellbook" aria-hidden="true">
+      <div class="rs-book-base"></div>
+      <div class="rs-book-page rs-book-page-l"></div>
+      <div class="rs-book-page rs-book-page-r"></div>
+      <div class="rs-book-page rs-book-page-flip"></div>
+      <div class="rs-book-glow"></div>
+      <div class="rs-book-runes"></div>
+    </div>
+    <!-- Floating dust motes — tiny specks catching the moonlight -->
+    <div class="rs-dust" aria-hidden="true">
+      <span class="rs-mote" style="--x:14%; --y:25%; --d:0s; --dur:18s;"></span>
+      <span class="rs-mote" style="--x:22%; --y:48%; --d:-3s; --dur:22s;"></span>
+      <span class="rs-mote" style="--x:38%; --y:38%; --d:-5s; --dur:26s;"></span>
+      <span class="rs-mote" style="--x:46%; --y:60%; --d:-8s; --dur:24s;"></span>
+      <span class="rs-mote" style="--x:58%; --y:32%; --d:-11s; --dur:20s;"></span>
+      <span class="rs-mote" style="--x:68%; --y:55%; --d:-14s; --dur:23s;"></span>
+      <span class="rs-mote" style="--x:78%; --y:42%; --d:-2s; --dur:19s;"></span>
+      <span class="rs-mote" style="--x:86%; --y:28%; --d:-7s; --dur:25s;"></span>
+    </div>
+    <!-- Permanent summoning sigil — always visible, brightens at peak -->
+    <div class="rs-sigil" aria-hidden="true">
+      <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="rs-sigil-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#9be7ff" stop-opacity="0.5"/>
+            <stop offset="60%" stop-color="#5ab8ff" stop-opacity="0.2"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </radialGradient>
+        </defs>
+        <!-- Outer rotating ring with rune-marks -->
+        <g class="rs-sigil-outer" stroke="rgba(155, 231, 255, 0.6)" stroke-width="0.8" fill="none">
+          <circle cx="100" cy="100" r="92" stroke-dasharray="2 6"/>
+          <circle cx="100" cy="100" r="80"/>
+          <!-- 8 cardinal rune marks -->
+          <line x1="100" y1="6" x2="100" y2="14"/>
+          <line x1="100" y1="186" x2="100" y2="194"/>
+          <line x1="6" y1="100" x2="14" y2="100"/>
+          <line x1="186" y1="100" x2="194" y2="100"/>
+          <line x1="33" y1="33" x2="40" y2="40"/>
+          <line x1="160" y1="160" x2="167" y2="167"/>
+          <line x1="33" y1="167" x2="40" y2="160"/>
+          <line x1="160" y1="40" x2="167" y2="33"/>
+        </g>
+        <!-- Middle pentagram (inverted for occult feel) -->
+        <g class="rs-sigil-mid" stroke="rgba(126, 200, 255, 0.5)" stroke-width="0.6" fill="none">
+          <circle cx="100" cy="100" r="60"/>
+          <polygon points="100,160 152,118 132,52 68,52 48,118"/>
+          <polygon points="100,52 132,148 48,88 152,88 68,148"/>
+        </g>
+        <!-- Inner glow disk -->
+        <circle cx="100" cy="100" r="50" fill="url(#rs-sigil-glow)" class="rs-sigil-disk"/>
+        <!-- Hex border with vertices -->
+        <g class="rs-sigil-hex" stroke="rgba(155, 231, 255, 0.4)" stroke-width="0.5" fill="none">
+          <polygon points="100,30 161,65 161,135 100,170 39,135 39,65"/>
+        </g>
+      </svg>
+    </div>
+    <!-- Bookshelf silhouette — establishes the library setting -->
+    <div class="rs-bookshelves" aria-hidden="true">
+      <svg viewBox="0 0 1200 360" preserveAspectRatio="xMidYEnd slice">
+        <!-- Background bookshelf 1 (far back) -->
+        <g class="rs-shelf rs-shelf-far" fill="rgba(40, 28, 20, 0.55)">
+          <rect x="0" y="40" width="1200" height="280"/>
+          <!-- vertical dividers (shelves) -->
+          <rect x="120" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="320" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="520" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="720" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="920" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="1100" y="40" width="3" height="280" fill="rgba(20, 14, 10, 0.7)"/>
+          <!-- horizontal shelf planks -->
+          <rect x="0" y="100" width="1200" height="3" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="0" y="180" width="1200" height="3" fill="rgba(20, 14, 10, 0.7)"/>
+          <rect x="0" y="260" width="1200" height="3" fill="rgba(20, 14, 10, 0.7)"/>
+        </g>
+        <!-- Books — vertical bars of varying heights/colors -->
+        <g class="rs-books">
+          <!-- Top row -->
+          <rect x="20" y="50" width="14" height="48" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="38" y="55" width="11" height="43" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="53" y="48" width="16" height="50" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="73" y="58" width="10" height="40" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="87" y="52" width="13" height="46" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="104" y="50" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <rect x="130" y="56" width="12" height="42" fill="rgba(70, 30, 30, 0.7)"/>
+          <rect x="146" y="48" width="16" height="50" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="166" y="54" width="11" height="44" fill="rgba(40, 30, 60, 0.7)"/>
+          <rect x="181" y="50" width="15" height="48" fill="rgba(50, 60, 40, 0.7)"/>
+          <rect x="200" y="58" width="10" height="40" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="214" y="52" width="13" height="46" fill="rgba(30, 40, 60, 0.7)"/>
+          <rect x="231" y="48" width="16" height="50" fill="rgba(60, 30, 50, 0.7)"/>
+          <rect x="251" y="55" width="12" height="43" fill="rgba(50, 50, 30, 0.7)"/>
+          <rect x="267" y="50" width="14" height="48" fill="rgba(70, 30, 30, 0.7)"/>
+          <rect x="285" y="56" width="11" height="42" fill="rgba(40, 50, 60, 0.7)"/>
+          <rect x="300" y="48" width="15" height="50" fill="rgba(60, 40, 20, 0.7)"/>
+          <!-- Mid-top row -->
+          <rect x="328" y="110" width="13" height="50" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="345" y="115" width="11" height="45" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="360" y="108" width="15" height="52" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="379" y="118" width="10" height="42" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="393" y="112" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <rect x="411" y="108" width="13" height="52" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="528" y="110" width="14" height="50" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="546" y="115" width="11" height="45" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="561" y="108" width="15" height="52" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="580" y="118" width="10" height="42" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="594" y="112" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <rect x="612" y="108" width="13" height="52" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="728" y="115" width="13" height="45" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="745" y="108" width="11" height="52" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="760" y="110" width="15" height="50" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="779" y="118" width="10" height="42" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="793" y="112" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <rect x="811" y="108" width="13" height="52" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="928" y="110" width="13" height="50" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="945" y="115" width="11" height="45" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="960" y="108" width="15" height="52" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="979" y="118" width="10" height="42" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="993" y="112" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <rect x="1011" y="108" width="13" height="52" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="1108" y="115" width="13" height="45" fill="rgba(50, 30, 60, 0.7)"/>
+          <rect x="1125" y="108" width="11" height="52" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="1140" y="110" width="15" height="50" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="1159" y="118" width="10" height="42" fill="rgba(80, 30, 30, 0.7)"/>
+          <rect x="1173" y="112" width="14" height="48" fill="rgba(30, 60, 50, 0.7)"/>
+          <!-- Mid-bottom row (with some gaps for missing books) -->
+          <rect x="20" y="190" width="14" height="48" fill="rgba(40, 50, 70, 0.7)"/>
+          <rect x="38" y="195" width="11" height="43" fill="rgba(70, 30, 30, 0.7)"/>
+          <rect x="73" y="188" width="10" height="50" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="87" y="192" width="13" height="46" fill="rgba(50, 60, 40, 0.7)"/>
+          <rect x="104" y="190" width="14" height="48" fill="rgba(30, 40, 60, 0.7)"/>
+          <rect x="130" y="195" width="12" height="43" fill="rgba(70, 30, 30, 0.7)"/>
+          <rect x="146" y="188" width="16" height="50" fill="rgba(60, 40, 20, 0.7)"/>
+          <rect x="166" y="194" width="11" height="44" fill="rgba(40, 30, 60, 0.7)"/>
+          <rect x="200" y="198" width="10" height="40" fill="rgba(70, 50, 30, 0.7)"/>
+          <rect x="214" y="192" width="13" height="46" fill="rgba(30, 40, 60, 0.7)"/>
+        </g>
+      </svg>
+    </div>
+    <!-- Hero-wide atmospheric glow — pulses brightest at peak -->
+    <div class="rs-stage-glow" aria-hidden="true"></div>
+    <!-- Drifting floor fog — slow horizontal mist -->
+    <div class="rs-floor-fog" aria-hidden="true">
+      <span class="rs-fog-band rs-fog-band-1"></span>
+      <span class="rs-fog-band rs-fog-band-2"></span>
+      <span class="rs-fog-band rs-fog-band-3"></span>
+    </div>
+    <!-- Floating spell papers — fewer, more deliberate -->
+    <div class="rs-papers" aria-hidden="true">
+      <span class="rs-paper" style="--i:0; --x:10%; --tx:-30px; --r:-12deg;"></span>
+      <span class="rs-paper" style="--i:1; --x:88%; --tx:15px; --r:14deg;"></span>
+      <span class="rs-paper" style="--i:2; --x:48%; --tx:-40px; --r:-18deg;"></span>
+    </div>
+    <!-- Corner candles — flickering flames flank the hero -->
+    <div class="rs-candle rs-candle-l" aria-hidden="true">
+      <span class="rs-candle-flame"></span>
+      <span class="rs-candle-glow"></span>
+    </div>
+    <div class="rs-candle rs-candle-r" aria-hidden="true">
+      <span class="rs-candle-flame"></span>
+      <span class="rs-candle-glow"></span>
+    </div>
+    <!-- Floating Hogwarts candles — fewer, larger, framing the cat -->
+    <div class="rs-floating-candles" aria-hidden="true">
+      <span class="rs-fcandle" style="--x:10%; --y:22%; --d:0s; --dur:11s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:88%; --y:26%; --d:-4s; --dur:13s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+      <span class="rs-fcandle" style="--x:50%; --y:10%; --d:-2s; --dur:12s;">
+        <span class="rs-fcandle-stick"></span>
+        <span class="rs-fcandle-flame"></span>
+        <span class="rs-fcandle-halo"></span>
+      </span>
+    </div>
+    <!-- Concentric hiss soundwaves — fire from mouth at peak -->
+    <div class="rs-hiss-waves" aria-hidden="true">
+      <span class="rs-hiss-wave" style="--i:0"></span>
+      <span class="rs-hiss-wave" style="--i:1"></span>
+      <span class="rs-hiss-wave" style="--i:2"></span>
+      <span class="rs-hiss-wave" style="--i:3"></span>
+    </div>
+    <!-- Spectral aura traveling with the cat: ground shadow + ectoplasm haze -->
+    <div class="rs-cat-aura" aria-hidden="true">
+      <div class="rs-cat-shadow"></div>
+      <div class="rs-cat-haze"></div>
+    </div>
+    <!-- Floor reflection — vertical mirror of the cat, faded -->
+    <svg class="rs-cat-reflection" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette"/>
+    </svg>
+    <!-- Ghost double — translucent cat-shape that lags behind for echo effect -->
+    <svg class="rs-cat-ghost" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette"/>
+    </svg>
+    <!-- Familiar pack: 2 smaller skeleton kittens trailing the alpha cat -->
+    <svg class="rs-cat-mini rs-cat-mini-1" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette-detailed"/>
+    </svg>
+    <svg class="rs-cat-mini rs-cat-mini-2" viewBox="0 0 220 110" aria-hidden="true">
+      <use href="#rs-cat-silhouette-detailed"/>
+    </svg>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="rs-cat-silhouette-detailed" viewBox="0 0 220 110">
+        <g stroke="#cce8ff" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+          <path d="M82 51 Q83 66 88 75 M102 51 Q103 67 108 76 M122 52 Q123 67 128 76"/>
+          <path d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
+          <path d="M68 76 L66 92 L70 100 M76 76 L78 92 L74 100"/>
+          <path d="M170 75 L173 92 L168 100 M180 76 L182 92 L186 100"/>
+          <path d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
+          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+          <path d="M30 30 L28 18 L36 26 M58 28 L62 17 L54 24"/>
+          <ellipse cx="40" cy="36" rx="3" ry="4" fill="#05080d"/>
+          <ellipse cx="54" cy="36" rx="3" ry="4" fill="#05080d"/>
+          <circle cx="40" cy="36" r="1.6" fill="#9be7ff"/>
+          <circle cx="54" cy="36" r="1.6" fill="#9be7ff"/>
+        </g>
+      </symbol>
+    </svg>
+    <!-- Hidden symbol for ghost double to reuse cat outline -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="rs-cat-silhouette" viewBox="0 0 220 110">
+        <g stroke="#9be7ff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6">
+          <path d="M58 56 Q90 48 130 52 Q160 55 178 58"/>
+          <path d="M168 57 Q174 64 178 72 M178 58 Q182 64 186 72"/>
+          <path d="M68 76 L66 92 L70 100 M76 76 L78 92 L74 100"/>
+          <path d="M170 75 L173 92 L168 100 M180 76 L182 92 L186 100"/>
+          <path d="M186 58 Q200 50 208 36 Q212 24 204 16"/>
+          <path d="M30 50 Q22 42 28 32 Q34 22 50 22 Q62 22 64 32 Q64 42 60 48 Z"/>
+        </g>
+      </symbol>
+    </svg>
+    <!-- Trailing ectoplasm wisps spawned in CSS along the prowl path -->
+    <div class="rs-cat-trail" aria-hidden="true">
+      <span class="rs-wisp" style="--i:0"></span>
+      <span class="rs-wisp" style="--i:1"></span>
+      <span class="rs-wisp" style="--i:2"></span>
+      <span class="rs-wisp" style="--i:3"></span>
+      <span class="rs-wisp" style="--i:4"></span>
+      <span class="rs-wisp" style="--i:5"></span>
+      <span class="rs-wisp" style="--i:6"></span>
+      <span class="rs-wisp" style="--i:7"></span>
+    </div>
+    <!-- Detached bone shards floating up like fireflies -->
+    <div class="rs-bone-shards" aria-hidden="true">
+      <span class="rs-shard rs-shard-rib" style="--i:0"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:1"></span>
+      <span class="rs-shard rs-shard-rib" style="--i:2"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:3"></span>
+      <span class="rs-shard rs-shard-rib" style="--i:4"></span>
+      <span class="rs-shard rs-shard-vert" style="--i:5"></span>
+    </div>
+    <!-- Summoning circle — appears under cat at peak (40-48% of prowl) -->
+    <div class="rs-summon-circle" aria-hidden="true">
+      <div class="rs-summon-ring rs-summon-ring-1"></div>
+      <div class="rs-summon-ring rs-summon-ring-2"></div>
+      <div class="rs-summon-ring rs-summon-ring-3"></div>
+    </div>
+    <!-- Patronus-style 12 rays bursting from cat's chest at peak -->
+    <div class="rs-ray-burst" aria-hidden="true">
+      <span class="rs-ray" style="--a:0deg"></span>
+      <span class="rs-ray" style="--a:30deg"></span>
+      <span class="rs-ray" style="--a:60deg"></span>
+      <span class="rs-ray" style="--a:90deg"></span>
+      <span class="rs-ray" style="--a:120deg"></span>
+      <span class="rs-ray" style="--a:150deg"></span>
+      <span class="rs-ray" style="--a:180deg"></span>
+      <span class="rs-ray" style="--a:210deg"></span>
+      <span class="rs-ray" style="--a:240deg"></span>
+      <span class="rs-ray" style="--a:270deg"></span>
+      <span class="rs-ray" style="--a:300deg"></span>
+      <span class="rs-ray" style="--a:330deg"></span>
+    </div>
+    <!-- Paw-print trail left behind on the floor -->
+    <div class="rs-paw-trail" aria-hidden="true">
+      <span class="rs-paw" style="--i:0"></span>
+      <span class="rs-paw" style="--i:1"></span>
+      <span class="rs-paw" style="--i:2"></span>
+      <span class="rs-paw" style="--i:3"></span>
+      <span class="rs-paw" style="--i:4"></span>
+      <span class="rs-paw" style="--i:5"></span>
+      <span class="rs-paw" style="--i:6"></span>
+      <span class="rs-paw" style="--i:7"></span>
+    </div>
+    <svg class="rs-skeleton-cat" viewBox="0 0 220 110" aria-hidden="true">
+      <defs>
+        <radialGradient id="rs-eye-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="35%" stop-color="#9be7ff" stop-opacity="0.95"/>
+          <stop offset="75%" stop-color="#5ab8ff" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#1a4a7a" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="rs-eye-burst" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+          <stop offset="40%" stop-color="#9be7ff" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#5ab8ff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="rs-bone-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#b8d4ec" stop-opacity="0.9"/>
+        </linearGradient>
+        <filter id="rs-bone-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.8" result="b1"/>
+          <feGaussianBlur stdDeviation="2.5" in="SourceGraphic" result="b2"/>
+          <feFlood flood-color="#7ec8ff" flood-opacity="0.9" result="rim"/>
+          <feComposite in="rim" in2="b2" operator="in" result="halo"/>
+          <feMerge>
+            <feMergeNode in="halo"/>
+            <feMergeNode in="b1"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <filter id="rs-cat-flicker" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="noise">
+            <animate attributeName="seed" values="3;7;1;5;3" dur="2.4s" repeatCount="indefinite"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.6"/>
+        </filter>
+      </defs>
+      <!-- Aura halo behind the eyes — pulses at peak moments -->
+      <g class="rs-eye-burst-group">
+        <circle class="rs-eye-burst" cx="32" cy="33" r="11" fill="url(#rs-eye-burst)"/>
+        <circle class="rs-eye-burst" cx="44" cy="33" r="11" fill="url(#rs-eye-burst)"/>
+      </g>
+      <!-- Twinkling sparkles along bones at peak — enchanted artifact glitter -->
+      <g class="rs-bone-sparkles">
+        <circle class="rs-sparkle" cx="48" cy="32" r="0.8"/>
+        <circle class="rs-sparkle" cx="64" cy="48" r="0.7"/>
+        <circle class="rs-sparkle" cx="86" cy="44" r="0.9"/>
+        <circle class="rs-sparkle" cx="108" cy="46" r="0.8"/>
+        <circle class="rs-sparkle" cx="128" cy="48" r="0.7"/>
+        <circle class="rs-sparkle" cx="150" cy="51" r="0.8"/>
+        <circle class="rs-sparkle" cx="172" cy="54" r="0.9"/>
+        <circle class="rs-sparkle" cx="78" cy="68" r="0.7"/>
+        <circle class="rs-sparkle" cx="98" cy="72" r="0.8"/>
+        <circle class="rs-sparkle" cx="118" cy="70" r="0.7"/>
+        <circle class="rs-sparkle" cx="68" cy="86" r="0.7"/>
+        <circle class="rs-sparkle" cx="178" cy="86" r="0.7"/>
+        <circle class="rs-sparkle" cx="200" cy="36" r="0.9"/>
+        <circle class="rs-sparkle" cx="38" cy="38" r="0.7"/>
+      </g>
+      <!-- Lightning crackles along spine at apparation — jagged white bolts -->
+      <g class="rs-lightning" stroke="#ffffff" stroke-width="0.8" fill="none" stroke-linecap="round" filter="url(#rs-bone-glow)">
+        <path class="rs-bolt rs-bolt-1" d="M58 46 L62 44 L60 50 L66 48 L64 54 L70 52"/>
+        <path class="rs-bolt rs-bolt-2" d="M115 44 L119 42 L117 48 L123 46 L121 52"/>
+        <path class="rs-bolt rs-bolt-3" d="M170 50 L174 48 L172 54 L178 52 L176 58"/>
+      </g>
+      <g class="rs-cat-bones" filter="url(#rs-bone-glow)" stroke="url(#rs-bone-fill)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- SPIRIT CORE: glowing heart inside ribcage, pulses with breath -->
+        <g class="rs-spirit-core">
+          <circle class="rs-spirit-aura" cx="100" cy="58" r="11" fill="url(#rs-eye-burst)" stroke="none"/>
+          <circle class="rs-spirit-orb" cx="100" cy="58" r="2.5" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-spirit-orb-inner" cx="100" cy="58" r="0.9" fill="#ffffff" stroke="none"/>
+        </g>
+        <!-- SPINE: graceful arc from nape to hips, slight upward arch -->
+        <path class="rs-bone rs-spine" d="M52 50 Q80 42 120 44 Q160 47 188 52"/>
+        <!-- vertebrae beads on spine — finer detail -->
+        <circle class="rs-spine-vert" cx="60" cy="48" r="0.7"/>
+        <circle class="rs-spine-vert" cx="72" cy="45" r="0.7"/>
+        <circle class="rs-spine-vert" cx="86" cy="43" r="0.7"/>
+        <circle class="rs-spine-vert" cx="102" cy="43" r="0.7"/>
+        <circle class="rs-spine-vert" cx="120" cy="44" r="0.7"/>
+        <circle class="rs-spine-vert" cx="138" cy="46" r="0.7"/>
+        <circle class="rs-spine-vert" cx="156" cy="48" r="0.7"/>
+        <circle class="rs-spine-vert" cx="174" cy="50" r="0.7"/>
+        <!-- shoulder blade (single, on visible side) -->
+        <path class="rs-bone rs-scapula" d="M58 46 Q66 42 72 48 L66 56 Z"/>
+        <!-- pelvis (thin, on visible side) -->
+        <path class="rs-bone rs-scapula" d="M170 50 Q178 46 184 52 L178 60 Z"/>
+        <!-- sternum -->
+        <path class="rs-bone rs-sternum" d="M76 68 L92 70 L108 70 L124 68 L138 65"/>
+        <!-- ribs: 8 fine curved arcs, narrower spacing for elegance -->
+        <path class="rs-bone rs-rib" d="M68 47 Q70 60 76 68"/>
+        <path class="rs-bone rs-rib" d="M78 45 Q80 60 86 70"/>
+        <path class="rs-bone rs-rib" d="M88 44 Q90 60 96 71"/>
+        <path class="rs-bone rs-rib" d="M98 43 Q100 60 106 70"/>
+        <path class="rs-bone rs-rib" d="M108 43 Q110 60 116 70"/>
+        <path class="rs-bone rs-rib" d="M118 44 Q120 60 126 69"/>
+        <path class="rs-bone rs-rib" d="M128 45 Q130 59 134 67"/>
+        <path class="rs-bone rs-rib" d="M138 47 Q140 58 142 65"/>
+        <!-- FRONT LEGS: longer, jointed (humerus + radius + paw) -->
+        <path class="rs-bone rs-leg rs-leg-fr" d="M68 56 L62 78 L70 100"/>
+        <path class="rs-bone rs-leg rs-leg-fl" d="M76 56 L74 78 L78 100"/>
+        <!-- BACK LEGS: longer, jointed (femur + tibia + paw) -->
+        <path class="rs-bone rs-leg rs-leg-br" d="M174 58 L170 80 L162 100"/>
+        <path class="rs-bone rs-leg rs-leg-bl" d="M184 58 L186 80 L182 100"/>
+        <!-- joints at knees (subtle bumps) -->
+        <circle class="rs-joint" cx="62" cy="78" r="1"/>
+        <circle class="rs-joint" cx="74" cy="78" r="1"/>
+        <circle class="rs-joint" cx="170" cy="80" r="1"/>
+        <circle class="rs-joint" cx="186" cy="80" r="1"/>
+        <!-- paw joints (slightly larger so they read as feet) -->
+        <ellipse class="rs-paw-bone" cx="66" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="78" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="162" cy="100" rx="3" ry="1.2"/>
+        <ellipse class="rs-paw-bone" cx="182" cy="100" rx="3" ry="1.2"/>
+        <!-- claws extending from paws — appear at peak -->
+        <g class="rs-claws" stroke-width="0.9">
+          <path class="rs-claw" d="M64 101 L62 105 M66 101 L66 106 M68 101 L70 105"/>
+          <path class="rs-claw" d="M76 101 L74 105 M78 101 L78 106 M80 101 L82 105"/>
+          <path class="rs-claw" d="M160 101 L158 105 M162 101 L162 106 M164 101 L166 105"/>
+          <path class="rs-claw" d="M180 101 L178 105 M182 101 L182 106 M184 101 L186 105"/>
+        </g>
+        <!-- TAIL: long graceful S-curve from hips, more vertebrae -->
+        <path class="rs-bone rs-tail" d="M188 52 Q204 46 212 32 Q218 18 210 8 Q204 4 200 6"/>
+        <circle class="rs-vert" cx="194" cy="49" r="0.9"/>
+        <circle class="rs-vert" cx="200" cy="44" r="0.9"/>
+        <circle class="rs-vert" cx="206" cy="38" r="0.9"/>
+        <circle class="rs-vert" cx="212" cy="30" r="0.9"/>
+        <circle class="rs-vert" cx="215" cy="22" r="0.9"/>
+        <circle class="rs-vert" cx="214" cy="14" r="0.9"/>
+        <circle class="rs-vert" cx="208" cy="8" r="0.9"/>
+        <!-- SKULL: smaller, more elongated like real cat skull, held HIGH -->
+        <g class="rs-skull">
+          <!-- cranium: triangular wedge shape -->
+          <path d="M28 47 Q20 42 22 33 Q26 24 38 22 Q50 22 54 28 Q56 36 54 44 L52 47 Z"/>
+          <!-- cranium sutures -->
+          <path class="rs-suture" d="M22 33 Q38 30 54 32" stroke-width="0.4" opacity="0.4"/>
+          <!-- ears: triangular, pointed up -->
+          <path d="M26 28 L22 14 L32 22"/>
+          <path d="M48 26 L52 12 L42 20"/>
+          <!-- snout/nose: tapered front -->
+          <path d="M22 40 L18 43 L22 46 Z" fill="#e8eef5"/>
+          <!-- eye sockets: oval, set in the cranium -->
+          <ellipse class="rs-eye-socket" cx="32" cy="33" rx="3.2" ry="3.8"/>
+          <ellipse class="rs-eye-socket" cx="44" cy="33" rx="3.2" ry="3.8"/>
+          <!-- glowing pupils -->
+          <circle class="rs-eye" cx="32" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
+          <circle class="rs-eye" cx="44" cy="33" r="1.8" fill="url(#rs-eye-glow)" stroke="none"/>
+          <!-- vertical slit pupils — cat-like, narrow at peak -->
+          <ellipse class="rs-slit-pupil" cx="32" cy="33" rx="0.4" ry="2.6" fill="#0a0d18"/>
+          <ellipse class="rs-slit-pupil" cx="44" cy="33" rx="0.4" ry="2.6" fill="#0a0d18"/>
+          <!-- HINGED JAW -->
+          <g class="rs-jaw">
+            <path d="M22 42 Q32 50 50 48 Q53 46 53 42"/>
+            <!-- lower teeth -->
+            <path d="M26 45 L26 47 M30 45.5 L30 47.5 M34 46 L34 48 M38 46 L38 48 M42 46 L42 48 M46 45.5 L46 47.5" stroke-width="0.8"/>
+            <!-- lower fangs -->
+            <path class="rs-fang" d="M27 44 L26 50" stroke-width="1.2"/>
+            <path class="rs-fang" d="M48 44 L49 50" stroke-width="1.2"/>
+          </g>
+          <!-- upper fangs (fixed to skull) -->
+          <path class="rs-fang-upper" d="M27 42 L26 46" stroke-width="1.2"/>
+          <path class="rs-fang-upper" d="M48 42 L49 46" stroke-width="1.2"/>
+          <!-- whisker dots -->
+          <circle cx="24" cy="40" r="0.4" fill="#e8eef5"/>
+          <circle cx="34" cy="49" r="0.5" fill="#e8eef5"/>
+          <circle cx="34" cy="52" r="0.5" fill="#e8eef5"/>
+        </g>
+      </g>
+    </svg>
+  </section>
+
+  <section class="rs-page-section">
+    <div class="rs-page-inner">
+      {designDocs.length > 0 ? (
+        <>
+          <div class="rs-stats">
+            <span class="rs-stat">{designDocs.length} {isVi ? 'tài liệu' : 'docs'}</span>
+            <span class="rs-stat-sep">&middot;</span>
+            <span class="rs-stat">{docsByProject.size} {isVi ? 'dự án' : 'projects'}</span>
+            <span class="rs-stat-sep">&middot;</span>
+            <span class="rs-stat"><span class="rs-dot rs-dot-spec" />{totalSpecs} {isVi ? 'thiết kế' : 'specs'}</span>
+            <span class="rs-stat-sep">&middot;</span>
+            <span class="rs-stat"><span class="rs-dot rs-dot-plan" />{totalPlans} {isVi ? 'kế hoạch' : 'plans'}</span>
+            <span class="rs-stat-sep">&middot;</span>
+            <span class="rs-stat">{totalLines.toLocaleString()} {isVi ? 'dòng' : 'lines'}</span>
+          </div>
+          <div class="rs-list">
+            {[...docsByProject.entries()].map(([project, docs]) => (
+              <div class="rs-group">
+                <div class="rs-group-header">
+                  <span class="rs-group-name">{projectDisplayNames[project] ?? project}</span>
+                  <span class="rs-group-count">{docs.length}</span>
+                </div>
+                {docs.map(doc => (
+                  <details class="rs-row">
+                    <summary class={`rs-row-summary rs-row-${doc.doc_type}`}>
+                      <span class={`rs-badge rs-badge-${doc.doc_type}`}>
+                        {doc.doc_type === 'spec' ? (isVi ? 'Thiết kế' : 'Spec') : (isVi ? 'Kế hoạch' : 'Plan')}
+                      </span>
+                      <span class="rs-row-title">{doc.title}</span>
+                      <span class="rs-row-meta">
+                        <span class="rs-row-date">{new Date(doc.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span class="rs-row-lines">{doc.line_count?.toLocaleString()}</span>
+                      </span>
+                      <span class="rs-row-links">
+                        {doc.notion_url && (
+                          <a href={doc.notion_url} target="_blank" rel="noopener" class="rs-link" title="Notion" onclick="event.stopPropagation()">
+                            <svg width="12" height="12" viewBox="0 0 100 100" fill="currentColor"><path d="M6.6 12.2c4-3.5 5.3-3 16-2.1l43.6 3c1.8.2 .4 1.8-.7 2.1L54 22.9c-2.5 1.5-3.4 1.2-10.3.6L12.8 19c-2.3-.5-2.8-1.5-.7-2.8zm4.2 13.7v46c0 2.5 1.2 3.5 4.2 3.3l48-2.8c3-.2 3.5-2 3.5-4.3v-45c0-2.3-.9-3.5-2.8-3.3l-50 2.8c-2.1.2-2.8 1.5-2.8 3.3zm47.5 2.3c.4 1.6 0 3.2-1.6 3.4l-2.3.4v34c-2 1.1-3.9 1.6-5.3 1.6-2.5 0-3.2-.7-5-3L28.8 40.1V63l4.8 1.1s0 3.2-4.2 3.2l-11.6.7c-.4-.7 0-2.5 1.2-2.8l3.2-.9V33.5l-4.4-.3c-.4-1.6.5-4.2 3.7-4.4l12.5-.7 16.7 25.4V32.7l-4.1-.5c-.4-2.1 1.1-3.5 3-3.7z"/></svg>
+                          </a>
+                        )}
+                        <a href={`https://github.com/deathemperor/pensieve/blob/main/${doc.file_path}`} target="_blank" rel="noopener" class="rs-link" title="GitHub" onclick="event.stopPropagation()">
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                        </a>
+                      </span>
+                    </summary>
+                    <div class="rs-detail">
+                      {doc.summary && <p class="rs-detail-summary">{doc.summary}</p>}
+                      {doc.prompt && (
+                        <div class="rs-detail-prompt">
+                          <span class="rs-detail-prompt-label">Prompt</span>
+                          <span class="rs-detail-prompt-text">{doc.prompt}</span>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p class="rs-empty">
+          {isVi ? "Chưa có tài liệu nào." : "No documents yet."}
+        </p>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .rs-page-hero {
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+    --rs-prowl-dur: 18s;
+    --rs-cat-w: min(560px, 70vw);
+    --rs-cat-h: calc(var(--rs-cat-w) * 0.5);
+    isolation: isolate;
+    min-height: clamp(380px, 52vh, 560px);
+    cursor: crosshair;
+    animation: rs-hero-shake var(--rs-prowl-dur, 18s) linear infinite;
+    /* Library at midnight — deeper contrast, true darkness at floor.
+       Subtle radial accent at top-right adds magical glow visible always */
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(20, 24, 38, 0.5), transparent 65%),
+      linear-gradient(180deg,
+        var(--color-bg, #fafafa) 0%,
+        rgba(15, 18, 30, 0.10) 25%,
+        rgba(12, 16, 28, 0.32) 55%,
+        rgba(8, 12, 24, 0.55) 80%,
+        rgba(5, 8, 18, 0.70) 100%);
+  }
+  /* Hero camera shake at SCREECH peak — viewer FEELS the spell */
+  @keyframes rs-hero-shake {
+    0%, 41%, 50%, 100% { transform: translate(0, 0); }
+    42%   { transform: translate(-1px, 1px); }
+    43%   { transform: translate(2px, -1px); }
+    44%   { transform: translate(-2px, 2px); } /* SCREECH peak */
+    45%   { transform: translate(2px, -2px); }
+    46%   { transform: translate(-1px, 1px); }
+    47%   { transform: translate(1px, -1px); }
+    48%   { transform: translate(-0.5px, 0.5px); }
+    49%   { transform: translate(0.5px, 0); }
+  }
+  /* Hover summons the cat IMMEDIATELY — mirrors preview click pacing */
+  .rs-page-hero:hover .rs-skeleton-cat,
+  .rs-page-hero:hover .rs-cat-aura,
+  .rs-page-hero:hover .rs-cat-trail,
+  .rs-page-hero:hover .rs-bone-shards,
+  .rs-page-hero:hover .rs-summon-circle,
+  .rs-page-hero:hover .rs-ray-burst,
+  .rs-page-hero:hover .rs-paw-trail,
+  .rs-page-hero:hover .rs-stage-glow,
+  .rs-page-hero:hover .rs-hiss-waves,
+  .rs-page-hero:hover .rs-cat-ghost,
+  .rs-page-hero:hover .rs-cat-mini,
+  .rs-page-hero:hover .rs-cat-reflection,
+  .rs-page-hero:hover .rs-title-shake,
+  .rs-page-hero:hover .rs-peak-dim,
+  .rs-page-hero:hover .rs-spotlight,
+  .rs-page-hero:hover .rs-bone-sparkles,
+  .rs-page-hero:hover .rs-ground-cracks,
+  .rs-page-hero:hover .rs-cat-bones {
+    /* Speed up to 4s on hover — concentrated burst like a manual cast */
+    animation-duration: 4s !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  /* Active state: clicking pauses the spell at peak — viewer holds the moment */
+  .rs-page-hero:active .rs-skeleton-cat,
+  .rs-page-hero:active .rs-cat-aura,
+  .rs-page-hero:active .rs-cat-trail,
+  .rs-page-hero:active .rs-bone-shards,
+  .rs-page-hero:active .rs-summon-circle,
+  .rs-page-hero:active .rs-ray-burst,
+  .rs-page-hero:active .rs-paw-trail,
+  .rs-page-hero:active .rs-stage-glow,
+  .rs-page-hero:active .rs-hiss-waves,
+  .rs-page-hero:active .rs-cat-ghost,
+  .rs-page-hero:active .rs-cat-mini,
+  .rs-page-hero:active .rs-title-shake,
+  .rs-page-hero:active .rs-peak-dim,
+  .rs-page-hero:active .rs-spotlight,
+  .rs-page-hero:active .rs-bone-sparkles,
+  .rs-page-hero:active .rs-ground-cracks {
+    animation-play-state: paused !important;
+  }
+  /* Push title content above the cat zone */
+  .rs-page-hero .rs-page-inner {
+    position: relative;
+    z-index: 5;
+    padding-bottom: clamp(200px, 30vh, 300px);
+  }
+  /* Focal vignette: dim the corners so eye focuses on cat */
+  .rs-page-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(ellipse at 50% 75%, transparent 30%, rgba(0,0,0,0.18) 70%, rgba(0,0,0,0.45) 100%);
+    mix-blend-mode: multiply;
+  }
+  /* Floor reflection: soft horizontal gradient at base for grounding */
+  .rs-page-hero::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 24px;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(180deg, transparent, rgba(155, 231, 255, 0.05) 60%, rgba(155, 231, 255, 0.12));
+    mix-blend-mode: screen;
+  }
+
+  /* Title shake — sympathetic motion at SCREECH peak (38-58%)
+     Plus always-on subtle ice-blue glow that matches cat aura */
+  .rs-title-shake {
+    display: inline-block;
+    animation: rs-title-shake var(--rs-prowl-dur, 16s) linear infinite;
+    transform-origin: center;
+    text-shadow: 0 0 12px rgba(155, 231, 255, 0.3), 0 0 24px rgba(126, 200, 255, 0.15);
+  }
+  @keyframes rs-title-shake {
+    0%, 36%, 60%, 100% { transform: translate(0, 0); text-shadow: 0 0 12px rgba(155, 231, 255, 0.3), 0 0 24px rgba(126, 200, 255, 0.15); }
+    38% { transform: translate(-1px, 0); text-shadow: 0 0 16px rgba(255, 100, 200, 0.5), 0 0 28px rgba(155, 231, 255, 0.3); }
+    41% { transform: translate(2px, -1px); text-shadow: 2px 0 0 rgba(255,100,200,0.5), -2px 0 0 rgba(126,200,255,0.5), 0 0 20px rgba(255,100,200,0.6); }
+    44% { transform: translate(-2px, 1px); text-shadow: 3px 0 0 rgba(255,230,100,0.7), -3px 0 0 rgba(126,200,255,0.7), 0 0 24px rgba(255,230,100,0.6); }
+    47% { transform: translate(3px, -1px); text-shadow: 2px 0 0 rgba(155,231,255,0.7), -2px 0 0 rgba(126,200,255,0.7), 0 0 22px rgba(155,231,255,0.5); }
+    50% { transform: translate(-1px, 0); text-shadow: 1px 0 0 rgba(155,231,255,0.4), -1px 0 0 rgba(126,200,255,0.4), 0 0 20px rgba(126,200,255,0.4); }
+    54% { transform: translate(0, 0); text-shadow: 0 0 14px rgba(155,231,255,0.35), 0 0 22px rgba(126,200,255,0.2); }
+  }
+
+  /* ═══ Skeleton Cat — Mrs. Norris in bone form, prowling the Restricted Section ═══ */
+  /* Architecture: 4 synchronized layers all share the rs-cat-prowl timing
+     - aura (ground shadow + ectoplasm haze) travels with cat
+     - trail (ectoplasm wisps) emit from cat's body, drift up
+     - shards (rib/vertebra particles) detach and float up with eye-burst peaks
+     - cat (svg bones) is the focal point with its own micro-animations  */
+
+  .rs-skeleton-cat {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    width: var(--rs-cat-w, 320px);
+    height: var(--rs-cat-h, 160px);
+    margin-left: 0;
+    pointer-events: none;
+    opacity: 0;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    transform-origin: 50% 100%;
+    z-index: 4; /* above peak-dim layer (z:3) so cat stays bright */
+    filter: drop-shadow(0 6px 10px rgba(0, 8, 20, 0.7))
+            drop-shadow(0 0 18px rgba(126, 200, 255, 0.35));
+    will-change: opacity, transform, filter;
+  }
+
+  /* Summon-cast cycle — cat visible ~60% of cycle for better engagement.
+     Quicker apparate-in, longer visible time, dramatic peak preserved. */
+  @keyframes rs-cat-prowl {
+    /* Phase 0: REST — empty hero, anticipation (0-12%) */
+    0%, 8%    { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+    /* Phase 1: ANTICIPATION cue — soft pre-flash (12-16%) */
+    12%       { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.6) translateY(20px); filter: blur(8px) drop-shadow(0 0 24px rgba(155,231,255,0.4)); }
+    /* Phase 2: APPARATE IN — quick materialize (16-22%) */
+    16%       { opacity: 0.15; transform: translateX(-50%) scaleX(1) scaleY(0.7) translateY(14px); filter: blur(5px) drop-shadow(0 0 40px rgba(155,231,255,0.6)); }
+    20%       { opacity: 0.65; transform: translateX(-50%) scaleX(1) scaleY(0.88) translateY(6px); filter: blur(2px) drop-shadow(0 0 45px rgba(155,231,255,0.8)); }
+    22%       { opacity: 1; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: blur(0) drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 22px rgba(126,200,255,0.5)); }
+    /* Phase 2.5: SETTLE — cat visible, breathing, ambient (22-37%) */
+    28%       { transform: translateX(-50%) scaleX(1) scaleY(1.01) translateY(-1px); }
+    34%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(168,140,255,0.5)); }
+    /* Phase 3: ANTICIPATION recoil — compress before cast (37-39%) */
+    37%       { transform: translateX(-50%) scaleX(1) scaleY(0.93) translateY(3px); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); }
+    /* Phase 4: ARCH + CAST — peak spell moment EXTENDED (38-58%)
+       Glow accents the cat — never overwhelms its silhouette.
+       Longer hold so viewer can read the moment. */
+    40%       { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 24px rgba(255,100,200,0.6)); }
+    43%       { transform: translateX(-50%) scaleX(1) scaleY(1.24) translateY(-11px) skewX(-5deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.9)) drop-shadow(0 0 32px rgba(255,100,200,0.75)) drop-shadow(0 0 60px rgba(255,60,160,0.3)); } /* ARCH violet */
+    46%       { transform: translateX(-50%) scaleX(1) scaleY(1.30) translateY(-14px) skewX(-6deg) rotate(-5deg); filter: drop-shadow(0 10px 18px rgba(0,8,20,0.95)) drop-shadow(0 0 38px rgba(255,230,100,0.85)) drop-shadow(0 0 70px rgba(255,200,60,0.35)); } /* PEAK GOLD */
+    49%       { transform: translateX(-50%) scaleX(1) scaleY(1.28) translateY(-13px) skewX(-5deg) rotate(-4deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 32px rgba(155,231,255,0.85)) drop-shadow(0 0 60px rgba(90,184,255,0.4)); } /* ICE flash — HOLD arch */
+    52%       { transform: translateX(-50%) scaleX(1) scaleY(1.24) translateY(-11px) skewX(-4deg) rotate(-3deg); filter: drop-shadow(0 8px 14px rgba(0,8,20,0.85)) drop-shadow(0 0 28px rgba(155,231,255,0.7)); } /* still arched */
+    /* Phase 5: SETTLE BACK from arch (52-62%) */
+    56%       { transform: translateX(-50%) scaleX(1) scaleY(1.10) translateY(-5px) skewX(-2deg); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 24px rgba(126,200,255,0.5)); }
+    62%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); filter: drop-shadow(0 6px 10px rgba(0,8,20,0.7)) drop-shadow(0 0 18px rgba(126,200,255,0.4)); opacity: 1; }
+    /* Phase 6: BRIEF HOLD — let viewer process (62-70%) */
+    66%       { transform: translateX(-50%) scaleX(1) scaleY(1.005) translateY(-0.5px); }
+    70%       { transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); opacity: 0.98; }
+    /* Phase 7: DISSOLVE — fade up + outward (70-85%) */
+    74%       { opacity: 0.85; transform: translateX(-50%) scaleX(1.02) scaleY(0.98) translateY(-2px); filter: blur(0.5px) drop-shadow(0 0 35px rgba(155,231,255,0.7)); }
+    80%       { opacity: 0.4; transform: translateX(-50%) scaleX(1.07) scaleY(0.9) translateY(-10px); filter: blur(3px) drop-shadow(0 0 45px rgba(155,231,255,0.5)); }
+    85%       { opacity: 0; transform: translateX(-50%) scaleX(1.12) scaleY(0.75) translateY(-22px); filter: blur(7px); }
+    /* Phase 8: REST — empty hero, anticipation rebuilds (85-100%) */
+    100%      { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.55) translateY(24px); filter: blur(10px); }
+  }
+
+  /* Ground cracks — radiate from cat's feet at SCREECH peak */
+  .rs-ground-cracks {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(360px, 50vw, 520px);
+    height: 80px;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    animation: rs-cracks-glow var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: drop-shadow(0 0 6px rgba(255, 200, 100, 0.8));
+  }
+  @keyframes rs-cracks-glow {
+    0%, 38%, 60%, 100% { opacity: 0; }
+    41% { opacity: 0.4; }
+    44% { opacity: 1; } /* SCREECH peak */
+    47% { opacity: 0.85; }
+    52% { opacity: 0.4; }
+    56% { opacity: 0.1; }
+  }
+  .rs-crack {
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: rs-crack-stab var(--rs-prowl-dur, 18s) ease-out infinite;
+  }
+  .rs-crack:nth-child(2) { animation-delay: -0.05s; }
+  .rs-crack:nth-child(3) { animation-delay: -0.1s; }
+  .rs-crack:nth-child(4) { animation-delay: -0.15s; }
+  .rs-crack:nth-child(5) { animation-delay: -0.2s; }
+  .rs-crack:nth-child(6) { animation-delay: -0.25s; }
+  .rs-crack:nth-child(7) { animation-delay: -0.3s; }
+  .rs-crack:nth-child(8) { animation-delay: -0.35s; }
+  .rs-crack:nth-child(9) { animation-delay: -0.4s; }
+  .rs-crack:nth-child(10) { animation-delay: -0.45s; }
+  .rs-crack:nth-child(11) { animation-delay: -0.5s; }
+  .rs-crack:nth-child(12) { animation-delay: -0.55s; }
+  @keyframes rs-crack-stab {
+    0%, 38%, 60%, 100% { stroke-dashoffset: 80; }
+    41% { stroke-dashoffset: 60; }
+    44% { stroke-dashoffset: 0; } /* fully drawn at SCREECH */
+    52% { stroke-dashoffset: 0; }
+    56% { stroke-dashoffset: 80; }
+  }
+
+  /* Permanent summoning sigil — always visible faint, brightens at peak */
+  .rs-sigil {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(240px, 35vw, 380px);
+    height: clamp(240px, 35vw, 380px);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+    animation: rs-sigil-pulse var(--rs-prowl-dur, 18s) ease-in-out infinite;
+  }
+  .rs-sigil svg { width: 100%; height: 100%; }
+  .rs-sigil-outer {
+    transform-origin: center;
+    animation: rs-sigil-rotate 60s linear infinite;
+  }
+  .rs-sigil-mid {
+    transform-origin: center;
+    animation: rs-sigil-rotate 90s linear infinite reverse;
+  }
+  .rs-sigil-hex {
+    transform-origin: center;
+    animation: rs-sigil-rotate 120s linear infinite;
+  }
+  .rs-sigil-disk {
+    animation: rs-sigil-disk-pulse var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  @keyframes rs-sigil-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes rs-sigil-pulse {
+    0%, 22%, 70%, 100% { opacity: 0.35; }
+    30%, 60% { opacity: 0.55; }
+    44% { opacity: 0.85; }
+  }
+  @keyframes rs-sigil-disk-pulse {
+    0%, 22%, 70%, 100% { transform: scale(1); opacity: 1; }
+    44% { transform: scale(1.4); opacity: 1; }
+    50% { transform: scale(1.2); }
+  }
+
+  /* Film grain — subtle noise texture for vintage feel */
+  .rs-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+  }
+
+  /* Scampering skeleton kitten — runs L→R every cycle (long delay) */
+  .rs-scamp-kitten {
+    position: absolute;
+    bottom: 12px;
+    left: -100px;
+    width: 80px;
+    height: 40px;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    animation: rs-scamp-run 22s linear infinite;
+    animation-delay: -7s;
+    filter: drop-shadow(0 2px 4px rgba(0,8,20,0.5)) drop-shadow(0 0 6px rgba(155,231,255,0.4));
+  }
+  @keyframes rs-scamp-run {
+    0%, 76%, 100% { left: -100px; opacity: 0; }
+    78% { opacity: 0.85; }
+    79% { transform: translateY(0); }
+    80% { transform: translateY(-2px); } /* mini bounce */
+    81% { transform: translateY(0); }
+    83% { transform: translateY(-2px); }
+    84% { transform: translateY(0); }
+    86% { transform: translateY(-2px); }
+    87% { transform: translateY(0); }
+    90% { left: 50%; transform: translateY(0); }
+    94% { left: 110%; opacity: 0.7; }
+    95% { left: 110%; opacity: 0; }
+  }
+
+  /* Spell incantation — Latin words float up from sigil at SCREECH */
+  .rs-incantation {
+    position: absolute;
+    bottom: 20%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    font-family: var(--font-display, Georgia, serif);
+    font-style: italic;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255, 230, 150, 0.95);
+    text-shadow:
+      0 0 10px rgba(255, 200, 100, 0.85),
+      0 0 24px rgba(255, 100, 200, 0.5),
+      0 0 40px rgba(155, 231, 255, 0.3);
+    pointer-events: none;
+  }
+  .rs-incant-word {
+    display: inline-block;
+    margin: 0 0.4em;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: rs-incant-rise var(--rs-prowl-dur, 18s) ease-out infinite;
+  }
+  .rs-incant-1 { font-size: 18px; animation-delay: 0s; }
+  .rs-incant-2 { font-size: 24px; animation-delay: 0s; }
+  .rs-incant-3 { font-size: 18px; animation-delay: 0s; }
+  @keyframes rs-incant-rise {
+    0%, 36%, 64%, 100% { opacity: 0; transform: translateY(20px) scale(0.85); }
+    40% { opacity: 0.4; transform: translateY(8px) scale(0.95); }
+    44% { opacity: 1; transform: translateY(0) scale(1); } /* SCREECH peak */
+    50% { opacity: 1; transform: translateY(-4px) scale(1); }
+    58% { opacity: 0.5; transform: translateY(-12px) scale(0.95); }
+    62% { opacity: 0; transform: translateY(-24px) scale(0.85); }
+  }
+
+  /* Cat caption — small text label fades in during cat's settled phase */
+  .rs-cat-caption {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 5;
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    text-transform: uppercase;
+    color: rgba(180, 220, 250, 0.85);
+    text-shadow: 0 0 6px rgba(126, 200, 255, 0.5);
+    opacity: 0;
+    animation: rs-caption-fade var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    white-space: nowrap;
+  }
+  .rs-cap-name {
+    color: rgba(255, 230, 150, 0.95);
+    font-weight: 600;
+    margin-right: 4px;
+    text-shadow: 0 0 8px rgba(255, 200, 100, 0.6);
+  }
+  .rs-cap-meta {
+    color: rgba(180, 220, 250, 0.65);
+    font-style: italic;
+  }
+  @keyframes rs-caption-fade {
+    0%, 22%, 70%, 100% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    32% { opacity: 0.9; transform: translateX(-50%) translateY(0); }
+    44% { opacity: 0.7; } /* dim during peak so it doesn't compete with spell */
+    52% { opacity: 0.95; transform: translateX(-50%) translateY(0); }
+    65% { opacity: 0.4; transform: translateX(-50%) translateY(-4px); }
+  }
+
+  /* Floating spell book — open, mid-air, pages flip lazily */
+  .rs-spellbook {
+    position: absolute;
+    top: 18%;
+    right: 14%;
+    width: 56px;
+    height: 36px;
+    pointer-events: none;
+    z-index: 2;
+    transform: rotate(-8deg);
+    animation: rs-book-bob 6s ease-in-out infinite;
+    perspective: 200px;
+  }
+  @keyframes rs-book-bob {
+    0%, 100% { transform: rotate(-8deg) translateY(0); }
+    50% { transform: rotate(-7deg) translateY(-4px); }
+  }
+  .rs-book-base {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #5a3a20 0%, #3a2410 100%);
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 0 4px rgba(0,0,0,0.5);
+  }
+  .rs-book-page {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    width: 26px;
+    background: linear-gradient(180deg, #d8c7a3 0%, #c0a880 100%);
+    box-shadow: inset 0 0 3px rgba(80,50,20,0.4);
+  }
+  .rs-book-page-l { left: 2px; border-radius: 1px 0 0 1px; }
+  .rs-book-page-r { right: 2px; border-radius: 0 1px 1px 0; }
+  .rs-book-page-flip {
+    left: 28px;
+    transform-origin: left center;
+    transform: rotateY(0deg);
+    animation: rs-page-flip 8s ease-in-out infinite;
+    z-index: 3;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    backface-visibility: visible;
+  }
+  @keyframes rs-page-flip {
+    0%, 30% { transform: rotateY(0deg); }
+    50% { transform: rotateY(-180deg); }
+    80%, 100% { transform: rotateY(-180deg); }
+  }
+  .rs-book-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(155, 231, 255, 0.45), transparent 65%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    filter: blur(4px);
+    animation: rs-book-glow-pulse 3s ease-in-out infinite;
+  }
+  @keyframes rs-book-glow-pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  .rs-book-runes {
+    position: absolute;
+    inset: 6px;
+    background:
+      radial-gradient(circle at 25% 30%, rgba(155, 231, 255, 0.7) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 75% 30%, rgba(155, 231, 255, 0.7) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 25% 60%, rgba(255, 200, 100, 0.6) 0.5px, transparent 1.5px),
+      radial-gradient(circle at 75% 70%, rgba(255, 100, 200, 0.6) 0.5px, transparent 1.5px);
+    background-size: 100% 100%;
+    animation: rs-runes-shimmer 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-runes-shimmer {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  /* Floating dust motes — tiny specks slowly drifting in the air */
+  .rs-dust {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    overflow: hidden;
+  }
+  .rs-mote {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 245, 200, 0.9), rgba(255, 230, 150, 0.4) 50%, transparent 80%);
+    box-shadow: 0 0 4px rgba(255, 230, 150, 0.5);
+    opacity: 0;
+    animation: rs-mote-drift var(--dur, 22s) ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-mote-drift {
+    0%, 100% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    20% { opacity: 0.9; transform: translate(-8px, -12px) scale(1); }
+    50% { opacity: 1; transform: translate(-15px, -25px) scale(1.2); }
+    80% { opacity: 0.6; transform: translate(-22px, -40px) scale(0.8); }
+  }
+
+  /* Moonlight beams — diagonal slabs of cool light from upper-left */
+  .rs-moonbeams {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .rs-moonbeam {
+    position: absolute;
+    top: -20%;
+    width: 80px;
+    height: 140%;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(180, 220, 250, 0.18) 20%,
+      rgba(180, 220, 250, 0.32) 50%,
+      rgba(180, 220, 250, 0.18) 80%,
+      transparent 100%);
+    transform-origin: center top;
+    transform: rotate(18deg);
+    filter: blur(8px);
+    mix-blend-mode: screen;
+    animation: rs-moonbeam-drift 14s ease-in-out infinite;
+  }
+  .rs-moonbeam-1 { left: 8%; width: 60px; opacity: 0.85; animation-delay: 0s; }
+  .rs-moonbeam-2 { left: 32%; width: 100px; opacity: 1; animation-delay: -3s; transform: rotate(20deg); }
+  .rs-moonbeam-3 { left: 58%; width: 80px; opacity: 0.75; animation-delay: -7s; transform: rotate(16deg); }
+  @keyframes rs-moonbeam-drift {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.95; }
+  }
+
+  /* Stage spotlight: a vertical light cone descends on the cat at peak */
+  .rs-spotlight {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: clamp(280px, 40vw, 440px);
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+    background:
+      linear-gradient(180deg,
+        rgba(255, 240, 180, 0.18) 0%,
+        rgba(255, 220, 140, 0.12) 30%,
+        rgba(255, 200, 100, 0.08) 60%,
+        transparent 90%);
+    clip-path: polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%);
+    opacity: 0;
+    animation: rs-spotlight-pulse var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px);
+  }
+  @keyframes rs-spotlight-pulse {
+    0%, 22%, 65%, 100% { opacity: 0; }
+    30% { opacity: 0.4; }
+    38% { opacity: 0.6; }
+    44% { opacity: 1; } /* PEAK */
+    50% { opacity: 0.8; }
+    58% { opacity: 0.3; }
+  }
+
+  /* Peak-moment dim — corners darken at SCREECH, cat zone stays bright */
+  .rs-peak-dim {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    background: radial-gradient(ellipse at 50% 65%, transparent 30%, rgba(0,0,0,0.20) 55%, rgba(0,0,0,0.40) 100%);
+    opacity: 0;
+    animation: rs-peak-dim-flash var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    mix-blend-mode: multiply;
+  }
+  @keyframes rs-peak-dim-flash {
+    0%, 38%, 58%, 100% { opacity: 0; }
+    41% { opacity: 0.3; }
+    44% { opacity: 0.55; } /* SCREECH peak — corners dim, center clear */
+    47% { opacity: 0.45; }
+    52% { opacity: 0.2; }
+  }
+
+  /* ═══ Atmospheric environment — bookshelves, fog, candles, papers ═══ */
+
+  /* Bookshelves: distant silhouette, pushed FAR back behind cat */
+  .rs-bookshelves {
+    position: absolute;
+    inset: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.22;
+    overflow: hidden;
+  }
+  .rs-bookshelves svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    filter: blur(2.5px);
+  }
+  .rs-shelf-far { /* Wood plank gradient */ }
+  .rs-books rect {
+    stroke: rgba(30, 18, 12, 0.3);
+    stroke-width: 0.5;
+  }
+  /* Mask: fade out the bookshelves into the floor and toward edges */
+  .rs-bookshelves {
+    -webkit-mask-image:
+      linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.5) 100%),
+      radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 70%);
+            mask-image:
+      linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.5) 100%),
+      radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.6) 70%);
+    -webkit-mask-composite: source-in;
+            mask-composite: intersect;
+  }
+
+  /* ═══ Other atmospheric layers ═══ */
+
+  /* Floor fog — 3 slow horizontal bands at the base */
+  .rs-floor-fog {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    bottom: 0;
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    mix-blend-mode: screen;
+  }
+  .rs-fog-band {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 60px;
+    background: radial-gradient(ellipse at 20% 50%, rgba(180, 200, 230, 0.18), transparent 50%),
+                radial-gradient(ellipse at 60% 60%, rgba(155, 200, 230, 0.14), transparent 55%),
+                radial-gradient(ellipse at 85% 50%, rgba(200, 220, 255, 0.16), transparent 50%);
+    filter: blur(8px);
+    animation: rs-fog-drift 38s linear infinite;
+  }
+  .rs-fog-band-1 { animation-duration: 28s; opacity: 0.7; bottom: 0; }
+  .rs-fog-band-2 { animation-duration: 42s; animation-direction: reverse; opacity: 0.5; bottom: 12px; height: 50px; }
+  .rs-fog-band-3 { animation-duration: 55s; opacity: 0.4; bottom: 24px; height: 40px; filter: blur(12px); }
+  @keyframes rs-fog-drift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Floating spell papers — fall and rotate from top */
+  .rs-papers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    overflow: hidden;
+  }
+  .rs-paper {
+    position: absolute;
+    top: -20px;
+    left: var(--x, 50%);
+    width: 14px;
+    height: 18px;
+    background: linear-gradient(135deg, #d8c7a3 0%, #c7b48a 50%, #b09b6e 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), inset 0 0 4px rgba(80, 50, 20, 0.3);
+    opacity: 0;
+    transform-origin: center;
+    border-radius: 1px 0 1px 0;
+    animation: rs-paper-fall 16s linear infinite;
+    animation-delay: calc(var(--i) * 3.2s);
+  }
+  /* fake torn-edge with clip-path */
+  .rs-paper::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 2px, rgba(80,50,20,0.18) 2px, rgba(80,50,20,0.18) 3px, transparent 3px, transparent 5px);
+    border-radius: inherit;
+  }
+  @keyframes rs-paper-fall {
+    0% { opacity: 0; top: -20px; transform: translateX(0) rotate(0deg); }
+    8% { opacity: 0.85; }
+    50% { opacity: 0.7; transform: translateX(calc(var(--tx, 0px) * 0.5)) rotate(calc(var(--r, 0deg) * 0.5)); }
+    92% { opacity: 0.4; }
+    100% { opacity: 0; top: 100%; transform: translateX(var(--tx, 0px)) rotate(var(--r, 0deg)); }
+  }
+
+  /* Corner candles — wax pillars with flickering flames */
+  .rs-candle {
+    position: absolute;
+    bottom: 30px;
+    width: 8px;
+    height: 36px;
+    pointer-events: none;
+    z-index: 4;
+    background: linear-gradient(180deg, #f0e6d0 0%, #d8c498 50%, #b8a070 100%);
+    border-radius: 2px 2px 1px 1px;
+    box-shadow: inset -2px 0 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  .rs-candle-l { left: clamp(20px, 4vw, 60px); }
+  .rs-candle-r { right: clamp(20px, 4vw, 60px); }
+  .rs-candle-flame {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 8px;
+    height: 14px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 80%, #fff7a8 0%, #ffc857 30%, #ff8a3d 60%, #d4451a 90%);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    box-shadow: 0 0 12px rgba(255, 200, 100, 0.7), 0 0 24px rgba(255, 150, 60, 0.5);
+    animation: rs-candle-flicker 0.6s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    filter: blur(0.4px);
+    mix-blend-mode: screen;
+  }
+  .rs-candle-r .rs-candle-flame {
+    animation-delay: -0.3s;
+  }
+  @keyframes rs-candle-flicker {
+    0%, 100% { transform: translateX(-50%) scale(1, 1) skewX(0); opacity: 1; }
+    25% { transform: translateX(-50%) scale(0.95, 1.1) skewX(-3deg); opacity: 0.95; }
+    50% { transform: translateX(-50%) scale(1.05, 0.9) skewX(2deg); opacity: 1; }
+    75% { transform: translateX(-50%) scale(0.92, 1.15) skewX(-2deg); opacity: 0.9; }
+  }
+  .rs-candle-glow {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    transform: translate(-50%, 30%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.18), transparent 65%);
+    pointer-events: none;
+    animation: rs-candle-glow-pulse 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(4px);
+  }
+  @keyframes rs-candle-glow-pulse {
+    0%, 100% { opacity: 0.7; transform: translate(-50%, 30%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, 30%) scale(1.1); }
+  }
+
+  /* Floating Hogwarts candles — drift in mid-air with parallax sway */
+  .rs-floating-candles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .rs-fcandle {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 14px;
+    height: 22px;
+    pointer-events: none;
+    animation: rs-fcandle-drift var(--dur, 10s) ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes rs-fcandle-drift {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-6px, -8px); }
+    50% { transform: translate(8px, -4px); }
+    75% { transform: translate(-3px, 6px); }
+  }
+  .rs-fcandle-stick {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 14px;
+    background: linear-gradient(180deg, #f0e2bf 0%, #d4be8a 50%, #a88c54 100%);
+    border-radius: 1px;
+    box-shadow: inset -1px 0 1px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .rs-fcandle-flame {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    width: 6px;
+    height: 11px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 80%, #fff7a8 0%, #ffc857 35%, #ff8a3d 65%, #d4451a 90%);
+    border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%;
+    box-shadow: 0 0 8px rgba(255, 200, 100, 0.8), 0 0 16px rgba(255, 150, 60, 0.6);
+    animation: rs-candle-flicker 0.5s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    filter: blur(0.3px);
+    mix-blend-mode: screen;
+  }
+  .rs-fcandle:nth-child(2) .rs-fcandle-flame { animation-delay: -0.15s; }
+  .rs-fcandle:nth-child(3) .rs-fcandle-flame { animation-delay: -0.30s; }
+  .rs-fcandle:nth-child(4) .rs-fcandle-flame { animation-delay: -0.45s; }
+  .rs-fcandle:nth-child(5) .rs-fcandle-flame { animation-delay: -0.60s; }
+  .rs-fcandle-halo {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -10%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.16), transparent 60%);
+    pointer-events: none;
+    animation: rs-candle-glow-pulse 2.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px);
+  }
+
+  /* Hero-wide atmospheric stage glow — pulses brightest at peak */
+  .rs-stage-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(126, 200, 255, 0.10), rgba(168, 140, 255, 0.06) 30%, transparent 60%);
+    opacity: 0;
+    animation: rs-stage-glow-pulse var(--rs-prowl-dur, 16s) linear infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-stage-glow-pulse {
+    0%, 5%, 95%, 100%        { opacity: 0; background: radial-gradient(ellipse at 50% 100%, rgba(126,200,255,0.08), transparent 60%); }
+    36%                      { opacity: 0.4; background: radial-gradient(ellipse at 50% 90%, rgba(255,100,200,0.12), transparent 50%); }
+    43%                      { opacity: 0.55; background: radial-gradient(ellipse at 50% 90%, rgba(255,100,200,0.15), transparent 50%); } /* ARCH violet */
+    46%                      { opacity: 0.65; background: radial-gradient(ellipse at 50% 90%, rgba(255,230,100,0.16), rgba(255,100,200,0.10) 30%, transparent 55%); } /* PEAK */
+    49%                      { opacity: 0.5; background: radial-gradient(ellipse at 50% 90%, rgba(155,231,255,0.14), transparent 55%); } /* ICE */
+    58%                      { opacity: 0.25; background: radial-gradient(ellipse at 50% 100%, rgba(126,200,255,0.10), transparent 60%); }
+    75%                      { opacity: 0.15; background: radial-gradient(ellipse at 50% 100%, rgba(126,200,255,0.08), transparent 60%); }
+  }
+
+  /* Hiss soundwaves — concentric arcs from cat's mouth at peak */
+  .rs-hiss-waves {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 0;
+    pointer-events: none;
+    z-index: 4;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-hiss-wave {
+    position: absolute;
+    left: 18%;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 230, 100, 0.7);
+    box-shadow: 0 0 12px rgba(255, 200, 60, 0.6), inset 0 0 8px rgba(255, 230, 100, 0.4);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    animation: rs-hiss-pulse var(--rs-prowl-dur, 16s) linear infinite;
+    animation-delay: calc(var(--i) * 0.08s);
+  }
+  @keyframes rs-hiss-pulse {
+    0%, 38%, 50%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    40% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); border-width: 3px; }
+    44% { opacity: 0.7; transform: translate(-50%, -50%) scale(2.5); border-width: 1.5px; }
+    48% { opacity: 0; transform: translate(-50%, -50%) scale(4); border-width: 0.5px; }
+  }
+
+  /* Familiar kittens: flank the alpha at left and right with phase offsets */
+  .rs-cat-mini {
+    position: absolute;
+    bottom: 4px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 4;
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 4px 6px rgba(0, 8, 20, 0.6))
+            drop-shadow(0 0 12px rgba(126, 200, 255, 0.3));
+    will-change: opacity, transform, filter;
+  }
+  .rs-cat-mini-1 {
+    width: calc(var(--rs-cat-w, 320px) * 0.5);
+    height: calc(var(--rs-cat-h, 160px) * 0.5);
+    left: calc(50% - var(--rs-cat-w, 320px) * 0.55);
+    animation: rs-cat-prowl-side var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -1.6s;
+    bottom: -2px;
+  }
+  .rs-cat-mini-2 {
+    width: calc(var(--rs-cat-w, 320px) * 0.4);
+    height: calc(var(--rs-cat-h, 160px) * 0.4);
+    left: calc(50% + var(--rs-cat-w, 320px) * 0.35);
+    animation: rs-cat-prowl-side var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -3.2s;
+    bottom: -4px;
+    transform: scaleX(-1);
+  }
+  /* Side kittens: opacity-only cycle, no big transform — they accent the alpha */
+  @keyframes rs-cat-prowl-side {
+    0%, 8%, 92%, 100% { opacity: 0; }
+    16% { opacity: 0.6; }
+    36% { opacity: 0.7; }
+    42% { opacity: 0.85; transform: scaleY(1.05) translateY(-2px); }
+    48% { opacity: 0.7; transform: scaleY(1) translateY(0); }
+    74% { opacity: 0.55; }
+    86% { opacity: 0.15; }
+  }
+  .rs-cat-mini-2 {
+    /* Override transform-origin so flipped scaleX(-1) preserves right-side anchor */
+    transform-origin: 100% 100%;
+  }
+
+  /* Floor reflection — vertical mirror of cat, fades into the floor */
+  .rs-cat-reflection {
+    position: absolute;
+    bottom: -52px;
+    left: 50%;
+    transform: translateX(-50%) scaleY(-1);
+    width: var(--rs-cat-w, 320px);
+    height: calc(var(--rs-cat-h, 160px) * 0.5);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 0;
+    animation: rs-cat-reflect var(--rs-prowl-dur, 18s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    mix-blend-mode: screen;
+    filter: blur(3px) drop-shadow(0 0 8px rgba(126, 200, 255, 0.3));
+    -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
+            mask-image: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.9) 100%);
+  }
+  @keyframes rs-cat-reflect {
+    0%, 6%, 92%, 100% { opacity: 0; }
+    14% { opacity: 0.18; }
+    30% { opacity: 0.22; }
+    42% { opacity: 0.32; transform: translateX(-50%) scaleY(-1) translateY(-3px); }
+    56% { opacity: 0.22; }
+    78% { opacity: 0.18; }
+    86% { opacity: 0.08; }
+  }
+
+  /* Ghost double — translucent cat-shape lagging behind */
+  .rs-cat-ghost {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 140px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    animation-delay: -0.4s; /* trails behind by 0.4s */
+    mix-blend-mode: screen;
+    filter: blur(2.5px) drop-shadow(0 0 12px rgba(155, 231, 255, 0.6));
+    transform-origin: 50% 100%;
+  }
+  /* Ghost: stationary echo, peaks slightly brighter at cast moment */
+  .rs-cat-ghost { animation-name: rs-cat-ghost-cycle; }
+  @keyframes rs-cat-ghost-cycle {
+    0%, 6%, 92%, 100% { opacity: 0; transform: translateX(-50%) scaleX(1) scaleY(0.9) translateY(8px); }
+    14%               { opacity: 0.35; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); }
+    30%               { opacity: 0.4; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); }
+    40%               { opacity: 0.65; transform: translateX(-50%) scaleX(1.05) scaleY(1.15) translateY(-8px); }
+    44%               { opacity: 0.55; transform: translateX(-50%) scaleX(1.04) scaleY(1.13) translateY(-7px); }
+    56%               { opacity: 0.4; transform: translateX(-50%) scaleX(1) scaleY(1) translateY(0); }
+    78%               { opacity: 0.3; transform: translateX(-50%) scaleX(1.05) scaleY(0.96) translateY(-4px); }
+    86%               { opacity: 0.12; transform: translateX(-50%) scaleX(1.1) scaleY(0.85) translateY(-12px); }
+  }
+
+  /* Ground shadow + ectoplasm haze — moves with cat */
+  .rs-cat-aura {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-cat-shadow {
+    position: absolute;
+    bottom: 0;
+    left: 25%;
+    width: 50%;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.2) 60%, transparent 75%);
+    filter: blur(4px);
+    animation: rs-shadow-pulse 0.8s ease-in-out infinite;
+  }
+  @keyframes rs-shadow-pulse {
+    0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+    50%      { transform: scaleX(1.08) scaleY(0.85); opacity: 1; }
+  }
+  .rs-cat-haze {
+    position: absolute;
+    bottom: 8px;
+    left: 15%;
+    width: 70%;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 70%, rgba(126, 200, 255, 0.18), rgba(90, 184, 255, 0.06) 40%, transparent 70%);
+    filter: blur(8px);
+    animation: rs-haze-breathe 3.4s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+  @keyframes rs-haze-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50%      { transform: scale(1.15); opacity: 1; }
+  }
+
+  /* Trailing ectoplasm wisps — emit behind the cat, drift up */
+  .rs-cat-trail {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 90px;
+    pointer-events: none;
+    z-index: 4;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-wisp {
+    position: absolute;
+    bottom: 4px;
+    left: 38%;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, rgba(200, 230, 255, 0.6), rgba(126, 200, 255, 0.2) 50%, transparent 75%);
+    filter: blur(3px);
+    mix-blend-mode: screen;
+    opacity: 0;
+    animation: rs-wisp-rise 2.8s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.34s);
+  }
+  @keyframes rs-wisp-rise {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+    25%  { opacity: 0.85; transform: translate(-10px, -16px) scale(1); }
+    100% { opacity: 0; transform: translate(-32px, -56px) scale(1.6); }
+  }
+
+  /* Detached bone shards — float up from the cat */
+  .rs-bone-shards {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 100px;
+    pointer-events: none;
+    z-index: 3;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-shard {
+    position: absolute;
+    bottom: 0;
+    left: calc(30% + var(--i) * 6%);
+    background: linear-gradient(180deg, #ffffff, #b8d4ec);
+    box-shadow: 0 0 4px rgba(155, 231, 255, 0.8), 0 0 10px rgba(90, 184, 255, 0.4);
+    opacity: 0;
+    animation: rs-shard-float 4.2s ease-out infinite;
+    animation-delay: calc(var(--i) * 0.6s);
+  }
+  .rs-shard-rib {
+    width: 8px;
+    height: 2px;
+    border-radius: 1px;
+    transform-origin: center;
+  }
+  .rs-shard-vert {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+  }
+  @keyframes rs-shard-float {
+    0%   { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+    15%  { opacity: 1; transform: translate(-4px, -10px) rotate(45deg); }
+    60%  { opacity: 0.7; transform: translate(-18px, -50px) rotate(220deg); }
+    100% { opacity: 0; transform: translate(-30px, -90px) rotate(420deg); }
+  }
+
+  /* Eye-burst aura — pulses at PEAK (40-44% of prowl) */
+  .rs-eye-burst-group { opacity: 0; }
+  .rs-eye-burst {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rs-eye-burst-pulse var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    mix-blend-mode: screen;
+  }
+  .rs-skeleton-cat .rs-eye-burst-group { animation: rs-eye-burst-fade var(--rs-prowl-dur, 16s) linear infinite; }
+  @keyframes rs-eye-burst-fade {
+    0%, 36%, 50%, 100% { opacity: 0; }
+    40%, 44% { opacity: 1; }
+  }
+  @keyframes rs-eye-burst-pulse {
+    0%, 36%, 50%, 100% { transform: scale(0.4); }
+    40% { transform: scale(2.2); }
+    44% { transform: scale(2.8); }
+  }
+
+  /* Bones flicker as if barely held together */
+  .rs-cat-bones {
+    animation: rs-bone-flicker 5.5s ease-in-out infinite;
+    /* Always-on aura: subtle ghostly halo wraps the bone silhouette */
+    filter:
+      url(#rs-bone-glow)
+      drop-shadow(0 0 3px rgba(155, 231, 255, 0.6))
+      drop-shadow(0 0 8px rgba(126, 200, 255, 0.3));
+  }
+  @keyframes rs-bone-flicker {
+    0%, 100% { opacity: 1; }
+    47% { opacity: 1; }
+    49% { opacity: 0.55; } /* brief skip */
+    50% { opacity: 1; }
+    72% { opacity: 0.8; }
+    74% { opacity: 1; }
+  }
+
+  /* Spine: subtle breathing arc */
+  .rs-spine {
+    transform-origin: 50% 50px;
+    animation: rs-spine-breathe 3.4s ease-in-out infinite;
+  }
+  @keyframes rs-spine-breathe {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    50% { transform: translateY(-1px) scaleY(1.03); }
+  }
+
+  /* Ribs: stagger expand/contract — breathing rib cage */
+  .rs-rib {
+    transform-origin: top center;
+    animation: rs-rib-breathe 3.4s ease-in-out infinite;
+  }
+  .rs-rib:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-rib:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-rib:nth-of-type(5) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(6) { animation-delay: 0.05s; }
+  @keyframes rs-rib-breathe {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.08); }
+  }
+
+  /* Legs: simulate a gait — alternating front/back pairs */
+  .rs-leg-fr, .rs-leg-bl {
+    transform-origin: top center;
+    animation: rs-leg-step 0.8s ease-in-out infinite;
+  }
+  .rs-leg-fl, .rs-leg-br {
+    transform-origin: top center;
+    animation: rs-leg-step 0.8s ease-in-out infinite reverse;
+  }
+  @keyframes rs-leg-step {
+    0%, 100% { transform: rotate(-6deg); }
+    50% { transform: rotate(8deg); }
+  }
+
+  /* Tail: bony whip, sways like a metronome */
+  .rs-tail {
+    transform-origin: 186px 58px;
+    animation: rs-tail-sway 2.2s ease-in-out infinite;
+  }
+  .rs-vert {
+    transform-origin: 186px 58px;
+    animation: rs-tail-sway 2.2s ease-in-out infinite;
+  }
+  @keyframes rs-tail-sway {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(14deg); }
+  }
+
+  /* Skull: head bob in time with steps */
+  .rs-skull {
+    transform-origin: 46px 38px;
+    animation: rs-head-bob 0.8s ease-in-out infinite;
+  }
+  @keyframes rs-head-bob {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-1.5px) rotate(1deg); }
+  }
+
+  /* Eye sockets: hollow black */
+  .rs-eye-socket {
+    fill: #05080d;
+    stroke: #e8eef5;
+    stroke-width: 0.9;
+  }
+
+  /* Glowing pupils with blink + radial pulse */
+  .rs-eye {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rs-eye-blink 4.7s steps(1, end) infinite, rs-eye-pulse 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px #9be7ff) drop-shadow(0 0 10px #5ab8ff) drop-shadow(0 0 18px rgba(90, 184, 255, 0.6));
+  }
+  @keyframes rs-eye-blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    93%, 95% { transform: scaleY(0.05); }
+    94% { transform: scaleY(0.05); }
+  }
+  @keyframes rs-eye-pulse {
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  /* Eye scaler — kicks the pupils brighter and bigger at SCREECH peak */
+  .rs-eye {
+    /* Extra animation layered on top: scale at peak */
+    /* Note: combining with existing rs-eye-blink + rs-eye-pulse */
+  }
+  .rs-skull .rs-eye {
+    animation:
+      rs-eye-blink 4.7s steps(1, end) infinite,
+      rs-eye-pulse 1.8s ease-in-out infinite,
+      rs-eye-screech var(--rs-prowl-dur, 16s) ease-in-out infinite;
+  }
+  @keyframes rs-eye-screech {
+    0%, 36%, 60%, 100% { fill: url(#rs-eye-glow); transform: scale(1); }
+    44% { transform: scale(1.6); filter: drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 14px #9be7ff) drop-shadow(0 0 22px rgba(155, 231, 255, 0.9)); } /* SCREECH burst */
+    47% { transform: scale(1.5); }
+    52% { transform: scale(1.1); }
+  }
+
+  /* The bones get a subtle turbulence flicker — only at PEAK, not always */
+  .rs-skeleton-cat:hover .rs-cat-bones,
+  .rs-skeleton-cat .rs-cat-bones {
+    /* base look already has the rs-bone-glow filter; turbulence is too jittery to leave on always */
+  }
+
+  /* Bones draw themselves in via stroke-dasharray during apparation phase */
+  .rs-bone {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 0;
+    animation: rs-bone-draw 24s ease-in-out infinite;
+  }
+  @keyframes rs-bone-draw {
+    /* Apparation in (0-6%): bones draw from nothing */
+    0%, 1% { stroke-dashoffset: 200; }
+    6% { stroke-dashoffset: 0; }
+    /* Stable through prowl */
+    58% { stroke-dashoffset: 0; }
+    /* Vanish out at flip (60-62%): bones erase */
+    60% { stroke-dashoffset: 200; }
+    62% { stroke-dashoffset: 200; }
+    /* Re-draw after flip */
+    66% { stroke-dashoffset: 0; }
+    93% { stroke-dashoffset: 0; }
+    /* Final apparation out (97-100%) */
+    97% { stroke-dashoffset: 200; }
+    100% { stroke-dashoffset: 200; }
+  }
+  /* Stagger the rib draw-ins for visual richness */
+  .rs-rib:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-rib:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-rib:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-rib:nth-of-type(5) { animation-delay: 0.20s; }
+
+  /* Lightning bolts along spine — flicker on and off at apparation moments */
+  .rs-lightning { opacity: 0; animation: rs-lightning-flicker var(--rs-prowl-dur, 16s) linear infinite; }
+  @keyframes rs-lightning-flicker {
+    0%, 1.5%, 6%, 60%, 62%, 100% { opacity: 0; }
+    2%, 3%, 4%, 5% { opacity: 1; }
+    60.5%, 61% { opacity: 1; }
+    /* mid-prowl crackle at peak too */
+    40%, 42%, 44% { opacity: 1; }
+    41%, 43% { opacity: 0.4; }
+    45%, 50% { opacity: 0; }
+    /* leftward apparation flicker */
+    93%, 94%, 95% { opacity: 1; }
+    93.5%, 94.5% { opacity: 0.3; }
+  }
+  .rs-bolt { stroke-dasharray: 50; }
+  .rs-bolt-1 { animation: rs-bolt-strike 0.18s steps(2) infinite; }
+  .rs-bolt-2 { animation: rs-bolt-strike 0.24s steps(2) infinite reverse; }
+  .rs-bolt-3 { animation: rs-bolt-strike 0.20s steps(2) infinite; }
+  @keyframes rs-bolt-strike {
+    0% { stroke-dashoffset: 50; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  /* Patronus 12-ray burst — fires at PEAK (40-46%) from cat's chest */
+  .rs-ray-burst {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 0;
+    pointer-events: none;
+    z-index: 4;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-ray-burst::before {
+    /* anchor at cat's chest center, 50% of the prowl box */
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 0;
+    height: 0;
+  }
+  .rs-ray {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 2px;
+    height: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(155, 231, 255, 0.6), transparent);
+    transform-origin: top center;
+    transform: rotate(var(--a)) translateY(0);
+    opacity: 0;
+    filter: drop-shadow(0 0 4px rgba(155, 231, 255, 0.95));
+    animation: rs-ray-fire var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  @keyframes rs-ray-fire {
+    0%, 38%, 50%, 100% { height: 0; opacity: 0; }
+    40% { height: 0; opacity: 1; }
+    44% { height: 90px; opacity: 1; }
+    48% { height: 130px; opacity: 0; }
+  }
+
+  /* Summoning circle — 3 concentric rings appear under cat at peak */
+  .rs-summon-circle {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--rs-cat-w, 320px);
+    height: 80px;
+    pointer-events: none;
+    z-index: 1;
+    animation: rs-cat-prowl var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  .rs-summon-ring {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    width: 110px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid;
+    transform: translateX(-50%);
+    opacity: 0;
+    box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor;
+    animation: rs-summon-rotate var(--rs-prowl-dur, 16s) linear infinite, rs-summon-pulse var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  .rs-summon-ring-1 {
+    color: rgba(155, 231, 255, 0.9);
+    border-color: currentColor;
+  }
+  .rs-summon-ring-2 {
+    color: rgba(126, 200, 255, 0.7);
+    width: 80px;
+    height: 20px;
+    border-style: dashed;
+    animation-delay: -0.3s, 0s;
+  }
+  .rs-summon-ring-3 {
+    color: rgba(200, 230, 255, 0.5);
+    width: 140px;
+    height: 36px;
+    border-style: dotted;
+    animation-delay: 0.3s, 0s;
+  }
+  @keyframes rs-summon-rotate {
+    /* Rotation only meaningful with conic but we use transform for the dashed/dotted illusion */
+    0%, 100% { transform: translateX(-50%) rotateZ(0deg); }
+    100% { transform: translateX(-50%) rotateZ(360deg); }
+  }
+  @keyframes rs-summon-pulse {
+    0%, 36%, 50%, 100% { opacity: 0; }
+    40%, 44% { opacity: 1; }
+    48% { opacity: 0.4; }
+  }
+
+  /* Paw-print trail — small bone-paws left along the floor */
+  .rs-paw-trail {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 14px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .rs-paw {
+    position: absolute;
+    bottom: 0;
+    left: calc(8% + var(--i) * 10%);
+    width: 8px;
+    height: 8px;
+    background:
+      radial-gradient(circle at 25% 30%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 75% 30%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 35% 70%, #d8e8f8 1.5px, transparent 2px),
+      radial-gradient(circle at 65% 70%, #d8e8f8 1.5px, transparent 2px);
+    opacity: 0;
+    filter: drop-shadow(0 0 3px rgba(155, 231, 255, 0.6));
+    animation: rs-paw-fade var(--rs-prowl-dur, 16s) linear infinite;
+    animation-delay: calc(var(--i) * 1.2s + 1s);
+  }
+  @keyframes rs-paw-fade {
+    0%, 5% { opacity: 0; transform: scale(0.5); }
+    7% { opacity: 0.95; transform: scale(1); }
+    25% { opacity: 0.7; }
+    50% { opacity: 0.3; }
+    70% { opacity: 0; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
+  /* Joints: subtle pulse so paws look alive */
+  .rs-joint {
+    fill: #e8eef5;
+    animation: rs-joint-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes rs-joint-pulse {
+    0%, 100% { opacity: 0.7; r: 1.6; }
+    50% { opacity: 1; r: 2; }
+  }
+
+  /* SPIRIT CORE: glowing heart in the ribcage, beats with breath */
+  .rs-spirit-core { mix-blend-mode: screen; }
+  .rs-spirit-aura {
+    transform-origin: 100px 58px;
+    transform-box: fill-box;
+    animation: rs-spirit-aura-pulse var(--rs-prowl-dur, 16s) linear infinite;
+    opacity: 0.45;
+  }
+  .rs-paw-bone {
+    fill: #e8eef5;
+    opacity: 0.9;
+  }
+  @keyframes rs-spirit-aura-pulse {
+    0%, 100% { transform: scale(0.6); opacity: 0.4; }
+    36% { transform: scale(1); opacity: 0.7; }
+    40% { transform: scale(2.5); opacity: 1; } /* peak burst */
+    44% { transform: scale(2.2); opacity: 0.9; }
+    50% { transform: scale(1.2); opacity: 0.6; }
+    60% { transform: scale(0.4); opacity: 0.2; } /* dim during apparate-flip */
+    66% { transform: scale(1); opacity: 0.7; }
+  }
+  .rs-spirit-orb {
+    transform-origin: 100px 58px;
+    transform-box: fill-box;
+    animation: rs-spirit-beat 1.2s ease-in-out infinite;
+  }
+  @keyframes rs-spirit-beat {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    20% { transform: scale(1.4); opacity: 1; } /* systole */
+    30% { transform: scale(0.95); opacity: 0.9; }
+    40% { transform: scale(1.25); opacity: 1; } /* diastole */
+    60% { transform: scale(1); opacity: 0.85; }
+  }
+  .rs-spirit-orb-inner {
+    animation: rs-spirit-flicker 0.6s ease-in-out infinite;
+  }
+  @keyframes rs-spirit-flicker {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; r: 1.6; }
+  }
+
+  /* Spine vertebrae beads — pulse with breath */
+  .rs-spine-vert {
+    fill: #e8eef5;
+    animation: rs-vert-pulse 3.4s ease-in-out infinite;
+  }
+  .rs-spine-vert:nth-of-type(2) { animation-delay: 0.05s; }
+  .rs-spine-vert:nth-of-type(3) { animation-delay: 0.10s; }
+  .rs-spine-vert:nth-of-type(4) { animation-delay: 0.15s; }
+  .rs-spine-vert:nth-of-type(5) { animation-delay: 0.20s; }
+  @keyframes rs-vert-pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  /* Sternum + scapulae: static structural support, subtle glow */
+  .rs-sternum, .rs-scapula {
+    stroke-width: 1.1;
+    opacity: 0.85;
+  }
+
+  /* HINGED JAW: extended dramatic screech sequence (38-58%) */
+  .rs-jaw {
+    transform-origin: 22px 42px; /* hinge at jaw joint */
+    transform-box: fill-box;
+    animation: rs-jaw-drop var(--rs-prowl-dur, 16s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes rs-jaw-drop {
+    0%, 36%, 60%, 100% { transform: rotate(0deg); }
+    38% { transform: rotate(10deg); } /* small open */
+    41% { transform: rotate(28deg); } /* WIDE open */
+    44% { transform: rotate(40deg); } /* SCREECH peak — jaw fully agape */
+    47% { transform: rotate(38deg); } /* hold the screech */
+    50% { transform: rotate(32deg); }
+    54% { transform: rotate(20deg); }
+    58% { transform: rotate(8deg); }
+  }
+
+  /* FANGS: emphasis at peak — scale up */
+  .rs-fang, .rs-fang-upper {
+    transform-origin: top center;
+    transform-box: fill-box;
+    animation: rs-fang-bare var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  @keyframes rs-fang-bare {
+    0%, 36%, 50%, 100% { stroke-width: 1.3; opacity: 0.9; }
+    40% { stroke-width: 2; opacity: 1; }
+    42% { stroke-width: 2.2; opacity: 1; }
+    44% { stroke-width: 1.8; opacity: 1; }
+  }
+
+  /* CLAWS: extend at peak — scale Y from 0 to 1 */
+  .rs-claws {
+    opacity: 0;
+    animation: rs-claws-extend var(--rs-prowl-dur, 16s) linear infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes rs-claws-extend {
+    0%, 35%, 60%, 100% { opacity: 0; }
+    38% { opacity: 0.6; }
+    41% { opacity: 1; }
+    44% { opacity: 1; }
+    50% { opacity: 1; } /* hold extended through screech */
+    54% { opacity: 0.7; }
+    58% { opacity: 0.3; }
+  }
+  .rs-claw {
+    stroke-dasharray: 8;
+    stroke-dashoffset: 8;
+    animation: rs-claw-stab var(--rs-prowl-dur, 16s) linear infinite;
+  }
+  @keyframes rs-claw-stab {
+    0%, 36%, 60%, 100% { stroke-dashoffset: 8; }
+    40% { stroke-dashoffset: 0; }
+    44% { stroke-dashoffset: 0; }
+    50% { stroke-dashoffset: 0; } /* claws extended through screech */
+    56% { stroke-dashoffset: 8; }
+  }
+
+  /* Cranial sutures — barely-visible plate divisions */
+  .rs-suture { stroke-dasharray: 1.5 1; }
+
+  /* Vertical slit pupils — narrow at peak (predatory hunting eye) */
+  .rs-slit-pupil {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: rs-slit-narrow var(--rs-prowl-dur, 18s) ease-in-out infinite;
+  }
+  @keyframes rs-slit-narrow {
+    0%, 25%, 65%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+    34% { transform: scaleX(1) scaleY(1); opacity: 1; }
+    44% { transform: scaleX(0.5) scaleY(1.1); opacity: 1; } /* PEAK: narrowed slit */
+    52% { transform: scaleX(0.7) scaleY(1.05); opacity: 0.95; }
+    58% { transform: scaleX(1) scaleY(1); opacity: 0.85; }
+  }
+
+  /* Bone sparkles — twinkling stars across the skeleton */
+  .rs-bone-sparkles { mix-blend-mode: screen; }
+  .rs-sparkle {
+    fill: #ffffff;
+    opacity: 0;
+    animation: rs-sparkle-twinkle var(--rs-prowl-dur, 18s) ease-in-out infinite;
+    filter: drop-shadow(0 0 2px rgba(155, 231, 255, 0.9));
+  }
+  .rs-sparkle:nth-of-type(1)  { animation-delay: -0.05s; }
+  .rs-sparkle:nth-of-type(2)  { animation-delay: -0.20s; }
+  .rs-sparkle:nth-of-type(3)  { animation-delay: -0.35s; }
+  .rs-sparkle:nth-of-type(4)  { animation-delay: -0.50s; }
+  .rs-sparkle:nth-of-type(5)  { animation-delay: -0.65s; }
+  .rs-sparkle:nth-of-type(6)  { animation-delay: -0.80s; }
+  .rs-sparkle:nth-of-type(7)  { animation-delay: -0.95s; }
+  .rs-sparkle:nth-of-type(8)  { animation-delay: -1.10s; }
+  .rs-sparkle:nth-of-type(9)  { animation-delay: -1.25s; }
+  .rs-sparkle:nth-of-type(10) { animation-delay: -1.40s; }
+  .rs-sparkle:nth-of-type(11) { animation-delay: -0.10s; }
+  .rs-sparkle:nth-of-type(12) { animation-delay: -0.30s; }
+  .rs-sparkle:nth-of-type(13) { animation-delay: -0.55s; }
+  .rs-sparkle:nth-of-type(14) { animation-delay: -0.85s; }
+  @keyframes rs-sparkle-twinkle {
+    0%, 28%, 60%, 100% { opacity: 0; transform: scale(0.5); }
+    32% { opacity: 0.4; transform: scale(0.8); }
+    44% { opacity: 1; transform: scale(1.4); } /* SCREECH peak */
+    47% { opacity: 0.8; transform: scale(1.2); }
+    55% { opacity: 0.3; transform: scale(0.9); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rs-skeleton-cat, .rs-cat-aura, .rs-cat-trail, .rs-bone-shards,
+    .rs-summon-circle, .rs-ray-burst, .rs-paw-trail,
+    .rs-stage-glow, .rs-hiss-waves, .rs-hiss-wave, .rs-cat-ghost,
+    .rs-cat-mini, .rs-cat-mini-1, .rs-cat-mini-2, .rs-title-shake,
+    .rs-cat-reflection, .rs-floor-fog, .rs-fog-band, .rs-papers,
+    .rs-paper, .rs-candle, .rs-candle-flame, .rs-candle-glow,
+    .rs-floating-candles, .rs-fcandle, .rs-fcandle-flame, .rs-fcandle-halo,
+    .rs-cat-bones, .rs-spine, .rs-rib, .rs-bone, .rs-bolt, .rs-lightning,
+    .rs-leg-fr, .rs-leg-fl, .rs-leg-br, .rs-leg-bl,
+    .rs-tail, .rs-vert, .rs-skull, .rs-eye, .rs-joint,
+    .rs-eye-burst, .rs-eye-burst-group,
+    .rs-cat-shadow, .rs-cat-haze, .rs-wisp, .rs-shard,
+    .rs-summon-ring, .rs-ray, .rs-paw {
+      animation: none;
+    }
+    .rs-skeleton-cat { left: 80px; opacity: 0.7; }
+    .rs-cat-aura { left: 80px; opacity: 0.5; }
+    .rs-bone { stroke-dashoffset: 0; }
+  }
+
+  .rs-page-inner {
+    max-width: var(--wide-width);
+    margin: 0 auto;
+    padding: var(--spacing-16) var(--spacing-8);
+  }
+
+  .room-rule {
+    width: 24px;
+    height: 1px;
+    background: var(--color-accent);
+    margin-bottom: var(--spacing-5);
+  }
+
+  .rs-page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 3.5vw, 3rem);
+    font-weight: var(--font-weight-display);
+    line-height: 1.1;
+    letter-spacing: -0.022em;
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-5);
+  }
+
+  .rs-page-desc {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--leading-relaxed);
+    color: var(--color-text-secondary);
+    max-width: 55ch;
+    margin: 0;
+  }
+
+  .rs-page-section {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .rs-empty {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Restricted Section — compact list */
+  .rs-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-muted);
+    margin-bottom: var(--spacing-6);
+    flex-wrap: wrap;
+  }
+
+  .rs-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .rs-stat-sep {
+    color: var(--color-border);
+  }
+
+  .rs-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .rs-dot-spec { background: #7c3aed; }
+  .rs-dot-plan { background: #d4a843; }
+
+  .rs-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+  }
+
+  .rs-group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+  }
+
+  .rs-group-name {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .rs-group-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-muted);
+    background: var(--color-surface-elevated);
+    padding: 1px 6px;
+    border-radius: 8px;
+  }
+
+  .rs-row {
+    border-left: 2px solid transparent;
+    transition: border-color var(--transition-fast);
+  }
+
+  .rs-row[open] {
+    border-left-color: var(--color-border);
+  }
+
+  .rs-row-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--radius);
+    cursor: pointer;
+    list-style: none;
+    transition: background var(--transition-fast);
+  }
+
+  .rs-row-summary::-webkit-details-marker { display: none; }
+  .rs-row-summary::marker { content: ""; }
+
+  .rs-row-summary:hover {
+    background: var(--color-surface-elevated);
+  }
+
+  .rs-row-spec { border-left: 2px solid color-mix(in srgb, #7c3aed 40%, transparent); }
+  .rs-row-plan { border-left: 2px solid color-mix(in srgb, #d4a843 40%, transparent); }
+
+  .rs-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+
+  .rs-badge-spec {
+    color: #7c3aed;
+    background: color-mix(in srgb, #7c3aed 12%, transparent);
+  }
+
+  .rs-badge-plan {
+    color: #d4a843;
+    background: color-mix(in srgb, #d4a843 12%, transparent);
+  }
+
+  .rs-row-title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .rs-row-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    flex-shrink: 0;
+  }
+
+  .rs-row-date,
+  .rs-row-lines {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+
+  .rs-row-lines::after {
+    content: " ln";
+  }
+
+  .rs-row-links {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
+  }
+
+  .rs-link {
+    color: var(--color-muted);
+    transition: color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    padding: 2px;
+  }
+
+  .rs-link:hover {
+    color: var(--color-accent);
+  }
+
+  /* Expanded detail */
+  .rs-detail {
+    padding: var(--spacing-3) var(--spacing-3) var(--spacing-3) calc(40px + var(--spacing-3) + var(--spacing-3));
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  .rs-detail-summary {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin: 0;
+  }
+
+  .rs-detail-prompt {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    background: color-mix(in srgb, var(--color-surface-elevated) 50%, var(--color-bg));
+    border-radius: var(--radius);
+  }
+
+  .rs-detail-prompt-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    flex-shrink: 0;
+  }
+
+  .rs-detail-prompt-text {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    font-style: italic;
+    line-height: var(--leading-relaxed);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .rs-page-inner {
+      padding: var(--spacing-12) var(--spacing-6);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .rs-page-inner {
+      padding: var(--spacing-10) var(--spacing-5);
+    }
+
+    .rs-row-summary {
+      flex-wrap: wrap;
+      gap: var(--spacing-2);
+    }
+
+    .rs-row-title {
+      white-space: normal;
+      order: 3;
+      flex-basis: 100%;
+    }
+
+    .rs-row-meta {
+      order: 2;
+      margin-left: auto;
+    }
+
+    .rs-row-links {
+      order: 4;
+      margin-left: auto;
+    }
+
+    .rs-detail {
+      padding-left: var(--spacing-3);
+    }
+  }
+</style>

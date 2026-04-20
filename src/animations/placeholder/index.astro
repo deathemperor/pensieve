@@ -1,0 +1,67 @@
+---
+// Placeholder animation — a minimal spinning snitch used to prove the
+// playground's read-path renders end-to-end. Replaced in Plan B.
+---
+
+<div class="snitch-stage" role="img" aria-label="A spinning golden snitch icon">
+  <div class="snitch">
+    <div class="snitch-body"></div>
+    <div class="wing wing-left"></div>
+    <div class="wing wing-right"></div>
+  </div>
+</div>
+
+<style>
+  .snitch-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: radial-gradient(circle at 50% 50%, #1b1c1d 0%, #08090a 70%);
+  }
+
+  .snitch {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    animation: orbit 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+
+  .snitch-body {
+    position: absolute;
+    inset: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffd88a 0%, #d4a02a 60%, #8a6416 100%);
+    box-shadow: 0 4px 18px rgba(212, 160, 42, 0.35);
+  }
+
+  .wing {
+    position: absolute;
+    top: 20px;
+    width: 28px;
+    height: 24px;
+    background: rgba(247, 248, 248, 0.82);
+    border-radius: 50% 50% 0 100%;
+    transform-origin: 100% 50%;
+    animation: flap 0.18s ease-in-out infinite alternate;
+  }
+
+  .wing-left { left: -10px; --x: -1; }
+  .wing-right { right: -10px; --x: 1; }
+
+  @keyframes orbit {
+    0%   { transform: translate(-40px, 0)   rotate(0deg); }
+    50%  { transform: translate(40px, -20px) rotate(180deg); }
+    100% { transform: translate(-40px, 0)   rotate(360deg); }
+  }
+
+  @keyframes flap {
+    from { transform: rotate(-18deg) scaleX(var(--x, 1)); }
+    to   { transform: rotate(18deg)  scaleX(var(--x, 1)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .snitch, .wing { animation: none; }
+  }
+</style>

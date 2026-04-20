@@ -46,7 +46,7 @@ SQL_REASON=$(echo "$ROUTE_REASON" | sed "s/'/''/g")
 
 # Log to session buffer for diary integration
 mkdir -p "$REPO_ROOT/.session"
-echo "{\"ts\":\"$TIMESTAMP\",\"hp_system\":\"$HP_SYSTEM\",\"tool\":\"$EXTERNAL_TOOL\",\"title\":$(echo "$TITLE" | jq -Rs .)}" >> "$REPO_ROOT/.session/tasks.jsonl"
+echo "{\"ts\":\"$TIMESTAMP\",\"hp_system\":\"$HP_SYSTEM\",\"tool\":\"$EXTERNAL_TOOL\",\"title\":$(jq -n --arg v "$TITLE" '$v')}" >> "$REPO_ROOT/.session/tasks.jsonl"
 
 # Insert into remote D1
 npx wrangler d1 execute pensieve-db --remote --command \

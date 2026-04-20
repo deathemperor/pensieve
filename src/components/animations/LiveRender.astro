@@ -1,0 +1,116 @@
+---
+import type { SourceHistory } from "../../lib/animations/load-from-r2.ts";
+import {
+  reconstructIframeSrcdoc,
+  pickHeroSource,
+} from "../../lib/animations/reconstruct-iframe.ts";
+
+interface Props {
+  slug: string;
+  sourceHistory?: SourceHistory;
+  initialCursor?: number;
+}
+
+const { slug, sourceHistory, initialCursor } = Astro.props;
+
+// Pick the last cursor <= target that has any files, else empty state.
+function pickStateAt(history: SourceHistory | undefined, cursor: number) {
+  if (!history) return null;
+  const keys = Object.keys(history.cursors)
+    .map(Number)
+    .filter((c) => c <= cursor)
+    .sort((a, b) => a - b);
+  const last = keys[keys.length - 1];
+  if (last === undefined) return null;
+  return history.cursors[String(last)] ?? history.cursors[last as unknown as string];
+}
+
+// When the page loads without a hash, show the LATEST source state — the
+// finished animation. Scrubbing back then reveals progression, rather than
+// starting on a blank screen before the first Write happened.
+const availableCursors = sourceHistory
+  ? Object.keys(sourceHistory.cursors).map(Number).sort((a, b) => a - b)
+  : [];
+const latestCursor = availableCursors.length > 0 ? availableCursors[availableCursors.length - 1] : 0;
+const effectiveCursor = initialCursor ?? latestCursor;
+
+const initialState = pickStateAt(sourceHistory, effectiveCursor);
+const initialHero = initialState ? pickHeroSource(initialState.files, slug) : null;
+const initialSrcdoc = initialHero ? reconstructIframeSrcdoc(initialHero.source, effectiveCursor) : "";
+
+const hasHistory = !!sourceHistory && Object.keys(sourceHistory.cursors).length > 0;
+const cursorPayload = hasHistory ? JSON.stringify(sourceHistory) : "null";
+---
+
+<section class="live-render" aria-label="Live code-state render at current cursor">
+  <div class="live-head">
+    <h3>Live render</h3>
+    <p class="live-sub">
+      {hasHistory
+        ? "What the animation looks like at the current cursor in the transcript."
+        : "No source history available for this session."}
+    </p>
+  </div>
+  <div class="live-stage">
+    {hasHistory ? (
+      <iframe
+        class="live-frame"
+        title={`${slug} render at cursor ${effectiveCursor}`}
+        sandbox="allow-scripts"
+        srcdoc={initialSrcdoc}
+        data-slug={slug}
+        data-initial-cursor={effectiveCursor}
+      ></iframe>
+    ) : (
+      <div class="live-empty">
+        This session's build predates the source-history pipeline (or
+        the transcript touched no files under <code>src/animations/{slug}/</code>).
+        Once a new session is published, the live render will appear here.
+      </div>
+    )}
+  </div>
+</section>
+
+<script is:inline set:html={`window.__ANIM_SOURCE_HISTORY_${slug.replace(/-/g, "_")} = ${cursorPayload};`} />
+
+<style>
+  .live-render {
+    margin: 2.5rem 0;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    background: var(--elevated, #141516);
+    overflow: hidden;
+  }
+  .live-head {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  }
+  .live-head h3 { margin: 0; font-size: 1rem; letter-spacing: -0.01em; }
+  .live-sub { margin: 0.25rem 0 0; color: var(--muted, #62666d); font-size: 0.8125rem; }
+  .live-stage {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #08090a;
+  }
+  .live-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .live-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+  .live-empty code {
+    color: var(--secondary, #8a8f98);
+  }
+</style>
+
+<script>
+  import "./live-render-client.ts";
+</script>
