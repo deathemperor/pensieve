@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Better Animal Approaches</title>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.06);
+    --text: #e0e4ea;
+    --dim: #6b7280;
+    --accent: #4a9eff;
+    --patronus: rgba(192, 210, 235, 0.25);
+    --patronus-glow: rgba(192, 210, 235, 0.4);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; }
+  .page { max-width: 1000px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+  .sub { color: var(--dim); font-size: 13px; margin-bottom: 48px; }
+  h2 { font-size: 18px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .tag-rec { background: rgba(74,158,255,0.15); color: var(--accent); }
+  .tag-alt { background: rgba(255,255,255,0.06); color: var(--dim); }
+  .desc { color: var(--dim); font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+
+  /* Stage */
+  .stage {
+    position: relative;
+    height: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .stage-bg {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.12), transparent),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.08), transparent),
+      radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,0.1), transparent),
+      radial-gradient(1px 1px at 75% 45%, rgba(255,255,255,0.07), transparent),
+      radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.11), transparent),
+      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,0.06), transparent);
+  }
+  .btns {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 40px;
+  }
+  .btns button {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .btns button:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
+  .btns button.on { background: rgba(74,158,255,0.12); border-color: rgba(74,158,255,0.3); color: var(--accent); }
+
+  .sep { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* ─── APPROACH A: Emoji Patronus ─── */
+  .emoji-creature {
+    position: absolute;
+    top: 50%; left: -100px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 56px;
+    line-height: 1;
+    opacity: 0;
+    animation: emoji-traverse 8s cubic-bezier(.23,1,.32,1) forwards;
+  }
+  .emoji-creature .emoji-inner {
+    position: relative;
+    animation: emoji-float 2.8s ease-in-out infinite;
+  }
+  .emoji-creature .emoji-char {
+    filter: brightness(100) saturate(0) drop-shadow(0 0 12px var(--patronus-glow)) drop-shadow(0 0 4px var(--patronus-glow));
+    opacity: 0.22;
+    animation: emoji-glow 2.5s ease-in-out infinite;
+  }
+  .emoji-creature .emoji-ghost {
+    position: absolute; top: 0; left: 0;
+    filter: brightness(100) saturate(0) blur(8px);
+    opacity: 0.12;
+    animation: emoji-ghost-pulse 2.5s ease-in-out infinite;
+  }
+  .emoji-creature.ground .emoji-inner {
+    animation: emoji-stride 0.9s cubic-bezier(.645,.045,.355,1) infinite;
+    transform-origin: center bottom;
+  }
+
+  @keyframes emoji-traverse {
+    0%   { left: -100px; opacity: 0; }
+    4%   { opacity: 0; }
+    10%  { opacity: 1; }
+    88%  { opacity: 1; }
+    95%  { opacity: 0; }
+    100% { left: calc(100% + 100px); opacity: 0; }
+  }
+  @keyframes emoji-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+  @keyframes emoji-stride {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25%      { transform: rotate(1.2deg) translateY(-1px); }
+    75%      { transform: rotate(-1.2deg) translateY(-1px); }
+  }
+  @keyframes emoji-glow {
+    0%, 100% { opacity: 0.18; filter: brightness(100) saturate(0) drop-shadow(0 0 8px var(--patronus-glow)) drop-shadow(0 0 3px var(--patronus-glow)); }
+    50%      { opacity: 0.28; filter: brightness(100) saturate(0) drop-shadow(0 0 16px var(--patronus-glow)) drop-shadow(0 0 6px var(--patronus-glow)); }
+  }
+  @keyframes emoji-ghost-pulse {
+    0%, 100% { opacity: 0.08; }
+    50%      { opacity: 0.18; }
+  }
+  /* Flip for direction */
+  .emoji-creature.face-left .emoji-inner { transform: scaleX(-1); }
+  .emoji-creature.face-left.ground .emoji-inner {
+    animation: emoji-stride-flip 0.9s cubic-bezier(.645,.045,.355,1) infinite;
+  }
+  @keyframes emoji-stride-flip {
+    0%, 100% { transform: scaleX(-1) rotate(0deg) translateY(0); }
+    25%      { transform: scaleX(-1) rotate(1.2deg) translateY(-1px); }
+    75%      { transform: scaleX(-1) rotate(-1.2deg) translateY(-1px); }
+  }
+
+  /* ─── APPROACH B: Unicode symbols ─── */
+  .symbol-creature {
+    position: absolute;
+    top: 50%; left: -80px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 48px;
+    line-height: 1;
+    opacity: 0;
+    color: rgba(192, 210, 235, 0.22);
+    text-shadow: 0 0 12px var(--patronus-glow), 0 0 4px var(--patronus-glow);
+    animation: symbol-traverse 8s cubic-bezier(.23,1,.32,1) forwards;
+    font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", sans-serif;
+  }
+  .symbol-creature .sym-inner {
+    animation: emoji-float 2.8s ease-in-out infinite;
+  }
+  .symbol-creature .sym-glow {
+    position: absolute; top: 0; left: 0;
+    filter: blur(6px);
+    opacity: 0.3;
+    animation: emoji-ghost-pulse 2s ease-in-out infinite;
+  }
+  @keyframes symbol-traverse {
+    0%   { left: -80px; opacity: 0; }
+    4%   { opacity: 0; }
+    10%  { opacity: 1; }
+    88%  { opacity: 1; }
+    95%  { opacity: 0; }
+    100% { left: calc(100% + 80px); opacity: 0; }
+  }
+
+  /* ─── APPROACH C: img silhouettes ─── */
+  .note-box {
+    background: rgba(74,158,255,0.06);
+    border: 1px solid rgba(74,158,255,0.15);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #a0b4cc;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+  .note-box strong { color: var(--accent); }
+
+  /* Comparison grid */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+  .compare-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 12px;
+  }
+  .compare-item .label { color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; margin-bottom: 6px; }
+  .compare-item .val { color: var(--text); }
+  .good { color: #4ade80 !important; }
+  .mid { color: #fbbf24 !important; }
+  .bad { color: #f87171 !important; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Better Animal Rendering</h1>
+  <p class="sub">Three approaches — click buttons to see each one live</p>
+
+  <!-- ═══════════ APPROACH A: Emoji ═══════════ -->
+  <h2><span class="tag tag-rec">Recommended</span> Emoji Patronus</h2>
+  <p class="desc">Use native emoji animals, blast them white with CSS <code>brightness(100) saturate(0)</code>, add patronus glow via <code>drop-shadow</code>. The OS renders a detailed animal — we turn it into a ghost. Zero drawing, instantly recognizable.</p>
+
+  <div class="stage" id="stage-emoji">
+    <div class="stage-bg"></div>
+  </div>
+  <div class="btns" id="btns-emoji">
+    <button class="on" onclick="summonEmoji('stag', this)">🦌 Stag</button>
+    <button onclick="summonEmoji('owl', this)">🦉 Owl</button>
+    <button onclick="summonEmoji('phoenix', this)">🦅 Phoenix</button>
+    <button onclick="summonEmoji('cat', this)">🐈‍⬛ Cat</button>
+    <button onclick="summonEmoji('otter', this)">🦦 Otter</button>
+    <button onclick="summonEmoji('dog', this)">🐕 Dog</button>
+  </div>
+
+  <div class="compare">
+    <div class="compare-item"><div class="label">Recognizable?</div><div class="val good">★★★ Instantly — OS-drawn art</div></div>
+    <div class="compare-item"><div class="label">Dependencies</div><div class="val good">Zero — native emoji</div></div>
+    <div class="compare-item"><div class="label">Bundle size</div><div class="val good">~2KB JS (no SVG data)</div></div>
+    <div class="compare-item"><div class="label">Cross-platform</div><div class="val mid">Looks different per OS — Apple/Google/Windows emoji differ</div></div>
+    <div class="compare-item"><div class="label">Patronus feel</div><div class="val good">Strong — glowing white silhouette from detailed base</div></div>
+    <div class="compare-item"><div class="label">Perf</div><div class="val good">GPU-composited filters + transforms only</div></div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ═══════════ APPROACH B: External SVG silhouettes ═══════════ -->
+  <h2><span class="tag tag-alt">Alternative</span> External SVG Silhouette Files</h2>
+  <p class="desc">Use proper SVG silhouette files stored in <code>public/svg/creatures/</code>. Source from open-source icon libraries (Lucide, Phosphor, or free silhouette sets). Professional artwork, consistent style, but requires finding/curating the right files.</p>
+
+  <div class="note-box">
+    Can't demo this live without the actual SVG files — the quality depends entirely on <strong>sourcing good silhouettes</strong>. Options: <strong>Phosphor Icons</strong> (has cat, dog, bird, horse), <strong>SVG Repo</strong> (free silhouettes), or custom illustrations. This is the "most work upfront, best long-term control" approach.
+  </div>
+
+  <div class="compare">
+    <div class="compare-item"><div class="label">Recognizable?</div><div class="val good">★★★ Professional artwork</div></div>
+    <div class="compare-item"><div class="label">Dependencies</div><div class="val good">Zero — static SVG files</div></div>
+    <div class="compare-item"><div class="label">Bundle size</div><div class="val mid">~1-3KB per SVG + JS loader</div></div>
+    <div class="compare-item"><div class="label">Cross-platform</div><div class="val good">Identical everywhere — vector</div></div>
+    <div class="compare-item"><div class="label">Patronus feel</div><div class="val mid">Depends on art style — flat icons feel less organic</div></div>
+    <div class="compare-item"><div class="label">Effort</div><div class="val mid">Need to find/curate 6 matching silhouettes</div></div>
+  </div>
+
+  <hr class="sep">
+
+  <!-- ═══════════ APPROACH C: Lottie ═══════════ -->
+  <h2><span class="tag tag-alt">Alternative</span> Lottie Animations</h2>
+  <p class="desc">Use pre-made Lottie walk/fly cycle animations, tinted to patronus colors. The animals actually <em>move</em> — legs walk, wings flap with real keyframed motion. Highest visual ceiling, but adds lottie-web (~50KB) dependency.</p>
+
+  <div class="note-box">
+    Can't demo without Lottie files, but imagine: a stag that actually <strong>walks with leg motion</strong>, an owl with <strong>individually animated wing feathers</strong>. Sources: <strong>LottieFiles.com</strong> has free animal walk cycles. Tint to patronus blue-white via Lottie color manipulation.
+    <br><br>
+    Trade-off: <strong>+50KB</strong> for lottie-web, need to find/license 6 matching animations, more complex integration.
+  </div>
+
+  <div class="compare">
+    <div class="compare-item"><div class="label">Recognizable?</div><div class="val good">★★★ Animated = unmistakable</div></div>
+    <div class="compare-item"><div class="label">Dependencies</div><div class="val bad">lottie-web ~50KB gzipped</div></div>
+    <div class="compare-item"><div class="label">Bundle size</div><div class="val mid">~5-15KB per animation JSON</div></div>
+    <div class="compare-item"><div class="label">Cross-platform</div><div class="val good">Identical everywhere</div></div>
+    <div class="compare-item"><div class="label">Patronus feel</div><div class="val good">★★★ Living, breathing creatures</div></div>
+    <div class="compare-item"><div class="label">Effort</div><div class="val bad">Find/license animations + integrate lottie-web</div></div>
+  </div>
+
+</div>
+
+<script>
+const emojiMap = {
+  stag:    { emoji: '🦌', type: 'ground' },
+  owl:     { emoji: '🦉', type: 'fly' },
+  phoenix: { emoji: '🦅', type: 'fly' },
+  cat:     { emoji: '🐈‍⬛', type: 'ground' },
+  otter:   { emoji: '🦦', type: 'ground' },
+  dog:     { emoji: '🐕', type: 'ground' },
+};
+
+let activeEmoji = null;
+
+function summonEmoji(name, btn) {
+  if (activeEmoji) activeEmoji.remove();
+  const stage = document.getElementById('stage-emoji');
+  const c = emojiMap[name];
+
+  const wrap = document.createElement('div');
+  wrap.className = 'emoji-creature' + (c.type === 'ground' ? ' ground' : '');
+
+  const inner = document.createElement('div');
+  inner.className = 'emoji-inner';
+
+  // Ghost layer (blurred behind)
+  const ghost = document.createElement('div');
+  ghost.className = 'emoji-ghost';
+  ghost.textContent = c.emoji;
+
+  // Main emoji
+  const main = document.createElement('div');
+  main.className = 'emoji-char';
+  main.textContent = c.emoji;
+
+  inner.appendChild(ghost);
+  inner.appendChild(main);
+  wrap.appendChild(inner);
+  stage.appendChild(wrap);
+  activeEmoji = wrap;
+
+  wrap.addEventListener('animationend', (e) => {
+    if (e.animationName === 'emoji-traverse') {
+      wrap.remove();
+      activeEmoji = null;
+    }
+  });
+
+  // Active button
+  document.querySelectorAll('#btns-emoji button').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// Auto-summon stag
+setTimeout(() => {
+  const btn = document.querySelector('#btns-emoji button');
+  summonEmoji('stag', btn);
+}, 600);
+</script>
+</body>
+</html>

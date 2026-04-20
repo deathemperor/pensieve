@@ -1,0 +1,123 @@
+---
+// Cat Walk — 6-frame pixel-art sprite animation using CSS steps().
+// Sprite sheet: /public/sprites/cat/walk.png (432×60 = 6 × 72×60 frames).
+// Asset is CC0 (Shepardskin via OpenGameArt) — see public/sprites/cat/LICENSE.txt.
+---
+
+<div class="cat-stage">
+  <div class="cat-scene">
+    <!-- Ground line -->
+    <div class="ground" aria-hidden="true"></div>
+
+    <!-- Ambient dust particles behind the cat -->
+    <div class="dust dust-1" aria-hidden="true"></div>
+    <div class="dust dust-2" aria-hidden="true"></div>
+    <div class="dust dust-3" aria-hidden="true"></div>
+
+    <!-- The walking cat sprite -->
+    <div class="cat-walker" role="img" aria-label="A pixel-art cat walks across the ground">
+      <div class="cat-sprite"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .cat-stage {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background:
+      linear-gradient(180deg, #0d1014 0%, #14181d 70%, #1e2430 100%);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .cat-scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  .cat-walker {
+    position: absolute;
+    bottom: calc(22% + 4px);
+    left: -15%;
+    width: 192px;
+    height: 128px;
+    animation: cross-stage 11s linear infinite;
+  }
+
+  /* The sprite itself: one frame visible at a time via background-position
+     stepping across the sheet using CSS steps(). Hand-crafted sprite —
+     48×32 per frame × 8 frames = 384×32 source, scaled 4× via pixelated. */
+  .cat-sprite {
+    width: 192px;
+    height: 128px;
+    background-image: url("/sprites/cat/walk-v2.png");
+    background-repeat: no-repeat;
+    background-size: 1536px 128px;   /* 8 frames × 192px wide (4× scale from 384×32) */
+    background-position: 0 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    animation: cat-walk-cycle 0.72s steps(8) infinite;
+  }
+
+  /* Each step() advances the background by one frame width (192px). */
+  @keyframes cat-walk-cycle {
+    from { background-position: 0 0; }
+    to   { background-position: -1536px 0; }
+  }
+
+  /* The cat enters from the left, walks across, exits right, then loops */
+  @keyframes cross-stage {
+    0%   { left: -12%; opacity: 0; }
+    8%   { opacity: 1; }
+    92%  { opacity: 1; }
+    100% { left: 108%; opacity: 0; }
+  }
+
+  /* Dust puffs kicked up behind the cat */
+  .dust {
+    position: absolute;
+    bottom: calc(22% + 4px);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    animation: dust-puff 1.5s ease-out infinite;
+    opacity: 0;
+  }
+  .dust-1 { left: 20%; animation-delay: 0.2s; }
+  .dust-2 { left: 45%; animation-delay: 0.8s; }
+  .dust-3 { left: 70%; animation-delay: 1.4s; }
+
+  @keyframes dust-puff {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+    30%  { opacity: 0.4; }
+    100% { opacity: 0; transform: translate(-12px, -10px) scale(1.8); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cat-walker, .cat-sprite, .dust {
+      animation: none;
+    }
+    .cat-walker {
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 1;
+    }
+    .cat-sprite {
+      background-position: 0 0; /* show frame 1 */
+    }
+  }
+</style>

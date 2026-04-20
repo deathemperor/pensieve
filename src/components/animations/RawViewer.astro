@@ -1,0 +1,396 @@
+---
+import type { TranscriptEntry } from "../../lib/animations/transcript.ts";
+import type { FixtureChapter } from "../../lib/animations/load-fixture.ts";
+import { renderEntryLabel } from "../../lib/animations/render-entry.ts";
+
+interface Props {
+  transcript: TranscriptEntry[];
+  chapters: FixtureChapter[];
+}
+
+const { transcript, chapters } = Astro.props;
+const chaptersByIndex = new Map(chapters.map((c) => [c.cursor_index, c]));
+---
+
+<nav class="tool-timeline" aria-label="Tool call timeline">
+  <div class="timeline-transport" role="toolbar" aria-label="Playback controls">
+    <button type="button" class="transport-btn" data-transport="prev" aria-label="Previous cursor (←)">
+      <span aria-hidden="true">◂</span>
+    </button>
+    <button type="button" class="transport-btn transport-play" data-transport="play" aria-label="Play">
+      <span class="icon-play" aria-hidden="true">▶</span>
+      <span class="icon-pause" aria-hidden="true">⏸</span>
+    </button>
+    <button type="button" class="transport-btn" data-transport="next" aria-label="Next cursor (→)">
+      <span aria-hidden="true">▸</span>
+    </button>
+    <button type="button" class="transport-btn transport-speed" data-transport="speed" aria-label="Playback speed">
+      <span class="speed-label">1×</span>
+    </button>
+    <span class="transport-cursor" aria-live="polite">
+      <span class="cursor-now">0</span>/<span class="cursor-max">{transcript.length - 1}</span>
+    </span>
+  </div>
+  <ol class="timeline-dots" role="list">
+    {transcript.map((entry) => {
+      const tool = entry.kind === "tool" ? entry.tool : "";
+      const label = entry.kind === "tool"
+        ? `#${entry.cursor} ${entry.tool}`
+        : `#${entry.cursor} ${entry.kind}`;
+      return (
+        <li
+          class:list={["timeline-dot", `kind-${entry.kind}`, `tool-${tool || "none"}`]}
+          data-cursor={entry.cursor}
+        >
+          <a href={`#cursor-${entry.cursor}`} title={label} aria-label={label}>
+            <span class="dot-visual" aria-hidden="true"></span>
+          </a>
+        </li>
+      );
+    })}
+  </ol>
+  <div class="timeline-chapters" aria-hidden="true">
+    {chapters.map((ch) => {
+      const pct = transcript.length > 1
+        ? (ch.cursor_index / (transcript.length - 1)) * 100
+        : 0;
+      return (
+        <span class="timeline-chapter-marker" style={`left:${pct}%`}>
+          <span class="tc-line"></span>
+          <span class="tc-label">{ch.label}</span>
+        </span>
+      );
+    })}
+  </div>
+</nav>
+
+<section class="raw-viewer" aria-label="Build session transcript">
+  <nav class="chapters" aria-label="Chapters">
+    <h2>Chapters</h2>
+    <ol>
+      {chapters.map((ch) => (
+        <li>
+          <a href={`#cursor-${ch.cursor_index}`} data-cursor={ch.cursor_index}>
+            <span class="label">{ch.label}</span>
+            {ch.description && <span class="desc">{ch.description}</span>}
+          </a>
+        </li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="stream-column">
+    <div class="filter-bar" role="toolbar" aria-label="Transcript filters">
+      <span class="filter-label">Show:</span>
+      <button type="button" class="pill" data-filter="all">All</button>
+      <button type="button" class="pill is-active" data-filter="signal">Signal</button>
+      <button type="button" class="pill" data-filter="edits">Edits</button>
+      <button type="button" class="pill" data-filter="prompts">Prompts</button>
+    </div>
+
+    <ol class="stream" role="list">
+      {transcript.map((entry) => {
+        const chapter = chaptersByIndex.get(entry.cursor);
+        const tool = entry.kind === "tool" ? entry.tool : "";
+        return (
+          <li
+            id={`cursor-${entry.cursor}`}
+            class:list={["entry", `kind-${entry.kind}`, chapter && "has-chapter"]}
+            data-cursor={entry.cursor}
+            data-tool={tool}
+          >
+            {chapter && (
+              <div class="chapter-marker" aria-label={`Chapter: ${chapter.label}`}>
+                ▸ {chapter.label}
+              </div>
+            )}
+            <details>
+              <summary>
+                <span class="cursor">#{entry.cursor}</span>
+                <span class="label">{renderEntryLabel(entry)}</span>
+                <time class="ts">{entry.ts}</time>
+              </summary>
+              <pre class="body">{JSON.stringify(entry, null, 2)}</pre>
+            </details>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .raw-viewer {
+    display: grid;
+    grid-template-columns: minmax(200px, 260px) 1fr;
+    gap: 2rem;
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.8125rem;
+    color: var(--text, #f7f8f8);
+  }
+
+  .chapters { position: sticky; top: 2rem; align-self: start; }
+  .chapters h2 {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted, #62666d);
+    margin: 0 0 0.75rem;
+  }
+  .chapters ol { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .chapters a {
+    display: block;
+    color: var(--secondary, #8a8f98);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  }
+  .chapters a:hover,
+  .chapters a[aria-current="true"] {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+  }
+  .chapters .label { display: block; font-weight: 500; }
+  .chapters .desc { display: block; font-size: 0.75rem; color: var(--muted, #62666d); margin-top: 0.25rem; }
+
+  .stream-column { min-width: 0; }
+
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    position: sticky;
+    top: 0;
+    background: var(--bg, #08090a);
+    z-index: 1;
+  }
+  .filter-label {
+    color: var(--muted, #62666d);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 0.25rem;
+  }
+  .pill {
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    background: transparent;
+    color: var(--secondary, #8a8f98);
+    font-family: inherit;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  }
+  .pill:hover { border-color: rgba(255, 255, 255, 0.18); color: var(--text, #f7f8f8); }
+  .pill.is-active {
+    background: rgba(94, 106, 210, 0.14);
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+  }
+
+  /* Filter modes. Entries carry kind-* and data-tool attributes; CSS applies
+     a display filter based on the root-level `data-filter` set by the client. */
+  .raw-viewer[data-filter="signal"] .kind-tool[data-tool="Read"],
+  .raw-viewer[data-filter="signal"] .kind-tool[data-tool="Grep"],
+  .raw-viewer[data-filter="signal"] .kind-tool[data-tool="Glob"] {
+    display: none;
+  }
+  .raw-viewer[data-filter="edits"] .entry {
+    display: none;
+  }
+  .raw-viewer[data-filter="edits"] .kind-tool[data-tool="Edit"],
+  .raw-viewer[data-filter="edits"] .kind-tool[data-tool="Write"] {
+    display: block;
+  }
+  .raw-viewer[data-filter="prompts"] .entry {
+    display: none;
+  }
+  .raw-viewer[data-filter="prompts"] .kind-prompt {
+    display: block;
+  }
+
+  .stream { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .entry {
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+    scroll-margin-top: 2rem;
+  }
+  .entry.is-current {
+    border-left-color: var(--accent, #5e6ad2);
+    background: rgba(94, 106, 210, 0.08);
+  }
+
+  .chapter-marker { margin: 1rem 0 0.25rem; color: var(--accent, #5e6ad2); font-weight: 500; }
+
+  details > summary {
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 3em 1fr auto;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.3rem 0;
+  }
+  .cursor { color: var(--muted, #62666d); }
+  .ts { color: var(--muted, #62666d); font-size: 0.6875rem; }
+  .body {
+    margin: 0.25rem 0 0.5rem;
+    padding: 0.75rem;
+    background: var(--elevated, #141516);
+    border-radius: 6px;
+    overflow-x: auto;
+    color: var(--secondary, #8a8f98);
+  }
+
+  .kind-prompt .label::before { content: "▸ "; color: var(--accent, #5e6ad2); }
+  .kind-assistant .label::before { content: "◂ "; color: var(--muted, #62666d); }
+
+  @media (max-width: 768px) {
+    .raw-viewer { grid-template-columns: 1fr; }
+    .chapters { position: static; }
+  }
+
+  /* Tool timeline — horizontal dot-strip with chapter markers above. */
+  .tool-timeline {
+    position: relative;
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 0 0.5rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 10px;
+    background: var(--elevated, #141516);
+    overflow: visible;
+  }
+
+  /* Transport controls */
+  .timeline-transport {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0 0.75rem 0.75rem;
+    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    margin-bottom: 0.625rem;
+  }
+  .transport-btn {
+    appearance: none;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    background: transparent;
+    color: var(--secondary, #8a8f98);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.875rem;
+    line-height: 1;
+    padding: 0.3rem 0.55rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    min-width: 1.75rem;
+    text-align: center;
+  }
+  .transport-btn:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.22);
+    color: var(--text, #f7f8f8);
+  }
+  .transport-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .transport-play { background: rgba(94, 106, 210, 0.1); border-color: rgba(94, 106, 210, 0.35); color: var(--text, #f7f8f8); }
+  .transport-play .icon-pause { display: none; }
+  .tool-timeline.is-playing .transport-play .icon-play { display: none; }
+  .tool-timeline.is-playing .transport-play .icon-pause { display: inline; }
+  .transport-speed { min-width: 2.5rem; font-size: 0.75rem; }
+  .transport-cursor {
+    margin-left: auto;
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+    user-select: none;
+  }
+  .cursor-now { color: var(--text, #f7f8f8); font-weight: 500; }
+  .timeline-dots {
+    list-style: none;
+    padding: 0 0.75rem;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+    min-height: 20px;
+  }
+  .timeline-dot { display: inline-block; line-height: 0; }
+  .timeline-dot a {
+    display: block;
+    padding: 4px 1px;
+    border-radius: 3px;
+    text-decoration: none;
+    outline: none;
+    transition: background 80ms ease;
+  }
+  .timeline-dot a:hover,
+  .timeline-dot a:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .dot-visual {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    background: var(--muted, #62666d);
+    transition: transform 80ms ease, filter 80ms ease;
+  }
+  .timeline-dot a:hover .dot-visual,
+  .timeline-dot a:focus-visible .dot-visual {
+    transform: scaleY(1.35);
+    filter: brightness(1.2);
+  }
+  .timeline-dot.kind-prompt .dot-visual { background: #a78bfa; }
+  .timeline-dot.kind-assistant .dot-visual { background: #62666d; }
+  .timeline-dot.tool-Edit .dot-visual,
+  .timeline-dot.tool-Write .dot-visual { background: #5e6ad2; }
+  .timeline-dot.tool-Bash .dot-visual { background: #f7a13c; }
+  .timeline-dot.tool-Read .dot-visual,
+  .timeline-dot.tool-Grep .dot-visual,
+  .timeline-dot.tool-Glob .dot-visual { background: rgba(138, 143, 152, 0.5); }
+  .timeline-dot.is-current .dot-visual {
+    box-shadow: 0 0 0 2px var(--bg, #08090a), 0 0 0 3px var(--accent, #5e6ad2);
+    transform: scaleY(1.5);
+  }
+
+  .timeline-chapters {
+    position: absolute;
+    top: 0;
+    left: 0.75rem;
+    right: 0.75rem;
+    height: 1rem;
+    pointer-events: none;
+  }
+  .timeline-chapter-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+  }
+  .tc-line {
+    width: 1px;
+    height: 1rem;
+    background: rgba(94, 106, 210, 0.5);
+  }
+  .tc-label {
+    position: absolute;
+    top: -1rem;
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6rem;
+    color: var(--secondary, #8a8f98);
+    white-space: nowrap;
+    transform: rotate(-18deg) translateX(-0.5rem);
+    transform-origin: 0 0;
+  }
+</style>
+
+<script>
+  import "./raw-viewer-client.ts";
+</script>

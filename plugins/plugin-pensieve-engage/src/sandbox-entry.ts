@@ -367,61 +367,67 @@ export default definePlugin({
 		subscribe: {
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const body = await routeCtx.request.json();
-				const email = body.email?.trim().toLowerCase();
-
-				if (!email || !isValidEmail(email)) {
-					return { error: "Invalid email address" };
-				}
-
-				const existing = await ctx.storage.subscribers.query({
-					where: { email },
-				});
-				const existingItems = existing.items ?? existing ?? [];
-
-				if (existingItems.length > 0) {
-					const sub = existingItems[0] as any;
-					if (sub.status === "active") {
-						return { success: true, message: "Already subscribed" };
-					}
-					// Re-activate unsubscribed user
-					await ctx.storage.subscribers.put(sub.id ?? hashEmail(email), {
-						...sub,
-						status: "active",
-					});
-					return { success: true, message: "Subscription reactivated" };
-				}
-
-				const id = hashEmail(email);
-				await ctx.storage.subscribers.put(id, {
-					id,
-					email,
-					status: "active",
-					createdAt: new Date().toISOString(),
-				});
-
-				const welcomeSubject =
-					(await ctx.kv.get<string>("settings:welcomeSubject")) ??
-					"Welcome to Pensieve";
-				const welcomeBody =
-					(await ctx.kv.get<string>("settings:welcomeBody")) ??
-					"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
-
 				try {
-					await ctx.email.send(
-						{
-							to: email,
-							subject: welcomeSubject,
-							text: welcomeBody,
-						},
-						"pensieve-engage",
-					);
-				} catch (err) {
-					ctx.log.info(`Welcome email failed for ${email}: ${err}`);
-				}
+					const body = await routeCtx.request.json().catch(() => ({}));
+					const email = body?.email?.trim().toLowerCase();
 
-				ctx.log.info(`New subscriber: ${email}`);
-				return { success: true };
+					if (!email || !isValidEmail(email)) {
+						return { error: "Invalid email address" };
+					}
+
+					// Full scan + filter avoids depending on indexes that may not
+					// exist yet for a never-written collection.
+					const all = await ctx.storage.subscribers.query({});
+					const items = all.items ?? all ?? [];
+					const existing = items.find((s: any) => s.email === email);
+
+					if (existing) {
+						if (existing.status === "active") {
+							return { success: true, message: "Already subscribed" };
+						}
+						await ctx.storage.subscribers.put(existing.id ?? hashEmail(email), {
+							...existing,
+							status: "active",
+						});
+						return { success: true, message: "Subscription reactivated" };
+					}
+
+					const id = hashEmail(email);
+					await ctx.storage.subscribers.put(id, {
+						id,
+						email,
+						status: "active",
+						createdAt: new Date().toISOString(),
+					});
+
+					const welcomeSubject =
+						(await ctx.kv.get<string>("settings:welcomeSubject")) ??
+						"Welcome to Pensieve";
+					const welcomeBody =
+						(await ctx.kv.get<string>("settings:welcomeBody")) ??
+						"Thanks for subscribing to Pensieve! You'll receive updates when new posts are published.";
+
+					try {
+						await ctx.email.send(
+							{
+								to: email,
+								subject: welcomeSubject,
+								text: welcomeBody,
+							},
+							"pensieve-engage",
+						);
+					} catch (err) {
+						ctx.log.info(`Welcome email failed for ${email}: ${err}`);
+					}
+
+					ctx.log.info(`New subscriber: ${email}`);
+					return { success: true };
+				} catch (err) {
+					ctx.log.info(
+						`Subscribe handler failed: ${err instanceof Error ? err.message : String(err)}`,
+					);
+					return { error: "Subscription failed, please try again" };
+				}
 			},
 		},
 

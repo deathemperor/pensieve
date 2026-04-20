@@ -1,0 +1,151 @@
+<h2>Room of Requirement: Hub Dashboard</h2>
+<p class="subtitle">Hero stays. Everything else becomes a dense dashboard grid. Click a panel to see its sub-page or inline detail.</p>
+
+<div class="mockup" style="max-width: 900px; margin: 0 auto;">
+  <div class="mockup-header">Room of Requirement — Dashboard Layout</div>
+  <div class="mockup-body" style="padding: 0; background: #0d1117;">
+
+    <!-- Hero (compact) -->
+    <div style="padding: 32px 24px 24px; border-bottom: 1px solid #21262d;">
+      <div style="width: 24px; height: 1px; background: #58a6ff; margin-bottom: 12px;"></div>
+      <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; margin-bottom: 8px;">The Build</div>
+      <div style="font-size: 24px; font-weight: 700; color: #e6edf3; letter-spacing: -0.02em;">Room of Requirement</div>
+      <div style="font-size: 13px; color: #8b949e; margin-top: 8px; max-width: 50ch; line-height: 1.5;">Built entirely by Claude Code. Every page, plugin, and deployment pair-programmed in the terminal.</div>
+      <div style="display: flex; gap: 16px; margin-top: 12px;">
+        <span style="font-family: monospace; font-size: 12px; color: #58a6ff;">Build diary &rarr;</span>
+        <span style="font-family: monospace; font-size: 12px; color: #58a6ff;">Daily Prophet &rarr;</span>
+      </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div style="padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+
+      <!-- Panel: What CC Does (inline — static, small) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; grid-column: 1 / -1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="display: flex; gap: 16px;">
+            <div>
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #58a6ff; margin-right: 4px;"></span>
+              <span style="font-size: 11px; font-weight: 600; color: #58a6ff;">Claude Code</span>
+              <span style="font-size: 11px; color: #8b949e; margin-left: 4px;">7 roles</span>
+            </div>
+            <div>
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #3fb950; margin-right: 4px;"></span>
+              <span style="font-size: 11px; font-weight: 600; color: #3fb950;">Human</span>
+              <span style="font-size: 11px; color: #8b949e; margin-left: 4px;">5 roles</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size: 10px; color: #484f58; font-family: monospace;">All source code &middot; Infrastructure &middot; CI/CD &middot; Plugins &middot; DNS &middot; Architecture &middot; Git</div>
+      </div>
+
+      <!-- Panel: Architecture (navigable) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='#30363d'" onmouseout="this.style.borderColor='#21262d'">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">Architecture</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">Astro</span>
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">EmDash</span>
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">Workers</span>
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">D1</span>
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">R2</span>
+          <span style="font-size: 10px; padding: 2px 6px; background: #21262d; border-radius: 4px; color: #8b949e;">KV</span>
+        </div>
+        <div style="font-size: 10px; color: #484f58; margin-top: 8px; font-family: monospace;">6 services &rarr;</div>
+      </div>
+
+      <!-- Panel: Source (inline — tiny) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px;">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">Source</div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="#8b949e"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span style="font-family: monospace; font-size: 11px; color: #e6edf3;">deathemperor/pensieve</span>
+        </div>
+      </div>
+
+      <!-- Panel: Task Observatory (navigable — has sub-page) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='#30363d'" onmouseout="this.style.borderColor='#21262d'">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">Task Observatory</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 10px; color: #e5534b;">&#9679; Remembrall</span>
+          <span style="font-size: 10px; color: #d4a843;">&#9679; Map</span>
+          <span style="font-size: 10px; color: #7c3aed;">&#9679; O.W.L.s</span>
+          <span style="font-size: 10px; color: #3fb950;">&#9679; RoR</span>
+          <span style="font-size: 10px; color: #58a6ff;">&#9679; Strands</span>
+          <span style="font-size: 10px; color: #d2a679;">&#9679; Parchment</span>
+        </div>
+        <div style="font-size: 10px; color: #484f58; margin-top: 8px; font-family: monospace;">6 systems &middot; 3 open &middot; 1 done &rarr;</div>
+      </div>
+
+      <!-- Panel: Restricted Section (navigable — growing) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='#30363d'" onmouseout="this.style.borderColor='#21262d'">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">The Restricted Section</div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span style="font-size: 10px; padding: 1px 6px; border-radius: 3px; color: #7c3aed; background: rgba(124,58,237,0.12);">2 specs</span>
+          <span style="font-size: 10px; padding: 1px 6px; border-radius: 3px; color: #d4a843; background: rgba(212,168,67,0.12);">2 plans</span>
+        </div>
+        <div style="font-size: 10px; color: #484f58; margin-top: 8px; font-family: monospace;">2 projects &middot; 3,089 lines &rarr;</div>
+      </div>
+
+      <!-- Panel: House-Elves (navigable — growing) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='#30363d'" onmouseout="this.style.borderColor='#21262d'">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">House-Elves</div>
+        <div style="font-size: 10px; color: #8b949e; line-height: 1.4;">session-logger &middot; moderate-comments &middot; Explore &middot; Plan &middot; geminio &middot; argus-filch</div>
+        <div style="font-size: 10px; color: #484f58; margin-top: 8px; font-family: monospace;">6 agents &rarr;</div>
+      </div>
+
+      <!-- Panel: Plugins (navigable — growing) -->
+      <div style="background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='#30363d'" onmouseout="this.style.borderColor='#21262d'">
+        <div style="font-size: 12px; font-weight: 600; color: #e6edf3; margin-bottom: 6px;">Plugins</div>
+        <div style="font-size: 10px; color: #8b949e; line-height: 1.4;">resend &middot; forms &middot; webhook-notifier &middot; pensieve-engage</div>
+        <div style="font-size: 10px; color: #484f58; margin-top: 8px; font-family: monospace;">4 plugins &rarr;</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px;">
+  <h3>Section Treatment</h3>
+  <table style="width: 100%; font-size: 13px; border-collapse: collapse; margin-top: 8px;">
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Hero</td>
+      <td style="padding: 6px; color: #8b949e;">Stays — compact intro + links</td>
+      <td style="padding: 6px;"><span style="color: #3fb950; font-size: 11px;">inline</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">What CC Does</td>
+      <td style="padding: 6px; color: #8b949e;">Collapsed summary — one-liner with counts</td>
+      <td style="padding: 6px;"><span style="color: #3fb950; font-size: 11px;">inline panel</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Architecture</td>
+      <td style="padding: 6px; color: #8b949e;">Tag chips for tech stack, links to detail</td>
+      <td style="padding: 6px;"><span style="color: #d4a843; font-size: 11px;">panel &rarr;</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Source</td>
+      <td style="padding: 6px; color: #8b949e;">GitHub link — always tiny</td>
+      <td style="padding: 6px;"><span style="color: #3fb950; font-size: 11px;">inline panel</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Task Observatory</td>
+      <td style="padding: 6px; color: #8b949e;">6 colored dots + counts, links to sub-page</td>
+      <td style="padding: 6px;"><span style="color: #d4a843; font-size: 11px;">panel &rarr; sub-page</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Restricted Section</td>
+      <td style="padding: 6px; color: #8b949e;">Spec/plan badge counts, links to sub-page</td>
+      <td style="padding: 6px;"><span style="color: #d4a843; font-size: 11px;">panel &rarr; sub-page</span></td>
+    </tr>
+    <tr style="border-bottom: 1px solid #333;">
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">House-Elves</td>
+      <td style="padding: 6px; color: #8b949e;">Agent name list + count, links to sub-page</td>
+      <td style="padding: 6px;"><span style="color: #d4a843; font-size: 11px;">panel &rarr; sub-page</span></td>
+    </tr>
+    <tr>
+      <td style="padding: 6px; color: #e6edf3; font-weight: 500;">Plugins</td>
+      <td style="padding: 6px; color: #8b949e;">Plugin name list + count, links to sub-page</td>
+      <td style="padding: 6px;"><span style="color: #d4a843; font-size: 11px;">panel &rarr; sub-page</span></td>
+    </tr>
+  </table>
+</div>

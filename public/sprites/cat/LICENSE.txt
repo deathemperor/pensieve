@@ -1,0 +1,7 @@
+Cat sprite artwork — hand-crafted pixel art
+Author: built for pensieve (procedurally drawn, pixel-by-pixel Python + PIL)
+Source script: docs/assets/craft-cat.py (archived in pensieve repo)
+License: CC0 / public domain — do as you wish, attribution appreciated.
+
+Previous asset (Shepardskin CC0 silhouette) replaced on 2026-04-16 after
+visual review deemed it too minimal to read as a cat at any scale.

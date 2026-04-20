@@ -1,0 +1,291 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { getCurrentLang } from "../../../utils/lang";
+import { LESSONS, listByDifficulty } from "../../../data/animation-lessons.ts";
+
+interface AnimationData {
+  title: string;
+  description?: string;
+  tags?: string[];
+  hero_component?: string;
+  primary_session_id?: string;
+  language?: string;
+  updatedAt?: string;
+}
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+// Animations carry locale="en" in the DB but are language-neutral. Force en so the query returns them.
+const result = await getEmDashCollection("animations" as never, { locale: "en" } as never);
+const { entries, cacheHint } = result as unknown as {
+  entries: Array<{ id: string; data: AnimationData; status?: string }>;
+  cacheHint?: unknown;
+};
+
+// Animations are language-neutral — code is code. Show all published regardless of lang.
+// updatedAt can arrive as a Date object or ISO string depending on path;
+// coerce to a sortable string before comparing.
+const toSortKey = (v: unknown): string => {
+  if (v instanceof Date) return v.toISOString();
+  if (typeof v === "string") return v;
+  return "";
+};
+// Sort by pedagogy order (difficulty asc) when a lesson exists, else by updatedAt desc
+const lessonOrder = listByDifficulty(LESSONS).reduce((acc, { slug }, i) => {
+  acc[slug] = i;
+  return acc;
+}, {} as Record<string, number>);
+
+const visible = entries
+  .filter((e) => (e.status ?? "published") === "published")
+  .sort((a, b) => {
+    const aOrder = lessonOrder[a.id];
+    const bOrder = lessonOrder[b.id];
+    if (aOrder !== undefined && bOrder !== undefined) return aOrder - bOrder;
+    if (aOrder !== undefined) return -1;
+    if (bOrder !== undefined) return 1;
+    return toSortKey(b.data.updatedAt).localeCompare(toSortKey(a.data.updatedAt));
+  });
+
+if (cacheHint) Astro.cache.set(cacheHint as never);
+---
+
+<Base
+  title={isVi ? "Sân Quidditch — Pensieve" : "Quidditch Pitch — Pensieve"}
+  description={isVi
+    ? "Xưởng thí nghiệm web animation — mỗi sản phẩm đi kèm nhật ký dựng lại toàn bộ quá trình."
+    : "A playground of web animations — each paired with a full-fidelity build diary."}
+  breadcrumbs={[
+    { label: "Hogwarts", href: "/" },
+    { label: isVi ? "Sân Quidditch" : "Quidditch Pitch" },
+  ]}
+>
+  <section class="pitch-hero">
+    <span class="room-label">{isVi ? "Học viện Animation" : "Animation Academy"}</span>
+    <h1 class="room-title">{isVi ? "Sân Quidditch" : "Quidditch Pitch"}</h1>
+    <p class="room-lede">
+      {isVi
+        ? "Học web animation bằng cách xem lại toàn bộ quá trình dựng."
+        : "Learn web animation by watching the whole build, not just the finished code."}
+    </p>
+    <p class="room-subtitle">
+      {isVi
+        ? "Mỗi tác phẩm ở đây là một bản ghi đầy đủ của phiên Claude Code đã dựng nên nó — mọi prompt, mọi tool call, mọi chỉnh sửa. Bấm Play hoặc kéo thanh thời gian để tua lại bất kỳ khoảnh khắc nào. Khung Live Render sẽ tái dựng trang đúng trạng thái tại cursor đó."
+        : "Every piece here comes with the full Claude Code session that built it — every prompt, every tool call, every edit. Press Play or scrub the timeline to any moment. The Live Render pane rebuilds the animation at that exact cursor."}
+    </p>
+    <div class="academy-links">
+      <a href="/hogwarts/quidditch/techniques" class="academy-link">
+        <span aria-hidden="true">▸</span>
+        {isVi ? "Duyệt theo kỹ thuật" : "Browse by technique"}
+      </a>
+    </div>
+  </section>
+
+  <section class="start-here">
+    <h2 class="sh-title">{isVi ? "Bắt đầu từ đây" : "Start here"}</h2>
+    <p class="sh-sub">
+      {isVi
+        ? "Thứ tự gợi ý theo độ khó — từ bản scaffolding cơ bản đến animation 3D ba-lớp."
+        : "Suggested order by difficulty — from a minimal scaffolding proof to layered 3D composition."}
+    </p>
+  </section>
+
+  <ul class="animation-grid" role="list">
+    {visible.map((anim) => {
+      const lesson = LESSONS[anim.id];
+      return (
+        <li>
+          <a class="anim-card" href={`/hogwarts/quidditch/${anim.id}`}>
+            <div class="card-head">
+              <h2>{anim.data.title}</h2>
+              {lesson && (
+                <span class={`difficulty-pill dp-${lesson.difficulty}`}>{lesson.difficulty}</span>
+              )}
+            </div>
+            {lesson ? (
+              <p class="desc">{lesson.subtitle}</p>
+            ) : (
+              anim.data.description && <p class="desc">{anim.data.description}</p>
+            )}
+            {lesson && (
+              <div class="tags">
+                {lesson.techniques.slice(0, 4).map((t) => <span class="tag">{t.replace(/-/g, " ")}</span>)}
+                {lesson.techniques.length > 4 && <span class="tag more">+{lesson.techniques.length - 4}</span>}
+              </div>
+            )}
+            {!lesson && anim.data.tags && anim.data.tags.length > 0 && (
+              <div class="tags">
+                {anim.data.tags.map((t) => <span class="tag">{t}</span>)}
+              </div>
+            )}
+            {lesson && (
+              <div class="card-footer">
+                <span class="card-duration">{lesson.duration}</span>
+                <span class="card-cta">{isVi ? "Xem bản ghi →" : "Watch the build →"}</span>
+              </div>
+            )}
+          </a>
+        </li>
+      );
+    })}
+    {visible.length === 0 && (
+      <li class="empty">
+        {isVi ? "Chưa có animation nào — sớm thôi." : "No animations yet — coming soon."}
+      </li>
+    )}
+  </ul>
+</Base>
+
+<style>
+  .pitch-hero { margin: 3rem 0 2.5rem; }
+  .room-label {
+    display: inline-block;
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted, #62666d);
+    margin-bottom: 0.75rem;
+  }
+  .room-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.75rem;
+  }
+  .room-lede {
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    color: var(--text, #f7f8f8);
+    max-width: 52ch;
+    margin: 0 0 0.75rem;
+    line-height: 1.45;
+    letter-spacing: -0.005em;
+  }
+  .room-subtitle {
+    max-width: 64ch;
+    color: var(--secondary, #8a8f98);
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+  .academy-links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .academy-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.375rem 0.875rem;
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+    border-radius: 999px;
+    color: var(--secondary, #8a8f98);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    transition: border-color 120ms ease, color 120ms ease;
+  }
+  .academy-link:hover {
+    border-color: var(--accent, #5e6ad2);
+    color: var(--text, #f7f8f8);
+  }
+
+  .start-here {
+    margin: 0 0 1rem;
+  }
+  .sh-title {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent, #5e6ad2);
+    margin: 0 0 0.25rem;
+    font-weight: 500;
+  }
+  .sh-sub {
+    margin: 0 0 1rem;
+    color: var(--muted, #62666d);
+    font-size: 0.8125rem;
+  }
+
+  .difficulty-pill {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .dp-beginner     { background: rgba(63, 185, 80, 0.16);  color: #55d37a; }
+  .dp-intermediate { background: rgba(94, 106, 210, 0.18); color: #8d99f0; }
+  .dp-advanced     { background: rgba(247, 161, 60, 0.16); color: #f7b86a; }
+  .tag.more { color: var(--muted, #62666d); }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+  }
+  .card-duration {
+    color: var(--muted, #62666d);
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.75rem;
+  }
+  .card-cta {
+    color: var(--accent, #5e6ad2);
+    font-size: 0.8125rem;
+  }
+
+  .animation-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  .anim-card {
+    display: block;
+    background: var(--elevated, #141516);
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 120ms ease, transform 120ms ease;
+  }
+  .anim-card:hover {
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+  }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+  .card-head h2 { font-size: 1.0625rem; margin: 0; }
+  .desc { color: var(--secondary, #8a8f98); margin: 0 0 0.75rem; font-size: 0.9375rem; }
+  .tags { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+  .tag {
+    font-family: var(--mono, ui-monospace);
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+    color: var(--secondary, #8a8f98);
+  }
+  .empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted, #62666d);
+    border: 1px dashed var(--border, rgba(255, 255, 255, 0.06));
+    border-radius: 12px;
+  }
+</style>

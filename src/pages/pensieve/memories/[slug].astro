@@ -511,7 +511,8 @@ const publishDate =
 					form.reset();
 				} else {
 					const fallback = document.documentElement.lang === 'vi' ? 'Có lỗi xảy ra' : 'Something went wrong';
-					status.textContent = data.error || fallback;
+					const errMsg = typeof data.error === 'string' ? data.error : data.error?.message;
+					status.textContent = errMsg || fallback;
 					status.classList.add('error');
 				}
 			} catch {

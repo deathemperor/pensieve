@@ -52,6 +52,19 @@ export default {
 			});
 		}
 
+		// EmDash admin content list with limit>50 exceeds Worker CPU time
+		// when there are 200+ posts (SEO + byline hydration is O(n)).
+		if (
+			path.startsWith("/_emdash/api/content/") &&
+			!path.includes("/trash")
+		) {
+			const limit = url.searchParams.get("limit");
+			if (limit && parseInt(limit) > 50) {
+				url.searchParams.set("limit", "50");
+				return handler.fetch(new Request(url.href, request), env, ctx);
+			}
+		}
+
 		// Lowercase /trương → canonical /Trương
 		if (path.startsWith("/tr\u01B0\u01A1ng")) {
 			const canonical = path.replace("/tr\u01B0\u01A1ng", "/Tr\u01B0\u01A1ng");
