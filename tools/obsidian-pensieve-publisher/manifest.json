@@ -1,7 +1,7 @@
 {
 	"id": "pensieve-publisher",
 	"name": "Pensieve Publisher",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"minAppVersion": "1.4.0",
 	"description": "Publish Obsidian notes to your Pensieve (EmDash CMS) site and optionally cross-post to Facebook.",
 	"author": "Trương Hữu Lộc",
