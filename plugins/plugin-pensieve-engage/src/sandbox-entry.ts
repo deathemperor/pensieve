@@ -28,11 +28,14 @@ async function buildSubscribersPage(ctx: PluginContext) {
 	const active = items.filter((s: any) => s.status === "active").length;
 	const unsubscribed = items.filter((s: any) => s.status === "unsubscribed").length;
 
-	// Row-level `actions` was causing the admin UI's table renderer to drop
-	// the entire row (Sends/Analytics work without actions). Keep rows as
-	// {cells} only for now; a delete flow can live in a separate block.
+	// SENTINEL-BUILD-2026-04-21-v2 — if you see this string in the admin
+	// page or API response, we know the latest bundle is live.
 	const rows = items.map((s: any) => ({
-		cells: [s.email, s.status, s.createdAt ?? "—"],
+		cells: [
+			s.email ?? "SENTINEL-null-email",
+			s.status ?? "SENTINEL-null-status",
+			s.createdAt ?? "—",
+		],
 	}));
 
 	return {
