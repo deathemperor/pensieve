@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Type Your Shark — Pensieve</title>
+    <meta name="description" content="A typing game by Miriam Grigsby — hosted on Pensieve as a playable archive." />
+    <script src="./vendor/jquery-3.1.0.min.js"></script>
+    <script src="./jquery-ui-1.12.1/jquery-ui.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Cinzel&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="app.css" />
+    <!-- Pensieve archive patches: run without the original Rails backend.
+         Hides auth UI, stubs fetch to localhost:3000 so save/load calls fail
+         silently, and unlocks the game surface at load. -->
+    <style>
+        #auth-container,
+        #blackout,
+        #blackout2,
+        #myBtn,
+        #myModal { display: none !important; }
+        #easy-button,
+        #medium-button,
+        #hard-button { display: inline-block; }
+        .pensieve-archive-banner {
+            position: fixed; top: 8px; left: 8px; z-index: 9999;
+            font: 500 11px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #aab1bd; background: rgba(8, 9, 10, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 6px 10px; border-radius: 6px; backdrop-filter: blur(6px);
+        }
+        .pensieve-archive-banner a { color: #c8a464; text-decoration: none; }
+        .pensieve-archive-banner a:hover { text-decoration: underline; }
+    </style>
+    <script>
+        // Intercept backend calls so the game runs offline. Anything targeting
+        // the author's localhost:3000 Rails app returns a benign empty array.
+        (function () {
+            const realFetch = window.fetch.bind(window);
+            window.fetch = function (input, init) {
+                const url = typeof input === 'string' ? input : (input && input.url) || '';
+                if (/localhost:300[01]|127\.0\.0\.1/.test(url)) {
+                    return Promise.resolve(new Response('[]', {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }));
+                }
+                return realFetch(input, init);
+            };
+        })();
+    </script>
+</head>
+
+<body>
+<div class="pensieve-archive-banner">
+    Archive — <a href="https://github.com/miriamgrigsby/type-your-shark-frontend" target="_blank" rel="noopener noreferrer">original by Miriam Grigsby</a>
+    · <a href="/hogwarts/games/">← back</a>
+</div>
+<div id="top-container">
+    <div id="title-container">
+        <h1>Type-Your Shark</h1>
+    </div>
+    <div id="auth-container">
+        <div id='tester'>
+            <form id='auth-login' autocomplete="off">
+                <input id="name" type='text' name='username' placeholder='username' />
+                <input id="password" type='text' name='password' placeholder='password' />
+                <input type='submit' id="loginSubmit-button" value="Login"
+                    style="font-family: 'Cinzel', serif;
+                font-size: large; background-image: url(https://media.gettyimages.com/vectors/gold-background-metal-texture-vector-id617749020?s=612x612); border-radius: 15%; box-shadow: 0 0 5px 2px rgb(53, 52, 52);">
+                </>
+            </form>
+            <form id='auth-signup' autocomplete="off">
+                <input id="name2" type='text' name='username' placeholder='username' />
+                <input id="password2" type='text' name='password' placeholder='password' />
+                <input type='submit' id="signupSubmit-button" value="Sign-Up"
+                    style="font-family: 'Cinzel', serif;
+                font-size: large; background-image: url(https://media.gettyimages.com/vectors/gold-background-metal-texture-vector-id617749020?s=612x612); border-radius: 15%; box-shadow: 0 0 5px 2px rgb(53, 52, 52);">
+                </>
+            </form>
+            <div id="authButtons">
+                <button id="login-button">Login</button>
+                <button id="signup-button">Sign-Up</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="middle-container">
+    <div id="stats-container">
+        <h2 id="points">Points: <span id="underline1" style="text-decoration: underline;">0</span></h2>
+        <h2 id="sharksKilled">Sharks Killed: <span id="underline2" style="text-decoration: underline;">0</span></h2>
+        <h2 id="difLevel">Difficulty Level: <span id="underline4" style="text-decoration: underline;"></span></h2>
+        <h2 id='timer'>Timer: <span id="underline3" style="text-decoration: underline;">0</span></h2>
+    </div>
+</div>
+<div id="bottom-container">
+    <div id="blackout"
+        style="background-image:url(https://i.ya-webdesign.com/images/transparent-gray.png); display:block;">
+    </div>
+    <div id="blackout2"
+        style="background-image:url(https://i.ya-webdesign.com/images/transparent-gray.png); display:block;">
+    </div>
+    <div id="left">
+        <button id="easy-button">EASY</button>
+        <button id="medium-button">MEDIUM</button>
+        <button id="hard-button">HARD</button>
+        <button id="myBtn" style="visibility: hidden;">Your Stats</button>
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <div id="show-stats">
+                    <div id="overall-stats"></div>
+                </div>
+                <div id="model-buttons">
+                    <button id="delete-user">Delete User</button>
+                    <button id="update-user">Update User</button>
+                    <form id='update-user-info' autocomplete="off">
+                        <input id="new-username" type='text' name='username' placeholder='New Username' />
+                        <input id="new-password" type='text' name='password' placeholder='New Password' />
+                        <input type='submit' id="updateUserSubmit-button" value="Update"
+                            style="font-family: 'Cinzel', serif;
+                        font-size: large; background-image: url(https://media.gettyimages.com/vectors/gold-background-metal-texture-vector-id617749020?s=612x612); border-radius: 15%; box-shadow: 0 0 5px 2px rgb(53, 52, 52);">
+                        </>
+                    </form>
+                </div>
+                <span class="close">&times;</span>
+
+                <div id="gamesTotal">
+                    <div id="all-games"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="game-container">
+        <div id="moving-timer-box"></div>
+        <div id="red-moving-timer-box"></div>
+        <div id="speedWord"></div>
+        <div id="treasure-pop-up">
+            <h4>Santa Cruz Ruby +1000 </h4>
+            <img src="resources/ruby.png" id="ruby-gem">
+        </div>
+        <img src="resources/closeTreasure.png" id="closedTreasure">
+        <button id="start-button">START</button>
+        <div id="popUp-container">
+            <button id="next-level">Continue</button>
+            <button id="exit">RESTART</button>
+            <button id="view-stats">View Stats</button>
+        </div>
+        <div id="incoming-boss">INCOMING BOSS</div>
+        <div id="popUpFail-container">
+            <h2>GAME OVER</h2>
+            <button id="view2-stats">View Stats</button>
+            <button id="exit3">RESTART</button>
+        </div>
+        <div id="popUpStats-container">
+            <h2 id='finalPoints'>Points:<span id="underline5" style="text-decoration: underline;">0lkajs</span></h2>
+            <h2 id='totalSharksKilled'>Sharks Killed:<span id="underline6"
+                    style="text-decoration: underline;">08ohub</span></h2>
+            <button id="exit2">RESTART</button>
+        </div>
+        <img src="resources/diver.png" id="overlap">
+    </div>
+</div>
+<script type="module" src='main.js'></script>
+</body>
+
+</html>
