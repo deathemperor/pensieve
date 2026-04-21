@@ -5,6 +5,7 @@ import { philosophersSalon } from "./philosophers-salon";
 import { neuralNet } from "./neural-net";
 import { campfire } from "./campfire";
 import { labNotebook } from "./lab-notebook";
+import { oakLibrary } from "./oak-library";
 
 export const themes = {
 	"natural-ponds": naturalPonds,
@@ -13,6 +14,7 @@ export const themes = {
 	"neural-net": neuralNet,
 	campfire: campfire,
 	"lab-notebook": labNotebook,
+	"oak-library": oakLibrary,
 } satisfies Record<string, Theme>;
 
 export type ThemeSlug = keyof typeof themes;
