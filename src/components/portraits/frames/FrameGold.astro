@@ -1,0 +1,63 @@
+---
+interface Props {
+  size?: number
+}
+
+const { size = 320 } = Astro.props;
+---
+
+<svg
+  class="frame frame-gold"
+  width={size}
+  height={size}
+  viewBox="0 0 100 100"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="gold-grad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#e7c76b" />
+      <stop offset="0.5" stop-color="#f8e08c" />
+      <stop offset="1" stop-color="#b08830" />
+    </linearGradient>
+  </defs>
+  <rect
+    x="1"
+    y="1"
+    width="98"
+    height="98"
+    rx="3"
+    fill="none"
+    stroke="url(#gold-grad)"
+    stroke-width="2"
+  />
+  <rect
+    x="3.5"
+    y="3.5"
+    width="93"
+    height="93"
+    rx="2"
+    fill="none"
+    stroke="url(#gold-grad)"
+    stroke-width="0.35"
+    opacity="0.7"
+  />
+  <!-- corner flourishes -->
+  <g fill="url(#gold-grad)" opacity="0.9">
+    <path d="M1 1 L6 1 L1 6 Z" />
+    <path d="M99 1 L94 1 L99 6 Z" />
+    <path d="M1 99 L6 99 L1 94 Z" />
+    <path d="M99 99 L94 99 L99 94 Z" />
+  </g>
+</svg>
+
+<style>
+  .frame-gold {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .frame-gold {
+    filter: drop-shadow(0 0 8px rgba(231, 199, 107, 0.25));
+  }
+</style>
