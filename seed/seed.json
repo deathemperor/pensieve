@@ -32617,6 +32617,7 @@
 					"event_date": "2015-03-13",
 					"date_precision": "day",
 					"category": "threshold",
+					"location": "{\"name\":\"VNG\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
 					"source": "manual",
 					"visibility": "public"
 				}
@@ -32634,6 +32635,7 @@
 					"event_date": "2015-05-01",
 					"date_precision": "month",
 					"category": "work",
+					"location": "{\"name\":\"GVN Studio\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
 					"source": "manual",
 					"visibility": "public"
 				}
@@ -32651,6 +32653,7 @@
 					"event_date": "2018-03-31",
 					"date_precision": "day",
 					"category": "milestone",
+					"location": "{\"name\":\"Old Trafford\",\"city\":\"Manchester\",\"country\":\"GB\",\"lat\":53.46,\"lng\":-2.29}",
 					"linked_post_ids": "muc-tieu-lon-va-y-chi-kien-cuong",
 					"external_url": "",
 					"external_url_label": "match report",
@@ -32671,6 +32674,7 @@
 					"event_date": "2018-04-02",
 					"date_precision": "day",
 					"category": "love",
+					"location": "{\"name\":\"Buckingham Palace\",\"city\":\"London\",\"country\":\"GB\",\"lat\":51.50,\"lng\":-0.14}",
 					"source": "manual",
 					"visibility": "public"
 				}
@@ -32688,6 +32692,7 @@
 					"event_date": "2021-05-04",
 					"date_precision": "day",
 					"category": "threshold",
+					"location": "{\"name\":\"Papaya\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
 					"source": "manual",
 					"visibility": "public"
 				}
@@ -32722,6 +32727,7 @@
 					"event_date": "2021-12-14",
 					"date_precision": "day",
 					"category": "family",
+					"location": "{\"name\":\"Hạnh Phúc Hospital\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
 					"source": "manual",
 					"visibility": "public"
 				}

@@ -1,0 +1,171 @@
+---
+import {
+	projectLatLng,
+	graticuleLngs,
+	graticuleLats,
+	DEFAULT_ATLAS_BOUNDS,
+} from "../../utils/atlasGeometry";
+import { getChronicleCategory } from "../../themes/chronicleCategories";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+	entries: any[];
+}
+
+const { entries } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface PlacedEntry {
+	id: string;
+	title: string;
+	locationName: string;
+	country: string;
+	category: string;
+	hex: string;
+	x: number;
+	y: number;
+}
+
+const bounds = DEFAULT_ATLAS_BOUNDS;
+const viewport = { widthPx: 1000, heightPx: 450 };
+
+const placed: PlacedEntry[] = [];
+const unplaced: { id: string; title: string }[] = [];
+
+for (const e of entries) {
+	const rawLoc = e.data.location;
+	const cat = getChronicleCategory(e.data.category);
+	const title = (isVi ? e.data.title_vi : e.data.title_en) ?? e.data.title ?? "";
+	if (!rawLoc) {
+		unplaced.push({ id: e.id, title });
+		continue;
+	}
+	let parsed: { name?: string; city?: string; country?: string; lat?: number; lng?: number };
+	try {
+		parsed = typeof rawLoc === "string" ? JSON.parse(rawLoc) : rawLoc;
+	} catch {
+		unplaced.push({ id: e.id, title });
+		continue;
+	}
+	if (typeof parsed.lat !== "number" || typeof parsed.lng !== "number") {
+		unplaced.push({ id: e.id, title });
+		continue;
+	}
+	const { x, y } = projectLatLng(
+		{ lat: parsed.lat, lng: parsed.lng },
+		bounds,
+		viewport,
+	);
+	placed.push({
+		id: e.id,
+		title,
+		locationName: parsed.name ?? parsed.city ?? "",
+		country: parsed.country ?? "",
+		category: cat.slug,
+		hex: cat.hex,
+		x,
+		y,
+	});
+}
+
+const lngLines = graticuleLngs(bounds, 30);
+const latLines = graticuleLats(bounds, 30);
+
+// Group placed by country for the side list.
+const byCountry = new Map<string, PlacedEntry[]>();
+for (const p of placed) {
+	const list = byCountry.get(p.country) || [];
+	list.push(p);
+	byCountry.set(p.country, list);
+}
+const countryGroups = [...byCountry.entries()].sort(([a], [b]) => a.localeCompare(b));
+
+const heading = isVi ? "Bản đồ — những nơi đã đi qua" : "Atlas — places on the map";
+const helperText = isVi
+	? "Mỗi chấm là một sự kiện có toạ độ. Bấm để mở chi tiết."
+	: "Each dot is a located event. Click to open the memory.";
+---
+
+<section class="cc-atlas" aria-labelledby="cc-atlas-heading">
+	<header class="cc-atlas-header">
+		<h2 id="cc-atlas-heading">{heading}</h2>
+		<p class="cc-atlas-helper">{helperText}</p>
+	</header>
+
+	<div class="cc-atlas-body">
+		<div class="cc-atlas-canvas-wrap">
+			<svg
+				class="cc-atlas-canvas"
+				viewBox={`0 0 ${viewport.widthPx} ${viewport.heightPx}`}
+				role="img"
+				aria-label={heading}
+				preserveAspectRatio="xMidYMid meet"
+			>
+				{lngLines.map((l) => {
+					const { x } = projectLatLng({ lat: 0, lng: l }, bounds, viewport);
+					return (
+						<line
+							x1={x}
+							x2={x}
+							y1={0}
+							y2={viewport.heightPx}
+							stroke="rgba(212,168,67,0.1)"
+							stroke-width="0.5"
+							stroke-dasharray="2 4"
+						/>
+					);
+				})}
+				{latLines.map((l) => {
+					const { y } = projectLatLng({ lat: l, lng: 0 }, bounds, viewport);
+					return (
+						<line
+							x1={0}
+							x2={viewport.widthPx}
+							y1={y}
+							y2={y}
+							stroke="rgba(212,168,67,0.1)"
+							stroke-width="0.5"
+							stroke-dasharray="2 4"
+						/>
+					);
+				})}
+				{placed.map((p) => (
+					<g class="cc-atlas-pin" data-id={p.id} transform={`translate(${p.x} ${p.y})`}>
+						<circle r="10" fill={p.hex} opacity="0.15" />
+						<circle r="5" fill={p.hex} />
+						<title>{p.locationName} — {p.title}</title>
+					</g>
+				))}
+			</svg>
+		</div>
+
+		<aside class="cc-atlas-list">
+			{countryGroups.length === 0 && (
+				<p class="cc-atlas-empty">{isVi ? "Chưa có địa điểm nào." : "No located events yet."}</p>
+			)}
+			{countryGroups.map(([country, list]) => (
+				<div class="cc-atlas-country">
+					<h3>{country}</h3>
+					<ul>
+						{list.map((p) => (
+							<li class="cc-atlas-place" data-id={p.id}>
+								<span class="cc-atlas-place-dot" style={`background:${p.hex};`}></span>
+								<span class="cc-atlas-place-name">{p.locationName}</span>
+								<span class="cc-atlas-place-title">{p.title}</span>
+							</li>
+						))}
+					</ul>
+				</div>
+			))}
+		</aside>
+	</div>
+
+	{unplaced.length > 0 && (
+		<footer class="cc-atlas-footer">
+			<small>
+				{isVi ? "Chưa định vị:" : "No location yet:"} {unplaced.map((u) => u.title).join(" · ")}
+			</small>
+		</footer>
+	)}
+</section>

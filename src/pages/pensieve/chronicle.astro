@@ -8,6 +8,7 @@ import ChronicleLedger from "../../components/chronicle/ChronicleLedger.astro";
 import ChronicleLegend from "../../components/chronicle/ChronicleLegend.astro";
 import ChronicleZoomControls from "../../components/chronicle/ChronicleZoomControls.astro";
 import ChronicleEntryDetail from "../../components/chronicle/ChronicleEntryDetail.astro";
+import AtlasPanel from "../../components/chronicle/AtlasPanel.astro";
 import { getCurrentLang } from "../../utils/lang";
 import { parseChronicleDate, compareChronicleDate } from "../../utils/chronicleDate";
 import { formatRomanDate } from "../../utils/romanDate";
@@ -77,6 +78,8 @@ const pageSubtitle = isVi
       </div>
       <ChronicleZoomControls years={populatedYears} />
     </div>
+
+    <AtlasPanel entries={published} />
 
     <ChronicleEntryDetail />
   </main>
