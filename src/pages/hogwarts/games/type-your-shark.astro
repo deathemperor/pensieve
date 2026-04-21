@@ -1,0 +1,152 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { getCurrentLang } from "../../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+const title = "Type Your Shark";
+const tagline = isVi
+	? "Game gõ phím với ba mức khó và ba vòng. Điểm được lưu trong trình duyệt của bạn."
+	: "A typing game with three difficulties and three rounds. Scores persist in your browser.";
+const attribution = isVi
+	? "Game gốc do Miriam Grigsby tạo năm 2020 — lưu trữ lại ở đây để chơi."
+	: "Original by Miriam Grigsby in 2020 — archived here to play.";
+---
+
+<Base
+	title={`${title} — Pensieve`}
+	description={tagline}
+	breadcrumbs={[
+		{ label: "Hogwarts", href: "/" },
+		{ label: isVi ? "Sân Chơi" : "Games", href: "/hogwarts/games/" },
+		{ label: title },
+	]}
+>
+	<section class="game-wrap">
+		<header class="game-hero">
+			<div class="game-hero-inner">
+				<div class="room-rule" />
+				<span class="room-label">{isVi ? "Sân Chơi" : "Games"}</span>
+				<h1 class="game-page-title">{title}</h1>
+				<p class="game-page-tagline">{tagline}</p>
+				<p class="game-page-attribution">
+					{attribution} —
+					<a
+						href="https://github.com/miriamgrigsby/type-your-shark-frontend"
+						target="_blank"
+						rel="noopener noreferrer"
+					>GitHub</a>
+				</p>
+			</div>
+		</header>
+
+		<div class="game-frame-holder">
+			<iframe
+				src="/hogwarts/games/type-your-shark/frame.html"
+				title={title}
+				loading="lazy"
+				allow="autoplay"
+				class="game-frame"
+			></iframe>
+		</div>
+	</section>
+</Base>
+
+<style>
+	.game-wrap {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.game-hero {
+		border-bottom: 1px solid var(--color-border);
+	}
+	.game-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8) var(--spacing-10);
+	}
+
+	.room-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+	.room-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+	.game-page-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.75rem, 3.25vw, 2.75rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-4);
+	}
+	.game-page-tagline {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		max-width: 55ch;
+		margin: 0 0 var(--spacing-3);
+	}
+	.game-page-attribution {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		margin: 0;
+	}
+	.game-page-attribution a {
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		border-bottom: 1px solid var(--color-border);
+		transition: color var(--transition-fast), border-color var(--transition-fast);
+	}
+	.game-page-attribution a:hover {
+		color: var(--color-text);
+		border-bottom-color: var(--color-text);
+	}
+
+	/* The frame itself. The game has a fixed 1017px min-width layout, so on
+	   narrow viewports we allow horizontal scroll inside the iframe rather
+	   than trying to scale it. Height is generous enough for all three UI
+	   states (title, gameplay, end-of-game stats popover). */
+	.game-frame-holder {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-8) var(--spacing-8) var(--spacing-16);
+	}
+
+	.game-frame {
+		width: 100%;
+		height: 820px;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: #fff;
+		display: block;
+	}
+
+	@media (max-width: 900px) {
+		.game-hero-inner {
+			padding: var(--spacing-12) var(--spacing-6) var(--spacing-8);
+		}
+		.game-frame-holder {
+			padding: var(--spacing-6);
+		}
+		.game-frame {
+			height: 900px;
+		}
+	}
+</style>
