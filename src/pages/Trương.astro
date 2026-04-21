@@ -321,6 +321,28 @@ function formatGHDate(iso: string) {
 					</g>
 				</svg>
 
+				{/* Circuit-runes — Futhark glyphs that morph into PCB traces in four corners */}
+				<div class="portrait-circuit-runes" aria-hidden="true">
+					{[
+						{ rune: "ᚠ", pos: "tl" },
+						{ rune: "ᚱ", pos: "tr" },
+						{ rune: "ᛏ", pos: "bl" },
+						{ rune: "ᛗ", pos: "br" },
+					].map(({ rune, pos }) => (
+						<div class={`cr cr-${pos}`}>
+							<svg viewBox="0 0 50 50" aria-hidden="true">
+								<text x="25" y="32" text-anchor="middle" font-family="serif" font-size="22" fill="url(#flourishGrad)">{rune}</text>
+								<g stroke="url(#flourishGrad)" stroke-width="0.6" fill="none" stroke-linecap="round">
+									<path class="cr-trace cr-trace-1" d="M25 40 L25 48 L14 48 L14 44" />
+									<path class="cr-trace cr-trace-2" d="M25 40 L25 48 L36 48 L36 44" />
+									<circle cx="14" cy="44" r="1" fill="url(#flourishGrad)" />
+									<circle cx="36" cy="44" r="1" fill="url(#flourishGrad)" />
+								</g>
+							</svg>
+						</div>
+					))}
+				</div>
+
 				{/* Ancient runes scrolling in a circle around portrait */}
 				<div class="portrait-runes-ring" aria-hidden="true">
 					<div class="runes-ring-inner">
@@ -1203,6 +1225,27 @@ function formatGHDate(iso: string) {
 		0%, 40% { opacity: 0; }
 		60%, 70% { opacity: 1; }
 		100% { opacity: 0; }
+	}
+
+	/* Circuit-rune sigils */
+	.portrait-circuit-runes { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+	.portrait-circuit-runes .cr { position: absolute; width: 42px; height: 42px; opacity: 0.8; }
+	.portrait-circuit-runes .cr-tl { top: 2%; left: 2%; }
+	.portrait-circuit-runes .cr-tr { top: 2%; right: 2%; transform: scaleX(-1); }
+	.portrait-circuit-runes .cr-bl { bottom: 2%; left: 2%; transform: scaleY(-1); }
+	.portrait-circuit-runes .cr-br { bottom: 2%; right: 2%; transform: scale(-1, -1); }
+	.portrait-circuit-runes .cr-trace {
+		stroke-dasharray: 40;
+		stroke-dashoffset: 40;
+		animation: cr-trace-draw 6s ease-in-out infinite;
+	}
+	.cr-tr .cr-trace { animation-delay: 1.5s; }
+	.cr-bl .cr-trace { animation-delay: 3s; }
+	.cr-br .cr-trace { animation-delay: 4.5s; }
+	@keyframes cr-trace-draw {
+		0%, 15% { stroke-dashoffset: 40; }
+		50%, 65% { stroke-dashoffset: 0; }
+		100% { stroke-dashoffset: 40; }
 	}
 
 	/* Growing vines that creep around frame */
