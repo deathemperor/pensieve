@@ -20,9 +20,9 @@ export const chronicleCategories: readonly ChronicleCategory[] = [
   { slug: "love",      hex: "#c678dd", label_en: "Love",      label_vi: "Tình yêu",  symbol: "✦" },
   { slug: "travel",    hex: "#2aa198", label_en: "Travel",    label_vi: "Chuyến đi", symbol: "✧" },
   { slug: "threshold", hex: "#f7a65a", label_en: "Threshold", label_vi: "Ngưỡng cửa",symbol: "✦" },
-] as const;
+];
 
-export const CHRONICLE_CATEGORY_SLUGS = chronicleCategories.map((c) => c.slug);
+export const CHRONICLE_CATEGORY_SLUGS: readonly string[] = chronicleCategories.map((c) => c.slug);
 
 export function getChronicleCategory(slug: string | undefined | null): ChronicleCategory {
   const found = chronicleCategories.find((c) => c.slug === slug);

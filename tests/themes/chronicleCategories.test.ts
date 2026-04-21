@@ -35,3 +35,8 @@ test("getChronicleCategory returns the category by slug", () => {
 test("getChronicleCategory falls back to milestone for unknown slug", () => {
   assert.equal(getChronicleCategory("unknown")?.slug, "milestone");
 });
+
+test("getChronicleCategory handles null and undefined", () => {
+  assert.equal(getChronicleCategory(null)?.slug, "milestone");
+  assert.equal(getChronicleCategory(undefined)?.slug, "milestone");
+});
