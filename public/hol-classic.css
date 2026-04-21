@@ -68,10 +68,42 @@
   background: #0b2444;
   border-bottom: 1px solid #000;
   padding: 4px 10px;
-  text-align: right;
   font-size: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 .hol-classic-topstrip a { color: #cae5fd; }
+
+/* vB3-style inline search: tiny input + "Search" button, matches how
+ * the original darkleaf header shipped a search field top-right. */
+.hol-classic-search {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.hol-classic-search input[type="search"] {
+  background: #0a1525;
+  border: 1px solid #000;
+  color: #e1e4e6;
+  padding: 2px 6px;
+  font: 11px Verdana, sans-serif;
+  width: 180px;
+  max-width: 60vw;
+}
+.hol-classic-search input[type="search"]::placeholder { color: #6681a0; }
+.hol-classic-search button {
+  background: linear-gradient(180deg, #365e89 0%, #244771 100%);
+  color: #fff;
+  border: 1px solid #000;
+  padding: 2px 8px;
+  font: 11px Verdana, sans-serif;
+  cursor: pointer;
+}
+.hol-classic-search button:hover { background: #12395d; }
+.hol-classic-toplinks { white-space: nowrap; }
 
 .hol-classic-banner {
   background: linear-gradient(180deg, #12395d 0%, #0e2c4a 100%);

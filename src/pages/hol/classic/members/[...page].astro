@@ -1,0 +1,94 @@
+---
+// src/pages/hol/classic/members/[...page].astro
+// vB3-style Members List. holvn.org's users table never got backfilled
+// from memberlist captures, so this aggregates from posts.author_username
+// — the real data we do have. Each name links to the forum search filtered
+// to that author (existing searchPosts already prioritises author matches).
+import ClassicLayout from "../../../../components/hol/ClassicLayout.astro";
+import ClassicPager from "../../../../components/hol/ClassicPager.astro";
+import { getHolDb } from "../../../../lib/hol/db";
+import { countMembers, listMembers } from "../../../../lib/hol/queries";
+
+const PAGE_SIZE = 50;
+
+const { page: pagePath } = Astro.params as { page?: string };
+let pageNum = 1;
+if (pagePath) {
+  const m = pagePath.match(/^page\/(\d+)\/?$/);
+  if (!m) return new Response("Not found", { status: 404 });
+  pageNum = parseInt(m[1], 10);
+}
+
+// `?sort=name` to switch from post-count to alphabetical — mimics vB's
+// memberlist column header links.
+const sortParam = Astro.url.searchParams.get("sort");
+const order = sortParam === "name" ? "name" : "posts";
+
+const db = getHolDb();
+const total = await countMembers(db);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+if (pageNum < 1 || pageNum > totalPages) {
+  return new Response("Page out of range", { status: 404 });
+}
+
+const members = await listMembers(db, { page: pageNum, pageSize: PAGE_SIZE }, order);
+
+function fmtDate(unix: number | null): string {
+  if (!unix) return "—";
+  return new Date(unix * 1000).toISOString().slice(0, 10);
+}
+
+function searchHref(username: string): string {
+  return `/hol/search/?q=${encodeURIComponent(username)}`;
+}
+
+const basePath = "/hol/classic/members/";
+---
+<ClassicLayout title="Members List" modernHref="/hol/search/" crumbs={[{ label: "Members" }]}>
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="tcat"><strong>Members List</strong>
+        <span class="smallfont"> — {total.toLocaleString()} thành viên</span>
+      </td>
+    </tr>
+  </table>
+
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="thead" width="50%">
+        <a href={`${basePath}?sort=name`}>Username</a>
+      </td>
+      <td class="thead" align="center" width="15%">
+        <a href={basePath}>Posts</a>
+      </td>
+      <td class="thead" align="center" width="17%">First Post</td>
+      <td class="thead" align="center" width="18%">Last Post</td>
+    </tr>
+    {members.map((m, i) => {
+      const cls = i % 2 === 0 ? "alt1" : "alt2";
+      return (
+        <tr>
+          <td class={cls}>
+            <a class="bigusername" href={searchHref(m.username)}>{m.username}</a>
+          </td>
+          <td class={`${cls} threadstats`}>
+            <div class="smallfont">{m.post_count.toLocaleString()}</div>
+          </td>
+          <td class={`${cls} threadlastpost`} align="center">
+            <div class="smallfont">{fmtDate(m.first_post_at)}</div>
+          </td>
+          <td class={`${cls} threadlastpost`} align="center">
+            <div class="smallfont">{fmtDate(m.last_post_at)}</div>
+          </td>
+        </tr>
+      );
+    })}
+  </table>
+
+  <div class="smallfont hol-classic-note">
+    Trang {pageNum} / {totalPages} · {total.toLocaleString()} thành viên ·
+    Sắp xếp theo {order === "name" ? "tên" : "số bài"}
+  </div>
+
+  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="page" />
+</ClassicLayout>

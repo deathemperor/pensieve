@@ -100,6 +100,58 @@ export async function countPostsInThread(
   return row?.n ?? 0;
 }
 
+export type MemberRow = {
+  username: string;
+  user_id: number | null;
+  post_count: number;
+  first_post_at: number | null;
+  last_post_at: number | null;
+};
+
+// Members derived from posts — the `users` table never got backfilled from
+// memberlist captures, but every post carries author_username so we can
+// reconstruct a classic member-list view by aggregation. `user_id` is best-
+// effort: grab any non-null value per username (users may appear with null
+// ids when posts were parsed from archive/ lo-fi mode).
+export async function listMembers(
+  db: D1Database,
+  { page, pageSize }: PageParams,
+  order: "posts" | "name" = "posts",
+): Promise<MemberRow[]> {
+  const offset = (page - 1) * pageSize;
+  const orderClause =
+    order === "name"
+      ? "LOWER(author_username) ASC"
+      : "post_count DESC, LOWER(author_username) ASC";
+  const { results } = await db.prepare(`
+    SELECT
+      author_username AS username,
+      MAX(author_user_id) AS user_id,
+      COUNT(*) AS post_count,
+      MIN(posted_at) AS first_post_at,
+      MAX(posted_at) AS last_post_at
+    FROM posts
+    WHERE author_username IS NOT NULL
+      AND TRIM(author_username) != ''
+      AND is_hidden = 0
+    GROUP BY author_username
+    ORDER BY ${orderClause}
+    LIMIT ? OFFSET ?
+  `).bind(pageSize, offset).all<MemberRow>();
+  return results ?? [];
+}
+
+export async function countMembers(db: D1Database): Promise<number> {
+  const row = await db.prepare(`
+    SELECT COUNT(DISTINCT author_username) AS n
+    FROM posts
+    WHERE author_username IS NOT NULL
+      AND TRIM(author_username) != ''
+      AND is_hidden = 0
+  `).first<{ n: number }>();
+  return row?.n ?? 0;
+}
+
 export async function searchPosts(
   db: D1Database,
   query: string,

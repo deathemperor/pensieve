@@ -35,12 +35,21 @@ const fullCrumbs = [rootCrumb, ...crumbs];
   <div class="hol-classic">
     <div class="hol-classic-canvas">
       <div class="hol-classic-page">
-        <!-- top strip -->
+        <!-- top strip: quick links + vB-style search form (matches the
+             original holvn.org header which always sat a Search input
+             directly in the nav). Points at /hol/search/ — the modern
+             search page; vB3 theme here is pure presentation. -->
         <div class="hol-classic-topstrip">
-          <a href="/hol/classic/">Home</a>&nbsp;|&nbsp;
-          <a href="/hol/classic/">Forum</a>&nbsp;|&nbsp;
-          <a href="/hol/search/">Search</a>&nbsp;|&nbsp;
-          <a href="/hol/about/">About</a>
+          <form class="hol-classic-search" method="get" action="/hol/search/" role="search">
+            <input type="search" name="q" placeholder="Tìm kiếm…" aria-label="Search HOL" />
+            <button type="submit">Search</button>
+          </form>
+          <span class="hol-classic-toplinks">
+            <a href="/hol/classic/">Home</a>&nbsp;|&nbsp;
+            <a href="/hol/classic/">Forum</a>&nbsp;|&nbsp;
+            <a href="/hol/classic/members/">Members</a>&nbsp;|&nbsp;
+            <a href="/hol/about/">About</a>
+          </span>
         </div>
 
         <!-- banner (logo + slogan) -->
