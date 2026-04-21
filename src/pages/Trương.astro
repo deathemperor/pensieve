@@ -734,6 +734,11 @@ function formatGHDate(iso: string) {
 					))}
 				</div>
 
+				{/* Incantation — handwritten line rises on hover */}
+				<span class="portrait-incantation" aria-hidden="true">
+					{isVi ? "Tôi không đọc bùa chú. Tôi viết ra chúng." : "I do not cast spells. I build them."}
+				</span>
+
 				<figcaption class="photo-caption">
 					<span class="photo-caption-dot" aria-hidden="true" />
 					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
@@ -3119,6 +3124,33 @@ function formatGHDate(iso: string) {
 		0%, 30% { opacity: 0; }
 		50%, 70% { opacity: 1; }
 		90%, 100% { opacity: 0; }
+	}
+
+	/* Incantation — handwritten line rises on hover */
+	.portrait-incantation {
+		position: absolute;
+		left: 50%;
+		bottom: 2%;
+		transform: translate(-50%, 16px);
+		width: max-content;
+		max-width: 90%;
+		font-family: "Caveat", "Homemade Apple", cursive;
+		font-size: 1.1rem;
+		color: rgba(240, 199, 94, 0.95);
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+		opacity: 0;
+		transition: opacity 450ms ease-out, transform 450ms ease-out;
+		pointer-events: none;
+		z-index: 4;
+		text-align: center;
+		white-space: nowrap;
+	}
+	.about-hero-photo:hover .portrait-incantation {
+		opacity: 1;
+		transform: translate(-50%, 0);
+	}
+	@media (max-width: 600px) {
+		.portrait-incantation { font-size: 0.9rem; white-space: normal; }
 	}
 </style>
 
