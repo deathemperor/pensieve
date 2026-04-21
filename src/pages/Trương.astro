@@ -809,58 +809,139 @@ function formatGHDate(iso: string) {
 			<h2 class="section-heading">{isVi ? "Lặn Ký Ức — Wrapped" : "Pensieve Dives — Wrapped"}</h2>
 			<p class="section-desc">
 				{isVi
-					? "Dumbledore lưu ký ức người khác trong dãy lọ bạc. Tôi cũng vậy — 1.064 lọ chấm điểm trên IMDb suốt một thập kỷ. Đây không phải là playlist. Đây là những gì 250 lọ gần nhất tiết lộ về cái đầu đã lặn vào."
-					: "Dumbledore kept others' memories in rows of silvery vials. I do too — 1,064 of them, scored on IMDb over a decade. This isn't a playlist. This is what the 250 most recent vials reveal about the mind that dove in."}
+					? "Dumbledore lưu ký ức người khác trong dãy lọ bạc. Tôi cũng vậy — 1.064 lọ chấm điểm trên IMDb suốt một thập kỷ. Bản Wrapped này không phải về điểm số tôi cho — mà là về thể loại, về nội dung, về cốt truyện. Những gì đọng lại sau khi cả dãy kệ đã được trưng cất."
+					: "Dumbledore kept others' memories in rows of silvery vials. I do too — 1,064 of them, tracked over a decade. This Wrapped isn't about the scores I gave. It's about the genres, the content, the plots. What the whole shelf reveals once it's distilled."}
 			</p>
 
 			<div class="wrapped-grid">
 				{/* Card 1 — HERO */}
 				<article class="wrap-card wrap-hero">
 					<div class="wrap-stat">1,064</div>
-					<div class="wrap-label">{isVi ? "Lọ Ký Ức" : "Vials, total"}</div>
+					<div class="wrap-label">{isVi ? "Lọ Ký Ức · 1924 – 2026" : "Vials · 1924 – 2026"}</div>
 					<p class="wrap-note">
 						{isVi
-							? "Trải suốt 10,2 năm chấm điểm. 250 lọ gần nhất hiển thị công khai — số còn lại ngủ yên trong kệ, như ký ức thời trẻ, chỉ Dumbledore (và tôi) mới lặn vào được."
-							: "Across 10.2 years of scoring. IMDb shows the 250 most recent publicly — the rest sleep in the shelves, like early memory, accessible only to Dumbledore (and to me)."}
+							? "Một thế kỷ điện ảnh trong Pensieve. 93% là phim điện ảnh, 5% là truyền hình dài tập — bạn là người xem phim, không phải binge-er. Ba lọ 'Video Game' lén vào (StarCraft II là một trong số đó)."
+							: "A century of cinema in one Pensieve. 93% film, 5% TV series — you're a moviegoer, not a binge-watcher. Three 'Video Game' vials snuck in (StarCraft II is one of them)."}
 					</p>
 				</article>
 
-				{/* Card 2 — Perfect 10s */}
-				<article class="wrap-card">
-					<div class="wrap-stat">
-						35<span class="wrap-stat-pct">/250</span>
+				{/* Card 2 — THEMATIC FINGERPRINT (full width, the plot-content answer) */}
+				<article class="wrap-card wrap-wide wrap-fingerprint">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Dấu Vân Tay Cốt Truyện — Bạn Lặn Về Đâu" : "Thematic fingerprint — what you dive into"}
 					</div>
-					<div class="wrap-label">{isVi ? "Điểm Tuyệt Đối" : "Perfect tens"}</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Trích từ Wikipedia của 797 phim, tra chéo cốt truyện tìm chủ đề lặp lại. Không phải thể loại — thể loại là cái kệ. Đây là cái mà truyện thực sự nói về."
+							: "Cross-referenced from 797 Wikipedia plot summaries. Not genres — genres are the shelf. These are what the stories are actually about."}
+					</p>
+					<ul class="fingerprint-bars">
+						<li>
+							<span class="fp-name">{isVi ? "Không gian / Sci-Fi" : "Space / Sci-Fi"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:15.8%"></span></span>
+							<span class="fp-pct">15.8%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Điệp viên / Mật vụ" : "Espionage / Agent"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:11.7%"></span></span>
+							<span class="fp-pct">11.7%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Chết chóc / Báo thù" : "Mortality / Revenge"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:9.7%"></span></span>
+							<span class="fp-pct">9.7%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Gia đình / Mối quan hệ" : "Family drama"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:9.4%"></span></span>
+							<span class="fp-pct">9.4%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Bí ẩn / Thám tử" : "Mystery / Detective"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:8.7%"></span></span>
+							<span class="fp-pct">8.7%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Siêu nhiên / Kinh dị" : "Supernatural / Horror"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:7.5%"></span></span>
+							<span class="fp-pct">7.5%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Thời gian / Ký ức" : "Time / Loops / Memory"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:6.8%"></span></span>
+							<span class="fp-pct">6.8%</span>
+						</li>
+						<li>
+							<span class="fp-name">{isVi ? "Chiến tranh" : "War / Soldier"}</span>
+							<span class="fp-bar"><span class="fp-fill" style="--fp:5.6%"></span></span>
+							<span class="fp-pct">5.6%</span>
+						</li>
+					</ul>
+				</article>
+
+				{/* Card 3 — Signature genre combo */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">308 ×</div>
+					<div class="wrap-label">
+						{isVi ? "Bộ Ba Chữ Ký — Action + Adventure" : "Signature combo — Action + Adventure"}
+					</div>
 					<p class="wrap-note">
 						{isVi
-							? "14% kệ sách được gắn nhãn 'ký ức đổi đời'. Dè dặt. Không tặng cho những gì chỉ 'hay'."
-							: "14 % of the shelf marked 'this reshaped me'. Rare. Never given for 'good'."}
+							? "Cặp thể loại lặp lại nhiều nhất trong kệ: 308 phim. Thêm Sci-Fi thành bộ ba (203 phim). Bạn thích phim lớn — nhưng phim lớn mà có xương có thịt: Action + Drama × 136."
+							: "Your most-returned-to genre pair: 308 films. Add Sci-Fi and you get the trio (203). You want big films — but big films with weight beneath them: Action + Drama × 136 combos."}
 					</p>
 				</article>
 
-				{/* Card 3 — Calibration */}
+				{/* Card 4 — Director loyalty (count, no rating) */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">×19</div>
+					<div class="wrap-label">
+						{isVi ? "Steven Spielberg — Mối Quan Hệ Sâu Nhất" : "Steven Spielberg — deepest relationship"}
+					</div>
+					<ul class="wrap-list">
+						<li><span class="wrap-list-score">×19</span> Steven Spielberg</li>
+						<li><span class="wrap-list-score">×12</span> Ridley Scott</li>
+						<li><span class="wrap-list-score">×11</span> Christopher Nolan</li>
+						<li><span class="wrap-list-score">×10</span> Quentin Tarantino</li>
+						<li><span class="wrap-list-score">×10</span> Robert Zemeckis</li>
+						<li><span class="wrap-list-score">×10</span> Tim Burton</li>
+					</ul>
+				</article>
+
+				{/* Card 5 — Runtime */}
 				<article class="wrap-card">
-					<div class="wrap-stat wrap-stat-delta">Δ +0.04</div>
-					<div class="wrap-label">{isVi ? "Đồng Điệu Với Đám Đông" : "In step with the world"}</div>
+					<div class="wrap-stat">115m</div>
+					<div class="wrap-label">{isVi ? "Độ Dài Trung Vị" : "Median runtime"}</div>
 					<p class="wrap-note">
 						{isVi
-							? "Trung bình 7,46 so với 7,50 của IMDb. Không chống đám đông cho vui. Khi không đồng ý, là đã cảm thấy điều đó tận gốc."
-							: "Your 7.46 vs IMDb's 7.50. You don't contrarian for sport — when you break from the crowd, it's felt."}
+							? "Bạn đọc gọn. Phim trên 3 giờ chỉ có 13 lọ trong 1.064 — đúng 1,3%. Bom tấn 2 giờ mới là sân chơi của bạn."
+							: "You read tight. Films over 3 hours: just 13 vials in 1,064 — exactly 1.3%. The 2-hour blockbuster is your home."}
 					</p>
 				</article>
 
-				{/* Card 4 — Decade */}
+				{/* Card 6 — Double golden age */}
 				<article class="wrap-card">
-					<div class="wrap-stat">67%</div>
-					<div class="wrap-label">{isVi ? "Sống Ở Thập Niên 2010" : "Set in the 2010s"}</div>
+					<div class="wrap-stat">76%</div>
+					<div class="wrap-label">{isVi ? "Kỷ Nguyên Vàng Đôi — 2000s + 2010s" : "Double golden age — 2000s + 2010s"}</div>
 					<p class="wrap-note">
 						{isVi
-							? "167/250 lọ ký ức. Thời hoàng kim của phim truyền hình chất lượng cao — nơi bom tấn và tác giả arthouse cùng tồn tại."
-							: "167 of 250 vials. The decade when prestige TV and blockbusters coexisted — your golden era for attention."}
+							? "2000s 39% · 2010s 37%. Hai thập kỷ liền hấp thụ sự chú ý của bạn. Phim cũ nhất đã chấm: 1924. Phim mới nhất: 2026."
+							: "2000s 39% · 2010s 37%. Two back-to-back decades absorbed your attention. Oldest rated: 1924. Newest: 2026."}
 					</p>
 				</article>
 
-				{/* Card 5 — Episode-level critic */}
+				{/* Card 7 — Horror aversion */}
+				<article class="wrap-card">
+					<div class="wrap-stat">7.6%</div>
+					<div class="wrap-label">{isVi ? "Kinh Dị — Bạn Không Lặn Vào Đây" : "Horror — you don't dive here"}</div>
+					<p class="wrap-note">
+						{isVi
+							? "Chỉ 81 trong 1.064 phim. So với Action 48%, Drama 42% — nỗi sợ không phải thứ bạn tìm. Bạn thích bóng tối khi nó có ý nghĩa (Chernobyl, Parasite) chứ không phải bóng tối chỉ để hù dọa."
+							: "Only 81 of 1,064. Compare: Action 48%, Drama 42%. Fear isn't what you seek. You love dark when it means something (Chernobyl, Parasite), not dark that just jump-scares."}
+					</p>
+				</article>
+
+				{/* Card 8 — Episode-level critic (keep) */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-stat">10 × 3</div>
 					<div class="wrap-label">{isVi ? "Chấm Điểm Ở Cấp Độ Tập" : "Episode-level critic"}</div>
@@ -871,22 +952,8 @@ function formatGHDate(iso: string) {
 					</p>
 				</article>
 
-				{/* Card 6 — Directors you'd follow */}
+				{/* Card 9 — Childhood TV (keep) */}
 				<article class="wrap-card wrap-tall">
-					<div class="wrap-stat">9.3+</div>
-					<div class="wrap-label">
-						{isVi ? "Đạo Diễn Bạn Sẽ Đi Theo Bất Cứ Đâu" : "Directors you'd follow anywhere"}
-					</div>
-					<ul class="wrap-list">
-						<li><span class="wrap-list-score">9.5</span> Tim Miller <em>(Love Death Robots, Deadpool)</em></li>
-						<li><span class="wrap-list-score">9.3</span> Bong Joon Ho <em>(Parasite, Memories of Murder)</em></li>
-						<li><span class="wrap-list-score">9.3</span> Richard Linklater <em>(Before trilogy)</em></li>
-						<li><span class="wrap-list-score">9.3</span> Miguel Sapochnik <em>(GoT's best, Chernobyl)</em></li>
-					</ul>
-				</article>
-
-				{/* Card 7 — Sentimental 10s */}
-				<article class="wrap-card wrap-wide">
 					<div class="wrap-label wrap-label-top">
 						{isVi ? "Tuổi Thơ Là Không Thể Đụng Đến" : "Childhood TV is untouchable"}
 					</div>
@@ -904,11 +971,6 @@ function formatGHDate(iso: string) {
 							<span class="wrap-senti-meta">1994 · you 10 / world 8.8</span>
 						</div>
 					</div>
-					<p class="wrap-note">
-						{isVi
-							? "Điểm không phải do chất lượng. Điểm là cho ký ức giữ được. Ba 10/10 không ai tranh được."
-							: "The score isn't for craft. The score is for the memory the vial still holds. Three uncontested tens."}
-					</p>
 				</article>
 			</div>
 
@@ -3288,6 +3350,65 @@ function formatGHDate(iso: string) {
 		color: rgba(200, 210, 225, 0.88);
 		min-width: 2.2rem;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Thematic fingerprint — horizontal bar chart, the plot-content reveal */
+	.wrap-fingerprint .wrap-note-top {
+		margin: 0 0 1rem;
+	}
+	.fingerprint-bars {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.4rem 2rem;
+	}
+	.fingerprint-bars li {
+		display: grid;
+		grid-template-columns: 10rem 1fr 3rem;
+		align-items: center;
+		gap: 0.75rem;
+		font-size: 0.85rem;
+	}
+	.fp-name {
+		color: rgba(230, 235, 245, 0.88);
+		font-weight: 500;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.fp-bar {
+		position: relative;
+		height: 6px;
+		background: rgba(200, 210, 225, 0.07);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+	.fp-fill {
+		display: block;
+		height: 100%;
+		width: calc(var(--fp) * 5);
+		max-width: 100%;
+		background: linear-gradient(90deg,
+			rgba(200, 210, 225, 0.55) 0%,
+			rgba(200, 210, 225, 0.35) 100%);
+		border-radius: 3px;
+	}
+	.fp-pct {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.75rem;
+		color: rgba(200, 210, 225, 0.75);
+		font-variant-numeric: tabular-nums;
+		text-align: right;
+	}
+	@media (max-width: 720px) {
+		.fingerprint-bars {
+			grid-template-columns: 1fr;
+		}
+		.fingerprint-bars li {
+			grid-template-columns: 8rem 1fr 3rem;
+		}
 	}
 
 	/* Sentimental 10s — three-column subgrid */
