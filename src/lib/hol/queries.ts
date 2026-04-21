@@ -106,7 +106,30 @@ export async function searchPosts(
   limit = 30,
 ): Promise<SearchHit[]> {
   if (!query.trim()) return [];
-  const { results } = await db.prepare(`
+
+  // Author-name matches first (small, curated set — surface any post by a
+  // member whose handle contains the query). These rank above body-text
+  // matches so "deathemperor" surfaces his posts before posts about him.
+  const authorLike = `%${query}%`;
+  const { results: byAuthor } = await db.prepare(`
+    SELECT
+      p.id as post_id,
+      p.thread_id,
+      t.title as thread_title,
+      t.title_slug as thread_slug,
+      t.forum_id,
+      p.author_username,
+      p.posted_at,
+      'Posted by ' || p.author_username as snippet
+    FROM posts p
+    JOIN threads t ON t.id = p.thread_id
+    WHERE p.author_username LIKE ? COLLATE NOCASE
+      AND p.is_hidden = 0 AND t.is_hidden = 0
+    ORDER BY p.posted_at DESC
+    LIMIT ?
+  `).bind(authorLike, Math.min(limit, 10)).all<SearchHit>();
+
+  const { results: byBody } = await db.prepare(`
     SELECT
       p.id as post_id,
       p.thread_id,
@@ -124,5 +147,16 @@ export async function searchPosts(
     ORDER BY rank
     LIMIT ?
   `).bind(query, limit).all<SearchHit>();
-  return results ?? [];
+
+  // Dedup — if a post matched both an author search and a body search,
+  // keep the author version (it ranked higher by intent).
+  const seen = new Set<number>();
+  const merged: SearchHit[] = [];
+  for (const r of [...(byAuthor ?? []), ...(byBody ?? [])]) {
+    if (seen.has(r.post_id)) continue;
+    seen.add(r.post_id);
+    merged.push(r);
+    if (merged.length >= limit) break;
+  }
+  return merged;
 }
