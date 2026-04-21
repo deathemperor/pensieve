@@ -22,6 +22,11 @@
 			"database_name": "pensieve-db",
 			"database_id": "1855e187-632c-4585-8c94-e5b7b139f76c",
 		},
+		{
+			"binding": "HOL_DB",
+			"database_name": "hol-archive",
+			"database_id": "79796069-2544-4c3b-94bc-8171e45e337e",
+		},
 	],
 	"r2_buckets": [
 		{
