@@ -39,7 +39,16 @@ declare global {
     }
   }
 
-  document.querySelectorAll<HTMLElement>(".cc-star, .cc-entry").forEach((el) => {
+  document.querySelectorAll<HTMLElement>(".cc-star, .cc-entry, .cc-atlas-place").forEach((el) => {
+    const id = el.dataset.id;
+    if (!id) return;
+    el.addEventListener("mouseenter", () => setActive(id));
+    el.addEventListener("mouseleave", () => setActive(null));
+    el.addEventListener("click", () => openModal(id));
+  });
+
+  // SVG atlas pins — SVGGElement.dataset is standard on modern browsers.
+  document.querySelectorAll<SVGGElement>(".cc-atlas-pin").forEach((el) => {
     const id = el.dataset.id;
     if (!id) return;
     el.addEventListener("mouseenter", () => setActive(id));
