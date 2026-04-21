@@ -165,18 +165,28 @@ const isLoggedIn = !!Astro.locals.user;
 						</svg>
 						huuloc.com
 					</a>
-					{breadcrumbs.map((crumb) => {
+					{breadcrumbs.map((crumb, i) => {
 						const svg = breadcrumbIcons[crumb.label];
+						const isLeaf = i === breadcrumbs.length - 1;
+						const leafCls = isLeaf ? " breadcrumb-leaf" : "";
+						const iconCls = svg ? " breadcrumb-with-icon" : "";
 						return (
 							<>
 								<span class="breadcrumb-sep">/</span>
 								{crumb.href ? (
-									<a href={crumb.href} class={`breadcrumb-link${svg ? " breadcrumb-with-icon" : ""}`}>
+									<a
+										href={crumb.href}
+										class={`breadcrumb-link${iconCls}${leafCls}`}
+										title={isLeaf ? crumb.label : undefined}
+									>
 										{svg && <Fragment set:html={svg} />}
 										{crumb.label}
 									</a>
 								) : (
-									<span class={`breadcrumb-current${svg ? " breadcrumb-with-icon" : ""}`}>
+									<span
+										class={`breadcrumb-current${iconCls}${leafCls}`}
+										title={isLeaf ? crumb.label : undefined}
+									>
 										{svg && <Fragment set:html={svg} />}
 										{crumb.label}
 									</span>
@@ -569,7 +579,11 @@ const isLoggedIn = !!Astro.locals.user;
 				border-bottom: 1px solid var(--color-border-subtle);
 			}
 
-			/* Breadcrumb header for root-level pages */
+			/* Breadcrumb header for root-level pages.
+			   Single-line layout: non-leaf crumbs keep their natural width,
+			   the leaf (last crumb) flex-grows to fill remaining space and
+			   truncates with ellipsis when it won't fit. Tooltip (title
+			   attribute) surfaces the full text on hover/long-press. */
 			.breadcrumb-nav {
 				max-width: var(--wide-width);
 				margin: 0 auto;
@@ -580,6 +594,18 @@ const isLoggedIn = !!Astro.locals.user;
 				font-family: var(--font-mono);
 				font-size: var(--font-size-xs);
 				height: var(--nav-height);
+				flex-wrap: nowrap;
+				overflow: hidden;
+			}
+
+			/* Non-leaf items stay at their natural width — they're the
+			   navigational context and shouldn't be clipped first. */
+			.breadcrumb-home,
+			.breadcrumb-link,
+			.breadcrumb-sep,
+			.breadcrumb-current:not(.breadcrumb-leaf) {
+				flex-shrink: 0;
+				white-space: nowrap;
 			}
 
 			.breadcrumb-home {
@@ -612,6 +638,18 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.breadcrumb-current {
 				color: var(--color-text);
+			}
+
+			/* The leaf (current page) takes remaining space and truncates.
+			   min-width: 0 lets the flex item shrink below its content size,
+			   which is the bit that actually enables text-overflow: ellipsis
+			   to fire inside a flex child. */
+			.breadcrumb-leaf {
+				flex: 1 1 auto;
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.breadcrumb-with-icon {
