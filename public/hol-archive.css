@@ -1,0 +1,19 @@
+/* public/hol-archive.css */
+:root { --hol-ink: #14212c; --hol-line: #d7dee6; --hol-bg: #fafbfc;
+        --hol-accent: #1e4e7a; --hol-dim: #667788; }
+body { background: var(--hol-bg); color: var(--hol-ink);
+       font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+       margin: 0; padding: 0; }
+.hol-header { display: flex; gap: 1rem; align-items: baseline;
+              padding: .75rem 1rem; border-bottom: 1px solid var(--hol-line);
+              background: white; }
+.hol-header a { color: var(--hol-accent); text-decoration: none; }
+.hol-crumbs { color: var(--hol-dim); font-size: .92em; }
+.hol-main { max-width: 900px; margin: 0 auto; padding: 1.25rem; }
+.hol-footer { text-align: center; color: var(--hol-dim);
+              padding: 1rem; border-top: 1px solid var(--hol-line);
+              margin-top: 2rem; font-size: .9em; }
+.hol-gap { background: #fff4e5; border-left: 3px solid #d98e1c;
+           padding: .5rem .75rem; margin: .75rem 0; font-size: .92em;
+           border-radius: 2px; }
+.hol-gap-detail { color: var(--hol-dim); }
