@@ -119,21 +119,23 @@ const attribution = isVi
 		border-bottom-color: var(--color-text);
 	}
 
-	/* The frame itself. The game has a fixed 1017px min-width layout — we
-	   break out of the standard wide-width container so the game gets as
-	   much horizontal room as the viewport allows. Capped at 1400px so it
-	   doesn't stretch absurdly on ultrawide monitors. */
+	/* The frame breaks out to full viewport width. The game's internal layout
+	   (1017px min-width) centers itself inside, so the wider we go, the more
+	   breathing room around the shark channel. */
 	.game-frame-holder {
-		max-width: 1400px;
-		margin: 0 auto;
-		padding: var(--spacing-8) var(--spacing-6) var(--spacing-16);
+		width: 100vw;
+		position: relative;
+		left: 50%;
+		right: 50%;
+		margin-left: -50vw;
+		margin-right: -50vw;
+		padding: var(--spacing-4) 0 var(--spacing-16);
 	}
 
 	.game-frame {
 		width: 100%;
 		height: 820px;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-lg);
+		border: 0;
 		background: #fff;
 		display: block;
 	}
@@ -143,7 +145,7 @@ const attribution = isVi
 			padding: var(--spacing-12) var(--spacing-6) var(--spacing-8);
 		}
 		.game-frame-holder {
-			padding: var(--spacing-6) var(--spacing-3) var(--spacing-12);
+			padding: var(--spacing-3) 0 var(--spacing-12);
 		}
 		.game-frame {
 			height: 900px;
