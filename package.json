@@ -17,6 +17,7 @@
 		"@emdash-cms/cloudflare": "^0.1.0",
 		"@emdash-cms/plugin-forms": "^0.1.0",
 		"@emdash-cms/plugin-webhook-notifier": "^0.1.0",
+		"@resvg/resvg-wasm": "^2.6.2",
 		"@rive-app/canvas-lite": "^2.37.1",
 		"@types/adm-zip": "^0.5.8",
 		"adm-zip": "^0.5.17",

@@ -58,8 +58,10 @@ function getImageUrl(img: unknown): string | undefined {
 }
 const featuredImageUrl = getImageUrl(post.data.featured_image);
 
-// Dynamic OG image: use featured image if available, otherwise generated SVG
-const ogImage = featuredImageUrl ?? `${Astro.url.origin}/og/${slug}.svg`;
+// Dynamic OG image: use featured image if available, otherwise fall back to
+// a generated PNG card. Must be PNG (not SVG) because Facebook/Twitter/
+// LinkedIn only render raster formats in link previews.
+const ogImage = featuredImageUrl ?? `${Astro.url.origin}/og/${slug}.png`;
 
 // Generate SEO meta from content
 const seo = getSeoMeta(post, {

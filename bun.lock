@@ -10,6 +10,7 @@
         "@emdash-cms/cloudflare": "^0.1.0",
         "@emdash-cms/plugin-forms": "^0.1.0",
         "@emdash-cms/plugin-webhook-notifier": "^0.1.0",
+        "@resvg/resvg-wasm": "^2.6.2",
         "@rive-app/canvas-lite": "^2.37.1",
         "@types/adm-zip": "^0.5.8",
         "adm-zip": "^0.5.17",
@@ -348,6 +349,8 @@
     "@puppeteer/browsers": ["@puppeteer/browsers@2.6.1", "", { "dependencies": { "debug": "^4.4.0", "extract-zip": "^2.0.1", "progress": "^2.0.3", "proxy-agent": "^6.5.0", "semver": "^7.6.3", "tar-fs": "^3.0.6", "unbzip2-stream": "^1.4.3", "yargs": "^17.7.2" }, "bin": { "browsers": "lib/cjs/main-cli.js" } }, "sha512-aBSREisdsGH890S2rQqK82qmQYU3uFpSH8wcZWHgHzl3LfzsxAKbLNiAG9mO8v1Y0UICBeClICxPJvyr0rcuxg=="],
 
     "@remirror/core-constants": ["@remirror/core-constants@3.0.0", "", {}, "sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg=="],
+
+    "@resvg/resvg-wasm": ["@resvg/resvg-wasm@2.6.2", "", {}, "sha512-FqALmHI8D4o6lk/LRWDnhw95z5eO+eAa6ORjVg09YRR7BkcM6oPHU9uyC0gtQG5vpFLvgpeU4+zEAz2H8APHNw=="],
 
     "@rive-app/canvas-lite": ["@rive-app/canvas-lite@2.37.1", "", {}, "sha512-2ZiV4Sq3l0o5b52SmtzGrxNTvL+klX258eiw+0r4mum60EiUbtSpOTnMrOneM5V3TxpcXk+su+bNIkUcEzd0+Q=="],
 
