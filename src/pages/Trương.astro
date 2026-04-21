@@ -74,6 +74,7 @@ const reposEndpoint = ghToken
 
 // GraphQL query for accurate commit count (last 30 days, all repos)
 let recentCommitCount = 0;
+let claudeEraCommitCount = 232; // fallback if GraphQL unavailable or rate-limited
 
 try {
 	const fetches: Promise<Response>[] = [
@@ -89,7 +90,7 @@ try {
 				method: "POST",
 				headers: { ...ghHeaders, "Content-Type": "application/json" },
 				body: JSON.stringify({
-					query: `{ viewer { contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } } }`,
+					query: `{ viewer { last30: contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } claudeEra: contributionsCollection(from: "2026-01-29T00:00:00Z") { totalCommitContributions restrictedContributionsCount } } }`,
 				}),
 				cf: { cacheTtl: 3600, cacheEverything: true },
 			} as RequestInit),
@@ -102,8 +103,11 @@ try {
 	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
 	if (results[3]?.ok) {
 		const gql = await results[3].json();
-		const cc = gql?.data?.viewer?.contributionsCollection;
-		recentCommitCount = (cc?.totalCommitContributions ?? 0) + (cc?.restrictedContributionsCount ?? 0);
+		const last30 = gql?.data?.viewer?.last30;
+		const era = gql?.data?.viewer?.claudeEra;
+		recentCommitCount = (last30?.totalCommitContributions ?? 0) + (last30?.restrictedContributionsCount ?? 0);
+		const eraTotal = (era?.totalCommitContributions ?? 0) + (era?.restrictedContributionsCount ?? 0);
+		if (eraTotal > 0) claudeEraCommitCount = eraTotal;
 	}
 } catch {
 	// GitHub API unavailable — render without stats
@@ -1119,7 +1123,7 @@ function formatGHDate(iso: string) {
 							<span class="era-bar" style="flex: 0.5;" />
 							<div class="era-info">
 								<span class="era-label">Claude Code</span>
-								<span class="era-commits">232 commit{isVi ? "" : "s"}</span>
+								<span class="era-commits">{isVi ? `${claudeEraCommitCount.toLocaleString("vi-VN")} commit` : `${claudeEraCommitCount.toLocaleString("en-US")} commit${claudeEraCommitCount !== 1 ? "s" : ""}`}</span>
 								<span class="era-dates">{isVi ? "29 Th1, 2026 — nay" : "Jan 29, 2026 — now"}</span>
 								<span class="era-note">{isVi ? "Không có mã người viết — hoàn toàn do AI tạo" : "Zero human code — fully AI-generated"}</span>
 							</div>
