@@ -1,0 +1,100 @@
+---
+// src/components/hol/ClassicLayout.astro
+//
+// vBulletin 3 Darkleaf view. Wraps pensieve's Base (huuloc.com site
+// header + favicon — non-negotiable per user directive: "same header as
+// mainsite, always") and inside the main slot reconstructs the 764px
+// Darkleaf canvas: blue banner, nav button row, tborder/tcat/alt1/alt2
+// table markup, postbit, classic pager.
+//
+// Crumbs are rendered inside the vB3 navbar (their own chrome), NOT in
+// Base's breadcrumbs — otherwise users see two breadcrumb trails.
+// Base.breadcrumbs still gets the crumbs so the <title> + schema.org
+// metadata stay right; we just hide Base's visual trail via CSS below.
+import Base from "../../layouts/Base.astro";
+
+interface Props {
+  title: string;
+  crumbs?: { label: string; href?: string }[];
+  modernHref?: string;  // "Modern view" toggle target (optional)
+}
+const { title, crumbs = [], modernHref } = Astro.props;
+
+const rootCrumb = { label: "HOL", href: "/hol/classic/" };
+const fullCrumbs = [rootCrumb, ...crumbs];
+---
+<Base
+  title={title}
+  description="HOL — holvn.org forum archive in its original vBulletin 3 Darkleaf theme."
+  robots="noindex, nofollow"
+  breadcrumbs={[{ label: "HOL Archive", href: "/hol/" }, { label: "Classic view" }, ...crumbs]}
+>
+  <link rel="stylesheet" href="/hol-archive.css" />
+  <link rel="stylesheet" href="/hol-classic.css" />
+
+  <div class="hol-classic">
+    <div class="hol-classic-canvas">
+      <div class="hol-classic-page">
+        <!-- top strip -->
+        <div class="hol-classic-topstrip">
+          <a href="/hol/classic/">Home</a>&nbsp;|&nbsp;
+          <a href="/hol/classic/">Forum</a>&nbsp;|&nbsp;
+          <a href="/hol/search/">Search</a>&nbsp;|&nbsp;
+          <a href="/hol/about/">About</a>
+        </div>
+
+        <!-- banner (logo + slogan) -->
+        <div class="hol-classic-banner">
+          <div class="hol-classic-logo">
+            HOL<span>vn</span>
+          </div>
+          <div class="hol-classic-slogan">
+            Home Online Community · archived 2005–2012
+          </div>
+        </div>
+
+        <!-- nav buttons -->
+        <div class="hol-classic-navrow">
+          <a href="/hol/classic/">Forum</a>
+          <a href="/hol/classic/members/">Members</a>
+          <a href="/hol/search/">Search</a>
+          <a href="/hol/about/">About</a>
+          {modernHref && <a href={modernHref} title="Switch to modern view">Modern view →</a>}
+          {!modernHref && <a href="/hol/" title="Switch to modern view">Modern view →</a>}
+        </div>
+
+        <div class="hol-classic-sep"></div>
+
+        <!-- content -->
+        <div class="hol-classic-content">
+          <!-- breadcrumb (vB3 navbar table) -->
+          <table class="tborder" cellpadding="6" cellspacing="1">
+            <tr>
+              <td class="alt1">
+                <span class="navbar">
+                  {fullCrumbs.map((c, i) => (
+                    <>
+                      {i > 0 && <> &gt; </>}
+                      {c.href && i < fullCrumbs.length - 1
+                        ? <a href={c.href}>{c.label}</a>
+                        : <span class={i === fullCrumbs.length - 1 ? "navbar-strong" : ""}>{c.label}</span>}
+                    </>
+                  ))}
+                </span>
+              </td>
+            </tr>
+          </table>
+
+          <slot />
+
+          <p class="hol-classic-note">
+            Đây là bản sao chỉ-đọc tái tạo từ Internet Archive (Wayback Machine).
+            Không còn đăng ký, đăng nhập, hay đăng bài mới.
+          </p>
+        </div>
+
+        <div class="hol-classic-sep"></div>
+      </div>
+    </div>
+  </div>
+</Base>

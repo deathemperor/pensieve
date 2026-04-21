@@ -1,0 +1,63 @@
+---
+// src/pages/hol/classic/index.astro
+// vB3 forum-index rendered in Darkleaf. Lists every forum as a category
+// row, with thread/post counts on the right.
+import ClassicLayout from "../../../components/hol/ClassicLayout.astro";
+import { getHolDb } from "../../../lib/hol/db";
+import { listForums } from "../../../lib/hol/queries";
+import { viSlug } from "../../../lib/hol/slug";
+
+const db = getHolDb();
+const forums = await listForums(db);
+
+const totals = forums.reduce(
+  (a, f) => ({
+    threads: a.threads + (f.thread_count ?? 0),
+    posts:   a.posts   + (f.post_count   ?? 0),
+  }),
+  { threads: 0, posts: 0 },
+);
+---
+<ClassicLayout title="Home Online Community" modernHref="/hol/">
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="tcat" colspan="3">Diễn đàn HOL</td>
+    </tr>
+    <tr>
+      <td class="thead" width="60%">Forum</td>
+      <td class="thead" align="center" width="20%">Threads</td>
+      <td class="thead" align="center" width="20%">Posts</td>
+    </tr>
+    {forums.map((f, i) => (
+      <tr>
+        <td class={i % 2 === 0 ? "alt1" : "alt2"}>
+          <div class="threadtitle">
+            <a href={`/hol/classic/f/${f.id}-${viSlug(f.name)}/`}>{f.name}</a>
+          </div>
+          {f.description && <div class="threadstarter">{f.description}</div>}
+        </td>
+        <td class={i % 2 === 0 ? "alt1 threadstats" : "alt2 threadstats"}>
+          {(f.thread_count ?? 0).toLocaleString()}
+        </td>
+        <td class={i % 2 === 0 ? "alt1 threadstats" : "alt2 threadstats"}>
+          {(f.post_count ?? 0).toLocaleString()}
+        </td>
+      </tr>
+    ))}
+  </table>
+
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="tcat">Thống kê</td>
+    </tr>
+    <tr>
+      <td class="alt1">
+        <div class="smallfont">
+          Tổng số: <strong>{totals.posts.toLocaleString()}</strong> bài viết trong
+          <strong>{totals.threads.toLocaleString()}</strong> chủ đề,
+          <strong>{forums.length}</strong> forum.
+        </div>
+      </td>
+    </tr>
+  </table>
+</ClassicLayout>

@@ -1,0 +1,79 @@
+---
+// src/components/hol/ClassicPostbit.astro
+//
+// vBulletin 3 Darkleaf postbit (the 3-row tborder table wrapping one
+// post): row 1 = thead (post# + date), row 2 = alt2 user info strip,
+// row 3 = alt1 body + sig. Matches the HTML layout captured from
+// holvn.org thread=1 (circa 2007), not upstream vB3's vertical sidebar.
+import type { Post } from "../../lib/hol/types";
+interface Props { post: Post; }
+const { post } = Astro.props;
+
+// SQLite integer → boolean. Same pattern as PostCard.
+const isPartial       = post.is_partial === true || post.is_partial === 1;
+const hasBrokenImages = post.has_broken_images === true || post.has_broken_images === 1;
+
+let postedHuman: string | null = null;
+let postedIso: string | null = null;
+if (post.posted_at) {
+  const d = new Date(post.posted_at * 1000);
+  postedIso = d.toISOString();
+  const dateStr = postedIso.slice(0, 10);
+  const timeStr = postedIso.slice(11, 16);
+  postedHuman = timeStr === "00:00" ? dateStr : `${dateStr} · ${timeStr}`;
+}
+
+const username = post.author_username ?? "khách";
+---
+<table class="tborder postbit" cellpadding="6" cellspacing="1" id={`post${post.id}`}>
+  <!-- row 1: post header -->
+  <tr>
+    <td class="thead posthead">
+      <div class="postnum">
+        #<strong>{post.position_in_thread}</strong>
+      </div>
+      <div class="postdate">
+        {postedIso
+          ? <time datetime={postedIso}>{postedHuman}</time>
+          : <span class="dim">ngày tháng không rõ</span>}
+      </div>
+    </td>
+  </tr>
+
+  <!-- row 2: user strip -->
+  <tr>
+    <td class="alt2 postuser">
+      <div class="postuser-inner">
+        <div class="avatar">
+          <div class="avatar-placeholder">👤</div>
+        </div>
+        <div class="userinfo">
+          <div class="username-tab">
+            <span class="bigusername">{username}</span>
+          </div>
+          <div class="userstats">
+            {post.author_user_id && (
+              <div class="row"><b>ID:</b> {post.author_user_id}</div>
+            )}
+            {postedHuman && (
+              <div class="row"><b>Posted:</b> {postedHuman}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </td>
+  </tr>
+
+  <!-- row 3: post body -->
+  <tr>
+    <td class="alt1 postbody">
+      {isPartial && (
+        <div class="gap-notice">⚠ Một số bài đã không được Archive ghi lại trong thread này.</div>
+      )}
+      {hasBrokenImages && (
+        <div class="gap-notice">⚠ Một số ảnh không tái tạo được.</div>
+      )}
+      <div set:html={post.body_html} />
+    </td>
+  </tr>
+</table>

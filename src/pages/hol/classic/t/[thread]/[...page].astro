@@ -1,0 +1,75 @@
+---
+// src/pages/hol/classic/t/[thread]/[...page].astro
+// Matches: /hol/classic/t/1-nhat-ki-thuong-ngay/ and .../p/839/
+import ClassicLayout from "../../../../../components/hol/ClassicLayout.astro";
+import ClassicPostbit from "../../../../../components/hol/ClassicPostbit.astro";
+import ClassicPager from "../../../../../components/hol/ClassicPager.astro";
+import { getHolDb } from "../../../../../lib/hol/db";
+import {
+  countPostsInThread, getForum, getThread, getThreadPosts,
+} from "../../../../../lib/hol/queries";
+import { viSlug } from "../../../../../lib/hol/slug";
+
+const PAGE_SIZE = 10;  // matches vB3 default "Posts Per Page" for showthread
+
+const { thread: threadParam = "", page: pagePath } = Astro.params as {
+  thread?: string; page?: string;
+};
+const idMatch = threadParam.match(/^(\d+)/);
+if (!idMatch) return Astro.redirect("/hol/classic/", 302);
+const threadId = parseInt(idMatch[1], 10);
+
+let pageNum = 1;
+if (pagePath) {
+  const m = pagePath.match(/^p\/(\d+)\/?$/);
+  if (!m) return new Response("Not found", { status: 404 });
+  pageNum = parseInt(m[1], 10);
+}
+
+const db = getHolDb();
+const thread = await getThread(db, threadId);
+if (!thread) return new Response("Thread not found", { status: 404 });
+
+const forum = await getForum(db, thread.forum_id);
+const total = await countPostsInThread(db, threadId);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+if (pageNum < 1 || pageNum > totalPages) {
+  return new Response("Page out of range", { status: 404 });
+}
+
+const posts = await getThreadPosts(db, threadId, {
+  page: pageNum, pageSize: PAGE_SIZE,
+});
+
+const forumSlug = forum ? viSlug(forum.name) : "";
+const basePath = `/hol/classic/t/${thread.id}-${thread.title_slug}/`;
+const modernHref = `/hol/t/${thread.id}-${thread.title_slug}/${pageNum > 1 ? `p/${pageNum}/` : ""}`;
+const crumbs = [
+  ...(forum ? [{ label: forum.name, href: `/hol/classic/f/${forum.id}-${forumSlug}/` }] : []),
+  { label: thread.title },
+];
+---
+<ClassicLayout title={thread.title} modernHref={modernHref} crumbs={crumbs}>
+  <!-- thread title bar (thead-style banner) -->
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="tcat">
+        <strong>{thread.title}</strong>
+        <span class="smallfont"> — {total.toLocaleString()} bài</span>
+      </td>
+    </tr>
+  </table>
+
+  <!-- top pager -->
+  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+
+  <!-- posts -->
+  {posts.map((p) => <ClassicPostbit post={p} />)}
+
+  <!-- bottom pager -->
+  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+
+  <div class="smallfont hol-classic-note">
+    Trang {pageNum} / {totalPages} · hiển thị {PAGE_SIZE} bài / trang · theo chuẩn vBulletin 3
+  </div>
+</ClassicLayout>

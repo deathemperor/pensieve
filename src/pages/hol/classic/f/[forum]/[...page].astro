@@ -1,0 +1,118 @@
+---
+// src/pages/hol/classic/f/[forum]/[...page].astro
+// Matches: /hol/classic/f/10-...hon-hen/ and /hol/classic/f/10-.../page/3/
+import ClassicLayout from "../../../../../components/hol/ClassicLayout.astro";
+import ClassicPager from "../../../../../components/hol/ClassicPager.astro";
+import { getHolDb } from "../../../../../lib/hol/db";
+import {
+  countThreadsInForum, getForum, listThreadsInForum,
+} from "../../../../../lib/hol/queries";
+import { viSlug } from "../../../../../lib/hol/slug";
+
+const PAGE_SIZE = 30;
+
+const { forum: forumParam = "", page: pagePath } = Astro.params as {
+  forum?: string; page?: string;
+};
+const idMatch = forumParam.match(/^(\d+)/);
+if (!idMatch) return Astro.redirect("/hol/classic/", 302);
+const forumId = parseInt(idMatch[1], 10);
+
+let pageNum = 1;
+if (pagePath) {
+  const m = pagePath.match(/^page\/(\d+)\/?$/);
+  if (!m) return new Response("Not found", { status: 404 });
+  pageNum = parseInt(m[1], 10);
+}
+
+const db = getHolDb();
+const forum = await getForum(db, forumId);
+if (!forum) return new Response("Forum not found", { status: 404 });
+
+const total = await countThreadsInForum(db, forumId);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+if (pageNum < 1 || pageNum > totalPages) {
+  return new Response("Page out of range", { status: 404 });
+}
+
+const threads = await listThreadsInForum(db, forumId, {
+  page: pageNum, pageSize: PAGE_SIZE,
+});
+const slug = viSlug(forum.name);
+const basePath = `/hol/classic/f/${forum.id}-${slug}/`;
+const modernHref = `/hol/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
+
+function fmtDate(unix: number | null): string {
+  if (!unix) return "—";
+  const d = new Date(unix * 1000);
+  const iso = d.toISOString();
+  const dateStr = iso.slice(0, 10);
+  const timeStr = iso.slice(11, 16);
+  return timeStr === "00:00" ? dateStr : `${dateStr} ${timeStr}`;
+}
+---
+<ClassicLayout title={forum.name} modernHref={modernHref} crumbs={[{ label: forum.name }]}>
+  <!-- forum title bar -->
+  <table class="tborder" cellpadding="6" cellspacing="1">
+    <tr>
+      <td class="tcat"><strong>{forum.name}</strong>
+        {forum.description && <span class="smallfont"> — {forum.description}</span>}
+      </td>
+    </tr>
+  </table>
+
+  <!-- thread list header -->
+  <table class="tborder" cellpadding="6" cellspacing="1" id="threadslist">
+    <tr>
+      <td class="thead" width="5%">&nbsp;</td>
+      <td class="thead" width="55%">Thread / Thread Starter</td>
+      <td class="thead" align="center" width="18%">Bài cuối</td>
+      <td class="thead" align="center" width="10%">Replies</td>
+      <td class="thead" align="center" width="12%">Views</td>
+    </tr>
+    {threads.length === 0 && (
+      <tr>
+        <td class="alt1" colspan="5" align="center">
+          <div class="smallfont">Không có chủ đề nào.</div>
+        </td>
+      </tr>
+    )}
+    {threads.map((t, i) => {
+      const cls = i % 2 === 0 ? "alt1" : "alt2";
+      const sticky = t.is_sticky === true || t.is_sticky === 1;
+      const locked = t.is_locked === true || t.is_locked === 1;
+      const titleCls = sticky ? "threadtitle sticky" : locked ? "threadtitle locked" : "threadtitle";
+      const iconCls  = sticky ? "threadicon sticky" : locked ? "threadicon locked" : "threadicon";
+      const iconChar = sticky ? "📌" : locked ? "🔒" : "•";
+      const iconAlt  = sticky ? "Ghim" : locked ? "Khóa" : "Thread";
+      return (
+        <tr>
+          <td class={cls} align="center">
+            <span class={iconCls} title={iconAlt}>{iconChar}</span>
+          </td>
+          <td class={cls}>
+            <div class={titleCls}>
+              <a href={`/hol/classic/t/${t.id}-${t.title_slug}/`}>{t.title}</a>
+            </div>
+            <div class="threadstarter smallfont">ID: {t.id}</div>
+          </td>
+          <td class={`${cls} threadlastpost`}>
+            <div class="smallfont">{fmtDate(t.last_post_at)}</div>
+          </td>
+          <td class={`${cls} threadstats`}>
+            <div class="smallfont">{(t.reply_count ?? Math.max(0, (t.post_count ?? 1) - 1)).toLocaleString()}</div>
+          </td>
+          <td class={`${cls} threadstats`}>
+            <div class="smallfont">{(t.view_count ?? 0).toLocaleString()}</div>
+          </td>
+        </tr>
+      );
+    })}
+  </table>
+
+  <div class="smallfont hol-classic-note">
+    Trang {pageNum} / {totalPages} · {total.toLocaleString()} chủ đề
+  </div>
+
+  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="page" />
+</ClassicLayout>

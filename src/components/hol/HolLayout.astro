@@ -11,8 +11,9 @@ import Base from "../../layouts/Base.astro";
 interface Props {
   title: string;
   crumbs?: { label: string; href?: string }[];
+  classicHref?: string;  // "Classic vB3 view" toggle link (optional)
 }
-const { title, crumbs = [] } = Astro.props;
+const { title, crumbs = [], classicHref } = Astro.props;
 
 // HolLayout anchors every trail with "HOL Archive" as the root crumb —
 // page-level code should pass ONLY deeper crumbs (forum name, thread title).
@@ -39,6 +40,11 @@ const breadcrumbs = [
       </button>
     </form>
     <a href="/hol/about/" class="hol-local-nav-link">Giới thiệu</a>
+    <a
+      href={classicHref ?? "/hol/classic/"}
+      class="hol-local-nav-link hol-classic-link"
+      title="Xem theo giao diện vBulletin 3 gốc"
+    >Giao diện cổ điển</a>
   </div>
   <main class="hol-main">
     <slot />

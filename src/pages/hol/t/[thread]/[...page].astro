@@ -42,12 +42,13 @@ const posts = await getThreadPosts(db, threadId, {
 
 const forumSlug = forum ? viSlug(forum.name) : "";
 const basePath = `/hol/t/${thread.id}-${thread.title_slug}/`;
+const classicHref = `/hol/classic/t/${thread.id}-${thread.title_slug}/${pageNum > 1 ? `p/${pageNum}/` : ""}`;
 const crumbs = [
   ...(forum ? [{ label: forum.name, href: `/hol/f/${forum.id}-${forumSlug}/` }] : []),
   { label: thread.title },
 ];
 ---
-<HolLayout title={thread.title} crumbs={crumbs}>
+<HolLayout title={thread.title} crumbs={crumbs} classicHref={classicHref}>
   <h1>{thread.title}</h1>
   <p class="hol-thread-meta">
     {total.toLocaleString()} posts · page {pageNum} of {totalPages}

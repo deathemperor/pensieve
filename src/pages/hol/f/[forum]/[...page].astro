@@ -44,11 +44,12 @@ const threads = await listThreadsInForum(db, forumId, {
 });
 const slug = viSlug(forum.name);
 const basePath = `/hol/f/${forum.id}-${slug}/`;
+const classicHref = `/hol/classic/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
 const crumbs = [
   { label: forum.name },
 ];
 ---
-<HolLayout title={forum.name} crumbs={crumbs}>
+<HolLayout title={forum.name} crumbs={crumbs} classicHref={classicHref}>
   <h1>{forum.name}</h1>
   {forum.description && <p class="hol-forum-desc">{forum.description}</p>}
   <p class="hol-forum-meta">{total.toLocaleString()} threads · page {pageNum} of {totalPages}</p>

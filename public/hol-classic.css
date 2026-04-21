@@ -1,0 +1,379 @@
+/*
+ * hol-classic.css — vBulletin 3 Darkleaf theme reconstruction
+ *
+ * Colors and layout mimic holvn.org's original Darkleaf skin as captured
+ * on Wayback (2005-2007). The authentic .gif backgrounds (logo, navbar
+ * buttons, user-left/right-tab, status icons, dotted_line separator)
+ * live under /hol-assets/darkleaf/ — fetched by scripts/fetch_darkleaf_assets.py
+ * from Wayback Machine captures. Before those assets are pulled this CSS
+ * falls back to flat colors, preserving the structural feel even when
+ * the images 404.
+ *
+ * vB3 class contract (preserved faithfully so the markup is recognisable
+ * to anyone who ever "inspected element" on a vB3 forum):
+ *   .page       → main content wrapper (dark panel)
+ *   .tborder    → table that draws its border via 1px cellspacing on bg
+ *   .tcat       → category strip (mid blue gradient)
+ *   .thead      → column header / section header (lighter blue)
+ *   .alt1       → odd data row (dark blue)
+ *   .alt2       → even data row (slightly different blue)
+ *   .smallfont  → 11px sans
+ *   .normal     → 12px sans
+ *   .navbar     → breadcrumb link text
+ *   .bigusername→ post author display
+ */
+
+/* ─── reset + base ──────────────────────────────────────────────────── */
+
+.hol-classic {
+  /* scope every rule here so we don't leak into the rest of huuloc.com */
+  font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #e1e4e6;
+  background: #040a14;
+  /* negative margin cancels the .hol-main wrapper padding from HolLayout
+   * so the 764px vB3 canvas sits flush on a dark page like the original. */
+  margin: -3rem -1.5rem -3rem;
+  padding: 2.5rem 0.5rem;
+  line-height: 1.4;
+}
+
+.hol-classic a { color: #cae5fd; text-decoration: none; }
+.hol-classic a:hover { color: #ffffff; text-decoration: underline; }
+.hol-classic img { border: 0; max-width: 100%; height: auto; }
+
+.hol-classic .smallfont { font-size: 10px; }
+.hol-classic .normal    { font-size: 11px; }
+.hol-classic strong     { font-weight: bold; }
+
+/* ─── outer 764px canvas ────────────────────────────────────────────── */
+
+.hol-classic-canvas {
+  width: 764px;
+  max-width: 100%;
+  margin: 0 auto;
+  background: #12395d;
+  border-left: 6px solid #0a1f38;   /* stand-in for leftborder.gif */
+  border-right: 6px solid #0a1f38;
+}
+
+.hol-classic-page {
+  padding: 0;
+  text-align: left;
+}
+
+/* ─── header strip (logo / slogan / nav buttons) ────────────────────── */
+
+.hol-classic-topstrip {
+  background: #0b2444;
+  border-bottom: 1px solid #000;
+  padding: 4px 10px;
+  text-align: right;
+  font-size: 10px;
+}
+.hol-classic-topstrip a { color: #cae5fd; }
+
+.hol-classic-banner {
+  background: linear-gradient(180deg, #12395d 0%, #0e2c4a 100%);
+  border-bottom: 1px solid #000;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #fff;
+}
+.hol-classic-banner .hol-classic-logo {
+  font-family: "Trebuchet MS", "Georgia", serif;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #f0ead0;
+  text-shadow: 0 1px 0 #000;
+}
+.hol-classic-banner .hol-classic-logo span { color: #cae5fd; }
+.hol-classic-banner .hol-classic-slogan {
+  font-style: italic;
+  font-size: 13px;
+  color: #b4d4f4;
+}
+
+.hol-classic-navrow {
+  background: #0e2c4a;
+  border-bottom: 1px solid #000;
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+}
+.hol-classic-navrow a {
+  display: inline-block;
+  padding: 10px 14px;
+  color: #cae5fd;
+  font-size: 11px;
+  border-left: 1px solid #000;
+  height: 34px;
+  line-height: 14px;
+  box-sizing: border-box;
+}
+.hol-classic-navrow a:hover { background: #12395d; color: #fff; text-decoration: none; }
+
+.hol-classic-sep {
+  height: 2px;
+  background: linear-gradient(180deg, #12395d 0%, #000 50%, #132741 100%);
+}
+
+/* ─── content container ─────────────────────────────────────────────── */
+
+.hol-classic-content {
+  padding: 10px;
+  background: #13253c;
+}
+
+/* ─── vBulletin tables ──────────────────────────────────────────────── */
+
+.hol-classic table.tborder {
+  background: #000;               /* border via 1px cellspacing */
+  border-collapse: separate;
+  border-spacing: 1px;
+  width: 100%;
+  margin: 0 0 6px 0;
+}
+.hol-classic table.tborder td {
+  background: #13253c;
+  padding: 6px;
+  vertical-align: top;
+  color: #e1e4e6;
+}
+
+.hol-classic .tcat {
+  background: linear-gradient(180deg, #2c5582 0%, #1a3d62 100%) !important;
+  color: #fff;
+  font-weight: bold;
+  text-transform: none;
+  font-size: 11px;
+  padding: 4px 8px !important;
+}
+.hol-classic .tcat a { color: #fff; }
+
+.hol-classic .thead {
+  background: linear-gradient(180deg, #365e89 0%, #244771 100%) !important;
+  color: #fff;
+  font-weight: bold;
+  padding: 4px 6px !important;
+}
+.hol-classic .thead a { color: #cae5fd; }
+
+.hol-classic .alt1 { background: #13253c !important; }
+.hol-classic .alt2 { background: #0f1d30 !important; }
+
+.hol-classic .tcat_high {
+  background: #1a3d62 !important;
+  color: #cae5fd;
+  padding: 4px 6px !important;
+}
+
+/* ─── navbar (breadcrumb) ───────────────────────────────────────────── */
+
+.hol-classic .navbar { color: #cae5fd; font-size: 12px; }
+.hol-classic .navbar a { color: #cae5fd; font-weight: normal; }
+.hol-classic .navbar-strong { color: #fff; font-weight: bold; }
+
+/* ─── thread list rows ──────────────────────────────────────────────── */
+
+.hol-classic .threadtitle {
+  font-size: 12px;
+  font-weight: bold;
+  color: #cae5fd;
+}
+.hol-classic .threadtitle.sticky { color: #ffd070; }
+.hol-classic .threadtitle.locked { color: #a0a0a0; }
+.hol-classic .threadstarter { font-size: 10px; color: #8da9c6; }
+.hol-classic .threadstats { text-align: center; font-size: 10px; color: #b4d4f4; }
+.hol-classic .threadlastpost { font-size: 10px; color: #b4d4f4; white-space: nowrap; }
+.hol-classic .threadicon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  text-align: center;
+  line-height: 24px;
+  font-size: 14px;
+}
+.hol-classic .threadicon.sticky { color: #ffd070; }
+.hol-classic .threadicon.locked { color: #a0a0a0; }
+
+/* ─── postbit ───────────────────────────────────────────────────────── */
+
+.hol-classic .postbit { width: 100%; margin: 0 0 8px 0; }
+
+.hol-classic .postbit .posthead {
+  padding: 4px 8px !important;
+}
+.hol-classic .postbit .posthead .postnum {
+  float: right;
+  font-size: 10px;
+  color: #cae5fd;
+}
+.hol-classic .postbit .posthead .postdate {
+  font-size: 11px;
+  color: #fff;
+}
+.hol-classic .postbit .postuser {
+  background: #0f1d30 !important;
+  padding: 0 !important;
+}
+.hol-classic .postbit .postuser-inner {
+  display: flex;
+  gap: 10px;
+  padding: 6px;
+  align-items: flex-start;
+}
+.hol-classic .postbit .postuser .avatar {
+  width: 120px;
+  border: 1px solid #000;
+  background: #0a1525;
+  text-align: center;
+  padding: 4px;
+  color: #6681a0;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.hol-classic .postbit .postuser .avatar .avatar-placeholder {
+  display: block;
+  height: 90px;
+  line-height: 90px;
+}
+.hol-classic .postbit .postuser .userinfo { flex: 1; }
+.hol-classic .postbit .postuser .username-tab {
+  background: linear-gradient(90deg, #1a3d62 0%, #12395d 100%);
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+}
+.hol-classic .postbit .postuser .bigusername {
+  color: #0099ff;
+  font-weight: bold;
+  font-size: 12px;
+}
+.hol-classic .postbit .postuser .userstats {
+  font-size: 10px;
+  color: #8da9c6;
+}
+.hol-classic .postbit .postuser .userstats .row {
+  padding: 2px 0;
+  border-bottom: 1px dotted #2a4a6d;
+}
+.hol-classic .postbit .postuser .userstats .row:last-child { border-bottom: 0; }
+.hol-classic .postbit .postuser .userstats b { color: #cae5fd; }
+
+.hol-classic .postbit .postbody {
+  background: #13253c !important;
+  color: #e1e4e6;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px !important;
+  word-wrap: break-word;
+}
+.hol-classic .postbit .postbody img { max-width: 100%; }
+.hol-classic .postbit .postbody img.hol-ym {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  display: inline-block;
+}
+.hol-classic .postbit .postbody blockquote.quote {
+  background: #0f1d30;
+  border-left: 3px solid #2c5582;
+  margin: 8px 16px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #b4d4f4;
+}
+.hol-classic .postbit .postbody blockquote.quote cite {
+  display: block;
+  font-style: normal;
+  color: #0099ff;
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+.hol-classic .postbit .postbody span.image-lost {
+  display: inline-block;
+  padding: 2px 6px;
+  background: #0a1525;
+  color: #6681a0;
+  font-size: 10px;
+  font-style: italic;
+  border: 1px dashed #2a4a6d;
+}
+
+/* ─── pager (classic vB "« First < 1 2 3 > Last »") ──────────────── */
+
+.hol-classic-pager {
+  margin: 8px 0;
+  text-align: center;
+  font-size: 11px;
+}
+.hol-classic-pager a, .hol-classic-pager strong, .hol-classic-pager span.gap {
+  display: inline-block;
+  padding: 3px 7px;
+  margin: 0 1px;
+  border: 1px solid #000;
+  background: #13253c;
+  color: #cae5fd;
+}
+.hol-classic-pager strong {
+  background: #2c5582;
+  color: #fff;
+  font-weight: bold;
+}
+.hol-classic-pager a:hover { background: #1a3d62; text-decoration: none; }
+.hol-classic-pager span.gap { border: 0; background: transparent; }
+
+/* ─── misc chrome ───────────────────────────────────────────────────── */
+
+.hol-classic .ibeat { color: #ffa070; font-weight: bold; }
+.hol-classic .gap-notice {
+  display: inline-block;
+  padding: 1px 6px;
+  background: #3a2a10;
+  border: 1px solid #6b5020;
+  color: #ffd070;
+  font-size: 10px;
+  margin: 2px 0;
+}
+
+.hol-classic-toggle {
+  text-align: right;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+.hol-classic-toggle a {
+  color: #b4d4f4;
+  background: #0b2444;
+  padding: 2px 8px;
+  border: 1px solid #000;
+}
+
+.hol-classic-note {
+  color: #8da9c6;
+  font-size: 10px;
+  font-style: italic;
+  padding: 4px 2px;
+}
+
+/* ─── responsive: let narrow screens scroll the 764px canvas ────────── */
+
+@media (max-width: 800px) {
+  .hol-classic { margin: -3rem -1.5rem; padding: 1rem 0; }
+  .hol-classic-canvas {
+    width: 100%;
+    border-left-width: 3px;
+    border-right-width: 3px;
+  }
+  .hol-classic-banner { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .hol-classic-navrow { flex-wrap: wrap; justify-content: flex-start; }
+  .hol-classic .postbit .postuser-inner { flex-direction: column; }
+  .hol-classic .postbit .postuser .avatar { width: 100%; }
+}

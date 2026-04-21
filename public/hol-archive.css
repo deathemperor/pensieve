@@ -460,6 +460,20 @@ a:hover { color: var(--hol-accent-hi); }
 }
 .hol-local-nav-link:hover { color: var(--hol-ink); }
 
+/* "Giao diện cổ điển" — visually distinct so nostalgia-seekers spot it.
+ * Uses the Darkleaf blue as a hint at what they'll see on the other side. */
+.hol-local-nav-link.hol-classic-link {
+  border: 1px solid rgba(160, 200, 240, 0.25);
+  padding: 0.15rem 0.55rem;
+  border-radius: 3px;
+  color: #a0c8f0;
+}
+.hol-local-nav-link.hol-classic-link:hover {
+  background: #12395d;
+  color: #fff;
+  border-color: #12395d;
+}
+
 /* Authentic YM emoticon gifs sit inline at their 18x18 native size. */
 .hol-post-body img.hol-ym {
   width: 18px;

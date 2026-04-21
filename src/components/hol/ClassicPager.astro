@@ -1,0 +1,64 @@
+---
+// src/components/hol/ClassicPager.astro
+//
+// vB3-style pager: « First < 1 2 [3] 4 5 > Last »
+// Matches the layout seen on holvn.org showthread pages.
+interface Props {
+  basePath: string;       // e.g. "/hol/classic/t/1-nhat-ki/"
+  pageParam?: string;     // "p" for threads, "page" for forums
+  page: number;
+  totalPages: number;
+}
+const { basePath, pageParam = "page", page, totalPages } = Astro.props;
+
+function href(p: number): string {
+  if (p === 1) return basePath;
+  // Astro URLs: path/page/2/  or  path/p/2/
+  return `${basePath}${pageParam}/${p}/`;
+}
+
+// Classic vB always shows: first, last, current ± 3, plus jump markers
+// (-500, -100, -50, -10, +10, +50, +100, +500) where in range. Mirror
+// that, clipped to what fits for small thread counts.
+const windowSize = 3;
+const nums: (number | "gap")[] = [];
+const add = (n: number) => { if (n >= 1 && n <= totalPages && !nums.includes(n)) nums.push(n); };
+add(1);
+for (const off of [-500, -100, -50, -10]) add(page + off);
+for (let i = page - windowSize; i <= page + windowSize; i++) add(i);
+for (const off of [10, 50, 100, 500]) add(page + off);
+add(totalPages);
+
+nums.sort((a, b) => (a as number) - (b as number));
+
+// insert "gap" markers for non-contiguous jumps
+const withGaps: (number | "gap")[] = [];
+for (let i = 0; i < nums.length; i++) {
+  const n = nums[i] as number;
+  if (i > 0 && n - (nums[i - 1] as number) > 1) withGaps.push("gap");
+  withGaps.push(n);
+}
+---
+{totalPages > 1 && (
+  <div class="hol-classic-pager">
+    {page > 1 && (
+      <>
+        <a href={href(1)} title="First page"><strong>«</strong> First</a>
+        <a href={href(page - 1)} title="Previous">&lt;</a>
+      </>
+    )}
+    {withGaps.map((n) =>
+      n === "gap"
+        ? <span class="gap">…</span>
+        : n === page
+          ? <strong>{n}</strong>
+          : <a href={href(n as number)}>{n}</a>
+    )}
+    {page < totalPages && (
+      <>
+        <a href={href(page + 1)} title="Next">&gt;</a>
+        <a href={href(totalPages)} title="Last page">Last <strong>»</strong></a>
+      </>
+    )}
+  </div>
+)}
