@@ -733,34 +733,45 @@ export default definePlugin({
 		beacon: {
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
-				// Runtime pre-parses the body into routeCtx.input. Reading
-				// routeCtx.request.json() here fails because the body stream
-				// has already been consumed.
-				const body = (routeCtx.input ?? {}) as {
-					postSlug?: string;
-					sessionId?: string;
-					eventType?: string;
-					data?: Record<string, unknown>;
-					t?: number;
-				};
+				try {
+					// Runtime pre-parses the body into routeCtx.input. Reading
+					// routeCtx.request.json() here fails because the body stream
+					// has already been consumed.
+					const body = (routeCtx.input ?? {}) as {
+						postSlug?: string;
+						sessionId?: string;
+						eventType?: string;
+						data?: Record<string, unknown>;
+						t?: number;
+					};
 
-				const { postSlug, sessionId, eventType, data, t } = body;
+					const { postSlug, sessionId, eventType, data, t } = body;
 
-				if (!postSlug || !sessionId || !eventType) {
-					return new Response("Missing required fields", { status: 400 });
+					if (!postSlug || !sessionId || !eventType) {
+						return {
+							ok: false,
+							error: "Missing required fields",
+							got: { postSlug: !!postSlug, sessionId: !!sessionId, eventType: !!eventType },
+						};
+					}
+
+					const id = `${sessionId}_${eventType}_${t || Date.now()}`;
+					await ctx.storage.reading_events.put(id, {
+						id,
+						postSlug,
+						sessionId,
+						eventType,
+						data: data || {},
+						createdAt: new Date().toISOString(),
+					});
+
+					return { ok: true, id };
+				} catch (err) {
+					ctx.log.info(
+						`beacon handler error: ${err instanceof Error ? err.message : String(err)}`,
+					);
+					return { ok: false, error: "beacon failed" };
 				}
-
-				const id = `${sessionId}_${eventType}_${t || Date.now()}`;
-				await ctx.storage.reading_events.put(id, {
-					id,
-					postSlug,
-					sessionId,
-					eventType,
-					data: data || {},
-					createdAt: new Date().toISOString(),
-				});
-
-				return new Response(null, { status: 204 });
 			},
 		},
 
