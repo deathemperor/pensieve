@@ -167,30 +167,43 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 	const totalPageviews = items.filter((e: any) => e.eventType === "pageview").length;
 	const uniqueSessions = new Set(items.map((e: any) => e.sessionId)).size;
 
+	// Email funnel: opens and clicks mirrored into reading_events by the
+	// pixel/click handlers. Compute aggregate + per-send rates.
+	const emailOpens = items.filter((e: any) => e.eventType === "email_open").length;
+	const emailClicks = items.filter((e: any) => e.eventType === "email_click").length;
+
 	// Lumos (likes) data
 	const allLumos = await ctx.storage.lumos!.query({});
 	const lumosItems = flattenRows(allLumos.items ?? allLumos ?? []) as any[];
 	const totalLumos = lumosItems.length;
 
-	// Lumos by post
 	const lumosByPost = new Map<string, number>();
 	for (const like of lumosItems) {
 		const slug = like.postSlug || "unknown";
 		lumosByPost.set(slug, (lumosByPost.get(slug) || 0) + 1);
 	}
 
-	// Aggregate reading events by postSlug
-	const byPost = new Map<string, { pageviews: number; scrollDepths: number[]; readingTimes: number[] }>();
+	// Aggregate reading events by postSlug (now also split by source).
+	interface PostAgg {
+		pageviews: number;
+		scrollDepths: number[];
+		readingTimes: number[];
+		bySource: Record<string, number>;
+	}
+	const byPost = new Map<string, PostAgg>();
 
 	for (const event of items) {
+		if (event.eventType !== "pageview" && event.eventType !== "leave") continue;
 		const slug = event.postSlug || "unknown";
 		if (!byPost.has(slug)) {
-			byPost.set(slug, { pageviews: 0, scrollDepths: [], readingTimes: [] });
+			byPost.set(slug, { pageviews: 0, scrollDepths: [], readingTimes: [], bySource: {} });
 		}
 		const agg = byPost.get(slug)!;
 
 		if (event.eventType === "pageview") {
 			agg.pageviews++;
+			const src = (event.data?.source ?? "direct") as string;
+			agg.bySource[src] = (agg.bySource[src] ?? 0) + 1;
 		}
 
 		if (event.eventType === "leave" && event.data) {
@@ -203,12 +216,17 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 		}
 	}
 
-	// Merge all known post slugs
+	const formatSources = (bySource: Record<string, number>): string => {
+		const entries = Object.entries(bySource).sort((a, b) => b[1] - a[1]);
+		if (entries.length === 0) return "—";
+		return entries.map(([src, n]) => `${src} ${n}`).join(" · ");
+	};
+
 	const allSlugs = new Set([...byPost.keys(), ...lumosByPost.keys()]);
 
 	const rows = Array.from(allSlugs)
 		.map((slug) => {
-			const agg = byPost.get(slug) || { pageviews: 0, scrollDepths: [], readingTimes: [] };
+			const agg = byPost.get(slug) || { pageviews: 0, scrollDepths: [], readingTimes: [], bySource: {} };
 			const lumos = lumosByPost.get(slug) || 0;
 			const avgScroll = agg.scrollDepths.length > 0
 				? Math.round(agg.scrollDepths.reduce((a, b) => a + b, 0) / agg.scrollDepths.length)
@@ -221,12 +239,23 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 			return {
 				post: slug,
 				pageviews: agg.pageviews,
+				sources: formatSources(agg.bySource),
 				scroll: `${avgScroll}%`,
 				read_time: `${avgReadingSec}s`,
 				lumos,
 			};
 		})
 		.sort((a, b) => b.pageviews - a.pageviews);
+
+	// Top-level source totals across the whole site (for the summary fields).
+	const siteSources: Record<string, number> = {};
+	for (const event of items) {
+		if (event.eventType !== "pageview") continue;
+		const src = (event.data?.source ?? "direct") as string;
+		siteSources[src] = (siteSources[src] ?? 0) + 1;
+	}
+
+	const clickRate = emailOpens > 0 ? Math.round((emailClicks / emailOpens) * 100) : 0;
 
 	return {
 		blocks: [
@@ -237,6 +266,16 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 					{ label: "Total Pageviews", value: String(totalPageviews) },
 					{ label: "Unique Sessions", value: String(uniqueSessions) },
 					{ label: "Total Lumos", value: String(totalLumos) },
+					{ label: "Traffic Sources", value: formatSources(siteSources) },
+				],
+			},
+			{ type: "header", text: "Owl Post Funnel" },
+			{
+				type: "fields",
+				fields: [
+					{ label: "Email Opens", value: String(emailOpens) },
+					{ label: "Email Clicks", value: String(emailClicks) },
+					{ label: "Click Rate", value: `${clickRate}%` },
 				],
 			},
 			{ type: "divider" },
@@ -245,6 +284,7 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 				columns: [
 					{ key: "post", label: "Post" },
 					{ key: "pageviews", label: "Pageviews", format: "number" },
+					{ key: "sources", label: "Sources" },
 					{ key: "scroll", label: "Avg Scroll" },
 					{ key: "read_time", label: "Avg Read Time" },
 					{ key: "lumos", label: "Lumos", format: "number" },
@@ -266,10 +306,18 @@ export default definePlugin({
 				const postSlug = event.page.content?.slug || event.page.content?.id;
 				const beaconUrl = "/_emdash/api/plugins/pensieve-engage/beacon";
 
+				// The inline tracker resolves a `source` attribution for the
+				// pageview. Priority:
+				//   1. ?src=<letter|fb|...> in the URL (set by /click for email
+				//      links, and by Loc's own UTM-style links on FB posts).
+				//   2. document.referrer matching FB domains.
+				//   3. "direct" fallback.
+				// Also captures ?sid=<sendId> so we can attribute reads back
+				// to a specific newsletter send.
 				return {
 					kind: "inline-script",
 					placement: "body:end",
-					code: `(function(){var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var slug=${JSON.stringify(postSlug)};var url=${JSON.stringify(beaconUrl)};var startTime=Date.now();var maxScroll=0;var docH=function(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight};function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`,
+					code: `(function(){var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var slug=${JSON.stringify(postSlug)};var url=${JSON.stringify(beaconUrl)};var startTime=Date.now();var maxScroll=0;var qs=new URLSearchParams(location.search);var src=(qs.get("src")||"").toLowerCase();var ref=document.referrer||"";if(!src){if(/(^|\\.)(facebook|fb)\\.com|(^|\\.)fb\\.me|(^|\\.)l\\.facebook\\.com|(^|\\.)m\\.facebook\\.com/.test(ref))src="fb";else if(ref&&!ref.startsWith(location.origin))src="referral";else src="direct";}var sendId=qs.get("sid")||null;var docH=function(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight};function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime,source:src,sendId:sendId,referrer:ref||null},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`,
 					key: "pensieve-engage-tracker",
 				};
 			},
@@ -591,27 +639,63 @@ export default definePlugin({
 				const url = new URL(routeCtx.request.url);
 				const sendId = url.searchParams.get("s");
 				const subscriberId = url.searchParams.get("sub");
-				const targetUrl = url.searchParams.get("url");
+				const targetUrlRaw = url.searchParams.get("url");
 
-				if (!targetUrl) {
+				if (!targetUrlRaw) {
 					return new Response("Missing url parameter", { status: 400 });
 				}
 
 				const userAgent = routeCtx.request.headers.get("user-agent") ?? "";
 				const clickedAt = new Date().toISOString();
 
+				// Mirror into storage (queryable by analytics) alongside the
+				// existing KV write (kept for backward compat).
 				if (sendId) {
+					const eventId = `click_${sendId}_${Date.now()}`;
+					try {
+						await ctx.storage.reading_events.put(eventId, {
+							id: eventId,
+							eventType: "email_click",
+							sessionId: subscriberId ?? "anonymous",
+							postSlug: "",
+							data: {
+								sendId,
+								subscriberId,
+								url: targetUrlRaw,
+								userAgent,
+							},
+							createdAt: clickedAt,
+						});
+					} catch {
+						// non-fatal
+					}
 					await ctx.kv.set(`clicks:${sendId}:${Date.now()}`, {
 						subscriberId,
-						url: targetUrl,
+						url: targetUrlRaw,
 						userAgent,
 						clickedAt,
 					});
 				}
 
+				// Tag the redirect target so the post's inline tracker can
+				// resolve source=letter + sendId from its own URL.
+				let location: string;
+				try {
+					const decoded = decodeURIComponent(targetUrlRaw);
+					const target = new URL(decoded);
+					if (sendId) {
+						target.searchParams.set("src", "letter");
+						target.searchParams.set("sid", sendId);
+					}
+					location = target.toString();
+				} catch {
+					// Fallback — target wasn't a full URL, or was malformed.
+					location = decodeURIComponent(targetUrlRaw);
+				}
+
 				return new Response(null, {
 					status: 302,
-					headers: { Location: decodeURIComponent(targetUrl) },
+					headers: { Location: location },
 				});
 			},
 		},
@@ -627,6 +711,20 @@ export default definePlugin({
 				const openedAt = new Date().toISOString();
 
 				if (sendId && subscriberId) {
+					// Mirror into storage for analytics (plus KV for legacy).
+					const eventId = `open_${sendId}_${subscriberId}`;
+					try {
+						await ctx.storage.reading_events.put(eventId, {
+							id: eventId,
+							eventType: "email_open",
+							sessionId: subscriberId,
+							postSlug: "",
+							data: { sendId, subscriberId, userAgent },
+							createdAt: openedAt,
+						});
+					} catch {
+						// non-fatal
+					}
 					await ctx.kv.set(`opens:${sendId}:${subscriberId}`, {
 						openedAt,
 						userAgent,
