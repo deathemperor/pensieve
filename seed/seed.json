@@ -364,6 +364,33 @@
 					"type": "text"
 				}
 			]
+		},
+		{
+			"slug": "chronicle",
+			"label": "Celestial Chronicle",
+			"labelSingular": "Chronicle Entry",
+			"supports": [
+				"drafts",
+				"revisions",
+				"search"
+			],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "subtitle_en", "label": "Subtitle (EN)", "type": "text" },
+				{ "slug": "subtitle_vi", "label": "Subtitle (VI)", "type": "text" },
+				{ "slug": "event_date", "label": "Event Date (ISO yyyy-mm-dd)", "type": "string", "required": true },
+				{ "slug": "date_precision", "label": "Date Precision", "type": "string", "required": true },
+				{ "slug": "category", "label": "Category", "type": "string", "required": true },
+				{ "slug": "location", "label": "Location (JSON)", "type": "text" },
+				{ "slug": "linked_post_ids", "label": "Linked Post IDs (comma-separated)", "type": "string" },
+				{ "slug": "external_url", "label": "External URL", "type": "string" },
+				{ "slug": "external_url_label", "label": "External URL Label", "type": "string" },
+				{ "slug": "source", "label": "Source", "type": "string", "required": true },
+				{ "slug": "source_id", "label": "Source ID", "type": "string" },
+				{ "slug": "visibility", "label": "Visibility", "type": "string" }
+			]
 		}
 	],
 	"taxonomies": [
@@ -32556,6 +32583,147 @@
 					"category": "accessory",
 					"priority": "want",
 					"notes": "Japanese cloth pad — pick a Ninja FX variant for balanced glide."
+				}
+			}
+		],
+		"chronicle": [
+			{
+				"id": "met-daity-jewel-2004-03-15",
+				"slug": "met-daity-jewel-2004-03-15",
+				"status": "published",
+				"data": {
+					"title": "Met her — DAITY_JEWEL",
+					"title_en": "Met her — DAITY_JEWEL",
+					"title_vi": "Gặp bạn ấy — DAITY_JEWEL",
+					"subtitle_en": "a decade before it ended",
+					"subtitle_vi": "một thập kỷ trước khi kết thúc",
+					"event_date": "2004-03-15",
+					"date_precision": "day",
+					"category": "love",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "left-vng-2015-03-13",
+				"slug": "left-vng-2015-03-13",
+				"status": "published",
+				"data": {
+					"title": "Left VNG",
+					"title_en": "Left VNG",
+					"title_vi": "Rời VNG",
+					"subtitle_en": "nine years, a door closes",
+					"subtitle_vi": "chín năm, một cánh cửa khép lại",
+					"event_date": "2015-03-13",
+					"date_precision": "day",
+					"category": "threshold",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "founded-gvn-studio-2015-05",
+				"slug": "founded-gvn-studio-2015-05",
+				"status": "published",
+				"data": {
+					"title": "Founded GVN Studio",
+					"title_en": "Founded GVN Studio",
+					"title_vi": "Lập GVN Studio",
+					"subtitle_en": "the studio begins",
+					"subtitle_vi": "khởi sự",
+					"event_date": "2015-05-01",
+					"date_precision": "month",
+					"category": "work",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "old-trafford-birthday-2018-03-31",
+				"slug": "old-trafford-birthday-2018-03-31",
+				"status": "published",
+				"data": {
+					"title": "Old Trafford, on my birthday (United won)",
+					"title_en": "Old Trafford, on my birthday (United won)",
+					"title_vi": "Old Trafford, đúng sinh nhật (MU thắng)",
+					"subtitle_en": "the Theatre of Dreams, in person",
+					"subtitle_vi": "Nhà hát của những giấc mơ, tận mắt",
+					"event_date": "2018-03-31",
+					"date_precision": "day",
+					"category": "milestone",
+					"linked_post_ids": "muc-tieu-lon-va-y-chi-kien-cuong",
+					"external_url": "",
+					"external_url_label": "match report",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "proposed-buckingham-2018-04-02",
+				"slug": "proposed-buckingham-2018-04-02",
+				"status": "published",
+				"data": {
+					"title": "Proposed at Buckingham Palace",
+					"title_en": "Proposed at Buckingham Palace",
+					"title_vi": "Cầu hôn trước cổng Buckingham",
+					"subtitle_en": "a ring, a knee, a palace gate",
+					"subtitle_vi": "một chiếc nhẫn, một đầu gối, cổng hoàng cung",
+					"event_date": "2018-04-02",
+					"date_precision": "day",
+					"category": "love",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "joined-papaya-2021-05-04",
+				"slug": "joined-papaya-2021-05-04",
+				"status": "published",
+				"data": {
+					"title": "Joined Papaya",
+					"title_en": "Joined Papaya",
+					"title_vi": "Vào Papaya",
+					"subtitle_en": "a new field to till",
+					"subtitle_vi": "một cánh đồng mới",
+					"event_date": "2021-05-04",
+					"date_precision": "day",
+					"category": "threshold",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "dad-2021-05-21",
+				"slug": "dad-2021-05-21",
+				"status": "published",
+				"data": {
+					"title": "Dad",
+					"title_en": "Dad",
+					"title_vi": "Ba",
+					"subtitle_en": "the day the world got quieter",
+					"subtitle_vi": "ngày thế gian lặng đi",
+					"event_date": "2021-05-21",
+					"date_precision": "day",
+					"category": "loss",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "linh-dan-born-2021-12-14",
+				"slug": "linh-dan-born-2021-12-14",
+				"status": "published",
+				"data": {
+					"title": "Ngọc Linh Đan arrived (Fawn · Nai)",
+					"title_en": "Ngọc Linh Đan arrived (Fawn · Nai)",
+					"title_vi": "Ngọc Linh Đan chào đời (Fawn · Nai)",
+					"subtitle_en": "a small precious bell",
+					"subtitle_vi": "một cái chuông nhỏ quý giá",
+					"event_date": "2021-12-14",
+					"date_precision": "day",
+					"category": "family",
+					"source": "manual",
+					"visibility": "public"
 				}
 			}
 		]
