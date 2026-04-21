@@ -3,6 +3,7 @@
 		{ "path": "/", "title": "Trương Hữu Lộc", "priority": "1.0" },
 		{ "path": "/pensieve/", "title": "Pensieve", "priority": "0.9" },
 		{ "path": "/pensieve/categories", "title": "Categories", "priority": "0.6" },
+		{ "path": "/pensieve/chronicle", "title": "The Celestial Chronicle", "priority": "0.7" },
 		{ "path": "/room-of-requirement", "title": "Room of Requirement", "priority": "0.7" },
 		{ "path": "/room-of-requirement/priori-incantatem", "title": "Priori Incantatem", "priority": "0.7" },
 		{ "path": "/room-of-requirement/mirror-of-erised", "title": "The Mirror of Erised", "priority": "0.6" },
