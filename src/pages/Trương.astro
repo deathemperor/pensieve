@@ -602,58 +602,6 @@ try {
 		</div>
 	</section>
 
-	<section id="community" class="about-section">
-		<div class="about-inner">
-			<h2 class="section-heading">
-				{isVi ? "Cộng Đồng" : "Community"}
-				<a href="#community" class="anchor-link" aria-label="Link to Community">#</a>
-			</h2>
-			<p class="section-desc">
-				{isVi
-					? "Nơi tôi đã làm và vẫn đang làm — bút danh deathemperor trên khắp các diễn đàn Việt Nam từ đầu những năm 2000."
-					: "Where I've been, and where I still am — as deathemperor across Vietnamese forums since the early 2000s."}
-			</p>
-			<div class="community-grid">
-				<a href="https://gamevn.com" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">gamevn.com</span>
-					<span class="community-role">{isVi ? "Thành viên từ 2002" : "Member since 2002"}</span>
-					<span class="community-desc">
-						{isVi
-							? "Diễn đàn game lớn nhất Việt Nam. Những thread đầu tay viết về Sim City 4, KOTOR, và cả thập niên console-PC của những năm 2000."
-							: "Vietnam's biggest gaming forum. Earliest threads cover Sim City 4, KOTOR, and the whole 2000s console-PC era."}
-					</span>
-				</a>
-				<a href="https://www.vbulletin.org/forum/" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">vBulletin.org</span>
-					<span class="community-role">{isVi ? "Cộng tác viên" : "Contributor"}</span>
-					<span class="community-desc">
-						{isVi
-							? "Tham gia tích cực trong cộng đồng phần mềm diễn đàn — nơi hàng ngàn diễn đàn Việt Nam ngày ấy chạy trên đó."
-							: "Active in the forum-software community — the platform that powered a thousand Vietnamese forums back in the day."}
-					</span>
-				</a>
-				<a href="/hol" class="community-card">
-					<span class="community-name">holvn.org (HOL)</span>
-					<span class="community-role">{isVi ? "Đang dựng lại" : "Rebuilding now"}</span>
-					<span class="community-desc">
-						{isVi
-							? "Diễn đàn vBulletin Việt Nam đã đóng cửa — tôi đang dựng lại bản đọc từ snapshot Wayback Machine, sống tại /hol trên trang này."
-							: "A defunct Vietnamese vBulletin forum — reconstructing a read-only archive from Wayback Machine snapshots, live at /hol on this site."}
-					</span>
-				</a>
-				<a href="https://facebook.com/groups/romy" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">{isVi ? "Rô Mỹ (Cá Rô Trung Mỹ Việt Nam)" : "Rô Mỹ (American Cichlids Vietnam)"}</span>
-					<span class="community-role">{isVi ? "Admin trưởng" : "Head admin"}</span>
-					<span class="community-desc">
-						{isVi
-							? "Nhóm Facebook cộng đồng chơi cá rô Mỹ ở Việt Nam — dẫn dắt đội quản trị qua một lần thay máu năm 2021."
-							: "Facebook community for American cichlid keepers in Vietnam — led the admin-team evolution in 2021."}
-					</span>
-				</a>
-			</div>
-		</div>
-	</section>
-
 	<section id="pensieve-dives" class="about-section">
 		<div class="about-inner">
 			<h2 class="section-heading">
@@ -1118,6 +1066,62 @@ try {
 		</div>
 	</section>
 
+
+	<section id="community" class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading">
+				{isVi ? "Cộng Đồng" : "Community"}
+				<a href="#community" class="anchor-link" aria-label="Link to Community">#</a>
+			</h2>
+			<p class="section-desc">
+				{isVi
+					? "Nơi tôi đã đi qua — bút danh deathemperor trên khắp các diễn đàn Việt Nam từ đầu những năm 2000. Giờ phần lớn đã ngủ yên."
+					: "Where I've been — as deathemperor across Vietnamese forums since the early 2000s. Most of them are dormant now."}
+			</p>
+			<div class="community-grid">
+				<div class="community-card">
+					<span class="community-name">gamevn.com</span>
+					<span class="community-role">C O N T R A · {isVi ? "đến từ Graveyard" : "from Graveyard"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Tham gia" : "Joined"}</dt><dd>26.5.2002</dd></div>
+						<div><dt>{isVi ? "Lần cuối" : "Last seen"}</dt><dd>28.9.2023</dd></div>
+						<div><dt>{isVi ? "Bài viết" : "Posts"}</dt><dd>1,857</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Diễn đàn game lớn nhất Việt Nam. Những thread đầu tay viết về Sim City 4, KOTOR, và cả thập niên console-PC của những năm 2000."
+							: "Vietnam's biggest gaming forum. Earliest threads cover Sim City 4, KOTOR, and the whole 2000s console-PC era."}
+					</span>
+				</div>
+				<div class="community-card">
+					<span class="community-name">vBulletin.org</span>
+					<span class="community-role">{isVi ? "Cộng tác viên · thập niên 2000" : "Contributor · 2000s"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Trạng thái" : "Status"}</dt><dd>{isVi ? "Diễn đàn đã đóng" : "Forum shut down"}</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Tham gia tích cực trong cộng đồng phần mềm diễn đàn — nơi hàng ngàn diễn đàn Việt Nam ngày ấy chạy trên đó. Số liệu đã mất theo diễn đàn."
+							: "Active in the forum-software community — the platform that powered a thousand Vietnamese forums back in the day. Stats vanished with the forum."}
+					</span>
+				</div>
+				<div class="community-card">
+					<span class="community-name">holvn.org (HOL)</span>
+					<span class="community-role">{isVi ? "Đang dựng lại · sống tại /hol" : "Rebuilding · live at /hol"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Bài cứu được" : "Posts rescued"}</dt><dd>25,933</dd></div>
+						<div><dt>{isVi ? "Chủ đề" : "Threads"}</dt><dd>8,588</dd></div>
+						<div><dt>{isVi ? "Diễn đàn con" : "Sub-forums"}</dt><dd>57</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Diễn đàn vBulletin Việt Nam đã đóng cửa — tôi đang dựng lại bản đọc từ snapshot Wayback Machine."
+							: "A defunct Vietnamese vBulletin forum — reconstructing a read-only archive from Wayback Machine snapshots."}
+					</span>
+				</div>
+			</div>
+		</div>
+	</section>
 </Base>
 
 <style>
@@ -2831,20 +2835,12 @@ try {
 	.community-card {
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
+		gap: 0.5rem;
 		padding: 1rem;
 		border: 1px solid var(--color-border, rgba(240, 199, 94, 0.2));
 		border-radius: 0.5rem;
 		background: rgba(240, 199, 94, 0.03);
 		color: inherit;
-		text-decoration: none;
-		transition: border-color 200ms, background 200ms, transform 200ms;
-	}
-
-	.community-card:hover {
-		border-color: rgba(240, 199, 94, 0.55);
-		background: rgba(240, 199, 94, 0.06);
-		transform: translateY(-1px);
 	}
 
 	.community-name {
@@ -2855,10 +2851,41 @@ try {
 	}
 
 	.community-role {
-		font-size: 0.8rem;
+		font-size: 0.75rem;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--color-muted, rgba(255, 255, 255, 0.55));
+	}
+
+	.community-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1rem;
+		margin: 0.25rem 0 0.15rem;
+		padding: 0.5rem 0;
+		border-top: 1px dashed rgba(240, 199, 94, 0.18);
+		border-bottom: 1px dashed rgba(240, 199, 94, 0.18);
+	}
+	.community-stats > div {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	.community-stats dt {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 0.65rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-muted, rgba(255, 255, 255, 0.45));
+		font-weight: 400;
+	}
+	.community-stats dd {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--color-accent, #f0c75e);
+		margin: 0;
+		line-height: 1.2;
 	}
 
 	.community-desc {
