@@ -1282,15 +1282,215 @@ const isLoggedIn = !!Astro.locals.user;
 			});
 		</script>
 		<EmDashBodyEnd page={pageCtx} />
-		{content && content.collection === "posts" && (
-			<script
-				is:inline
-				type="text/javascript"
-				data-post-slug={content.slug}
-				data-beacon-url="/_emdash/api/plugins/pensieve-engage/beacon"
-				set:html={`(function(){var el=document.currentScript;var slug=el.getAttribute("data-post-slug");var url=el.getAttribute("data-beacon-url");if(!slug||!url)return;var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var startTime=Date.now();var maxScroll=0;var qs=new URLSearchParams(location.search);var src=(qs.get("src")||"").toLowerCase();var ref=document.referrer||"";if(!src){if(/(^|\\.)(facebook|fb)\\.com|(^|\\.)fb\\.me|(^|\\.)l\\.facebook\\.com|(^|\\.)m\\.facebook\\.com/.test(ref))src="fb";else if(ref&&!ref.indexOf(location.origin))src="direct";else if(ref)src="referral";else src="direct";}var sendId=qs.get("sid")||null;function docH(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight}function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime,source:src,sendId:sendId,referrer:ref||null},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`}
-			/>
-		)}
+
+		{/* Site-wide reading analytics. Fires on every page (homepage, posts,
+		    categories, RoR, Trương, games, everything). Preserves the existing
+		    fb/direct/referral/letter `source` detection + email-campaign
+		    `sendId` attribution. Adds: persistent visitor id, session idle
+		    timeout, scroll milestones (25/50/75/100), active read time
+		    (visible + interacted within 30s), UTM capture, outbound link
+		    tracking, bot filter. */}
+		<script
+			is:inline
+			type="text/javascript"
+			data-post-slug={content?.collection === "posts" ? content.slug : ""}
+			data-beacon-url="/_emdash/api/plugins/pensieve-engage/beacon"
+			set:html={`(function(){
+try {
+	if (navigator.webdriver) return;
+	var UA = navigator.userAgent || "";
+	if (/bot|crawler|spider|headless|lighthouse/i.test(UA)) return;
+
+	var el = document.currentScript;
+	var slug = el.getAttribute("data-post-slug") || "";
+	var url = el.getAttribute("data-beacon-url");
+	if (!url) return;
+
+	var VKEY = "pe_v";
+	var SKEY = "pe_s";
+	var STOUT = 30*60*1000;
+
+	function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+	function getVisitor(){
+		try {
+			var v = localStorage.getItem(VKEY);
+			if (!v) { v = uid(); localStorage.setItem(VKEY, v); }
+			return v;
+		} catch(e) { return "anon_"+uid(); }
+	}
+	function getSession(){
+		try {
+			var raw = sessionStorage.getItem(SKEY);
+			var now = Date.now();
+			if (raw) {
+				var parts = raw.split("|");
+				var lastSeen = parseInt(parts[1]||"0", 10);
+				if (now - lastSeen < STOUT) {
+					sessionStorage.setItem(SKEY, parts[0]+"|"+now);
+					return { id: parts[0], isNew: false };
+				}
+			}
+			var sid = uid();
+			sessionStorage.setItem(SKEY, sid+"|"+now);
+			return { id: sid, isNew: true };
+		} catch(e) { return { id: "anon_"+uid(), isNew: true }; }
+	}
+
+	var visitor = getVisitor();
+	var ses = getSession();
+	var pageviewId = uid();
+	var startTime = Date.now();
+
+	// Source attribution: prefer ?src= query (set by email click-tracker),
+	// fall back to inferring from document.referrer.
+	var qs = new URLSearchParams(location.search);
+	var src = (qs.get("src") || "").toLowerCase();
+	var ref = document.referrer || "";
+	if (!src) {
+		if (/(^|\\.)(facebook|fb)\\.com|(^|\\.)fb\\.me|(^|\\.)l\\.facebook\\.com|(^|\\.)m\\.facebook\\.com/.test(ref)) src = "fb";
+		else if (ref && !ref.indexOf(location.origin)) src = "direct";
+		else if (ref) src = "referral";
+		else src = "direct";
+	}
+	var sendId = qs.get("sid") || null;
+
+	// UTMs, captured from query string once per pageview
+	var utm = {};
+	["utm_source","utm_medium","utm_campaign","utm_term","utm_content"].forEach(function(k){
+		var v = qs.get(k);
+		if (v) utm[k] = v.slice(0, 100);
+	});
+
+	// Active read time: visible + user interacted within 30s. Wall-clock
+	// dwell is captured separately so we can see idle vs engaged time.
+	var activeMs = 0;
+	var lastTick = Date.now();
+	var lastInteract = Date.now();
+	var visible = document.visibilityState === "visible";
+	var INTERACT_WINDOW = 30000;
+	function tickActive(){
+		var now = Date.now();
+		var delta = now - lastTick;
+		lastTick = now;
+		if (visible && (now - lastInteract) < INTERACT_WINDOW && delta < 60000) {
+			activeMs += delta;
+		}
+	}
+
+	// Scroll depth + milestones (each fires once per pageview)
+	var maxScroll = 0;
+	var milestones = { 25: false, 50: false, 75: false, 100: false };
+	function docH(){ return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight; }
+	function scrollPct(){
+		var h = docH();
+		if (h <= 0) return 100;
+		return Math.min(Math.round(window.scrollY / h * 100), 100);
+	}
+
+	function send(type, extra, useBeacon) {
+		var d = {
+			postSlug: slug,
+			path: location.pathname,
+			sessionId: ses.id,
+			visitorId: visitor,
+			pageviewId: pageviewId,
+			eventType: type,
+			data: Object.assign({
+				scrollDepth: maxScroll,
+				readingTimeMs: Date.now() - startTime,
+				activeMs: activeMs,
+				source: src,
+				sendId: sendId,
+				referrer: ref || null,
+				utm: utm,
+				title: (document.title || "").slice(0, 200),
+				vw: window.innerWidth,
+				vh: window.innerHeight,
+				dpr: window.devicePixelRatio || 1,
+				lang: (navigator.language || "").slice(0, 10),
+				tz: (Intl.DateTimeFormat().resolvedOptions().timeZone) || "",
+				newSession: ses.isNew
+			}, extra || {}),
+			t: Date.now()
+		};
+		try {
+			var body = JSON.stringify(d);
+			if (useBeacon && navigator.sendBeacon) {
+				var blob = new Blob([body], { type: "application/json" });
+				navigator.sendBeacon(url, blob);
+			} else {
+				fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true });
+			}
+		} catch(e) {}
+	}
+
+	// Initial pageview
+	send("pageview");
+
+	// Heartbeat every 30s while visible (kept at 30s for backward compat
+	// with the existing analytics aggregation)
+	var hbTimer = setInterval(function(){
+		tickActive();
+		if (visible) send("heartbeat");
+	}, 30000);
+
+	// Scroll handler with rAF throttling + milestone firing
+	var scrollRaf = null;
+	function onScroll(){
+		lastInteract = Date.now();
+		if (scrollRaf) return;
+		scrollRaf = requestAnimationFrame(function(){
+			scrollRaf = null;
+			var pct = scrollPct();
+			if (pct > maxScroll) maxScroll = pct;
+			[25,50,75,100].forEach(function(m){
+				if (!milestones[m] && maxScroll >= m) {
+					milestones[m] = true;
+					send("scroll", { depth: m });
+				}
+			});
+		});
+	}
+	window.addEventListener("scroll", onScroll, { passive: true });
+	onScroll();
+
+	// Interaction signals feed the active-time gate
+	["mousemove","keydown","touchstart","click"].forEach(function(ev){
+		window.addEventListener(ev, function(){ lastInteract = Date.now(); }, { passive: true });
+	});
+
+	// Outbound link tracking
+	document.addEventListener("click", function(e){
+		var a = e.target;
+		while (a && a.nodeName !== "A") a = a.parentNode;
+		if (!a || !a.href) return;
+		try {
+			var u = new URL(a.href, location.href);
+			if (u.host && u.host !== location.host) {
+				send("outbound", { href: u.href.slice(0, 500), host: u.host });
+			}
+		} catch(err){}
+	}, true);
+
+	document.addEventListener("visibilitychange", function(){
+		tickActive();
+		visible = document.visibilityState === "visible";
+		if (!visible) {
+			send("leave", { dwellMs: Date.now() - startTime }, true);
+		} else {
+			lastTick = Date.now();
+			lastInteract = Date.now();
+		}
+	});
+
+	window.addEventListener("pagehide", function(){
+		tickActive();
+		send("leave", { dwellMs: Date.now() - startTime }, true);
+		clearInterval(hbTimer);
+	});
+} catch(e) {}
+})();`}
+		/>
 		<script>
 			function setLangCookie(lang: string) {
 				document.cookie = `pref_lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
