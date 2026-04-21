@@ -1,211 +1,441 @@
 /* public/hol-archive.css
- * HOL Archive — dark theme matching pensieve's Linear-inspired palette.
+ *
+ * HOL Archive — editorial dark theme. Linear-influenced tokens from pensieve's
+ * theme.css, with prose-oriented type sizes and generous vertical rhythm for
+ * reading twenty-year-old forum threads.
  */
 
 :root {
   color-scheme: dark;
 
-  --hol-bg:          #08090a;
-  --hol-bg-subtle:   #101113;
-  --hol-surface:     #101113;
-  --hol-surface-hi:  #141516;
+  --hol-bg:         #08090a;
+  --hol-bg-2:       #0e1013;
+  --hol-surface:    #101317;
+  --hol-surface-hi: #161a1f;
 
-  --hol-ink:         #f7f8f8;
-  --hol-text-muted:  #8a8f98;
-  --hol-text-dim:    #62666d;
+  --hol-ink:        #eaecef;
+  --hol-ink-soft:   #c5c9cf;
+  --hol-muted:      #8a8f98;
+  --hol-dim:        #595e66;
 
-  --hol-line:        rgba(255, 255, 255, 0.06);
-  --hol-line-subtle: rgba(255, 255, 255, 0.03);
+  --hol-line:       rgba(255, 255, 255, 0.07);
+  --hol-line-soft:  rgba(255, 255, 255, 0.04);
 
-  --hol-accent:      #5e6ad2;
-  --hol-accent-hi:   #7079de;
-  --hol-accent-soft: color-mix(in srgb, var(--hol-accent) 14%, transparent);
+  --hol-accent:     #7c86e2;
+  --hol-accent-hi:  #9199ec;
+  --hol-accent-bg:  rgba(94, 106, 210, 0.08);
+  --hol-accent-bg-hi: rgba(94, 106, 210, 0.16);
 
-  --hol-mark-bg:     rgba(94, 106, 210, 0.28);
+  --hol-warn-ink:   #e0a255;
+  --hol-warn-bg:    rgba(217, 142, 28, 0.08);
 
-  --hol-font:        "Inter", "Inter Variable", -apple-system, BlinkMacSystemFont,
-                     "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  --hol-font-mono:   "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --hol-mark-bg:    rgba(236, 192, 115, 0.26);
+  --hol-mark-ink:   #fff1d0;
 
-  --hol-content-w:   780px;
-  --hol-radius:      6px;
-  --hol-radius-lg:   12px;
+  --hol-sans:  "Inter", "Inter Variable", -apple-system, BlinkMacSystemFont,
+               "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --hol-mono:  "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --hol-transition:  180ms ease;
+  --hol-size-sm: 0.86rem;
+  --hol-size-md: 0.975rem;
+  --hol-size-lg: 1.0625rem;
+  --hol-size-xl: 1.35rem;
+  --hol-size-2xl: 1.9rem;
+  --hol-size-3xl: 2.55rem;
+
+  --hol-content: 760px;
+  --hol-wide:    1040px;
+  --hol-radius:  6px;
+  --hol-radius-lg: 12px;
+
+  --hol-t: 160ms ease;
 }
 
 * { box-sizing: border-box; }
 
+html { scroll-behavior: smooth; }
 html, body {
   background: var(--hol-bg);
   color: var(--hol-ink);
-  font-family: var(--hol-font);
-  font-size: 15.5px;
+  font-family: var(--hol-sans);
+  font-size: 15.75px;
   line-height: 1.6;
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-a { color: var(--hol-accent); text-decoration: none; transition: color var(--hol-transition); }
+::selection { background: var(--hol-accent); color: #fff; }
+
+a { color: var(--hol-accent); text-decoration: none; transition: color var(--hol-t); }
 a:hover { color: var(--hol-accent-hi); }
 
+/* header */
 .hol-header {
   position: sticky; top: 0; z-index: 10;
   display: flex; gap: 1rem; align-items: baseline; flex-wrap: wrap;
-  padding: 0.85rem 1.5rem;
+  padding: 0.9rem 1.5rem;
   border-bottom: 1px solid var(--hol-line);
-  background: color-mix(in srgb, var(--hol-bg) 88%, transparent);
-  backdrop-filter: blur(8px);
+  background: color-mix(in srgb, var(--hol-bg) 82%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
 }
-.hol-header > a { color: var(--hol-ink); letter-spacing: -0.015em; font-weight: 590; }
-.hol-header > a strong { font-weight: 590; }
-.hol-header > a:hover { color: var(--hol-accent-hi); }
-.hol-crumbs { color: var(--hol-text-muted); font-size: 0.925rem;
-              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.hol-crumbs a { color: var(--hol-text-muted); }
+.hol-home { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--hol-ink); }
+.hol-logo { color: var(--hol-accent); flex-shrink: 0; }
+.hol-home:hover, .hol-home:hover .hol-logo { color: var(--hol-accent-hi); }
+.hol-home strong { font-weight: 590; letter-spacing: -0.015em; font-size: 0.98rem; }
+
+.hol-crumbs {
+  color: var(--hol-muted); font-size: var(--hol-size-sm);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  min-width: 0; letter-spacing: 0.005em;
+}
+.hol-crumbs a { color: var(--hol-muted); }
 .hol-crumbs a:hover { color: var(--hol-ink); }
+.hol-crumbs > span[aria-hidden] { opacity: 0.5; margin: 0 0.25em; }
 
-.hol-main { max-width: var(--hol-content-w); margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-.hol-main h1 { font-size: 1.875rem; font-weight: 590; letter-spacing: -0.02em;
-               line-height: 1.2; margin: 0 0 0.5rem; }
-.hol-main h2 { font-size: 1.25rem; font-weight: 590; margin: 2rem 0 0.75rem;
-               letter-spacing: -0.01em; }
-.hol-lede, .hol-forum-desc, .hol-forum-meta, .hol-thread-meta { color: var(--hol-text-muted); }
-.hol-lede { font-size: 1.05rem; margin: 0 0 2rem; }
-.hol-forum-meta, .hol-thread-meta { font-size: 0.9rem; margin: 0.25rem 0 1.25rem; }
+.hol-header-search {
+  margin-left: auto;
+  display: inline-flex; align-items: stretch;
+  background: var(--hol-surface);
+  border: 1px solid var(--hol-line);
+  border-radius: var(--hol-radius);
+  transition: border-color var(--hol-t), background var(--hol-t);
+  max-width: 240px; flex: 1 1 200px;
+}
+.hol-header-search:focus-within {
+  border-color: color-mix(in srgb, var(--hol-accent) 55%, transparent);
+  background: var(--hol-surface-hi);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hol-accent) 15%, transparent);
+}
+.hol-header-search input {
+  flex: 1; min-width: 0; padding: 0.35rem 0.6rem;
+  background: transparent; color: var(--hol-ink);
+  border: 0; font-family: inherit; font-size: var(--hol-size-sm); outline: none;
+}
+.hol-header-search input::placeholder { color: var(--hol-dim); }
+.hol-header-search button {
+  padding: 0 0.7rem; background: transparent; color: var(--hol-muted);
+  border: 0; cursor: pointer; display: inline-flex; align-items: center;
+  transition: color var(--hol-t);
+}
+.hol-header-search button:hover { color: var(--hol-accent-hi); }
 
-.hol-forum-list { list-style: none; padding: 0; margin: 0; }
-.hol-forum-list li { padding: 0.85rem 0; border-bottom: 1px solid var(--hol-line); }
-.hol-forum-list a { color: var(--hol-ink); display: flex; gap: 1rem; align-items: baseline;
-                     justify-content: space-between; flex-wrap: wrap; }
-.hol-forum-list a strong { font-weight: 590; letter-spacing: -0.01em; }
-.hol-forum-list .dim { color: var(--hol-text-muted); }
-.hol-forum-list .counts { color: var(--hol-text-dim); font-size: 0.85rem;
-                           white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* main */
+.hol-main { max-width: var(--hol-content); margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+.hol-main h1 {
+  font-size: var(--hol-size-2xl); font-weight: 590;
+  letter-spacing: -0.02em; line-height: 1.15;
+  margin: 0 0 0.5rem; color: var(--hol-ink);
+}
+.hol-main h2 {
+  font-size: var(--hol-size-xl); font-weight: 590;
+  margin: 2.5rem 0 0.85rem; letter-spacing: -0.012em;
+}
+.hol-main p { margin: 0.85em 0; color: var(--hol-ink-soft); }
 
-.hol-thread-list { border-top: 1px solid var(--hol-line); }
-.hol-thread-row { display: flex; justify-content: space-between; gap: 1rem;
-                  padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--hol-line);
-                  color: var(--hol-ink); transition: background var(--hol-transition); }
-.hol-thread-row:hover { background: var(--hol-accent-soft); color: var(--hol-ink); }
-.hol-thread-title { flex: 1; min-width: 0; overflow: hidden;
-                    text-overflow: ellipsis; white-space: nowrap; }
-.hol-thread-meta { color: var(--hol-text-dim); font-size: 0.85rem; white-space: nowrap;
-                   display: flex; gap: 0.6rem; align-items: baseline;
-                   font-variant-numeric: tabular-nums; }
-.hol-pin, .hol-lock { margin-right: 0.3rem; }
+.hol-lede {
+  color: var(--hol-muted); font-size: var(--hol-size-lg);
+  line-height: 1.55; margin: 0 0 2.5rem; max-width: 60ch;
+}
+.hol-lede strong { color: var(--hol-ink); font-weight: 590; }
 
-.hol-post-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-.hol-post { background: var(--hol-surface); border: 1px solid var(--hol-line);
-            border-radius: var(--hol-radius-lg); overflow: hidden; }
-.hol-post-head { display: flex; gap: 0.85rem; align-items: baseline;
-                 padding: 0.6rem 1rem; background: var(--hol-surface-hi);
-                 border-bottom: 1px solid var(--hol-line); font-size: 0.85rem; }
-.hol-post-pos { color: var(--hol-text-dim); font-variant-numeric: tabular-nums;
-                font-family: var(--hol-font-mono); }
-.hol-post-author { font-weight: 590; color: var(--hol-accent-hi); letter-spacing: -0.005em; }
-.hol-post-head time { margin-left: auto; color: var(--hol-text-dim);
-                      font-variant-numeric: tabular-nums; }
-.hol-post-body { padding: 1rem 1.25rem; font-size: 1rem; line-height: 1.65; }
+.hol-forum-desc {
+  color: var(--hol-muted); font-size: var(--hol-size-md);
+  margin: 0.5rem 0 0; max-width: 60ch;
+}
+.hol-forum-meta, .hol-thread-meta {
+  color: var(--hol-dim); font-size: var(--hol-size-sm);
+  margin: 0.25rem 0 2rem;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
+}
+
+/* forum list */
+.hol-forum-list {
+  list-style: none; padding: 0; margin: 0;
+  border-top: 1px solid var(--hol-line-soft);
+}
+.hol-forum-list li { border-bottom: 1px solid var(--hol-line-soft); }
+.hol-forum-list a {
+  display: flex; gap: 1.25rem; align-items: baseline;
+  justify-content: space-between; flex-wrap: wrap;
+  padding: 1rem 0.5rem; color: var(--hol-ink);
+  border-radius: var(--hol-radius);
+  transition: background var(--hol-t), color var(--hol-t);
+}
+.hol-forum-list a:hover { background: var(--hol-accent-bg); color: var(--hol-ink); }
+.hol-forum-list a:hover strong { color: var(--hol-accent-hi); }
+.hol-forum-list a strong {
+  font-weight: 590; letter-spacing: -0.008em;
+  font-size: var(--hol-size-lg); transition: color var(--hol-t);
+}
+.hol-forum-list .dim { color: var(--hol-muted); font-weight: 400; }
+.hol-forum-list .counts {
+  color: var(--hol-dim); font-size: var(--hol-size-sm);
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* thread list */
+.hol-thread-list {
+  list-style: none; padding: 0; margin: 1.5rem 0 0;
+  border-top: 1px solid var(--hol-line-soft);
+}
+.hol-thread-row {
+  display: flex; gap: 1.5rem; align-items: center;
+  padding: 0.9rem 0.75rem 0.9rem 0.5rem;
+  border-bottom: 1px solid var(--hol-line-soft);
+  color: var(--hol-ink); border-radius: var(--hol-radius);
+  transition: background var(--hol-t), color var(--hol-t);
+}
+.hol-thread-row:hover { background: var(--hol-accent-bg); color: var(--hol-ink); }
+.hol-thread-row:hover .hol-thread-text { color: var(--hol-accent-hi); }
+.hol-thread-row:focus-visible {
+  outline: 2px solid var(--hol-accent); outline-offset: 2px;
+  background: var(--hol-accent-bg);
+}
+.hol-thread-main { flex: 1; min-width: 0; }
+.hol-thread-title {
+  margin: 0; font-size: var(--hol-size-md); font-weight: 500;
+  letter-spacing: -0.005em; line-height: 1.45;
+  display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap;
+}
+.hol-thread-text { color: var(--hol-ink); transition: color var(--hol-t); overflow-wrap: anywhere; }
+
+.hol-thread-stats {
+  display: flex; gap: 1rem; align-items: baseline;
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+  color: var(--hol-dim); font-size: var(--hol-size-sm);
+  letter-spacing: 0.01em;
+}
+.hol-thread-posts { display: inline-flex; gap: 0.3rem; align-items: baseline; }
+.hol-thread-posts .num { color: var(--hol-ink-soft); font-family: var(--hol-mono); font-size: 0.9rem; letter-spacing: 0; }
+.hol-thread-posts .unit { color: var(--hol-dim); }
+.hol-thread-date { color: var(--hol-dim); font-family: var(--hol-mono); font-size: 0.82rem; }
+
+/* badges */
+.hol-badge {
+  display: inline-flex; align-items: center; gap: 0.2em;
+  font-size: 0.7rem; font-weight: 590; letter-spacing: 0.04em;
+  padding: 0.1em 0.55em; border-radius: 3px;
+  text-transform: uppercase; vertical-align: baseline; flex-shrink: 0;
+}
+.hol-badge-sticky { color: #f3d398; background: rgba(243, 211, 152, 0.12); border: 1px solid rgba(243, 211, 152, 0.2); }
+.hol-badge-locked { color: var(--hol-muted); background: var(--hol-line-soft); border: 1px solid var(--hol-line); }
+
+/* post card */
+.hol-post-list { margin: 2rem 0 0; display: flex; flex-direction: column; gap: 1.25rem; }
+.hol-post {
+  background: var(--hol-surface); border: 1px solid var(--hol-line);
+  border-radius: var(--hol-radius-lg); overflow: hidden;
+  transition: border-color var(--hol-t);
+}
+.hol-post:target { border-color: color-mix(in srgb, var(--hol-accent) 50%, transparent); }
+.hol-post:target .hol-post-head { background: var(--hol-accent-bg-hi); }
+
+.hol-post-head {
+  display: flex; gap: 0.85rem; align-items: baseline;
+  padding: 0.65rem 1.1rem; background: var(--hol-surface-hi);
+  border-bottom: 1px solid var(--hol-line);
+  font-size: var(--hol-size-sm); color: var(--hol-muted);
+}
+.hol-post-pos {
+  color: var(--hol-dim); font-variant-numeric: tabular-nums;
+  font-family: var(--hol-mono); font-size: 0.82rem; min-width: 2ch;
+}
+.hol-post-author {
+  font-weight: 590; color: var(--hol-accent-hi);
+  letter-spacing: -0.005em; font-size: var(--hol-size-md);
+}
+.hol-post-head time {
+  margin-left: auto; color: var(--hol-dim);
+  font-variant-numeric: tabular-nums; font-family: var(--hol-mono); font-size: 0.82rem;
+}
+
+.hol-post-body {
+  padding: 1.15rem 1.35rem 1.3rem;
+  font-size: var(--hol-size-md); line-height: 1.7;
+  color: var(--hol-ink-soft);
+  overflow-wrap: break-word; word-break: break-word;
+}
 .hol-post-body > :first-child { margin-top: 0; }
 .hol-post-body > :last-child  { margin-bottom: 0; }
-.hol-post-body p { margin: 0.6rem 0; }
-.hol-post-body a { text-decoration: underline; text-underline-offset: 2px; }
-.hol-post-body blockquote { margin: 0.75rem 0; padding: 0.75rem 1rem;
-                             background: var(--hol-bg-subtle);
-                             border-left: 3px solid var(--hol-accent);
-                             color: var(--hol-text-muted);
-                             border-radius: 0 var(--hol-radius) var(--hol-radius) 0;
-                             font-size: 0.95rem; }
-.hol-post-body blockquote cite { display: block; font-size: 0.82rem;
-                                  color: var(--hol-text-dim); font-style: normal;
-                                  margin-bottom: 0.35rem; }
-.hol-post-body img { max-width: 100%; height: auto; border-radius: var(--hol-radius); }
-.hol-post-body code, .hol-post-body pre, .hol-post-body tt {
-  font-family: var(--hol-font-mono); font-size: 0.92em;
-  background: var(--hol-bg-subtle); padding: 0.1em 0.4em; border-radius: 4px;
+.hol-post-body p { margin: 0.75rem 0; }
+.hol-post-body a {
+  color: var(--hol-accent); text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--hol-accent) 40%, transparent);
 }
-.hol-post-body pre { padding: 0.75rem 1rem; overflow-x: auto; border: 1px solid var(--hol-line); }
-.hol-post-body pre code { background: none; padding: 0; border: 0; }
-.hol-post-body .image-lost { display: inline-flex; align-items: center; gap: 0.25rem;
-                              padding: 2px 8px; background: var(--hol-bg-subtle);
-                              color: var(--hol-text-dim); font-size: 0.82em;
-                              border-radius: 4px; font-family: var(--hol-font-mono); }
-.hol-post-body font[size]           { font-size: inherit; }
-.hol-post-body [style*="font-size"] { font-size: inherit !important; }
-.hol-post-body [align="center"]     { text-align: center; }
-.hol-post-body [align="right"]      { text-align: right; }
+.hol-post-body a:hover { color: var(--hol-accent-hi); text-decoration-color: var(--hol-accent-hi); }
+.hol-post-body blockquote {
+  margin: 1rem 0; padding: 0.7rem 1rem 0.75rem;
+  background: var(--hol-bg-2);
+  border-left: 3px solid color-mix(in srgb, var(--hol-accent) 55%, transparent);
+  color: var(--hol-muted);
+  border-radius: 0 var(--hol-radius) var(--hol-radius) 0;
+  font-size: 0.965em; font-style: italic;
+}
+.hol-post-body blockquote cite {
+  display: block; font-size: 0.82rem; color: var(--hol-dim);
+  font-style: normal; margin-bottom: 0.4rem; letter-spacing: 0.01em;
+}
+.hol-post-body blockquote > :first-child { margin-top: 0; }
+.hol-post-body blockquote > :last-child  { margin-bottom: 0; }
+.hol-post-body img { max-width: 100%; height: auto; border-radius: var(--hol-radius); margin: 0.5rem 0; }
+.hol-post-body code, .hol-post-body tt {
+  font-family: var(--hol-mono); font-size: 0.92em;
+  background: var(--hol-bg-2); padding: 0.1em 0.4em;
+  border-radius: 4px; color: var(--hol-ink-soft);
+}
+.hol-post-body pre {
+  font-family: var(--hol-mono); padding: 0.85rem 1.1rem;
+  overflow-x: auto; border: 1px solid var(--hol-line);
+  background: var(--hol-bg-2); border-radius: var(--hol-radius);
+  font-size: 0.9em; line-height: 1.55;
+}
+.hol-post-body pre code { background: none; padding: 0; border: 0; color: inherit; }
+.hol-post-body ul, .hol-post-body ol { padding-left: 1.5rem; margin: 0.75rem 0; }
+.hol-post-body li { margin: 0.25rem 0; }
+.hol-post-body hr { border: 0; border-top: 1px solid var(--hol-line); margin: 1.5rem 0; }
+.hol-post-body .image-lost {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 3px 10px; background: var(--hol-bg-2); color: var(--hol-dim);
+  font-size: 0.82em; border-radius: 4px; font-family: var(--hol-mono);
+  letter-spacing: 0.01em; border: 1px solid var(--hol-line);
+}
+.hol-post-body font[size]             { font-size: inherit; }
+.hol-post-body [style*="font-size"]   { font-size: inherit !important; }
+.hol-post-body [align="center"]       { text-align: center; display: block; }
+.hol-post-body [align="right"]        { text-align: right; display: block; }
 
-.hol-gap { background: rgba(217, 142, 28, 0.08); border-left: 3px solid #d98e1c;
-           color: var(--hol-text-muted); padding: 0.55rem 0.85rem;
-           margin: 0.85rem 0; font-size: 0.88rem;
-           border-radius: 0 var(--hol-radius) var(--hol-radius) 0; }
-.hol-gap-detail { color: var(--hol-text-dim); }
+/* gap */
+.hol-gap {
+  display: flex; gap: 0.55rem; align-items: baseline;
+  background: var(--hol-warn-bg); border-left: 3px solid var(--hol-warn-ink);
+  color: var(--hol-muted); padding: 0.55rem 0.9rem;
+  margin: 0 0 0.85rem; font-size: var(--hol-size-sm);
+  border-radius: 0 var(--hol-radius) var(--hol-radius) 0;
+}
+.hol-gap > span[aria-hidden] { color: var(--hol-warn-ink); }
+.hol-gap-detail { color: var(--hol-dim); }
 
-.hol-pager { display: flex; gap: 0.4rem; justify-content: center; margin: 2rem 0 0;
-             font-size: 0.95rem; font-variant-numeric: tabular-nums; flex-wrap: wrap; }
-.hol-pager a, .hol-pager span { padding: 0.35rem 0.7rem; border-radius: var(--hol-radius);
-                                  color: var(--hol-ink);
-                                  transition: background var(--hol-transition),
-                                              border-color var(--hol-transition); }
-.hol-pager a { border: 1px solid var(--hol-line); color: var(--hol-text-muted); }
-.hol-pager a:hover { background: var(--hol-surface);
-                     border-color: color-mix(in srgb, var(--hol-accent) 32%, transparent);
-                     color: var(--hol-ink); }
-.hol-pager .current { background: var(--hol-accent); color: #fff; font-weight: 590; }
+/* pager */
+.hol-pager {
+  display: flex; gap: 0.35rem; justify-content: center;
+  margin: 3rem 0 0; font-size: var(--hol-size-sm);
+  font-variant-numeric: tabular-nums; flex-wrap: wrap;
+}
+.hol-pager a, .hol-pager span {
+  min-width: 2rem; padding: 0.4rem 0.7rem;
+  border-radius: var(--hol-radius); color: var(--hol-muted);
+  text-align: center; letter-spacing: 0.005em;
+  transition: background var(--hol-t), border-color var(--hol-t), color var(--hol-t);
+}
+.hol-pager a { border: 1px solid var(--hol-line); font-family: var(--hol-mono); font-size: 0.86rem; }
+.hol-pager a:hover {
+  background: var(--hol-surface);
+  border-color: color-mix(in srgb, var(--hol-accent) 40%, var(--hol-line));
+  color: var(--hol-ink);
+}
+.hol-pager .current {
+  background: var(--hol-accent); color: #fff; font-weight: 590;
+  border: 1px solid var(--hol-accent);
+  font-family: var(--hol-mono); font-size: 0.86rem;
+}
 
-.hol-search-form { display: flex; gap: 0.5rem; margin: 1rem 0 1.5rem; }
-.hol-search-form input { flex: 1; padding: 0.6rem 0.85rem; background: var(--hol-surface);
-                          color: var(--hol-ink); border: 1px solid var(--hol-line);
-                          border-radius: var(--hol-radius); font-size: 1rem; font-family: inherit;
-                          transition: border-color var(--hol-transition),
-                                      background var(--hol-transition); }
-.hol-search-form input:focus { outline: none;
-                                border-color: color-mix(in srgb, var(--hol-accent) 55%, transparent);
-                                background: var(--hol-surface-hi); }
-.hol-search-form input::placeholder { color: var(--hol-text-dim); }
-.hol-search-form button { padding: 0.6rem 1.25rem; background: var(--hol-accent);
-                          color: #fff; border: 0; border-radius: var(--hol-radius);
-                          cursor: pointer; font-weight: 590; font-size: 0.95rem;
-                          transition: background var(--hol-transition); }
-.hol-search-form button:hover { background: var(--hol-accent-hi); }
-
-.hol-search-meta { color: var(--hol-text-muted); font-size: 0.9rem; margin: 0 0 1rem; }
-.hol-search-meta em { color: var(--hol-ink); font-style: normal; }
-.hol-search-hits { list-style: none; padding: 0; margin: 0; }
-.hol-search-hits li { padding: 1rem 0; border-bottom: 1px solid var(--hol-line); }
-.hol-search-hits li strong { font-weight: 590; letter-spacing: -0.005em; color: var(--hol-ink); }
-.hol-search-byline { color: var(--hol-text-dim); font-size: 0.85rem; margin-top: 0.1rem; }
-.hol-search-snippet { margin-top: 0.4rem; color: var(--hol-text-muted); font-size: 0.95rem; }
-.hol-search-snippet mark { background: var(--hol-mark-bg); color: var(--hol-ink);
-                            padding: 0 3px; border-radius: 2px; }
-
-.hol-takedown-form { margin: 1rem 0 1.5rem; }
-.hol-takedown-form label { display: block; margin: 0.85rem 0;
-                            color: var(--hol-text-muted); font-size: 0.9rem; }
-.hol-takedown-form input, .hol-takedown-form textarea {
-  display: block; width: 100%; padding: 0.55rem 0.75rem; margin-top: 0.35rem;
+/* search */
+.hol-search-form { display: flex; gap: 0.6rem; margin: 1.25rem 0 2rem; }
+.hol-search-form input {
+  flex: 1; padding: 0.7rem 0.9rem;
   background: var(--hol-surface); color: var(--hol-ink);
   border: 1px solid var(--hol-line); border-radius: var(--hol-radius);
-  font-family: inherit; font-size: 0.95rem;
+  font-size: var(--hol-size-md); font-family: inherit;
+  transition: border-color var(--hol-t), background var(--hol-t);
 }
-.hol-takedown-form input:focus, .hol-takedown-form textarea:focus { outline: none;
-  border-color: color-mix(in srgb, var(--hol-accent) 55%, transparent); }
-.hol-takedown-form button { padding: 0.55rem 1.1rem; background: var(--hol-accent);
-                             color: #fff; border: 0; border-radius: var(--hol-radius);
-                             font-weight: 590; cursor: pointer; }
+.hol-search-form input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--hol-accent) 55%, transparent);
+  background: var(--hol-surface-hi);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hol-accent) 18%, transparent);
+}
+.hol-search-form input::placeholder { color: var(--hol-dim); }
+.hol-search-form button {
+  padding: 0.7rem 1.4rem; background: var(--hol-accent); color: #fff;
+  border: 0; border-radius: var(--hol-radius); cursor: pointer;
+  font-weight: 590; font-size: var(--hol-size-md); font-family: inherit;
+  letter-spacing: 0.005em; transition: background var(--hol-t), transform var(--hol-t);
+}
+.hol-search-form button:hover { background: var(--hol-accent-hi); }
+.hol-search-form button:active { transform: translateY(1px); }
+
+.hol-search-meta { color: var(--hol-muted); font-size: var(--hol-size-sm); margin: 0 0 1.5rem; }
+.hol-search-meta em { color: var(--hol-ink); font-style: normal; font-weight: 590; }
+.hol-search-hits { list-style: none; padding: 0; margin: 0; }
+.hol-search-hits li { padding: 1.1rem 0; border-bottom: 1px solid var(--hol-line-soft); }
+.hol-search-hits li:last-child { border-bottom: 0; }
+.hol-search-hits a strong {
+  font-weight: 590; letter-spacing: -0.005em;
+  color: var(--hol-ink); font-size: var(--hol-size-md);
+  transition: color var(--hol-t);
+}
+.hol-search-hits a:hover strong { color: var(--hol-accent-hi); }
+.hol-search-byline { color: var(--hol-dim); font-size: var(--hol-size-sm); margin-top: 0.15rem; font-variant-numeric: tabular-nums; }
+.hol-search-snippet {
+  margin-top: 0.55rem; color: var(--hol-ink-soft);
+  font-size: var(--hol-size-md); line-height: 1.6; max-width: 68ch;
+}
+.hol-search-snippet mark {
+  background: var(--hol-mark-bg); color: var(--hol-mark-ink);
+  padding: 0 3px; border-radius: 2px; font-weight: 500;
+}
+
+/* takedown */
+.hol-takedown-form { margin: 1.25rem 0 2rem; max-width: 520px; }
+.hol-takedown-form label {
+  display: block; margin: 1rem 0 0.35rem;
+  color: var(--hol-muted); font-size: var(--hol-size-sm); letter-spacing: 0.015em;
+}
+.hol-takedown-form input, .hol-takedown-form textarea {
+  display: block; width: 100%; padding: 0.6rem 0.85rem;
+  background: var(--hol-surface); color: var(--hol-ink);
+  border: 1px solid var(--hol-line); border-radius: var(--hol-radius);
+  font-family: inherit; font-size: var(--hol-size-md); line-height: 1.5;
+}
+.hol-takedown-form input:focus, .hol-takedown-form textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--hol-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--hol-accent) 18%, transparent);
+}
+.hol-takedown-form button {
+  margin-top: 1.25rem; padding: 0.6rem 1.3rem;
+  background: var(--hol-accent); color: #fff;
+  border: 0; border-radius: var(--hol-radius); font-weight: 590;
+  cursor: pointer; font-family: inherit; letter-spacing: 0.005em;
+  transition: background var(--hol-t);
+}
 .hol-takedown-form button:hover { background: var(--hol-accent-hi); }
 
-.hol-footer { text-align: center; color: var(--hol-text-dim); padding: 1.25rem;
-              border-top: 1px solid var(--hol-line); margin-top: 3rem; font-size: 0.88rem; }
-.hol-footer a { color: var(--hol-text-muted); }
+/* footer */
+.hol-footer {
+  text-align: center; color: var(--hol-dim);
+  padding: 1.5rem 1rem; border-top: 1px solid var(--hol-line-soft);
+  margin-top: 4rem; font-size: var(--hol-size-sm); letter-spacing: 0.02em;
+}
+.hol-footer a { color: var(--hol-muted); }
 .hol-footer a:hover { color: var(--hol-ink); }
+.hol-footer > span { opacity: 0.5; margin: 0 0.5rem; }
 
-@media (max-width: 600px) {
-  .hol-main { padding: 1.25rem 1rem 3rem; }
-  .hol-header { padding: 0.7rem 1rem; }
-  .hol-main h1 { font-size: 1.5rem; }
-  .hol-post-body { padding: 0.85rem 1rem; font-size: 0.95rem; }
-  .hol-forum-list .counts { font-size: 0.78rem; }
+/* mobile */
+@media (max-width: 640px) {
+  html, body { font-size: 15px; }
+  .hol-main { padding: 2rem 1rem 4rem; }
+  .hol-header { padding: 0.75rem 1rem; }
+  .hol-main h1 { font-size: 1.6rem; }
+  .hol-thread-row { gap: 0.75rem; padding: 0.75rem 0.5rem; }
+  .hol-thread-stats { font-size: 0.78rem; gap: 0.7rem; }
+  .hol-thread-date { display: none; }
+  .hol-post-body { padding: 0.95rem 1.1rem 1.05rem; font-size: 0.95rem; }
+  .hol-post-head { padding: 0.55rem 0.9rem; }
+  .hol-header-search { max-width: 100%; margin-left: 0; order: 3; flex-basis: 100%; }
 }

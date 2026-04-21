@@ -4,30 +4,27 @@ import type { Thread } from "../../lib/hol/types";
 interface Props { thread: Thread; }
 const { thread } = Astro.props;
 const href = `/hol/t/${thread.id}-${thread.title_slug}/`;
+// SQLite returns 0/1 for boolean; JSX renders 0 as text. Coerce to real bool.
+const isSticky = thread.is_sticky === true || thread.is_sticky === 1;
+const isLocked = thread.is_locked === true || thread.is_locked === 1;
+const posts = thread.post_count ?? thread.reply_count ?? 0;
 const last = thread.last_post_at
   ? new Date(thread.last_post_at * 1000).toISOString().slice(0, 10)
   : null;
 ---
 <a class="hol-thread-row" href={href}>
-  <span class="hol-thread-title">
-    {thread.is_sticky && <span class="hol-pin" title="sticky">📌</span>}
-    {thread.is_locked && <span class="hol-lock" title="locked">🔒</span>}
-    {thread.title}
-  </span>
-  <span class="hol-thread-meta">
-    <span>{thread.post_count ?? thread.reply_count ?? 0} posts</span>
-    {last && <time datetime={last}>{last}</time>}
-  </span>
+  <div class="hol-thread-main">
+    <h3 class="hol-thread-title">
+      {isSticky && <span class="hol-badge hol-badge-sticky" title="sticky">Ghim</span>}
+      {isLocked && <span class="hol-badge hol-badge-locked" title="locked">Khóa</span>}
+      <span class="hol-thread-text">{thread.title}</span>
+    </h3>
+  </div>
+  <div class="hol-thread-stats" aria-label="thread stats">
+    <span class="hol-thread-posts">
+      <span class="num">{posts.toLocaleString()}</span>
+      <span class="unit">{posts === 1 ? "post" : "posts"}</span>
+    </span>
+    {last && <time class="hol-thread-date" datetime={last}>{last}</time>}
+  </div>
 </a>
-
-<style>
-.hol-thread-row { display: flex; justify-content: space-between; gap: 1rem;
-                  padding: .5rem .25rem; border-bottom: 1px solid var(--hol-line);
-                  text-decoration: none; color: var(--hol-ink); }
-.hol-thread-row:hover { background: #f3f6f9; }
-.hol-thread-title { flex: 1; min-width: 0; overflow: hidden;
-                    text-overflow: ellipsis; white-space: nowrap; }
-.hol-thread-meta { color: var(--hol-dim); font-size: .88em; white-space: nowrap;
-                   display: flex; gap: .5rem; align-items: baseline; }
-.hol-pin, .hol-lock { margin-right: .25rem; }
-</style>

@@ -29,13 +29,3 @@ for (let i = start; i <= end; i++) pages.push(i);
     {page < totalPages && <a href={hrefFor(page + 1)}>Next ›</a>}
   </nav>
 )}
-
-<style>
-.hol-pager { display: flex; gap: .35rem; justify-content: center;
-             margin: 1rem 0; font-size: .95em; }
-.hol-pager a, .hol-pager span { padding: .25rem .5rem; border-radius: 3px;
-                                  text-decoration: none; color: var(--hol-ink); }
-.hol-pager a { border: 1px solid var(--hol-line); }
-.hol-pager a:hover { background: #f3f6f9; }
-.hol-pager .current { background: var(--hol-accent); color: white; }
-</style>
