@@ -1406,6 +1406,192 @@ const isLoggedIn = !!Astro.locals.user;
 			});
 		</script>
 		<EmDashBodyEnd page={pageCtx} />
+
+		{/* Site-wide analytics tracker. Injects on every page. Emits pageview,
+		    scroll-milestone, heartbeat (active-time), outbound-click, and leave
+		    events to the pensieve-engage plugin beacon. Self-filters bots. */}
+		<script is:inline>
+			(function(){
+			try {
+				if (navigator.webdriver) return;
+				var UA = navigator.userAgent || "";
+				if (/bot|crawler|spider|headless|lighthouse/i.test(UA)) return;
+
+				var BEACON = "/_emdash/api/plugins/pensieve-engage/beacon";
+				var VKEY = "pe_v";
+				var SKEY = "pe_s";
+				var STOUT = 30*60*1000;
+
+				function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+				function getVisitor(){
+					try {
+						var v = localStorage.getItem(VKEY);
+						if (!v) { v = uid(); localStorage.setItem(VKEY, v); }
+						return v;
+					} catch(e) { return "anon_"+uid(); }
+				}
+				function getSession(){
+					try {
+						var raw = sessionStorage.getItem(SKEY);
+						var now = Date.now();
+						if (raw) {
+							var parts = raw.split("|");
+							var lastSeen = parseInt(parts[1]||"0", 10);
+							if (now - lastSeen < STOUT) {
+								sessionStorage.setItem(SKEY, parts[0]+"|"+now);
+								return { id: parts[0], isNew: false };
+							}
+						}
+						var sid = uid();
+						sessionStorage.setItem(SKEY, sid+"|"+now);
+						return { id: sid, isNew: true };
+					} catch(e) { return { id: "anon_"+uid(), isNew: true }; }
+				}
+				function touchSession(){
+					try {
+						var raw = sessionStorage.getItem(SKEY);
+						if (!raw) return;
+						var sid = raw.split("|")[0];
+						sessionStorage.setItem(SKEY, sid+"|"+Date.now());
+					} catch(e) {}
+				}
+
+				var visitor = getVisitor();
+				var ses = getSession();
+				var pageviewId = uid();
+				var startTime = Date.now();
+
+				var activeMs = 0;
+				var lastTick = Date.now();
+				var lastInteract = Date.now();
+				var visible = document.visibilityState === "visible";
+				var INTERACT_WINDOW = 30000;
+
+				function tickActive(){
+					var now = Date.now();
+					var delta = now - lastTick;
+					lastTick = now;
+					if (visible && (now - lastInteract) < INTERACT_WINDOW && delta < 60000) {
+						activeMs += delta;
+					}
+				}
+
+				var maxScroll = 0;
+				var milestones = { 25: false, 50: false, 75: false, 100: false };
+				function docH(){ return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight; }
+				function scrollPct(){
+					var h = docH();
+					if (h <= 0) return 100;
+					return Math.min(Math.round(window.scrollY / h * 100), 100);
+				}
+
+				function collectUtm(){
+					var u = {};
+					try {
+						var q = new URLSearchParams(location.search);
+						["utm_source","utm_medium","utm_campaign","utm_term","utm_content"].forEach(function(k){
+							var v = q.get(k);
+							if (v) u[k] = v.slice(0, 100);
+						});
+					} catch(e){}
+					return u;
+				}
+
+				function basePayload(){
+					return {
+						v: visitor,
+						s: ses.id,
+						pv: pageviewId,
+						path: location.pathname,
+						qs: location.search ? location.search.slice(0, 200) : "",
+						ref: document.referrer || "",
+						title: (document.title || "").slice(0, 200),
+						vw: window.innerWidth,
+						vh: window.innerHeight,
+						dpr: window.devicePixelRatio || 1,
+						lang: (navigator.language || "").slice(0, 10),
+						tz: (Intl.DateTimeFormat().resolvedOptions().timeZone) || "",
+						t: Date.now()
+					};
+				}
+
+				function send(type, extra, useBeacon){
+					var p = basePayload();
+					p.type = type;
+					p.data = extra || {};
+					try {
+						var body = JSON.stringify(p);
+						if (useBeacon && navigator.sendBeacon) {
+							var blob = new Blob([body], { type: "application/json" });
+							navigator.sendBeacon(BEACON, blob);
+						} else {
+							fetch(BEACON, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true });
+						}
+					} catch(e) {}
+				}
+
+				send("pageview", { utm: collectUtm(), newSession: ses.isNew });
+
+				var hbTimer = setInterval(function(){
+					tickActive();
+					touchSession();
+					if (visible) send("heartbeat", { scrollMax: maxScroll, activeMs: activeMs });
+				}, 15000);
+
+				var scrollRaf = null;
+				function onScroll(){
+					lastInteract = Date.now();
+					if (scrollRaf) return;
+					scrollRaf = requestAnimationFrame(function(){
+						scrollRaf = null;
+						var pct = scrollPct();
+						if (pct > maxScroll) maxScroll = pct;
+						[25,50,75,100].forEach(function(ms){
+							if (!milestones[ms] && maxScroll >= ms) {
+								milestones[ms] = true;
+								send("scroll", { depth: ms, activeMs: activeMs });
+							}
+						});
+					});
+				}
+				window.addEventListener("scroll", onScroll, { passive: true });
+
+				["mousemove","keydown","touchstart","click"].forEach(function(ev){
+					window.addEventListener(ev, function(){ lastInteract = Date.now(); }, { passive: true });
+				});
+
+				document.addEventListener("click", function(e){
+					var a = e.target;
+					while (a && a.nodeName !== "A") a = a.parentNode;
+					if (!a || !a.href) return;
+					try {
+						var url = new URL(a.href, location.href);
+						if (url.host && url.host !== location.host) {
+							send("outbound", { href: url.href.slice(0, 500), host: url.host }, false);
+						}
+					} catch(err){}
+				}, true);
+
+				document.addEventListener("visibilitychange", function(){
+					tickActive();
+					visible = document.visibilityState === "visible";
+					if (!visible) {
+						send("leave", { scrollMax: maxScroll, activeMs: activeMs, dwellMs: Date.now() - startTime }, true);
+					} else {
+						lastTick = Date.now();
+						lastInteract = Date.now();
+					}
+				});
+
+				window.addEventListener("pagehide", function(){
+					tickActive();
+					send("leave", { scrollMax: maxScroll, activeMs: activeMs, dwellMs: Date.now() - startTime }, true);
+					clearInterval(hbTimer);
+				});
+			} catch(e) {}
+			})();
+		</script>
+
 		<script>
 			function setLangCookie(lang: string) {
 				document.cookie = `pref_lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;

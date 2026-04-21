@@ -3,11 +3,11 @@ import type { PluginDescriptor } from "emdash";
 export function pensieveEngagePlugin(): PluginDescriptor {
 	return {
 		id: "pensieve-engage",
-		version: "1.0.0",
+		version: "2.0.0",
 		format: "standard",
 		entrypoint: "plugin-pensieve-engage/sandbox",
 		options: {},
-		capabilities: ["email:send", "read:content", "read:users", "network:fetch"],
+		capabilities: ["email:send", "read:content", "read:users", "network:fetch", "page:inject"],
 		allowedHosts: ["api.resend.com"],
 		storage: {
 			subscribers: {
@@ -16,8 +16,13 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 			email_sends: {
 				indexes: ["postSlug", "status", "sentAt"],
 			},
+			// reading_events is the single site-wide event store. Every event
+			// (pageview, scroll milestone, read-time sample, outbound click, leave)
+			// lands here. `path` is the canonical page identifier site-wide;
+			// `postSlug` is kept for legacy per-post queries and is derived from
+			// path when the URL matches /pensieve/memories/:slug.
 			reading_events: {
-				indexes: ["postSlug", "sessionId", "createdAt"],
+				indexes: ["path", "postSlug", "sessionId", "country", "eventType", "createdAt"],
 			},
 			lumos: {
 				indexes: ["postSlug", "ipHash"],
@@ -27,9 +32,15 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 			{ path: "/subscribers", label: "Subscribers", icon: "users" },
 			{ path: "/sends", label: "Sends", icon: "mail" },
 			{ path: "/analytics", label: "Analytics", icon: "chart" },
+			{ path: "/analytics/pages", label: "Pages", icon: "file" },
+			{ path: "/analytics/referrers", label: "Referrers", icon: "link" },
+			{ path: "/analytics/audience", label: "Audience", icon: "globe" },
+			{ path: "/analytics/live", label: "Live", icon: "activity" },
 		],
 		adminWidgets: [
 			{ id: "subscriber-stats", title: "Subscribers", size: "third" },
+			{ id: "traffic-stats", title: "Traffic (24h)", size: "third" },
+			{ id: "top-pages-today", title: "Top Pages Today", size: "third" },
 		],
 	};
 }
