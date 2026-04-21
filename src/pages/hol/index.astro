@@ -1,0 +1,49 @@
+---
+// src/pages/hol/index.astro
+import HolLayout from "../../components/hol/HolLayout.astro";
+import { getHolDb } from "../../lib/hol/db";
+import { listForums } from "../../lib/hol/queries";
+import { viSlug } from "../../lib/hol/slug";
+
+const db = getHolDb();
+const forums = await listForums(db);
+const totals = forums.reduce(
+  (acc, f) => ({
+    threads: acc.threads + (f.thread_count ?? 0),
+    posts:   acc.posts   + (f.post_count   ?? 0),
+  }),
+  { threads: 0, posts: 0 },
+);
+---
+<HolLayout title="Archive of HOL" crumbs={[]}>
+  <h1>HOL Archive</h1>
+  <p class="hol-lede">
+    A read-only mirror of holvn.org, reconstructed from Internet Archive
+    snapshots. {totals.posts.toLocaleString()} posts across
+    {totals.threads.toLocaleString()} threads in {forums.length} forums.
+  </p>
+  <ul class="hol-forum-list">
+    {forums.map((f) => (
+      <li>
+        <a href={`/hol/f/${f.id}-${viSlug(f.name)}/`}>
+          <strong>{f.name}</strong>
+          {f.description && <span class="dim"> — {f.description}</span>}
+          <span class="counts">{f.thread_count} threads · {f.post_count} posts</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</HolLayout>
+
+<style>
+.hol-lede { color: var(--hol-dim); font-size: .95em; margin-bottom: 1.5rem; }
+.hol-forum-list { list-style: none; padding: 0; margin: 0; }
+.hol-forum-list li { padding: .5rem 0; border-bottom: 1px solid var(--hol-line); }
+.hol-forum-list a { text-decoration: none; color: var(--hol-ink);
+                     display: flex; gap: 1rem; align-items: baseline;
+                     justify-content: space-between; flex-wrap: wrap; }
+.hol-forum-list a:hover { background: #f3f6f9; }
+.hol-forum-list .dim { color: var(--hol-dim); }
+.hol-forum-list .counts { color: var(--hol-dim); font-size: .88em;
+                           white-space: nowrap; }
+</style>
