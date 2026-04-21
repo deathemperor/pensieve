@@ -167,16 +167,23 @@ const isLoggedIn = !!Astro.locals.user;
 					</a>
 					{breadcrumbs.map((crumb, i) => {
 						const svg = breadcrumbIcons[crumb.label];
+						const isFirst = i === 0;
 						const isLeaf = i === breadcrumbs.length - 1;
+						const isMiddle = !isFirst && !isLeaf;
 						const leafCls = isLeaf ? " breadcrumb-leaf" : "";
+						const middleCls = isMiddle ? " breadcrumb-middle" : "";
 						const iconCls = svg ? " breadcrumb-with-icon" : "";
+						// Marking the preceding separator too lets CSS hide the
+						// sep + crumb as a unit on narrow viewports without
+						// leaving orphan separators behind.
+						const sepCls = "breadcrumb-sep" + (isMiddle ? " breadcrumb-middle-sep" : "");
 						return (
 							<>
-								<span class="breadcrumb-sep">/</span>
+								<span class={sepCls}>/</span>
 								{crumb.href ? (
 									<a
 										href={crumb.href}
-										class={`breadcrumb-link${iconCls}${leafCls}`}
+										class={`breadcrumb-link${iconCls}${leafCls}${middleCls}`}
 										title={isLeaf ? crumb.label : undefined}
 									>
 										{svg && <Fragment set:html={svg} />}
@@ -184,7 +191,7 @@ const isLoggedIn = !!Astro.locals.user;
 									</a>
 								) : (
 									<span
-										class={`breadcrumb-current${iconCls}${leafCls}`}
+										class={`breadcrumb-current${iconCls}${leafCls}${middleCls}`}
 										title={isLeaf ? crumb.label : undefined}
 									>
 										{svg && <Fragment set:html={svg} />}
@@ -661,6 +668,19 @@ const isLoggedIn = !!Astro.locals.user;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
+			}
+
+			/* On narrow viewports, drop the middle crumbs entirely — keep
+			   only home / first-parent / leaf. Three '…' dots from ellipsis
+			   truncation on middle crumbs read as glitches, not as a
+			   deliberate pattern. The H1 right below always shows the full
+			   title anyway, and users on mobile care most about "which
+			   section" (first parent) and "what page" (leaf). */
+			@media (max-width: 639px) {
+				.breadcrumb-middle,
+				.breadcrumb-middle-sep {
+					display: none;
+				}
 			}
 
 			.breadcrumb-with-icon {
