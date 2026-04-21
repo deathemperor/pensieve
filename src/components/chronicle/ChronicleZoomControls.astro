@@ -1,0 +1,34 @@
+---
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+  years: number[];
+}
+
+const { years } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const sortedYears = [...years].sort((a, b) => b - a);
+---
+
+<div class="cc-zoom-controls">
+  <button
+    class="cc-zoom-btn"
+    data-zoom="out"
+    aria-label={isVi ? "Thu nhỏ" : "Zoom out"}
+  >−</button>
+  <button
+    class="cc-zoom-btn"
+    data-zoom="in"
+    aria-label={isVi ? "Phóng to" : "Zoom in"}
+  >+</button>
+  <select class="cc-year-jump" aria-label={isVi ? "Tới năm" : "Jump to year"}>
+    <option value="">{isVi ? "— tới năm —" : "— jump —"}</option>
+    {sortedYears.map((y) => <option value={y}>{y}</option>)}
+  </select>
+  <button
+    class="cc-zoom-btn"
+    data-zoom="reset"
+    aria-label={isVi ? "Mặc định" : "Reset"}
+  >⟲</button>
+</div>
