@@ -41,29 +41,30 @@ if insert_start is None:
 with open("$TEMP_DIR/schema.sql", 'w') as f:
     f.writelines(lines[:insert_start])
 
-# Write data in chunks (by size, ~200KB per chunk to stay under D1's limit)
+# PRAGMA foreign_keys=OFF must prefix EVERY chunk — each wrangler
+# execute --file runs independently so the pragma doesn't carry across.
+PRAGMA_HEADER = "PRAGMA foreign_keys = OFF;\n"
+
 chunk_num = 1
-chunk_lines = []
-chunk_size = 0
-max_size = 150000  # 150KB per chunk (one large post ~161KB may exceed, but that's OK)
+chunk_lines = [PRAGMA_HEADER]
+chunk_size = len(PRAGMA_HEADER)
+max_size = 150000
 
 for i in range(insert_start, len(lines)):
     line = lines[i]
     line_size = len(line.encode('utf-8'))
 
-    # If adding this line would exceed the limit, and we have content, save the chunk
-    if chunk_size + line_size > max_size and chunk_lines:
+    if chunk_size + line_size > max_size and len(chunk_lines) > 1:
         with open(f"$TEMP_DIR/data_{chunk_num:03d}.sql", 'w') as f:
             f.writelines(chunk_lines)
         chunk_num += 1
-        chunk_lines = []
-        chunk_size = 0
+        chunk_lines = [PRAGMA_HEADER]
+        chunk_size = len(PRAGMA_HEADER)
 
     chunk_lines.append(line)
     chunk_size += line_size
 
-# Write the last chunk
-if chunk_lines:
+if len(chunk_lines) > 1:
     with open(f"$TEMP_DIR/data_{chunk_num:03d}.sql", 'w') as f:
         f.writelines(chunk_lines)
     chunk_num += 1
