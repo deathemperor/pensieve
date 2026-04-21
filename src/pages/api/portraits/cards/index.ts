@@ -64,9 +64,10 @@ async function runOcr(
       .bind(JSON.stringify(result.value), JSON.stringify(result), id)
       .run();
   } else {
+    const errMsg = (result as { ok: false; error: string }).error;
     await db
       .prepare(`UPDATE contact_cards SET ocr_status='failed', error=? WHERE id=?`)
-      .bind(result.error, id)
+      .bind(errMsg, id)
       .run();
   }
 }

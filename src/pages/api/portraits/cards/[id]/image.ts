@@ -23,7 +23,7 @@ export const GET: APIRoute = async (ctx) => {
     (row.r2_key.endsWith(".png") ? "image/png" :
      row.r2_key.endsWith(".webp") ? "image/webp" : "image/jpeg");
 
-  return new Response(obj.body, {
+  return new Response(obj.body as any, {
     headers: { "Content-Type": mime, "Cache-Control": "private, max-age=3600" },
   });
 };

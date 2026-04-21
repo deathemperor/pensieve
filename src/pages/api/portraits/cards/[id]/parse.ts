@@ -40,8 +40,9 @@ export const POST: APIRoute = async (ctx) => {
     return json({ card: { id, ocr_status: "parsed", extracted: result.value } });
   }
 
-  await db.prepare("UPDATE contact_cards SET ocr_status='failed', error=? WHERE id=?").bind(result.error, id).run();
-  return json({ card: { id, ocr_status: "failed", error: result.error } }, 502);
+  const errMsg = (result as { ok: false; error: string }).error;
+  await db.prepare("UPDATE contact_cards SET ocr_status='failed', error=? WHERE id=?").bind(errMsg, id).run();
+  return json({ card: { id, ocr_status: "failed", error: errMsg } }, 502);
 };
 
 function json(body: unknown, status = 200) {
