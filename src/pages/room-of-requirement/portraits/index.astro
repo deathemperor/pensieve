@@ -1,0 +1,108 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import TierSection from "../../../components/portraits/TierSection.astro";
+import CorridorTable from "../../../components/portraits/CorridorTable.astro";
+import GuestBanner from "../../../components/portraits/GuestBanner.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+import { listContacts } from "../../../lib/portraits/db";
+import type { Contact, TierCode } from "../../../lib/portraits/types";
+
+const auth = await requireAdmin(Astro);
+const db = (env as any).DB;
+
+const contacts: Contact[] = await listContacts(db, {
+  includePlaceholders: !auth.admin,
+  onlyPlaceholders: !auth.admin,
+});
+
+// Bucket by tier
+const buckets: Record<TierCode, Contact[]> = { S: [], A: [], B: [], C: [], D: [] };
+for (const c of contacts) buckets[c.prestige_tier].push(c);
+
+const total = contacts.length;
+
+// Cache: guest cached 1h, admin never cached.
+Astro.cache.set({
+  maxAge: auth.admin ? 0 : 3600,
+  sharedMaxAge: auth.admin ? 0 : 3600,
+  cacheDirectives: auth.admin ? ["private", "no-store"] : ["public"],
+});
+---
+
+<Base title="Portraits — Room of Requirement" description="A private rolodex of notable figures.">
+  <main class="portraits-page">
+    <header class="portraits-hero">
+      <h1>Portraits</h1>
+      <p class="hero-sub">
+        A gallery of the people who shape the work. {total} {total === 1 ? "portrait" : "portraits"}.
+      </p>
+      {auth.admin && (
+        <div class="admin-actions">
+          <a class="btn btn-primary" href="/room-of-requirement/portraits/add">＋ New portrait</a>
+        </div>
+      )}
+    </header>
+
+    {!auth.admin && <GuestBanner />}
+
+    {buckets.S.length > 0 && <TierSection tier="S" contacts={buckets.S} isAdminView={auth.admin} />}
+    {buckets.A.length > 0 && <TierSection tier="A" contacts={buckets.A} isAdminView={auth.admin} />}
+    {buckets.B.length > 0 && <TierSection tier="B" contacts={buckets.B} isAdminView={auth.admin} />}
+    {buckets.C.length > 0 && <TierSection tier="C" contacts={buckets.C} isAdminView={auth.admin} />}
+    {buckets.D.length > 0 && <CorridorTable contacts={buckets.D} />}
+
+    {total === 0 && (
+      <div class="empty">
+        <p>No portraits yet. {auth.admin ? "Add your first contact to start the gallery." : ""}</p>
+      </div>
+    )}
+  </main>
+</Base>
+
+<style>
+  .portraits-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 5rem;
+  }
+  .portraits-hero {
+    padding: 2rem 0 1.5rem;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .portraits-hero h1 {
+    font-family: "Inter Tight", sans-serif;
+    font-weight: 500;
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: #e8e6e0;
+  }
+  .hero-sub {
+    color: #8a877e;
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+  }
+  .admin-actions { margin-top: 1rem; }
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid #3a3a3a;
+    border-radius: 3px;
+    color: #e8e6e0;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .btn:hover { border-color: #6a665e; background: #161616; }
+  .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+
+  .empty {
+    padding: 4rem 0;
+    text-align: center;
+    color: #6a665e;
+  }
+</style>
