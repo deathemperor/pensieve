@@ -1,0 +1,89 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import Base from "../../layouts/Base.astro";
+import ChronicleSky from "../../components/chronicle/ChronicleSky.astro";
+import ChronicleLedger from "../../components/chronicle/ChronicleLedger.astro";
+import ChronicleLegend from "../../components/chronicle/ChronicleLegend.astro";
+import ChronicleZoomControls from "../../components/chronicle/ChronicleZoomControls.astro";
+import ChronicleEntryDetail from "../../components/chronicle/ChronicleEntryDetail.astro";
+import { getCurrentLang } from "../../utils/lang";
+import { parseChronicleDate, compareChronicleDate } from "../../utils/chronicleDate";
+import { formatRomanDate } from "../../utils/romanDate";
+import "../../styles/chronicle.css";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { entries: raw, cacheHint } = await (getEmDashCollection as any)("chronicle");
+Astro.cache.set(cacheHint);
+
+const published = raw.filter((e) => e.data.status !== "draft").sort((a, b) =>
+  compareChronicleDate(
+    { event_date: a.data.event_date, date_precision: a.data.date_precision },
+    { event_date: b.data.event_date, date_precision: b.data.date_precision },
+  ),
+);
+
+const populatedYears = [...new Set(
+  published.map((e) => parseChronicleDate({
+    event_date: e.data.event_date,
+    date_precision: e.data.date_precision,
+  }).year),
+)] as number[];
+
+// Serialize entries for the client modal.
+const clientData: Record<string, unknown> = {};
+for (const e of published) {
+  let location: Record<string, unknown> | undefined;
+  if (e.data.location) {
+    try { location = JSON.parse(e.data.location); } catch { /* invalid JSON: drop */ }
+  }
+  clientData[e.id] = {
+    id: e.id,
+    title: (isVi ? e.data.title_vi : e.data.title_en) ?? e.data.title,
+    subtitle: (isVi ? e.data.subtitle_vi : e.data.subtitle_en) ?? undefined,
+    roman_date: formatRomanDate(e.data.event_date, e.data.date_precision),
+    location,
+    external_url: e.data.external_url || undefined,
+    external_url_label: e.data.external_url_label || undefined,
+    linked_post_slugs: (e.data.linked_post_ids ?? "")
+      .split(",").map((s: string) => s.trim()).filter(Boolean),
+  };
+}
+
+const pageTitle = isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle";
+const pageSubtitle = isVi
+  ? "Cuộc đời ghim trên bầu trời — các sự kiện làm sao"
+  : "A life, pinned to the sky — events as stars";
+---
+
+<Base title={pageTitle} description={pageSubtitle}>
+  <main style="padding:48px 24px;max-width:1280px;margin:0 auto;">
+    <header style="text-align:center;margin-bottom:28px;">
+      <h1 style="font-family:'Inter Tight',sans-serif;font-size:clamp(28px,3.2vw,42px);font-weight:600;margin:0;color:#f7f8f8;">{pageTitle}</h1>
+      <p style="color:#8a8f98;font-size:15px;margin-top:8px;">{pageSubtitle}</p>
+    </header>
+
+    <div class="cc-frame" id="cc-frame" style="position:relative;">
+      <div class="cc-body">
+        <ChronicleSky entries={published} />
+        <ChronicleLedger entries={published} />
+      </div>
+      <div class="cc-footer">
+        <span><em>{isVi ? "Di chuột trên sao để làm sáng mục tương ứng." : "Hover a star to illuminate its entry."}</em></span>
+        <ChronicleLegend />
+      </div>
+      <ChronicleZoomControls years={populatedYears} />
+    </div>
+
+    <ChronicleEntryDetail />
+  </main>
+
+  <script define:vars={{ clientData, lang }}>
+    window.__CHRONICLE_ENTRIES__ = clientData;
+    window.__CHRONICLE_LANG__ = lang;
+  </script>
+  <script type="module" src="/src/components/chronicle/chronicle-client.ts"></script>
+</Base>
