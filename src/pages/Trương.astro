@@ -806,6 +806,68 @@ function formatGHDate(iso: string) {
 
 	<section class="about-section">
 		<div class="about-inner">
+			<h2 class="section-heading">{isVi ? "Lặn Ký Ức" : "Pensieve Dives"}</h2>
+			<p class="section-desc">
+				{isVi
+					? "Một cái Pensieve không chỉ chứa ký ức của riêng mình — Dumbledore lưu cả ký ức người khác trong dãy lọ bạc, và tôi cũng vậy. 1.064 lọ chuyện đã lặn vào, chấm điểm trên IMDb. Vì ký ức mượn dạy được sâu không kém ký ức sống — đôi khi còn sâu hơn, bởi người kể đã chưng cất hết."
+					: "A Pensieve isn't only for your own memories — Dumbledore kept rows of silvery vials belonging to others, and so do I. 1,064 borrowed memories dived into and scored on IMDb. Because memories lived vicariously can teach as deep as the ones you live — sometimes deeper, because the keeper has already distilled them."}
+			</p>
+			<div class="pensieve-vials">
+				<article class="vial-card">
+					<h3 class="vial-title">Parasite</h3>
+					<p class="vial-lesson">
+						{isVi
+							? "Đặc quyền có mùi. Phim cho bạn ngửi thấy mà không cần một câu thoại."
+							: "Privilege has a smell. The film lets you smell it without a word of dialogue."}
+					</p>
+				</article>
+				<article class="vial-card">
+					<h3 class="vial-title">Moon</h3>
+					<p class="vial-lesson">
+						{isVi
+							? "Câu hỏi đáng sợ nhất — liệu bạn có nhận ra nếu chính bạn là bản sao?"
+							: "The scariest question — would you even notice if you were the copy?"}
+					</p>
+				</article>
+				<article class="vial-card">
+					<h3 class="vial-title">Breaking Bad</h3>
+					<p class="vial-lesson">
+						{isVi
+							? "Một người đàn ông tử tế thành quỷ trong 62 tập. Từng bước đều biện minh được. Cả đường đi là thảm họa."
+							: "A decent man becomes the devil across 62 episodes. Every step defensible. The whole arc catastrophic."}
+					</p>
+				</article>
+				<article class="vial-card">
+					<h3 class="vial-title">Before Sunrise · Sunset · Midnight</h3>
+					<p class="vial-lesson">
+						{isVi
+							? "Bộ ba phim quay suốt 18 năm đời thật. Bài học rơi xuống ở phần ba — trong trận cãi nhau, không phải cú gặp đầu."
+							: "A trilogy filmed across 18 real years. The lesson lands in the third film — during the shouting match, not the meet-cute."}
+					</p>
+				</article>
+				<article class="vial-card">
+					<h3 class="vial-title">Planet Earth II</h3>
+					<p class="vial-lesson">
+						{isVi
+							? "Lập luận rằng sự chú ý tự thân đã là một kỷ luật — không phải đức tính, mà là việc phải luyện mỗi ngày."
+							: "The argument that attention itself is a discipline — not a virtue, a practice to be earned daily."}
+					</p>
+				</article>
+			</div>
+			<p class="vial-footer">
+				<a
+					href="https://www.imdb.com/user/p.v4edzbzfd5cz2hfddgjlbzxpl4/ratings/"
+					target="_blank"
+					rel="noopener"
+				>
+					{isVi ? "Toàn bộ lọ ký ức trên IMDb →" : "Every vial on IMDb →"}
+				</a>
+			</p>
+		</div>
+	</section>
+
+	<section class="about-section">
+		<div class="about-inner">
 			<div class="about-prose">
 				<aside class="origin-seal" aria-label={isVi ? "Bản Mệnh và Dòng Dõi" : "Natal chart and heritage"}>
 						<div class="origin-seal-grid">
@@ -3014,6 +3076,72 @@ function formatGHDate(iso: string) {
 		font-size: 0.9rem;
 		line-height: 1.45;
 		color: var(--color-text-dim, rgba(255, 255, 255, 0.75));
+	}
+
+	/* ─ Pensieve Dives — silvery memory vials ─────────────────────── */
+	/* Same card geometry as .community-card so the two sections sit
+	   in visual parallel, but swapped to the Pensieve's canon silver
+	   palette (vs. community's gold). The top border acts as the
+	   cork-stopper hint — just enough to read as "vial" without
+	   getting literal. */
+	.pensieve-vials {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 1rem;
+		margin-top: 1rem;
+	}
+
+	.vial-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1rem;
+		padding-top: calc(1rem - 1px); /* absorb the thicker top border */
+		border: 1px solid rgba(200, 210, 225, 0.15);
+		border-top-width: 2px;
+		border-top-color: rgba(200, 210, 225, 0.35);
+		border-radius: 0.5rem;
+		background: rgba(200, 210, 225, 0.025);
+		transition: border-color 200ms, background 200ms, transform 200ms;
+	}
+
+	.vial-card:hover {
+		border-color: rgba(200, 210, 225, 0.4);
+		border-top-color: rgba(200, 210, 225, 0.6);
+		background: rgba(200, 210, 225, 0.05);
+		transform: translateY(-1px);
+	}
+
+	.vial-title {
+		font-family: var(--font-display, "Inter Tight", sans-serif);
+		font-size: 1.05rem;
+		font-weight: 600;
+		letter-spacing: -0.005em;
+		color: rgba(230, 235, 245, 0.95);
+		margin: 0;
+	}
+
+	.vial-lesson {
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--color-text-dim, rgba(255, 255, 255, 0.72));
+		margin: 0;
+	}
+
+	.vial-footer {
+		margin-top: 1.25rem;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+	}
+
+	.vial-footer a {
+		color: var(--color-muted);
+		text-decoration: none;
+		transition: color 200ms;
+	}
+
+	.vial-footer a:hover {
+		color: rgba(200, 210, 225, 0.9);
 	}
 
 	.repo-name {
