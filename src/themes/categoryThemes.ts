@@ -7,6 +7,7 @@ export const categoryThemeMap: Record<string, ThemeSlug> = {
 	"generative-ai": "neural-net",
 	startups: "rocket-science",
 	nature: "natural-ponds",
+	education: "oak-library",
 	misc: "lab-notebook",
 };
 
