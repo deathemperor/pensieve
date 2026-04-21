@@ -14,7 +14,6 @@ const safeQ = q.replace(/["'()*:^-]/g, " ").trim();
 const hits = safeQ ? await searchPosts(db, safeQ, 50) : [];
 
 const crumbs = [
-  { label: "HOL Archive", href: "/hol/" },
   { label: "Search" },
 ];
 ---

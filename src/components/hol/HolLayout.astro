@@ -3,7 +3,9 @@
 //
 // /hol/* pages render inside pensieve's main Base layout so the site
 // header / favicon / nav / footer all come from Base. HOL-specific
-// classes live in /hol-archive.css which we inject via Base's head slot.
+// classes live in /hol-archive.css. Base has no named head slot, so
+// we load the stylesheet via <link> at the start of the body slot —
+// HTML5 allows stylesheet links in the body and browsers fetch them.
 import Base from "../../layouts/Base.astro";
 
 interface Props {
@@ -12,6 +14,8 @@ interface Props {
 }
 const { title, crumbs = [] } = Astro.props;
 
+// HolLayout anchors every trail with "HOL Archive" as the root crumb —
+// page-level code should pass ONLY deeper crumbs (forum name, thread title).
 const breadcrumbs = [
   { label: "HOL Archive", href: "/hol/" },
   ...crumbs,
@@ -23,7 +27,7 @@ const breadcrumbs = [
   robots="noindex, nofollow"
   breadcrumbs={breadcrumbs}
 >
-  <link slot="head" rel="stylesheet" href="/hol-archive.css" />
+  <link rel="stylesheet" href="/hol-archive.css" />
   <div class="hol-local-nav">
     <form class="hol-header-search" method="get" action="/hol/search/" role="search">
       <input type="search" name="q" placeholder="Tìm kiếm trong HOL…" aria-label="Tìm kiếm" />

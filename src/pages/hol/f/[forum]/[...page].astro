@@ -45,7 +45,6 @@ const threads = await listThreadsInForum(db, forumId, {
 const slug = viSlug(forum.name);
 const basePath = `/hol/f/${forum.id}-${slug}/`;
 const crumbs = [
-  { label: "HOL Archive", href: "/hol/" },
   { label: forum.name },
 ];
 ---

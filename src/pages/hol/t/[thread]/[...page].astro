@@ -43,7 +43,6 @@ const posts = await getThreadPosts(db, threadId, {
 const forumSlug = forum ? viSlug(forum.name) : "";
 const basePath = `/hol/t/${thread.id}-${thread.title_slug}/`;
 const crumbs = [
-  { label: "HOL Archive", href: "/hol/" },
   ...(forum ? [{ label: forum.name, href: `/hol/f/${forum.id}-${forumSlug}/` }] : []),
   { label: thread.title },
 ];
