@@ -210,7 +210,9 @@ function formatGHDate(iso: string) {
 				))}
 			</h1>
 				<p class="about-subtitle">
-					{isVi ? "Kỹ sư. Nhà văn. Người nuôi cá." : "Engineer. Writer. Fishkeeper."}
+					{isVi
+						? "Giáo viên · Kỹ sư · Cha · Người phục vụ · Nhà văn · Người nuôi cá · Nhà truyền bá công nghệ · Nhà thám hiểm."
+						: "Teacher · Engineer · Father · Servant · Writer · Fishkeeper · Tech Evangelist · Explorer."}
 				</p>
 				<dl class="about-meta">
 					<div class="about-meta-row">
@@ -3554,6 +3556,7 @@ function formatGHDate(iso: string) {
 		font-size: var(--font-size-sm);
 		color: var(--color-muted);
 		margin: 0;
+		text-wrap: pretty;
 	}
 
 	/* Sections */
