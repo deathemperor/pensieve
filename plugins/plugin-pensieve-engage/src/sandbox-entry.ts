@@ -22,45 +22,18 @@ function flattenRows(rows: any[]): any[] {
 
 async function buildSubscribersPage(ctx: PluginContext) {
 	const allSubscribers = await ctx.storage.subscribers.query({});
-	const rawList: any[] = (allSubscribers as any).items ?? (allSubscribers as any) ?? [];
-	const items = flattenRows(rawList);
+	const items = flattenRows(allSubscribers.items ?? allSubscribers ?? []);
 
 	const total = items.length;
 	const active = items.filter((s: any) => s.status === "active").length;
 	const unsubscribed = items.filter((s: any) => s.status === "unsubscribed").length;
 
+	// Row-level `actions` was causing the admin UI's table renderer to drop
+	// the entire row (Sends/Analytics work without actions). Keep rows as
+	// {cells} only for now; a delete flow can live in a separate block.
 	const rows = items.map((s: any) => ({
 		cells: [s.email, s.status, s.createdAt ?? "—"],
-		actions: [
-			{
-				label: "Delete",
-				action_id: "delete_subscriber",
-				value: s.id ?? s.email,
-				style: "danger",
-			},
-		],
 	}));
-
-	// Temporary diagnostic: stash what this function observed, so we can compare
-	// against what the admin UI displays.
-	try {
-		const diagId = `admin_subs_diag_${Date.now()}`;
-		await ctx.storage.email_sends.put(diagId, {
-			id: diagId,
-			diag: "buildSubscribersPage",
-			at: new Date().toISOString(),
-			rawTopKeys: Object.keys((allSubscribers as any) ?? {}),
-			rawListLength: Array.isArray(rawList) ? rawList.length : -1,
-			rawFirstItemKeys: rawList[0] ? Object.keys(rawList[0]) : [],
-			flattenedCount: items.length,
-			flattenedFirstKeys: items[0] ? Object.keys(items[0]) : [],
-			flattenedEmails: items.slice(0, 5).map((s: any) => s.email ?? null),
-			stats: { total, active, unsubscribed },
-			rowsCount: rows.length,
-		});
-	} catch {
-		// swallow
-	}
 
 	return {
 		blocks: [
