@@ -1,0 +1,27 @@
+---
+// No props — simple ribbon explaining the demo state.
+---
+
+<div class="guest-banner" role="note">
+  <span class="lock">🔒</span>
+  <strong>Private collection.</strong>
+  <span>Showing a demo gallery of public-figure portraits. Sign in as admin for the real rolodex.</span>
+</div>
+
+<style>
+  .guest-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(90deg, rgba(212, 168, 154, 0.08), transparent);
+    border-left: 2px solid #d4a89a;
+    border-radius: 2px;
+    color: #bdb8ac;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .guest-banner strong { color: #e8e6e0; font-weight: 500; }
+  .lock { font-size: 1rem; }
+</style>
