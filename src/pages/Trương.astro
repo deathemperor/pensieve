@@ -806,61 +806,119 @@ function formatGHDate(iso: string) {
 
 	<section class="about-section">
 		<div class="about-inner">
-			<h2 class="section-heading">{isVi ? "Lặn Ký Ức" : "Pensieve Dives"}</h2>
+			<h2 class="section-heading">{isVi ? "Lặn Ký Ức — Wrapped" : "Pensieve Dives — Wrapped"}</h2>
 			<p class="section-desc">
 				{isVi
-					? "Một cái Pensieve không chỉ chứa ký ức của riêng mình — Dumbledore lưu cả ký ức người khác trong dãy lọ bạc, và tôi cũng vậy. 1.064 lọ chuyện đã lặn vào, chấm điểm trên IMDb. Vì ký ức mượn dạy được sâu không kém ký ức sống — đôi khi còn sâu hơn, bởi người kể đã chưng cất hết."
-					: "A Pensieve isn't only for your own memories — Dumbledore kept rows of silvery vials belonging to others, and so do I. 1,064 borrowed memories dived into and scored on IMDb. Because memories lived vicariously can teach as deep as the ones you live — sometimes deeper, because the keeper has already distilled them."}
+					? "Dumbledore lưu ký ức người khác trong dãy lọ bạc. Tôi cũng vậy — 1.064 lọ chấm điểm trên IMDb suốt một thập kỷ. Đây không phải là playlist. Đây là những gì 250 lọ gần nhất tiết lộ về cái đầu đã lặn vào."
+					: "Dumbledore kept others' memories in rows of silvery vials. I do too — 1,064 of them, scored on IMDb over a decade. This isn't a playlist. This is what the 250 most recent vials reveal about the mind that dove in."}
 			</p>
-			<div class="pensieve-vials">
-				<article class="vial-card">
-					<h3 class="vial-title">Parasite</h3>
-					<p class="vial-lesson">
+
+			<div class="wrapped-grid">
+				{/* Card 1 — HERO */}
+				<article class="wrap-card wrap-hero">
+					<div class="wrap-stat">1,064</div>
+					<div class="wrap-label">{isVi ? "Lọ Ký Ức" : "Vials, total"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Đặc quyền có mùi. Phim cho bạn ngửi thấy mà không cần một câu thoại."
-							: "Privilege has a smell. The film lets you smell it without a word of dialogue."}
+							? "Trải suốt 10,2 năm chấm điểm. 250 lọ gần nhất hiển thị công khai — số còn lại ngủ yên trong kệ, như ký ức thời trẻ, chỉ Dumbledore (và tôi) mới lặn vào được."
+							: "Across 10.2 years of scoring. IMDb shows the 250 most recent publicly — the rest sleep in the shelves, like early memory, accessible only to Dumbledore (and to me)."}
 					</p>
 				</article>
-				<article class="vial-card">
-					<h3 class="vial-title">Moon</h3>
-					<p class="vial-lesson">
+
+				{/* Card 2 — Perfect 10s */}
+				<article class="wrap-card">
+					<div class="wrap-stat">
+						35<span class="wrap-stat-pct">/250</span>
+					</div>
+					<div class="wrap-label">{isVi ? "Điểm Tuyệt Đối" : "Perfect tens"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Câu hỏi đáng sợ nhất — liệu bạn có nhận ra nếu chính bạn là bản sao?"
-							: "The scariest question — would you even notice if you were the copy?"}
+							? "14% kệ sách được gắn nhãn 'ký ức đổi đời'. Dè dặt. Không tặng cho những gì chỉ 'hay'."
+							: "14 % of the shelf marked 'this reshaped me'. Rare. Never given for 'good'."}
 					</p>
 				</article>
-				<article class="vial-card">
-					<h3 class="vial-title">Breaking Bad</h3>
-					<p class="vial-lesson">
+
+				{/* Card 3 — Calibration */}
+				<article class="wrap-card">
+					<div class="wrap-stat wrap-stat-delta">Δ +0.04</div>
+					<div class="wrap-label">{isVi ? "Đồng Điệu Với Đám Đông" : "In step with the world"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Một người đàn ông tử tế thành quỷ trong 62 tập. Từng bước đều biện minh được. Cả đường đi là thảm họa."
-							: "A decent man becomes the devil across 62 episodes. Every step defensible. The whole arc catastrophic."}
+							? "Trung bình 7,46 so với 7,50 của IMDb. Không chống đám đông cho vui. Khi không đồng ý, là đã cảm thấy điều đó tận gốc."
+							: "Your 7.46 vs IMDb's 7.50. You don't contrarian for sport — when you break from the crowd, it's felt."}
 					</p>
 				</article>
-				<article class="vial-card">
-					<h3 class="vial-title">Before Sunrise · Sunset · Midnight</h3>
-					<p class="vial-lesson">
+
+				{/* Card 4 — Decade */}
+				<article class="wrap-card">
+					<div class="wrap-stat">67%</div>
+					<div class="wrap-label">{isVi ? "Sống Ở Thập Niên 2010" : "Set in the 2010s"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Bộ ba phim quay suốt 18 năm đời thật. Bài học rơi xuống ở phần ba — trong trận cãi nhau, không phải cú gặp đầu."
-							: "A trilogy filmed across 18 real years. The lesson lands in the third film — during the shouting match, not the meet-cute."}
+							? "167/250 lọ ký ức. Thời hoàng kim của phim truyền hình chất lượng cao — nơi bom tấn và tác giả arthouse cùng tồn tại."
+							: "167 of 250 vials. The decade when prestige TV and blockbusters coexisted — your golden era for attention."}
 					</p>
 				</article>
-				<article class="vial-card">
-					<h3 class="vial-title">Planet Earth II</h3>
-					<p class="vial-lesson">
+
+				{/* Card 5 — Nolan allergy */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat wrap-stat-warn">4.7</div>
+					<div class="wrap-label">{isVi ? "Christopher Nolan — Điểm Trung Bình" : "Christopher Nolan — your average"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Lập luận rằng sự chú ý tự thân đã là một kỷ luật — không phải đức tính, mà là việc phải luyện mỗi ngày."
-							: "The argument that attention itself is a discipline — not a virtue, a practice to be earned daily."}
+							? "Tenet 3. Dunkirk 4. Joker 3 (Todd Phillips đồng tông). Cây đũa thần chọn phù thủy — và nó không chọn Nolan."
+							: "Tenet 3. Dunkirk 4. Joker 3 (Todd Phillips keeps the same tone). The wand chooses the wizard — and Nolan's wand doesn't choose you."}
+					</p>
+				</article>
+
+				{/* Card 6 — Directors you'd follow */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">9.3+</div>
+					<div class="wrap-label">
+						{isVi ? "Đạo Diễn Bạn Sẽ Đi Theo Bất Cứ Đâu" : "Directors you'd follow anywhere"}
+					</div>
+					<ul class="wrap-list">
+						<li><span class="wrap-list-score">9.5</span> Tim Miller <em>(Love Death Robots, Deadpool)</em></li>
+						<li><span class="wrap-list-score">9.3</span> Bong Joon Ho <em>(Parasite, Memories of Murder)</em></li>
+						<li><span class="wrap-list-score">9.3</span> Richard Linklater <em>(Before trilogy)</em></li>
+						<li><span class="wrap-list-score">9.3</span> Miguel Sapochnik <em>(GoT's best, Chernobyl)</em></li>
+					</ul>
+				</article>
+
+				{/* Card 7 — Sentimental 10s */}
+				<article class="wrap-card wrap-wide">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Tuổi Thơ Là Không Thể Đụng Đến" : "Childhood TV is untouchable"}
+					</div>
+					<div class="wrap-sentimental">
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Spellbinder</span>
+							<span class="wrap-senti-meta">1995 · you 10 / world 8.1</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Ocean Girl</span>
+							<span class="wrap-senti-meta">1994 · you 10 / world 7.3</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Friends</span>
+							<span class="wrap-senti-meta">1994 · you 10 / world 8.8</span>
+						</div>
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Điểm không phải do chất lượng. Điểm là cho ký ức giữ được. Ba 10/10 không ai tranh được."
+							: "The score isn't for craft. The score is for the memory the vial still holds. Three uncontested tens."}
 					</p>
 				</article>
 			</div>
+
 			<p class="vial-footer">
 				<a
 					href="https://www.imdb.com/user/p.v4edzbzfd5cz2hfddgjlbzxpl4/ratings/"
 					target="_blank"
 					rel="noopener"
 				>
-					{isVi ? "Toàn bộ lọ ký ức trên IMDb →" : "Every vial on IMDb →"}
+					{isVi ? "Lặn vào toàn bộ dãy kệ trên IMDb →" : "Dive the full shelf on IMDb →"}
 				</a>
 			</p>
 		</div>
@@ -3078,68 +3136,217 @@ function formatGHDate(iso: string) {
 		color: var(--color-text-dim, rgba(255, 255, 255, 0.75));
 	}
 
-	/* ─ Pensieve Dives — silvery memory vials ─────────────────────── */
-	/* Same card geometry as .community-card so the two sections sit
-	   in visual parallel, but swapped to the Pensieve's canon silver
-	   palette (vs. community's gold). The top border acts as the
-	   cork-stopper hint — just enough to read as "vial" without
-	   getting literal. */
-	.pensieve-vials {
+	/* ─ Pensieve Dives — Wrapped flashcard grid ────────────────────── */
+	/* Asymmetric grid: big hero card up top, three mid-size stat cards
+	   below it on one row, two "tall" interpretive cards, one wide
+	   sentimental card at the bottom. Silver palette matches the
+	   Pensieve canon; oversized numeric typography does the Spotify-
+	   Wrapped lift while the copy stays HP-flavored underneath. */
+	.wrapped-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-		gap: 1rem;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 0.875rem;
 		margin-top: 1rem;
 	}
 
-	.vial-card {
+	.wrap-card {
+		grid-column: span 2;
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		padding: 1rem;
-		padding-top: calc(1rem - 1px); /* absorb the thicker top border */
-		border: 1px solid rgba(200, 210, 225, 0.15);
-		border-top-width: 2px;
-		border-top-color: rgba(200, 210, 225, 0.35);
+		padding: 1.1rem 1.1rem 1.2rem;
+		border: 1px solid rgba(200, 210, 225, 0.14);
+		border-top: 2px solid rgba(200, 210, 225, 0.32);
 		border-radius: 0.5rem;
-		background: rgba(200, 210, 225, 0.025);
+		background: linear-gradient(
+			180deg,
+			rgba(200, 210, 225, 0.045) 0%,
+			rgba(200, 210, 225, 0.015) 100%
+		);
 		transition: border-color 200ms, background 200ms, transform 200ms;
+		min-height: 150px;
 	}
 
-	.vial-card:hover {
-		border-color: rgba(200, 210, 225, 0.4);
-		border-top-color: rgba(200, 210, 225, 0.6);
-		background: rgba(200, 210, 225, 0.05);
+	.wrap-card:hover {
+		border-color: rgba(200, 210, 225, 0.32);
+		border-top-color: rgba(200, 210, 225, 0.55);
+		background: linear-gradient(
+			180deg,
+			rgba(200, 210, 225, 0.07) 0%,
+			rgba(200, 210, 225, 0.025) 100%
+		);
 		transform: translateY(-1px);
 	}
 
-	.vial-title {
-		font-family: var(--font-display, "Inter Tight", sans-serif);
-		font-size: 1.05rem;
-		font-weight: 600;
-		letter-spacing: -0.005em;
-		color: rgba(230, 235, 245, 0.95);
-		margin: 0;
+	/* Hero — full-width headline card */
+	.wrap-hero {
+		grid-column: span 6;
+		flex-direction: row;
+		align-items: center;
+		gap: 1.5rem;
+		padding: 1.4rem 1.6rem;
+		min-height: unset;
+	}
+	.wrap-hero .wrap-stat {
+		font-size: 4.5rem;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+	.wrap-hero .wrap-label {
+		font-size: 0.75rem;
+		margin-bottom: 0.4rem;
+	}
+	.wrap-hero .wrap-note {
+		margin-top: 0;
 	}
 
-	.vial-lesson {
-		font-size: 0.9rem;
+	/* Tall cards — more room for multi-line lists/context */
+	.wrap-tall {
+		grid-column: span 3;
+	}
+
+	/* Wide card — sentimental shelf full-width */
+	.wrap-wide {
+		grid-column: span 6;
+	}
+
+	.wrap-stat {
+		font-family: var(--font-display, "Inter Tight", sans-serif);
+		font-size: 2.25rem;
+		font-weight: 700;
+		letter-spacing: -0.035em;
+		line-height: 1;
+		color: rgba(230, 235, 245, 0.98);
+		margin: 0.1rem 0 0.35rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.wrap-stat-pct {
+		font-size: 0.55em;
+		font-weight: 500;
+		color: rgba(200, 210, 225, 0.55);
+		letter-spacing: -0.01em;
+	}
+	.wrap-stat-delta {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 1.6rem;
+		letter-spacing: -0.015em;
+	}
+	.wrap-stat-warn {
+		color: rgba(255, 170, 150, 0.92);
+	}
+
+	.wrap-label {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.68rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: rgba(200, 210, 225, 0.72);
+		margin: 0;
+	}
+	.wrap-label-top {
+		margin-bottom: 0.75rem;
+	}
+
+	.wrap-note {
+		font-size: 0.88rem;
 		line-height: 1.5;
 		color: var(--color-text-dim, rgba(255, 255, 255, 0.72));
-		margin: 0;
+		margin: auto 0 0 0; /* push to bottom of the card */
+	}
+	.wrap-hero .wrap-note {
+		font-size: 0.92rem;
+		flex: 1;
+	}
+
+	/* Directors-list card */
+	.wrap-list {
+		list-style: none;
+		padding: 0;
+		margin: 0.5rem 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+	.wrap-list li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		font-size: 0.88rem;
+		line-height: 1.35;
+		color: rgba(230, 235, 245, 0.92);
+	}
+	.wrap-list li em {
+		font-style: normal;
+		color: rgba(200, 210, 225, 0.55);
+		font-size: 0.8rem;
+	}
+	.wrap-list-score {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgba(200, 210, 225, 0.88);
+		min-width: 2.2rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Sentimental 10s — three-column subgrid */
+	.wrap-sentimental {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 0.9rem;
+		margin-bottom: 0.75rem;
+	}
+	.wrap-senti-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.85rem;
+		background: rgba(200, 210, 225, 0.04);
+		border-left: 2px solid rgba(200, 210, 225, 0.38);
+		border-radius: 0 0.35rem 0.35rem 0;
+	}
+	.wrap-senti-title {
+		font-family: var(--font-display, "Inter Tight", sans-serif);
+		font-size: 1rem;
+		font-weight: 600;
+		color: rgba(230, 235, 245, 0.96);
+	}
+	.wrap-senti-meta {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.72rem;
+		color: rgba(200, 210, 225, 0.55);
+	}
+
+	/* Responsive — collapse asymmetric grid on narrow viewports */
+	@media (max-width: 900px) {
+		.wrapped-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.wrap-card { grid-column: span 1; }
+		.wrap-hero { grid-column: span 2; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+		.wrap-hero .wrap-stat { font-size: 3.5rem; }
+		.wrap-tall { grid-column: span 2; }
+		.wrap-wide { grid-column: span 2; }
+	}
+	@media (max-width: 520px) {
+		.wrapped-grid { grid-template-columns: 1fr; }
+		.wrap-card { grid-column: span 1; }
+		.wrap-hero, .wrap-tall, .wrap-wide { grid-column: span 1; }
+		.wrap-stat { font-size: 2rem; }
+		.wrap-hero .wrap-stat { font-size: 3rem; }
 	}
 
 	.vial-footer {
-		margin-top: 1.25rem;
+		margin-top: 1.5rem;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
 	}
-
 	.vial-footer a {
 		color: var(--color-muted);
 		text-decoration: none;
 		transition: color 200ms;
 	}
-
 	.vial-footer a:hover {
 		color: rgba(200, 210, 225, 0.9);
 	}
