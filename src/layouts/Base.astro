@@ -847,130 +847,6 @@ const isLoggedIn = !!Astro.locals.user;
 				min-height: 1em;
 			}
 
-			/* ═══ Site-wide Owl Post bar ═══ */
-			.owl-bar {
-				position: fixed;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				z-index: 50;
-				background: color-mix(in srgb, var(--color-surface-elevated) 94%, transparent);
-				backdrop-filter: blur(8px);
-				-webkit-backdrop-filter: blur(8px);
-				border-top: 1px solid var(--color-border);
-				box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
-				transform: translateY(100%);
-				transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
-				will-change: transform;
-			}
-			.owl-bar.owl-bar-in { transform: translateY(0); }
-
-			.owl-bar-inner {
-				max-width: var(--wide-width);
-				margin: 0 auto;
-				padding: var(--spacing-3) var(--spacing-8);
-				display: flex;
-				align-items: center;
-				gap: var(--spacing-5);
-			}
-
-			.owl-bar-copy {
-				display: flex;
-				flex-direction: column;
-				gap: 2px;
-				min-width: 0;
-				flex: 1;
-			}
-			.owl-bar-title {
-				font-family: var(--font-display);
-				font-size: var(--font-size-base);
-				font-weight: var(--font-weight-display);
-				color: var(--color-text);
-				letter-spacing: -0.012em;
-			}
-			.owl-bar-desc {
-				font-family: var(--font-sans);
-				font-size: var(--font-size-xs);
-				color: var(--color-text-secondary);
-			}
-
-			.owl-bar-form {
-				display: flex;
-				gap: var(--spacing-2);
-				align-items: stretch;
-				flex-shrink: 0;
-			}
-			.owl-bar-input {
-				width: 14rem;
-				padding: var(--spacing-2) var(--spacing-3);
-				font-family: var(--font-sans);
-				font-size: var(--font-size-sm);
-				color: var(--color-text);
-				background: var(--color-bg);
-				border: 1px solid var(--color-border);
-				border-radius: 6px;
-				transition: border-color var(--transition-fast);
-			}
-			.owl-bar-input:focus {
-				outline: none;
-				border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
-			}
-			.owl-bar-btn {
-				padding: var(--spacing-2) var(--spacing-4);
-				font-family: var(--font-sans);
-				font-size: var(--font-size-sm);
-				font-weight: 500;
-				color: var(--color-bg);
-				background: var(--color-text);
-				border: 0;
-				border-radius: 6px;
-				cursor: pointer;
-				transition: opacity var(--transition-fast);
-			}
-			.owl-bar-btn:hover { opacity: 0.85; }
-
-			.owl-bar-status {
-				font-family: var(--font-sans);
-				font-size: var(--font-size-xs);
-				color: var(--color-text-secondary);
-				margin: 0;
-				max-width: 22ch;
-				flex-shrink: 0;
-			}
-			.owl-bar-status.success { color: #3fb950; }
-			.owl-bar-status.error { color: #e5534b; }
-			.owl-bar-status:empty { display: none; }
-
-			.owl-bar-close {
-				flex-shrink: 0;
-				width: 28px;
-				height: 28px;
-				font-size: 20px;
-				line-height: 1;
-				color: var(--color-muted);
-				background: transparent;
-				border: 0;
-				border-radius: 6px;
-				cursor: pointer;
-				transition: color var(--transition-fast), background var(--transition-fast);
-			}
-			.owl-bar-close:hover {
-				color: var(--color-text);
-				background: color-mix(in srgb, var(--color-text) 6%, transparent);
-			}
-
-			@media (max-width: 720px) {
-				.owl-bar-inner {
-					flex-wrap: wrap;
-					padding: var(--spacing-3) var(--spacing-5);
-					gap: var(--spacing-3);
-				}
-				.owl-bar-copy { flex-basis: 100%; }
-				.owl-bar-form { flex: 1; }
-				.owl-bar-input { width: 100%; flex: 1; }
-				.owl-bar-status { flex-basis: 100%; text-align: center; }
-			}
-
 			/* Footer categories cloud */
 			.footer-categories {
 				display: flex;
@@ -1406,6 +1282,15 @@ const isLoggedIn = !!Astro.locals.user;
 			});
 		</script>
 		<EmDashBodyEnd page={pageCtx} />
+		{content && content.collection === "posts" && (
+			<script
+				is:inline
+				type="text/javascript"
+				data-post-slug={content.slug}
+				data-beacon-url="/_emdash/api/plugins/pensieve-engage/beacon"
+				set:html={`(function(){var el=document.currentScript;var slug=el.getAttribute("data-post-slug");var url=el.getAttribute("data-beacon-url");if(!slug||!url)return;var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var startTime=Date.now();var maxScroll=0;var qs=new URLSearchParams(location.search);var src=(qs.get("src")||"").toLowerCase();var ref=document.referrer||"";if(!src){if(/(^|\\.)(facebook|fb)\\.com|(^|\\.)fb\\.me|(^|\\.)l\\.facebook\\.com|(^|\\.)m\\.facebook\\.com/.test(ref))src="fb";else if(ref&&!ref.indexOf(location.origin))src="direct";else if(ref)src="referral";else src="direct";}var sendId=qs.get("sid")||null;function docH(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight}function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime,source:src,sendId:sendId,referrer:ref||null},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`}
+			/>
+		)}
 		<script>
 			function setLangCookie(lang: string) {
 				document.cookie = `pref_lang=${lang};path=/;max-age=${60*60*24*365};samesite=lax`;
@@ -1473,83 +1358,5 @@ const isLoggedIn = !!Astro.locals.user;
 		</a>
 		<script src="/js/spellsounds.js" is:inline></script>
 		<script src="/js/creatures.js" is:inline></script>
-
-	<!-- Site-wide Owl Post bar — sticky at bottom until the reader either
-	     subscribes or dismisses. Dismissal persists via localStorage. -->
-	<aside class="owl-bar" data-owl-bar hidden role="region" aria-label={currentLang === "vi" ? "Đăng ký Cú Bưu Điện" : "Subscribe to Owl Post"}>
-		<div class="owl-bar-inner">
-			<div class="owl-bar-copy">
-				<strong class="owl-bar-title">{currentLang === "vi" ? "Cú Bưu Điện" : "Owl Post"}</strong>
-				<span class="owl-bar-desc">
-					{currentLang === "vi"
-						? "Nhận ký ức mới qua email. Không spam."
-						: "New memories delivered by owl. No spam, no dark magic."}
-				</span>
-			</div>
-			<form class="owl-bar-form" data-owl-form>
-				<input type="email" name="email" required
-					placeholder={currentLang === "vi" ? "email của bạn" : "your@email.com"}
-					class="owl-bar-input"
-					aria-label={currentLang === "vi" ? "Địa chỉ email" : "Email address"} />
-				<button type="submit" class="owl-bar-btn">{currentLang === "vi" ? "Đăng ký" : "Subscribe"}</button>
-			</form>
-			<p class="owl-bar-status" data-owl-status aria-live="polite"></p>
-			<button type="button" class="owl-bar-close" data-owl-close aria-label={currentLang === "vi" ? "Đóng" : "Dismiss"}>×</button>
-		</div>
-	</aside>
-	<script is:inline>
-		(function () {
-			const DISMISS_KEY = 'pensieve:owl-post-dismissed:v1';
-			const bar = document.querySelector('[data-owl-bar]');
-			if (!bar) return;
-			if (location.pathname.startsWith('/_emdash')) return;
-			if (localStorage.getItem(DISMISS_KEY)) return;
-			setTimeout(() => {
-				bar.hidden = false;
-				requestAnimationFrame(() => bar.classList.add('owl-bar-in'));
-			}, 800);
-			const form = bar.querySelector('[data-owl-form]');
-			const status = bar.querySelector('[data-owl-status]');
-			const closeBtn = bar.querySelector('[data-owl-close]');
-			const isVi = document.documentElement.lang === 'vi';
-			function dismiss() {
-				try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch {}
-				bar.classList.remove('owl-bar-in');
-				setTimeout(() => { bar.hidden = true; }, 260);
-			}
-			closeBtn && closeBtn.addEventListener('click', dismiss);
-			form && form.addEventListener('submit', async (e) => {
-				e.preventDefault();
-				const email = form.querySelector('input[name=email]').value;
-				status.textContent = '';
-				status.className = 'owl-bar-status';
-				try {
-					const res = await fetch('/_emdash/api/plugins/pensieve-engage/subscribe', {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
-						body: JSON.stringify({ email }),
-					});
-					const payload = await res.json();
-					const handler = res.ok ? (payload.data || {}) : {};
-					const envErr = res.ok ? null : payload.error;
-					if (handler.success) {
-						status.textContent = isVi ? 'Cú đã bay! Kiểm tra email chào mừng.' : 'Owl dispatched! Check for your welcome letter.';
-						status.classList.add('success');
-						form.reset();
-						setTimeout(dismiss, 2400);
-					} else {
-						const fallback = isVi ? 'Có lỗi xảy ra' : 'Something went wrong';
-						const hErr = typeof handler.error === 'string' ? handler.error : handler.error && handler.error.message;
-						const eErr = typeof envErr === 'string' ? envErr : envErr && envErr.message;
-						status.textContent = hErr || eErr || fallback;
-						status.classList.add('error');
-					}
-				} catch {
-					status.textContent = isVi ? 'Không gửi được cú' : 'Failed to send owl';
-					status.classList.add('error');
-				}
-			});
-		})();
-	</script>
 	</body>
 </html>

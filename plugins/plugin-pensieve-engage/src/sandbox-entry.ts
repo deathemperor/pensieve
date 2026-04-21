@@ -298,54 +298,12 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 
 export default definePlugin({
 	hooks: {
-		"page:metadata": {
-			handler: async (event: any, ctx: PluginContext) => {
-				try {
-					await ctx.kv.set(`pm_hit_${Date.now()}`, {
-						slug: event?.page?.content?.slug ?? null,
-						kind: event?.page?.kind ?? null,
-					});
-				} catch {}
-				return null;
-			},
-		},
-		"page:fragments": {
-			handler: async (event: any, ctx: PluginContext) => {
-				// Diagnostic: write to KV (always works when hook fires).
-				try {
-					await ctx.kv.set(`pf_hit_${Date.now()}`, {
-						pageKind: event?.page?.kind ?? null,
-						collection: event?.page?.content?.collection ?? null,
-						slug: event?.page?.content?.slug ?? null,
-						hasCtxStorage: !!ctx?.storage,
-						hasCtxKv: !!ctx?.kv,
-						eventKeys: event ? Object.keys(event) : [],
-					});
-				} catch {
-					// ignore
-				}
-				if (event.page.kind !== "content") return null;
-				if (event.page.content?.collection !== "posts") return null;
-
-				const postSlug = event.page.content?.slug || event.page.content?.id;
-				const beaconUrl = "/_emdash/api/plugins/pensieve-engage/beacon";
-
-				// The inline tracker resolves a `source` attribution for the
-				// pageview. Priority:
-				//   1. ?src=<letter|fb|...> in the URL (set by /click for email
-				//      links, and by Loc's own UTM-style links on FB posts).
-				//   2. document.referrer matching FB domains.
-				//   3. "direct" fallback.
-				// Also captures ?sid=<sendId> so we can attribute reads back
-				// to a specific newsletter send.
-				return {
-					kind: "inline-script",
-					placement: "body:end",
-					code: `(function(){var sid=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);var slug=${JSON.stringify(postSlug)};var url=${JSON.stringify(beaconUrl)};var startTime=Date.now();var maxScroll=0;var qs=new URLSearchParams(location.search);var src=(qs.get("src")||"").toLowerCase();var ref=document.referrer||"";if(!src){if(/(^|\\.)(facebook|fb)\\.com|(^|\\.)fb\\.me|(^|\\.)l\\.facebook\\.com|(^|\\.)m\\.facebook\\.com/.test(ref))src="fb";else if(ref&&!ref.startsWith(location.origin))src="referral";else src="direct";}var sendId=qs.get("sid")||null;var docH=function(){return Math.max(document.body.scrollHeight,document.documentElement.scrollHeight)-window.innerHeight};function send(type,extra){var d={postSlug:slug,sessionId:sid,eventType:type,data:Object.assign({scrollDepth:maxScroll,readingTimeMs:Date.now()-startTime,source:src,sendId:sendId,referrer:ref||null},extra||{}),t:Date.now()};try{if(type==="leave"){navigator.sendBeacon(url,JSON.stringify(d))}else{fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d),keepalive:true})}}catch(e){}}function onScroll(){var h=docH();if(h>0){var pct=Math.min(Math.round(window.scrollY/h*100),100);if(pct>maxScroll)maxScroll=pct}}window.addEventListener("scroll",onScroll,{passive:true});onScroll();send("pageview");var hbTimer=setInterval(function(){if(document.visibilityState==="visible"){send("heartbeat")}},30000);document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden"){send("leave");clearInterval(hbTimer)}})})();`,
-					key: "pensieve-engage-tracker",
-				};
-			},
-		},
+		// Note: page:fragments was the intended place for the pageview beacon
+		// tracker, but the hook never fires for this plugin on live pages
+		// despite the page:inject capability being present and the plugin
+		// being registered in the pipeline. After extended debugging the
+		// tracker was moved inline to Base.astro — see site-reading-tracker
+		// script. This file still owns the /beacon route that receives events.
 
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
