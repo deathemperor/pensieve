@@ -1,60 +1,42 @@
 ---
 // src/components/hol/HolLayout.astro
+//
+// /hol/* pages render inside pensieve's main Base layout so the site
+// header / favicon / nav / footer all come from Base. HOL-specific
+// classes live in /hol-archive.css which we inject via Base's head slot.
+import Base from "../../layouts/Base.astro";
+
 interface Props {
   title: string;
   crumbs?: { label: string; href?: string }[];
 }
 const { title, crumbs = [] } = Astro.props;
+
+const breadcrumbs = [
+  { label: "HOL Archive", href: "/hol/" },
+  ...crumbs,
+];
 ---
-<!doctype html>
-<html lang="vi">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} — HOL Archive</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <meta property="og:title" content={`${title} — HOL Archive`} />
-    <meta property="og:type" content="website" />
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
-    <link rel="stylesheet" href="/hol-archive.css" />
-  </head>
-  <body>
-    <header class="hol-header">
-      <a href="/hol/" class="hol-home">
-        <svg class="hol-logo" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">
-          <rect x="4" y="7" width="24" height="18" rx="2.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linejoin="round" />
-          <path d="M9 12 L23 12 M9 16 L23 16 M9 20 L18 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+<Base
+  title={title}
+  description="HOL — holvn.org forum archive reconstructed from Internet Archive snapshots."
+  robots="noindex, nofollow"
+  breadcrumbs={breadcrumbs}
+>
+  <link slot="head" rel="stylesheet" href="/hol-archive.css" />
+  <div class="hol-local-nav">
+    <form class="hol-header-search" method="get" action="/hol/search/" role="search">
+      <input type="search" name="q" placeholder="Tìm kiếm trong HOL…" aria-label="Tìm kiếm" />
+      <button type="submit" aria-label="Search">
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.75" />
+          <path d="M10.5 10.5 L14 14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
         </svg>
-        <strong>HOL Archive</strong>
-      </a>
-      <nav aria-label="Breadcrumb" class="hol-crumbs">
-        {crumbs.map((c, i) => (
-          <>
-            {i > 0 && <span aria-hidden="true">›</span>}
-            {c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}
-          </>
-        ))}
-      </nav>
-      <form class="hol-header-search" method="get" action="/hol/search/" role="search">
-        <input type="search" name="q" placeholder="Tìm kiếm…" aria-label="Tìm kiếm" />
-        <button type="submit" aria-label="Search">
-          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-            <circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.75" />
-            <path d="M10.5 10.5 L14 14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
-          </svg>
-        </button>
-      </form>
-    </header>
-    <main class="hol-main">
-      <slot />
-    </main>
-    <footer class="hol-footer">
-      <a href="/">← huuloc.com</a>
-      <span>·</span>
-      <a href="/hol/about/">Giới thiệu</a>
-      <span>·</span>
-      <a href="/hol/search/">Tìm kiếm</a>
-    </footer>
-  </body>
-</html>
+      </button>
+    </form>
+    <a href="/hol/about/" class="hol-local-nav-link">Giới thiệu</a>
+  </div>
+  <main class="hol-main">
+    <slot />
+  </main>
+</Base>
