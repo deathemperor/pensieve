@@ -598,14 +598,25 @@ const isLoggedIn = !!Astro.locals.user;
 				overflow: hidden;
 			}
 
-			/* Non-leaf items stay at their natural width — they're the
-			   navigational context and shouldn't be clipped first. */
+			/* Shrink order: home and separators stay full-width (they're
+			   small and anchor the trail). Non-leaf text crumbs shrink
+			   first with ellipsis when space is tight. The leaf shrinks
+			   last and always keeps at least 6ch visible. */
 			.breadcrumb-home,
-			.breadcrumb-link,
-			.breadcrumb-sep,
-			.breadcrumb-current:not(.breadcrumb-leaf) {
+			.breadcrumb-sep {
 				flex-shrink: 0;
 				white-space: nowrap;
+			}
+
+			.breadcrumb-link,
+			.breadcrumb-current:not(.breadcrumb-leaf) {
+				min-width: 2ch;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				/* flex-shrink: 2 — shrinks twice as fast as the leaf,
+				   so non-leaf crumbs give up space first. */
+				flex-shrink: 2;
 			}
 
 			.breadcrumb-home {
@@ -640,13 +651,13 @@ const isLoggedIn = !!Astro.locals.user;
 				color: var(--color-text);
 			}
 
-			/* The leaf (current page) takes remaining space and truncates.
-			   min-width: 0 lets the flex item shrink below its content size,
-			   which is the bit that actually enables text-overflow: ellipsis
-			   to fire inside a flex child. */
+			/* The leaf (current page) grows into remaining space. Keeps at
+			   least 6ch visible so "Abc…" is always readable, even when
+			   non-leaf crumbs have also shrunk. flex-shrink: 1 is lower
+			   than non-leaf's 2, so non-leaf items shrink first. */
 			.breadcrumb-leaf {
 				flex: 1 1 auto;
-				min-width: 0;
+				min-width: 6ch;
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
