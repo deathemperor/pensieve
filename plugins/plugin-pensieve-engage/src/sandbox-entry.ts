@@ -14,9 +14,15 @@ function isValidEmail(email: string): boolean {
 	return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+// ctx.storage.*.query() returns rows shaped {id, data:{...fields}}. This
+// helper flattens so downstream code can treat each item as a plain document.
+function flattenRows(rows: any[]): any[] {
+	return rows.map((r: any) => (r?.data ? { id: r.id, ...r.data } : r));
+}
+
 async function buildSubscribersPage(ctx: PluginContext) {
 	const allSubscribers = await ctx.storage.subscribers.query({});
-	const items = allSubscribers.items ?? allSubscribers ?? [];
+	const items = flattenRows(allSubscribers.items ?? allSubscribers ?? []);
 
 	const total = items.length;
 	const active = items.filter((s: any) => s.status === "active").length;
@@ -57,7 +63,7 @@ async function buildSubscribersPage(ctx: PluginContext) {
 
 async function buildSubscriberStatsWidget(ctx: PluginContext) {
 	const allSubscribers = await ctx.storage.subscribers.query({});
-	const items = allSubscribers.items ?? allSubscribers ?? [];
+	const items = flattenRows(allSubscribers.items ?? allSubscribers ?? []);
 
 	const total = items.length;
 	const active = items.filter((s: any) => s.status === "active").length;
@@ -79,7 +85,7 @@ async function buildSubscriberStatsWidget(ctx: PluginContext) {
 
 async function buildSendsPage(ctx: PluginContext) {
 	const allSends = await ctx.storage.email_sends.query({});
-	const items = (allSends.items ?? allSends ?? []) as any[];
+	const items = flattenRows(allSends.items ?? allSends ?? []) as any[];
 
 	items.sort((a: any, b: any) => {
 		const aTime = a.sentAt || a.completedAt || a.startedAt || "";
@@ -121,20 +127,20 @@ async function buildSendsPage(ctx: PluginContext) {
 
 async function buildAnalyticsPage(ctx: PluginContext) {
 	const allEvents = await ctx.storage.reading_events.query({});
-	const items = (allEvents.items ?? allEvents ?? []) as any[];
+	const items = flattenRows(allEvents.items ?? allEvents ?? []) as any[];
 
 	const totalPageviews = items.filter((e: any) => e.eventType === "pageview").length;
 	const uniqueSessions = new Set(items.map((e: any) => e.sessionId)).size;
 
 	// Lumos (likes) data
 	const allLumos = await ctx.storage.lumos!.query({});
-	const lumosItems = (allLumos.items ?? allLumos ?? []) as any[];
+	const lumosItems = flattenRows(allLumos.items ?? allLumos ?? []) as any[];
 	const totalLumos = lumosItems.length;
 
 	// Lumos by post
 	const lumosByPost = new Map<string, number>();
 	for (const like of lumosItems) {
-		const slug = like.data?.postSlug || like.postSlug || "unknown";
+		const slug = like.postSlug || "unknown";
 		lumosByPost.set(slug, (lumosByPost.get(slug) || 0) + 1);
 	}
 
@@ -142,7 +148,7 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 	const byPost = new Map<string, { pageviews: number; scrollDepths: number[]; readingTimes: number[] }>();
 
 	for (const event of items) {
-		const slug = event.postSlug || (event.data?.postSlug) || "unknown";
+		const slug = event.postSlug || "unknown";
 		if (!byPost.has(slug)) {
 			byPost.set(slug, { pageviews: 0, scrollDepths: [], readingTimes: [] });
 		}
