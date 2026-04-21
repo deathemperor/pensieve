@@ -75,9 +75,21 @@ const games: Game[] = [
 				</p>
 			) : (
 				<div class="games-grid">
-					{games.map((game) => (
+					{games.map((game) => {
+						// In-site play URLs stay in the current tab; external
+						// repo/embed links open a new tab.
+						const cardHref = game.playUrl ?? game.repo;
+						const cardIsExternal = !cardHref.startsWith("/");
+						const playIsExternal = game.playUrl ? !game.playUrl.startsWith("/") : true;
+						return (
 						<article class="game-card">
-							<a class="game-shot" href={game.playUrl ?? game.repo} target="_blank" rel="noopener noreferrer">
+							<a
+								class="game-shot"
+								href={cardHref}
+								{...(cardIsExternal
+									? { target: "_blank", rel: "noopener noreferrer" }
+									: {})}
+							>
 								<img
 									src={game.screenshot}
 									alt={game.screenshotAlt[currentLang]}
@@ -116,7 +128,13 @@ const games: Game[] = [
 									</span>
 									<div class="game-links">
 										{game.playUrl && (
-											<a class="game-link" href={game.playUrl} target="_blank" rel="noopener noreferrer">
+											<a
+												class="game-link"
+												href={game.playUrl}
+												{...(playIsExternal
+													? { target: "_blank", rel: "noopener noreferrer" }
+													: {})}
+											>
 												{isVi ? "Chơi" : "Play"}
 											</a>
 										)}
@@ -127,7 +145,8 @@ const games: Game[] = [
 								</footer>
 							</div>
 						</article>
-					))}
+					);
+					})}
 				</div>
 			)}
 		</div>
