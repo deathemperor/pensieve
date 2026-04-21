@@ -316,6 +316,54 @@
 					"type": "string"
 				}
 			]
+		},
+		{
+			"slug": "wishlist",
+			"label": "Wishlist",
+			"labelSingular": "Wish",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "brand",
+					"label": "Brand",
+					"type": "string"
+				},
+				{
+					"slug": "product_url",
+					"label": "Product URL",
+					"type": "string"
+				},
+				{
+					"slug": "image",
+					"label": "Image",
+					"type": "image"
+				},
+				{
+					"slug": "category",
+					"label": "Category",
+					"type": "string"
+				},
+				{
+					"slug": "priority",
+					"label": "Priority",
+					"type": "string"
+				},
+				{
+					"slug": "notes",
+					"label": "Notes",
+					"type": "text"
+				}
+			]
 		}
 	],
 	"taxonomies": [
@@ -32350,6 +32398,164 @@
 							]
 						}
 					]
+				}
+			}
+		],
+		"wishlist": [
+			{
+				"id": "onewheel-gt-s",
+				"slug": "onewheel-gt-s",
+				"status": "published",
+				"data": {
+					"title": "Onewheel GT S-Series (Rally XL)",
+					"brand": "Onewheel",
+					"product_url": "https://onewheel.com/products/onewheel-gt-s-series#rally-xl",
+					"category": "transport",
+					"priority": "want",
+					"notes": "Rally XL variant — longer range, heavier tire for uneven terrain."
+				}
+			},
+			{
+				"id": "eight-sleep-pod-5-ultra",
+				"slug": "eight-sleep-pod-5-ultra",
+				"status": "published",
+				"data": {
+					"title": "Eight Sleep Pod 5 Ultra",
+					"brand": "Eight Sleep",
+					"product_url": "https://www.eightsleep.com/product/pod-cover/",
+					"category": "health",
+					"priority": "want",
+					"notes": "Temperature-regulating mattress cover — the flagship sleep tech."
+				}
+			},
+			{
+				"id": "xdesk-air-pro",
+				"slug": "xdesk-air-pro",
+				"status": "published",
+				"data": {
+					"title": "XDesk Air Pro",
+					"brand": "XDesk",
+					"product_url": "https://www.xdesk.com/air-pro",
+					"category": "desk",
+					"priority": "want",
+					"notes": "Height-adjustable desk frame, serious load rating."
+				}
+			},
+			{
+				"id": "herman-miller-embody",
+				"slug": "herman-miller-embody",
+				"status": "published",
+				"data": {
+					"title": "Herman Miller Embody",
+					"brand": "Herman Miller",
+					"product_url": "https://www.hermanmiller.com/products/seating/office-chairs/embody-chairs/",
+					"category": "chair",
+					"priority": "want",
+					"notes": "Spine-supporting task chair — the long-sit answer."
+				}
+			},
+			{
+				"id": "apple-pro-display-xdr",
+				"slug": "apple-pro-display-xdr",
+				"status": "published",
+				"data": {
+					"title": "Apple Pro Display XDR",
+					"brand": "Apple",
+					"product_url": "https://www.apple.com/pro-display-xdr/",
+					"category": "display",
+					"priority": "want",
+					"notes": "Reference-grade HDR display."
+				}
+			},
+			{
+				"id": "grovemade-desk-shelf",
+				"slug": "grovemade-desk-shelf",
+				"status": "published",
+				"data": {
+					"title": "Grovemade Wood Desk Shelf",
+					"brand": "Grovemade",
+					"product_url": "https://grovemade.com/product/wood-desk-shelf/",
+					"category": "desk",
+					"priority": "want",
+					"notes": "Hardwood monitor shelf — lifts display to eye level, reclaims desk surface."
+				}
+			},
+			{
+				"id": "apollo-twin-mkii",
+				"slug": "apollo-twin-mkii",
+				"status": "published",
+				"data": {
+					"title": "Universal Audio Apollo Twin (Gen 2)",
+					"brand": "Universal Audio",
+					"product_url": "https://www.uaudio.com/audio-interfaces/apollo/apollo-twin-mkii.html",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Thunderbolt audio interface with Unison preamps and onboard DSP."
+				}
+			},
+			{
+				"id": "yamaha-hs8",
+				"slug": "yamaha-hs8",
+				"status": "published",
+				"data": {
+					"title": "Yamaha HS8",
+					"brand": "Yamaha",
+					"product_url": "https://usa.yamaha.com/products/proaudio/speakers/hs_series/hs8.html",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Studio monitors — flat response, the lab-standard pair."
+				}
+			},
+			{
+				"id": "sennheiser-hd-650",
+				"slug": "sennheiser-hd-650",
+				"status": "published",
+				"data": {
+					"title": "Sennheiser HD 650",
+					"brand": "Sennheiser",
+					"product_url": "https://www.sennheiser-hearing.com/en-US/p/hd-650/",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Open-back reference headphones — transparent, long-session comfortable."
+				}
+			},
+			{
+				"id": "belkin-charging-station",
+				"slug": "belkin-charging-station",
+				"status": "published",
+				"data": {
+					"title": "Belkin BoostCharge Pro 3-in-1 (MagSafe)",
+					"brand": "Belkin",
+					"product_url": "https://www.belkin.com/boostcharge-pro-3-in-1-wireless-charging-dock-with-magsafe-15w/WIZ016.html",
+					"category": "charging",
+					"priority": "want",
+					"notes": "iPhone + Watch + AirPods on one surface. Clean desk footprint."
+				}
+			},
+			{
+				"id": "wobkey-rainy-75-lite",
+				"slug": "wobkey-rainy-75-lite",
+				"status": "published",
+				"data": {
+					"title": "Rainy 75 Lite",
+					"brand": "Wobkey",
+					"product_url": "https://wobkey.com/products/rainy-75",
+					"category": "keyboard",
+					"priority": "want",
+					"notes": "Gasket-mount 75% keyboard — tuned for typing feel over gaming specs."
+				}
+			},
+			{
+				"id": "artisan-mousepad",
+				"slug": "artisan-mousepad",
+				"status": "published",
+				"data": {
+					"title": "Artisan mousepad",
+					"brand": "Artisan",
+					"product_url": "https://artisan-jp.com/en/",
+					"category": "accessory",
+					"priority": "want",
+					"notes": "Japanese cloth pad — pick a Ninja FX variant for balanced glide."
 				}
 			}
 		]
