@@ -12,10 +12,10 @@
 	"keywords": ["obsidian", "plugin", "emdash", "pensieve"],
 	"license": "MIT",
 	"devDependencies": {
-		"@types/node": "^20",
-		"builtin-modules": "^3",
-		"esbuild": "^0.25",
+		"@types/node": "20.19.39",
+		"builtin-modules": "3.3.0",
+		"esbuild": "0.25.12",
 		"obsidian": "latest",
-		"typescript": "^5"
+		"typescript": "5.9.3"
 	}
 }
