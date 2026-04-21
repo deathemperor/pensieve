@@ -27,8 +27,13 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    # Skip drafts until the author marks the PR ready
-    if: github.event.pull_request.draft == false
+    # Skip drafts, and skip mechanical bot PRs (Renovate / Dependabot) — the
+    # diff there is always "versions bumped" and Claude's review adds no
+    # signal while also blocking auto-merge when the API key is absent.
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.user.login != 'renovate[bot]' &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v4
         with:
