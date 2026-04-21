@@ -298,6 +298,17 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 
 export default definePlugin({
 	hooks: {
+		"page:metadata": {
+			handler: async (event: any, ctx: PluginContext) => {
+				try {
+					await ctx.kv.set(`pm_hit_${Date.now()}`, {
+						slug: event?.page?.content?.slug ?? null,
+						kind: event?.page?.kind ?? null,
+					});
+				} catch {}
+				return null;
+			},
+		},
 		"page:fragments": {
 			handler: async (event: any, ctx: PluginContext) => {
 				// Diagnostic: write to KV (always works when hook fires).
