@@ -24,12 +24,13 @@ for (const c of contacts) buckets[c.prestige_tier].push(c);
 
 const total = contacts.length;
 
-// Cache: guest cached 1h, admin never cached.
-Astro.cache.set({
-  maxAge: auth.admin ? 0 : 3600,
-  sharedMaxAge: auth.admin ? 0 : 3600,
-  cacheDirectives: auth.admin ? ["private", "no-store"] : ["public"],
-});
+// Cache: guest cached 1h at the edge; admin never cached anywhere.
+// Astro.cache.set only honors maxAge/swr/tags; set the full Cache-Control header directly for "private, no-store".
+Astro.cache.set({ maxAge: auth.admin ? 0 : 3600 });
+Astro.response.headers.set(
+  "Cache-Control",
+  auth.admin ? "private, no-store" : "public, max-age=3600, s-maxage=3600",
+);
 ---
 
 <Base title="Portraits — Room of Requirement" description="A private rolodex of notable figures.">

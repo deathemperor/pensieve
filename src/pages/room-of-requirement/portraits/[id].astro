@@ -32,11 +32,12 @@ const tierNames = {
   S: "Founder", A: "Headmaster", B: "Professor", C: "Scholar", D: "Visitor",
 } as const;
 
-Astro.cache.set({
-  maxAge: auth.admin ? 0 : 3600,
-  sharedMaxAge: auth.admin ? 0 : 3600,
-  cacheDirectives: auth.admin ? ["private", "no-store"] : ["public"],
-});
+// Astro.cache.set only honors maxAge/swr/tags; set the full Cache-Control directly for "private, no-store".
+Astro.cache.set({ maxAge: auth.admin ? 0 : 3600 });
+Astro.response.headers.set(
+  "Cache-Control",
+  auth.admin ? "private, no-store" : "public, max-age=3600, s-maxage=3600",
+);
 ---
 
 <Base title={`${contact.display_name ?? contact.full_name} — Portrait`} description={contact.bio ?? ""}>

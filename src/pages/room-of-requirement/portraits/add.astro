@@ -9,7 +9,7 @@ if (!auth.admin) {
   return Astro.redirect("/room-of-requirement/portraits", 302);
 }
 
-Astro.cache.set({ cacheDirectives: ["private", "no-store"] });
+Astro.response.headers.set("Cache-Control", "private, no-store");
 ---
 
 <Base title="New portrait" description="Add a contact to the private rolodex.">

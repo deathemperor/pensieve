@@ -2,7 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 
-test("portraits tables exist in remote D1", () => {
+// Shells out to `npx wrangler d1 execute --remote`. Set SKIP_D1_TESTS=1 to skip in envs without wrangler auth.
+const skipD1 = process.env.SKIP_D1_TESTS === "1";
+
+test("portraits tables exist in remote D1", { skip: skipD1 }, () => {
   const out = execFileSync(
     "npx",
     [

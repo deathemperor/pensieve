@@ -2,6 +2,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 
+// Shells out to `npx wrangler d1 execute --remote`. Set SKIP_D1_TESTS=1 to skip in envs without wrangler auth.
+const skipD1 = process.env.SKIP_D1_TESTS === "1";
+
 function d1(sql: string) {
   const out = execFileSync(
     "npx",
@@ -20,21 +23,21 @@ function d1(sql: string) {
   return JSON.parse(out) as Array<{ results: any[] }>;
 }
 
-test("placeholder contacts exist (12 rows)", () => {
+test("placeholder contacts exist (12 rows)", { skip: skipD1 }, () => {
   const parsed = d1(
     "SELECT COUNT(*) AS n FROM contacts WHERE is_placeholder=1 AND deleted_at IS NULL",
   );
   assert.equal(parsed[0].results[0].n, 12);
 });
 
-test("placeholder S-tier has 4 rows", () => {
+test("placeholder S-tier has 4 rows", { skip: skipD1 }, () => {
   const parsed = d1(
     "SELECT COUNT(*) AS n FROM contacts WHERE is_placeholder=1 AND prestige_tier='S' AND deleted_at IS NULL",
   );
   assert.equal(parsed[0].results[0].n, 4);
 });
 
-test("every placeholder contact has at least one email channel", () => {
+test("every placeholder contact has at least one email channel", { skip: skipD1 }, () => {
   const parsed = d1(`
     SELECT c.id
     FROM contacts c
