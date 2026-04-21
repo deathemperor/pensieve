@@ -108,5 +108,40 @@ jobs:
             Note: the PR branch is already checked out in the working directory.
             AGENTS.md is at the repo root. Read it.
 
+            ## Severity gate — write the verdict to a file
+
+            After you've posted the review, write the highest severity you
+            found to the workspace file `.claude-review-verdict` — exactly
+            one lowercase word, nothing else. Choose from:
+              - `clean`       (nothing to flag, or only `suggestion` findings)
+              - `warning`     (one or more `warning` findings, no criticals)
+              - `critical`    (at least one `critical` finding — blocks merge)
+
+            The next CI step reads this file and fails the check if the
+            verdict is `critical`. Be accurate: don't inflate a warning to
+            critical, don't downplay a real security issue.
+
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Read,Grep,Glob"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh api:*),Read,Write,Grep,Glob"
+
+      - name: Gate on critical findings
+        if: always() # run even if Claude step had non-fatal errors
+        run: |
+          if [ ! -f .claude-review-verdict ]; then
+            echo "::warning::No .claude-review-verdict file found. Claude may not have finished. Not gating."
+            exit 0
+          fi
+          verdict=$(tr -d '[:space:]' < .claude-review-verdict)
+          echo "Claude verdict: $verdict"
+          case "$verdict" in
+            clean|warning)
+              echo "✓ No critical findings — check passes."
+              ;;
+            critical)
+              echo "::error::Claude review found critical issues. See the review comment on this PR for details."
+              exit 1
+              ;;
+            *)
+              echo "::warning::Unknown verdict value: $verdict. Not gating."
+              ;;
+          esac
