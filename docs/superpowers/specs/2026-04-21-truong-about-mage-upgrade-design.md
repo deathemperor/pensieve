@@ -62,6 +62,27 @@ Direction: **Architect-Mage with Scholar-Wizard undertone** — a mage's worksho
 - Sunburst rays (`.portrait-sunburst`) — retro poster, not mage
 - Ocean wave silhouette (`.portrait-waves`) — redundant with fishkeeper subtitle/prose
 - Dreamcatcher web (`.portrait-web`) — native-American spiritual motif, off-register
+- **(Addendum, approved 2026-04-21 after full-file survey — 13 additional cuts)** ⤵
+- Compass (`.portrait-compass`) — nautical wayfinding, competes with rose window
+- Ribbon (`.portrait-ribbon`) — ornamental, non-mage
+- Soundwaves (`.portrait-soundwaves`) — audio motif, off-register
+- Drips (`.portrait-drips`) — alchemical, off-register
+- Feathers (`.portrait-feathers`) — owl already covers the bird motif
+- Echo (`.portrait-echo`) — audio motif, off-register
+- Pool (`.portrait-pool`) — water motif; fishkeeping theme handled in subtitle/prose
+- Bubbles (`.portrait-bubbles`) — water motif; same reason as pool
+- Orbits (`.portrait-orbits`) — will be redundant with the new summoning circle
+- Bird (`.portrait-bird`) — owl already covers
+- Rain (`.portrait-rain`) — off mood for invention-moment workshop
+- Holo (`.portrait-holo`) — holographic tech register, not mage
+- Alchemy (`.portrait-alchemy`) — alchemy is a different archetype
+- Mandala (`.portrait-mandala`) — borderline; cutting for decisiveness (can add back if sparse)
+
+**Explicitly keep** (structural/layout — do not touch):
+`.portrait-card`, `.portrait-filters` (SVG filter `<defs>`), `.portrait-vignette`, `.portrait-edge-glow`, `.portrait-trace`.
+
+**Keep** (additional mage-adjacent effects, discovered in the full-file survey):
+`.portrait-sigil`, `.portrait-hallows` (Deathly Hallows — explicit HP), `.portrait-patronus` (HP), `.portrait-portkey` (HP), `.portrait-lightning`, `.portrait-lightning-fork`, `.portrait-runes` (distinct from the runes ring), `.portrait-constellation`, `.portrait-stars-bg`, `.portrait-aurora`, `.portrait-mist`, `.portrait-wisps`, `.portrait-dust`, `.portrait-sparkles`, `.portrait-shooting-stars`, `.portrait-halo`, `.portrait-vortex`, `.portrait-crystal`, `.portrait-flames`, `.portrait-sheen`.
 
 **Add** (the new mage layer; each is a new `.portrait-*` element with matching CSS):
 
