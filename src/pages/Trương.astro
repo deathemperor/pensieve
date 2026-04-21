@@ -825,56 +825,144 @@ function formatGHDate(iso: string) {
 					</p>
 				</article>
 
-				{/* Card 2 — THEMATIC FINGERPRINT (full width, the plot-content answer) */}
+				{/* Card 2 — THEMATIC FINGERPRINT (the plot-content answer, with expandable top-5 per cluster) */}
 				<article class="wrap-card wrap-wide wrap-fingerprint">
 					<div class="wrap-label wrap-label-top">
 						{isVi ? "Dấu Vân Tay Cốt Truyện — Bạn Lặn Về Đâu" : "Thematic fingerprint — what you dive into"}
 					</div>
 					<p class="wrap-note wrap-note-top">
 						{isVi
-							? "Trích từ Wikipedia của 797 phim, tra chéo cốt truyện tìm chủ đề lặp lại. Không phải thể loại — thể loại là cái kệ. Đây là cái mà truyện thực sự nói về."
-							: "Cross-referenced from 797 Wikipedia plot summaries. Not genres — genres are the shelf. These are what the stories are actually about."}
+							? "Trích chéo 797 tóm tắt Wikipedia của phim bạn đã chấm điểm, tìm chủ đề cốt truyện lặp đi lặp lại. Không phải thể loại — thể loại là cái kệ. Đây là điều truyện thực sự nói về. Bấm vào mỗi chủ đề để xem 5 phim tiêu biểu nhất."
+							: "Cross-referenced from 797 Wikipedia plot summaries against strict plot-word clusters. Not genres — genres are the shelf. These are what the stories are actually about. Click any theme to see the 5 most-recognized exemplars in your library."}
 					</p>
 					<ul class="fingerprint-bars">
 						<li>
-							<span class="fp-name">{isVi ? "Không gian / Sci-Fi" : "Space / Sci-Fi"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:15.8%"></span></span>
-							<span class="fp-pct">15.8%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Không gian / Sci-Fi" : "Space / Sci-Fi"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:10.2%"></span></span>
+									<span class="fp-pct">10.2%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Interstellar <em>(2014)</em></li>
+									<li>The Matrix <em>(1999)</em></li>
+									<li>Star Wars: The Empire Strikes Back <em>(1980)</em></li>
+									<li>Avengers: Endgame <em>(2019)</em></li>
+									<li>Avengers: Infinity War <em>(2018)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Điệp viên / Mật vụ" : "Espionage / Agent"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:11.7%"></span></span>
-							<span class="fp-pct">11.7%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Gia đình / Mối quan hệ" : "Family drama"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:10.0%"></span></span>
+									<span class="fp-pct">10.0%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Godfather <em>(1972)</em></li>
+									<li>Gladiator <em>(2000)</em></li>
+									<li>The Godfather Part II <em>(1974)</em></li>
+									<li>American Beauty <em>(1999)</em></li>
+									<li>The Lion King <em>(1994)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Chết chóc / Báo thù" : "Mortality / Revenge"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:9.7%"></span></span>
-							<span class="fp-pct">9.7%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Bí ẩn / Thám tử" : "Mystery / Detective"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:8.5%"></span></span>
+									<span class="fp-pct">8.5%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Stranger Things <em>(2016)</em></li>
+									<li>Shutter Island <em>(2010)</em></li>
+									<li>Pirates of the Caribbean: Black Pearl <em>(2003)</em></li>
+									<li>The Usual Suspects <em>(1995)</em></li>
+									<li>No Country for Old Men <em>(2007)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Gia đình / Mối quan hệ" : "Family drama"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:9.4%"></span></span>
-							<span class="fp-pct">9.4%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Siêu nhiên / Kinh dị" : "Supernatural / Horror"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.7%"></span></span>
+									<span class="fp-pct">7.7%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Green Mile <em>(1999)</em></li>
+									<li>Pirates of the Caribbean: Black Pearl <em>(2003)</em></li>
+									<li>The Hobbit: An Unexpected Journey <em>(2012)</em></li>
+									<li>World War Z <em>(2013)</em></li>
+									<li>Harry Potter and the Chamber of Secrets <em>(2002)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Bí ẩn / Thám tử" : "Mystery / Detective"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:8.7%"></span></span>
-							<span class="fp-pct">8.7%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Điệp viên / Mật vụ" : "Espionage / Agent"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.4%"></span></span>
+									<span class="fp-pct">7.4%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Departed <em>(2006)</em></li>
+									<li>Kill Bill: Vol. 1 <em>(2003)</em></li>
+									<li>Captain America: The Winter Soldier <em>(2014)</em></li>
+									<li>Kill Bill: Vol. 2 <em>(2004)</em></li>
+									<li>Skyfall <em>(2012)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Siêu nhiên / Kinh dị" : "Supernatural / Horror"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:7.5%"></span></span>
-							<span class="fp-pct">7.5%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Chết chóc / Báo thù" : "Mortality / Revenge"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.3%"></span></span>
+									<span class="fp-pct">7.3%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Shawshank Redemption <em>(1994)</em></li>
+									<li>Gladiator <em>(2000)</em></li>
+									<li>Inglourious Basterds <em>(2009)</em></li>
+									<li>The Silence of the Lambs <em>(1991)</em></li>
+									<li>Avengers: Endgame <em>(2019)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Thời gian / Ký ức" : "Time / Loops / Memory"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:6.8%"></span></span>
-							<span class="fp-pct">6.8%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Chiến tranh" : "War / Soldier"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:4.9%"></span></span>
+									<span class="fp-pct">4.9%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Inglourious Basterds <em>(2009)</em></li>
+									<li>Saving Private Ryan <em>(1998)</em></li>
+									<li>Schindler's List <em>(1993)</em></li>
+									<li>No Country for Old Men <em>(2007)</em></li>
+									<li>Taxi Driver <em>(1976)</em></li>
+								</ul>
+							</details>
 						</li>
 						<li>
-							<span class="fp-name">{isVi ? "Chiến tranh" : "War / Soldier"}</span>
-							<span class="fp-bar"><span class="fp-fill" style="--fp:5.6%"></span></span>
-							<span class="fp-pct">5.6%</span>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Trưởng thành / Thiếu niên" : "Coming of age"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:4.5%"></span></span>
+									<span class="fp-pct">4.5%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Stranger Things <em>(2016)</em></li>
+									<li>Back to the Future <em>(1985)</em></li>
+									<li>American Beauty <em>(1999)</em></li>
+									<li>The Hunger Games <em>(2012)</em></li>
+									<li>12 Angry Men <em>(1957)</em></li>
+								</ul>
+							</details>
 						</li>
 					</ul>
 				</article>
@@ -3364,12 +3452,52 @@ function formatGHDate(iso: string) {
 		grid-template-columns: 1fr 1fr;
 		gap: 0.4rem 2rem;
 	}
-	.fingerprint-bars li {
+	.fingerprint-bars > li {
+		font-size: 0.85rem;
+	}
+	.fp-item {
+		border: none;
+	}
+	.fp-item > summary {
 		display: grid;
 		grid-template-columns: 10rem 1fr 3rem;
 		align-items: center;
 		gap: 0.75rem;
-		font-size: 0.85rem;
+		list-style: none;
+		cursor: pointer;
+		padding: 0.15rem 0;
+		border-radius: 0.25rem;
+		transition: background 180ms;
+	}
+	.fp-item > summary::-webkit-details-marker {
+		display: none;
+	}
+	.fp-item > summary::marker {
+		display: none;
+		content: '';
+	}
+	.fp-item:hover > summary,
+	.fp-item[open] > summary {
+		background: rgba(200, 210, 225, 0.04);
+	}
+	.fp-titles {
+		list-style: none;
+		margin: 0.3rem 0 0.6rem 0;
+		padding: 0.3rem 0.5rem 0.3rem 1.1rem;
+		border-left: 1px solid rgba(200, 210, 225, 0.14);
+	}
+	.fp-titles li {
+		font-size: 0.78rem;
+		line-height: 1.5;
+		color: rgba(230, 235, 245, 0.82);
+		padding: 0.1rem 0;
+	}
+	.fp-titles em {
+		font-style: normal;
+		color: rgba(200, 210, 225, 0.45);
+		font-size: 0.72rem;
+		margin-left: 0.25rem;
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
 	}
 	.fp-name {
 		color: rgba(230, 235, 245, 0.88);
