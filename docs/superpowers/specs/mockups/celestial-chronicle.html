@@ -1,0 +1,399 @@
+<h2>The Celestial Chronicle</h2>
+<p class="subtitle">Astrolabe canvas on the left — each event is a star plotted by year (ring) and month (angle). Ledger on the right — Chronicle typography, Roman dates, wax-seal categories. Hover links them both directions.</p>
+
+<style>
+  .cc-frame {
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(80, 100, 180, 0.12) 0%, transparent 65%),
+      radial-gradient(ellipse at 80% 70%, rgba(212, 168, 67, 0.05) 0%, transparent 55%),
+      linear-gradient(180deg, #050612 0%, #08090a 100%);
+    border: 1px solid rgba(212, 168, 67, 0.12);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .cc-body { display: grid; grid-template-columns: 1.05fr 0.95fr; min-height: 560px; }
+
+  /* ───── Left: the sky ───── */
+  .cc-sky {
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid rgba(212, 168, 67, 0.08);
+  }
+  .cc-stars {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 14% 22%, rgba(255,255,255,0.5), transparent),
+      radial-gradient(1px 1px at 82% 18%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 40% 78%, rgba(255,255,255,0.45), transparent),
+      radial-gradient(1px 1px at 74% 84%, rgba(255,255,255,0.3), transparent),
+      radial-gradient(1px 1px at 18% 55%, rgba(255,255,255,0.35), transparent),
+      radial-gradient(1px 1px at 90% 45%, rgba(255,255,255,0.4), transparent),
+      radial-gradient(1.5px 1.5px at 55% 35%, rgba(255,255,255,0.25), transparent),
+      radial-gradient(1px 1px at 25% 88%, rgba(255,255,255,0.3), transparent);
+  }
+  .cc-ring {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(212, 168, 67, 0.16);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .ring-2004 { width: 420px; height: 420px; }
+  .ring-2015 { width: 340px; height: 340px; border-color: rgba(212, 168, 67, 0.14); }
+  .ring-2018 { width: 240px; height: 240px; border-color: rgba(212, 168, 67, 0.13); border-style: dashed; }
+  .ring-2021 { width: 140px; height: 140px; border-color: rgba(212, 168, 67, 0.22); }
+  .year-tick {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: rgba(212, 168, 67, 0.6);
+    background: #08090a;
+    padding: 1px 5px;
+    letter-spacing: 0.08em;
+  }
+
+  .cc-star {
+    position: absolute;
+    width: 22px; height: 22px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .cc-star::before {
+    content: '✦';
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    color: var(--star, #d4a843);
+    text-shadow: 0 0 8px var(--star, #d4a843), 0 0 14px var(--star, #d4a843);
+    transition: all 0.3s ease;
+  }
+  .cc-star:hover::before,
+  .cc-star[data-active]::before {
+    font-size: 22px;
+    text-shadow: 0 0 14px var(--star), 0 0 28px var(--star), 0 0 44px var(--star);
+  }
+  .cc-star-label {
+    position: absolute;
+    left: 50%;
+    top: 24px;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 9px;
+    font-family: 'Inter Tight', sans-serif;
+    letter-spacing: 0.04em;
+    color: rgba(232, 233, 234, 0.4);
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+  .cc-star:hover .cc-star-label,
+  .cc-star[data-active] .cc-star-label { color: #e8e9ea; }
+
+  .cc-compass {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Inter Tight', serif;
+    font-size: 10px;
+    color: rgba(212, 168, 67, 0.25);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .cc-compass-n { top: 8%; transform: translateX(-50%); }
+
+  /* ───── Right: the chronicle ───── */
+  .cc-ledger {
+    padding: 24px 28px 28px;
+    overflow-y: auto;
+  }
+  .cc-ledger-heading {
+    font-family: 'Inter Tight', serif;
+    color: #d4a843;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom: 1px solid rgba(212, 168, 67, 0.2);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+  .cc-ledger-heading small {
+    display: block;
+    color: rgba(212, 168, 67, 0.5);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+  .cc-year {
+    font-family: 'Inter Tight', serif;
+    color: rgba(212, 168, 67, 0.75);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    margin: 16px 0 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .cc-year::after {
+    content: ''; flex: 1; height: 1px; background: rgba(212, 168, 67, 0.15);
+  }
+  .cc-entry {
+    display: grid;
+    grid-template-columns: 14px 78px 1fr;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    align-items: baseline;
+  }
+  .cc-entry:hover, .cc-entry[data-active] {
+    background: rgba(212, 168, 67, 0.06);
+  }
+  .cc-entry-mark {
+    font-size: 11px;
+    color: var(--star, #d4a843);
+    text-shadow: 0 0 5px var(--star, #d4a843);
+    line-height: 1;
+    align-self: center;
+  }
+  .cc-entry-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: rgba(212, 168, 67, 0.85);
+    letter-spacing: 0.05em;
+    text-align: right;
+    align-self: center;
+  }
+  .cc-entry-body h4 {
+    margin: 0;
+    font-family: 'Inter Tight', sans-serif;
+    color: #f7f8f8;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .cc-entry-body em {
+    display: block;
+    color: #8a8f98;
+    font-size: 10.5px;
+    font-style: italic;
+    font-weight: 400;
+    margin-top: 2px;
+    line-height: 1.35;
+  }
+  .cc-entry-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: rgba(212,168,67,0.55);
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .cc-sealed { color: rgba(181, 75, 60, 0.7) !important; }
+
+  .cc-footer {
+    border-top: 1px solid rgba(212, 168, 67, 0.1);
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #8a8f98;
+    font-size: 11px;
+  }
+  .cc-footer em { color: rgba(212, 168, 67, 0.7); font-style: italic; }
+  .cc-legend { display: flex; gap: 14px; }
+  .cc-legend span { display: inline-flex; align-items: center; gap: 5px; font-family: 'Inter', sans-serif; }
+  .cc-legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+</style>
+
+<div class="cc-frame">
+  <div class="cc-body">
+
+    <!-- ═══════════ Left: the sky ═══════════ -->
+    <div class="cc-sky">
+      <div class="cc-stars"></div>
+      <div class="cc-compass cc-compass-n">MMXXVI · the year you sit in</div>
+
+      <div class="cc-ring ring-2004"></div>
+      <div class="cc-ring ring-2015"></div>
+      <div class="cc-ring ring-2018"></div>
+      <div class="cc-ring ring-2021"></div>
+
+      <!-- Year ticks at top of each ring -->
+      <div class="year-tick" style="left: 50%; top: calc(50% - 210px); transform: translate(-50%, -50%);">2004</div>
+      <div class="year-tick" style="left: 50%; top: calc(50% - 170px); transform: translate(-50%, -50%);">2015</div>
+      <div class="year-tick" style="left: 50%; top: calc(50% - 120px); transform: translate(-50%, -50%);">2018</div>
+      <div class="year-tick" style="left: 50%; top: calc(50% - 70px); transform: translate(-50%, -50%);">2021</div>
+
+      <!-- ★ Stars positioned by year (ring radius) + month (angle) -->
+      <!-- 2004-03-15: outermost, angle ~60° (March east) -->
+      <div class="cc-star" data-id="e1" style="left: calc(50% + 182px); top: calc(50% - 105px); --star: #c678dd;">
+        <span class="cc-star-label">MMIV · III</span>
+      </div>
+
+      <!-- 2015-03-13: ring 2, angle ~70° -->
+      <div class="cc-star" data-id="e2" style="left: calc(50% + 160px); top: calc(50% - 60px); --star: #5e6ad2;">
+        <span class="cc-star-label">MMXV · III</span>
+      </div>
+
+      <!-- 2015-05: ring 2, angle ~120° -->
+      <div class="cc-star" data-id="e3" style="left: calc(50% + 148px); top: calc(50% + 78px); --star: #3fb950;">
+        <span class="cc-star-label">MMXV · V</span>
+      </div>
+
+      <!-- 2018-03-31: ring 3, angle ~95° -->
+      <div class="cc-star" data-id="e4" style="left: calc(50% + 118px); top: calc(50% + 6px); --star: #d4a843;">
+        <span class="cc-star-label">MMXVIII · III</span>
+      </div>
+
+      <!-- 2018-04-02: ring 3, angle ~100° -->
+      <div class="cc-star" data-id="e5" data-active style="left: calc(50% + 104px); top: calc(50% + 48px); --star: #d4a843;">
+        <span class="cc-star-label">MMXVIII · IV</span>
+      </div>
+
+      <!-- 2021-05-04: ring 4, angle ~135° -->
+      <div class="cc-star" data-id="e6" style="left: calc(50% + 48px); top: calc(50% + 50px); --star: #5e6ad2;">
+        <span class="cc-star-label">MMXXI · V</span>
+      </div>
+
+      <!-- 2021-05-21: ring 4, very close, angle ~140° -->
+      <div class="cc-star" data-id="e7" style="left: calc(50% + 38px); top: calc(50% + 62px); --star: #b54b3c;">
+        <span class="cc-star-label">MMXXI · V</span>
+      </div>
+
+      <!-- 2021-12-14: ring 4, angle ~330° (top-left) -->
+      <div class="cc-star" data-id="e8" style="left: calc(50% - 56px); top: calc(50% - 40px); --star: #5e6ad2;">
+        <span class="cc-star-label">MMXXI · XII</span>
+      </div>
+
+      <!-- Faint constellation line: proposal → wedding (future) — illustrative -->
+      <svg style="position:absolute;inset:0;pointer-events:none;" width="100%" height="100%">
+        <line x1="50%" y1="calc(50% + 48px)" x2="calc(50% - 56px)" y2="calc(50% - 40px)"
+              stroke="rgba(212, 168, 67, 0.15)" stroke-width="0.5" stroke-dasharray="2 3" />
+        <line x1="calc(50% + 38px)" y1="calc(50% + 62px)" x2="calc(50% - 56px)" y2="calc(50% - 40px)"
+              stroke="rgba(181, 75, 60, 0.12)" stroke-width="0.5" stroke-dasharray="2 3" />
+      </svg>
+    </div>
+
+    <!-- ═══════════ Right: the ledger ═══════════ -->
+    <div class="cc-ledger">
+      <div class="cc-ledger-heading">
+        The Celestial Chronicle
+        <small>In chronological star-order</small>
+      </div>
+
+      <div class="cc-year">MMIV</div>
+      <div class="cc-entry" data-id="e1">
+        <span class="cc-entry-mark" style="--star: #c678dd;">✦</span>
+        <div class="cc-entry-date">XV · III</div>
+        <div class="cc-entry-body">
+          <h4>Met her — DAITY_JEWEL</h4>
+          <em>a decade before it ended</em>
+        </div>
+      </div>
+
+      <div class="cc-year">MMXV</div>
+      <div class="cc-entry" data-id="e2">
+        <span class="cc-entry-mark" style="--star: #5e6ad2;">✦</span>
+        <div class="cc-entry-date">XIII · III</div>
+        <div class="cc-entry-body">
+          <h4>Left VNG</h4>
+          <em>nine years, a door closes</em>
+        </div>
+      </div>
+      <div class="cc-entry" data-id="e3">
+        <span class="cc-entry-mark" style="--star: #3fb950;">✦</span>
+        <div class="cc-entry-date">V</div>
+        <div class="cc-entry-body">
+          <h4>Founded GVN Studio</h4>
+          <em>the studio begins</em>
+        </div>
+      </div>
+
+      <div class="cc-year">MMXVIII</div>
+      <div class="cc-entry" data-id="e4">
+        <span class="cc-entry-mark" style="--star: #d4a843;">✦</span>
+        <div class="cc-entry-date">XXXI · III</div>
+        <div class="cc-entry-body">
+          <h4>Old Trafford — on my birthday, United won</h4>
+          <em>the Theatre of Dreams, in person</em>
+          <span class="cc-entry-source">▸ match · premier-league</span>
+        </div>
+      </div>
+      <div class="cc-entry" data-id="e5" data-active>
+        <span class="cc-entry-mark" style="--star: #d4a843;">✦</span>
+        <div class="cc-entry-date">II · IV</div>
+        <div class="cc-entry-body">
+          <h4>Proposed at Buckingham Palace</h4>
+          <em>a ring, a knee, a palace gate</em>
+          <span class="cc-entry-source">▸ referenced in /pensieve/memories/…</span>
+        </div>
+      </div>
+
+      <div class="cc-year">MMXXI</div>
+      <div class="cc-entry" data-id="e6">
+        <span class="cc-entry-mark" style="--star: #5e6ad2;">✦</span>
+        <div class="cc-entry-date">IV · V</div>
+        <div class="cc-entry-body">
+          <h4>Joined Papaya</h4>
+          <em>a new field to till</em>
+        </div>
+      </div>
+      <div class="cc-entry" data-id="e7">
+        <span class="cc-entry-mark cc-sealed" style="--star: #b54b3c;">✦</span>
+        <div class="cc-entry-date">XXI · V</div>
+        <div class="cc-entry-body">
+          <h4>Dad</h4>
+          <em>the day the world got quieter</em>
+        </div>
+      </div>
+      <div class="cc-entry" data-id="e8">
+        <span class="cc-entry-mark" style="--star: #5e6ad2;">✦</span>
+        <div class="cc-entry-date">XIV · XII</div>
+        <div class="cc-entry-body">
+          <h4>Ngọc Linh Đan arrived</h4>
+          <em>a small precious bell · Fawn · Nai</em>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cc-footer">
+    <span><em>Hover a star</em> to illuminate its entry. <em>Hover an entry</em> to find its star.</span>
+    <div class="cc-legend">
+      <span><i style="background:#d4a843;"></i> milestone</span>
+      <span><i style="background:#5e6ad2;"></i> family</span>
+      <span><i style="background:#3fb950;"></i> work</span>
+      <span><i style="background:#b54b3c;"></i> loss</span>
+      <span><i style="background:#c678dd;"></i> love</span>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 22px; line-height: 1.6;">
+  This is rough — proportions will tighten, the star glow could be softer, constellation lines are illustrative. Tell me:
+  <br>• Does the <strong>split (sky + ledger)</strong> feel right, or do you want stars scattered behind the ledger itself?
+  <br>• <strong>Rings = years</strong> works for ~30 entries. What happens when you have 300? (zoomable? scrollable timeline? spiral out instead of rings?)
+  <br>• How does <strong>"Met her — DAITY_JEWEL"</strong> sit on a public page? Gut check needed on privacy.
+</p>
+<script>
+  // Simple cross-highlight for mockup feel
+  document.querySelectorAll('.cc-star, .cc-entry').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      const id = el.dataset.id;
+      if (!id) return;
+      document.querySelectorAll(`[data-id="${id}"]`).forEach(m => m.setAttribute('data-active', ''));
+    });
+    el.addEventListener('mouseleave', () => {
+      const id = el.dataset.id;
+      if (!id) return;
+      document.querySelectorAll(`[data-id="${id}"]`).forEach(m => {
+        if (m.dataset.pinned !== 'true') m.removeAttribute('data-active');
+      });
+    });
+  });
+</script>

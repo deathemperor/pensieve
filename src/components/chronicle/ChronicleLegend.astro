@@ -1,0 +1,16 @@
+---
+import { chronicleCategories } from "../../themes/chronicleCategories";
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+---
+
+<div class="cc-legend" role="list" aria-label={isVi ? "Chú thích danh mục" : "Category legend"}>
+  {chronicleCategories.map((c) => (
+    <span role="listitem">
+      <i style={`background:${c.hex};`}></i>
+      {isVi ? c.label_vi : c.label_en}
+    </span>
+  ))}
+</div>

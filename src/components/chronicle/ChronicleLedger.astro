@@ -1,0 +1,76 @@
+---
+import { getChronicleCategory } from "../../themes/chronicleCategories";
+import { formatRomanDate, toRoman } from "../../utils/romanDate";
+import { groupByYear } from "../../utils/chronicleDate";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+  entries: any[]; // narrowed to the EmDash chronicle type once stable
+}
+
+const { entries } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const fallbackLabel = isVi ? "(bản dịch đang chờ)" : "(translation pending)";
+
+const groups = groupByYear(entries.map((e) => ({
+  event_date: e.data.event_date,
+  date_precision: e.data.date_precision,
+  __entry: e,
+})));
+---
+
+<div class="cc-ledger" id="cc-ledger">
+  <div class="cc-ledger-heading">
+    {isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}
+    <small>{isVi ? "Theo thứ tự thời gian" : "In chronological star-order"}</small>
+  </div>
+
+  {groups.map((g) => (
+    <Fragment>
+      <div class="cc-year" id={`cc-year-${g.year}`}>{toRoman(g.year)}</div>
+      {g.entries.map((row) => {
+        const e = (row as any).__entry;
+        const cat = getChronicleCategory(e.data.category);
+        const enTitle = e.data.title_en;
+        const viTitle = e.data.title_vi;
+        const enSub = e.data.subtitle_en;
+        const viSub = e.data.subtitle_vi;
+        const title = isVi ? (viTitle ?? enTitle) : (enTitle ?? viTitle);
+        const subtitle = isVi ? (viSub ?? enSub) : (enSub ?? viSub);
+        const translationMissing = isVi ? !viTitle : !enTitle;
+        const roman = formatRomanDate(e.data.event_date, e.data.date_precision);
+        return (
+          <div class="cc-entry" data-id={e.id} data-category={cat.slug}>
+            <span class="cc-entry-mark" style={`--star:${cat.hex};`}>{cat.symbol}</span>
+            <div class="cc-entry-date">{roman}</div>
+            <div class="cc-entry-body">
+              <h4>
+                {title}
+                {translationMissing && (
+                  <em style="color:rgba(212,168,67,0.5);font-size:9px;margin-left:6px;">
+                    {fallbackLabel}
+                  </em>
+                )}
+              </h4>
+              {subtitle && <em>{subtitle}</em>}
+              {(e.data.linked_post_ids || e.data.external_url) && (
+                <span class="cc-entry-source">
+                  {e.data.linked_post_ids && (
+                    <>▸ {isVi ? "ký ức liên quan" : "linked memory"}</>
+                  )}
+                  {e.data.external_url && (
+                    <a href={e.data.external_url} target="_blank" rel="noopener noreferrer">
+                      ▸ {e.data.external_url_label ?? (isVi ? "mở" : "open")}
+                    </a>
+                  )}
+                </span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </Fragment>
+  ))}
+</div>

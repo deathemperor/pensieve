@@ -9,6 +9,7 @@ data.db
 .dev.vars
 data/
 .session/
+.superpowers/
 
 # macOS
 .DS_Store
