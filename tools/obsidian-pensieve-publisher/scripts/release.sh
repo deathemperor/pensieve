@@ -56,9 +56,12 @@ for f in main.js manifest.json styles.css; do
   fi
 done
 
-# Mirror source into a clean clone of the distribution repo
-echo "→ Cloning $DIST_REPO into $WORK_DIR…"
-git clone --quiet --depth 1 "$DIST_URL" "$WORK_DIR/repo"
+# Mirror source into a clean clone of the distribution repo.
+# Variables are braced (${VAR}) because the trailing Unicode ellipsis here
+# would otherwise bind to the variable name under `set -u` and throw an
+# "unbound variable" error in bash.
+echo "→ Cloning ${DIST_REPO} into ${WORK_DIR}…"
+git clone --quiet --depth 1 "$DIST_URL" "${WORK_DIR}/repo"
 
 # Replace the clone's tree with the plugin dir, excluding build/state noise.
 # The distribution repo is a source mirror — everything the user'd want to
@@ -84,7 +87,7 @@ else
 fi
 
 # Tag and push
-echo "→ Tagging $VERSION…"
+echo "→ Tagging ${VERSION}…"
 git tag -a "$VERSION" -m "Pensieve Publisher v$VERSION"
 git push -q origin "$VERSION"
 
