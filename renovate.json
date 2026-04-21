@@ -12,9 +12,11 @@
 	"minimumReleaseAge": "3 days",
 	"labels": ["dependencies"],
 	"rebaseWhen": "conflicted",
+	"platformAutomerge": true,
 	"lockFileMaintenance": {
 		"enabled": true,
-		"schedule": ["before 11am on Monday"]
+		"schedule": ["before 11am on Monday"],
+		"automerge": true
 	},
 	"packageRules": [
 		{
@@ -38,6 +40,17 @@
 			"groupName": "react"
 		},
 		{
+			"description": "Auto-merge pin + digest (action SHAs) updates — zero runtime change, pure hygiene.",
+			"matchUpdateTypes": ["pin", "pinDigest", "digest"],
+			"automerge": true
+		},
+		{
+			"description": "Auto-merge GitHub Actions minor/patch — actions are small surface, CI green is enough.",
+			"matchManagers": ["github-actions"],
+			"matchUpdateTypes": ["minor", "patch"],
+			"automerge": true
+		},
+		{
 			"description": "Auto-merge patch/minor devDependency bumps — test failures still gate the merge.",
 			"matchDepTypes": ["devDependencies"],
 			"matchUpdateTypes": ["patch", "minor"],
@@ -47,6 +60,12 @@
 			"description": "Auto-merge @types/* updates (declaration-only).",
 			"matchPackageNames": ["/^@types//"],
 			"matchUpdateTypes": ["patch", "minor"],
+			"automerge": true
+		},
+		{
+			"description": "Auto-merge production patch updates — CI build + dependency-review gate these.",
+			"matchDepTypes": ["dependencies"],
+			"matchUpdateTypes": ["patch"],
 			"automerge": true
 		},
 		{

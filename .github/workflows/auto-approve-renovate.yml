@@ -1,0 +1,34 @@
+name: Auto-approve Renovate PRs
+
+# Renovate's auto-merge needs an approving review on a protected branch.
+# This job supplies that review as soon as any Renovate PR opens, synchronizes,
+# or reopens. Renovate's own config decides WHICH PRs actually get merged
+# (automerge: true rules in renovate.json); this job just supplies the
+# approval — CI still has to go green for the merge to land.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# pull_request_target has write access to the repo by default; restrict tight.
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    # Only react to the Renovate bot — never approve human PRs.
+    if: >-
+      github.event.pull_request.user.login == 'renovate[bot]' &&
+      github.event.pull_request.draft == false
+    steps:
+      - name: Approve PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BODY: |
+            Auto-approved: Renovate PR from `renovate[bot]`. Mergeability
+            is still gated by required status checks.
+        run: |
+          gh pr review "$PR_URL" --approve --body "$PR_BODY"
