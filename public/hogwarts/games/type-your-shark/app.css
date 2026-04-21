@@ -1,0 +1,523 @@
+body {
+    min-width: 1017px;
+} 
+
+body, 
+#popUp-container,
+#popUpFail-container,
+#popUpStats-container {
+    background-image: url("https://allretrojordans.com/image/197320-full_rose-gold-aesthetic-cute-tumblr-wallpapers-desktop.jpg");
+}
+
+body, 
+#treasure-pop-up, 
+#auth-container, 
+.modal-content,
+#show-stats,
+#all-games,
+#show-games, 
+#model-buttons,
+#top-container, 
+#speedWord, 
+#left,
+#stats-container,
+#bottom-container,
+#popUp-container,
+#popUpFail-container,
+#popUpStats-container {
+    display: flex;
+}
+
+body,
+#left,
+#treasure-pop-up,
+#show-stats,
+#all-games, 
+#model-buttons {
+    flex-direction: column;
+}
+
+body, 
+#overlap,
+#game-container {
+    overflow: hidden;
+}
+
+#top-container,
+button,
+#start-button, 
+#delete-user,
+#update-user, 
+h2,
+#treasure-pop-up,
+#login-button,
+#signup-button, 
+.modal-content, 
+#speedWord {
+    font-family: 'Cinzel', serif;
+}
+
+#top-container, 
+#bottom-container, 
+#treasure-pop-up, 
+.modal-content {
+    justify-content: space-between;
+}
+
+#top-container {
+    flex-direction: row;
+    margin-left: 2%;
+    font-size: larger;
+    text-decoration: underline;
+    margin-top: -1%;
+}
+
+#middle-container {
+    width: 75%;
+    box-shadow: 0 0 7px 2px rgba(0, 0, 0, 0.555);
+    margin: 2% auto 0.5% auto;
+}
+
+#left, 
+#popUp-container,
+#all-games {
+justify-content: space-evenly;
+}
+
+#left {
+    margin-left: 4%;
+}
+
+#stats-container, 
+#popUpFail-container,
+#popUpStats-container {
+    justify-content: space-around;
+}
+
+#bottom-container{
+    flex-direction: row;
+    margin: auto;
+    margin-top: 0.5%;
+    width: 75%;
+    position: relative;
+    box-shadow: 0 0 20px 2px rgb(90, 90, 90);
+}
+
+#game-container,
+.modal-content {
+    background-repeat: no-repeat;
+    background-size: auto 100%;
+}
+
+#game-container {
+    background-image: url("https://giffiles.alphacoders.com/195/19518.gif");
+    height: 32.05rem;
+    width: 57rem;
+    position: inherit;
+    min-width: 57rem;
+    min-height: 32.05rem;
+    margin: 1%;
+}
+
+.dot,
+.dead,
+.dead2,
+.words, 
+#start-button, 
+#blackout, 
+#blackout2, 
+#overlap,
+#popUp-container,
+#popUpFail-container,
+#popUpStats-container, 
+#treasure-pop-up,
+#moving-timer-box,
+#red-moving-timer-box,
+#closedTreasure, 
+#speedWord {
+    position: absolute;
+}
+
+.dot{
+    color:white;
+}
+
+.dot ~ .dot {
+    color: inherit;
+}
+
+.dead {
+    animation: spin 0.5s linear forwards, float 3s linear forwards, blinker 2.5s linear forwards;
+}
+
+.dead2 {
+    animation: float 3s linear forwards;
+}
+
+.dead3 {
+    animation: spin 0.5s linear forwards, sink 3s linear forwards;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(180deg);
+    }
+}
+
+@keyframes sink {
+    100% {
+        top: 200%;
+    }
+}
+
+@keyframes float {
+    100% {
+        top: -25%;
+    }
+}
+
+@keyframes blinker {
+    to {
+      opacity: 0;
+    }
+  }
+
+.words {
+    top: 40%;
+    left: 20%;
+    font-weight: bold;
+}
+
+#start-button {
+    display: block;
+    margin-top: 25%;
+    margin-left: 40%;
+    height: 15%;
+    width: 20%;
+}
+
+#start-button,
+button,
+#treasure-pop-up,
+#all-games,
+#overall-stats,
+#speedWord {
+    font-size: xx-large;
+}
+
+button, 
+#delete-user, 
+#update-user,
+#login-button, 
+#signup-button {
+    border-radius: 15%;
+}
+
+button,
+#delete-user, 
+#update-user,
+#login-button, 
+#signup-button {
+    background-image: url("https://media.gettyimages.com/vectors/gold-background-metal-texture-vector-id617749020?s=612x612");
+}
+
+button {
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-bottom: 2%;
+}
+
+button, 
+#delete-user, 
+#update-user,
+#login-button, 
+#signup-button,
+.modal {
+    box-shadow: 0 0 5px 2px rgb(53, 52, 52);
+}
+
+#delete-user, #update-user {
+    font-size: x-large;
+    max-width: 65%;
+    max-height: 15%;
+    margin-top: 5%;
+}
+
+#blackout, #blackout2 {
+    width: 100%;
+    height: 100%;
+    left:0; top:0;
+    z-index: 10;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+#overlap {
+    bottom: 10%;
+    margin-left: 0.5%;
+}
+
+h2 {
+    font-size: 170%;
+}
+
+#popUp-container,
+#popUpFail-container,
+#popUpStats-container
+ {
+    flex-flow: column;
+    z-index: -1;
+    box-shadow: 0 0 20px 7px black;
+}
+
+#popUp-container,
+#popUpFail-container, 
+#popUpStats-container {
+    margin-top: 17%;
+    margin-left: 25%;
+    height: 40%;
+    width: 50%;   
+}
+
+#popUpFail-container {
+    font-size: larger;
+}
+
+#popUpFail-container,
+#treasure-pop-up,
+#authButtons,
+#name, 
+#name2,
+#password, 
+#password2,
+#all-games,
+#overall-stats,
+#speedWord,
+#update-user-info,
+#new-username, 
+#new-password {
+    text-align: center;
+}
+
+#popUpStats-container,
+#treasure-pop-up,
+#speedWord {
+    align-items: center;
+}
+
+#exit2 {
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-bottom: 5%;
+}
+
+#treasure-pop-up {
+    height: 50%;
+    max-width: 30%;
+    margin: 17% 0 0 32%;
+    z-index: 5;
+}
+
+#ruby-gem {
+    margin: -15%;
+    height: 45%;
+    width: 40%;
+}
+
+#ruby-gem:hover {
+    cursor: pointer;
+}
+
+#auth-container,
+#model-buttons,
+#speedWord {
+    justify-content: center;
+}
+
+#auth-container {
+    padding: 0.25%;
+    margin: 1%;
+}
+
+#authButtons, 
+#login-button, 
+#signup-button {
+    margin-top: 2%;
+}
+
+#logout-button,
+#name, 
+#name2,
+#password, 
+#password2 ,
+#login-button, 
+#signup-button {
+    font-size: large;
+}
+
+#auth-login,
+#treasure-pop-up,
+#speedWord,
+#auth-signup,
+.modal,
+#moving-timer-box,
+#red-moving-timer-box,
+#closedTreasure,
+#update-user-info {
+    display: none;
+}
+
+#auth-login, #auth-signup {
+    margin-top: 1%;
+}
+
+#name, 
+#name2, 
+#password, 
+#password2 {
+    height: 30px;
+    width: 200px;
+}
+
+ #signup-button, #login-button {
+    visibility: visible;
+}
+
+#logout-button {
+    visibility: hidden;
+}
+
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%; 
+    overflow: auto; 
+    background-color: white;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 10;
+  }
+  
+.modal-content {
+flex-wrap: wrap;
+background-image: url("https://ak4.picdn.net/shutterstock/videos/1232074/thumb/1.jpg");
+margin: 15% auto; 
+box-shadow: 0 0 20px 7px black;
+padding: 20px;
+border: 1px solid #888;
+width: 50.25%; 
+height: 54%;
+font-size: x-large;
+color: black;
+overflow-y: auto;
+z-index: 3;
+}
+
+.modal-content,
+.close,
+#speedWord, 
+#incoming-boss {
+font-weight: bolder;
+}
+
+.close {
+color:white;
+float: right;
+font-size: 50px;
+margin-top: -33px;
+margin-right: -10px;
+}
+
+.close:hover,
+.close:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+
+#show-stats, 
+#speedWord {
+align-content: center;
+}
+
+#all-games {
+box-shadow: 0 0 5px 2px rgb(165, 121, 63);
+    margin: 2.25%;
+    padding: 1%;
+    min-width: 47rem;
+}
+
+#overall-stats {
+padding: 1%;
+margin: 5%;
+min-width: 25rem;
+box-shadow: 0 0 5px 2px rgb(165, 121, 63);
+}
+
+#model-buttons {
+align-items: flex-end;
+width: 30%;
+}
+
+#moving-timer-box {
+background-color: green;
+width: 80%;
+}
+
+#moving-timer-box,
+#red-moving-timer-box {
+border: 3px solid rgba(0, 0, 0, 0.616);
+height: 10%;
+left: 9%;
+max-width: 80%;
+margin: 2% auto;
+}
+
+#red-moving-timer-box {
+background-color: red;
+width: 0%;
+z-index: 2;
+} 
+
+#closedTreasure {
+    margin: 21% 0 0 18%;
+    height: 70%;
+    width: 60%;
+}
+
+#speedWord {
+    background-image: url(https://farm5.staticflickr.com/4127/4969866236_bcf96e3979_n.jpg);
+    border-radius: 10%;
+    width: 30%;
+    height: 11%;
+    margin: 13% 0 0 35%;
+}
+
+#update-user-info {
+    margin: 5% 0 0 32%;
+}
+
+#updateUserSubmit-button{
+    margin-top: 5%;
+}
+
+#boss-shark {
+    top: 15%;
+    position: absolute;
+    width: 40%;
+    height: 100%;
+}
+
+#incoming-boss {
+    font-size: xx-large;
+    color: red;
+    position: absolute;
+    margin: auto;
+    margin-top: 25%;
+    margin-left: 35%;
+    z-index: -1;
+    background-color: white;
+}
