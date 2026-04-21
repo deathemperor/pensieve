@@ -22,7 +22,8 @@ function flattenRows(rows: any[]): any[] {
 
 async function buildSubscribersPage(ctx: PluginContext) {
 	const allSubscribers = await ctx.storage.subscribers.query({});
-	const items = flattenRows(allSubscribers.items ?? allSubscribers ?? []);
+	const rawList: any[] = (allSubscribers as any).items ?? (allSubscribers as any) ?? [];
+	const items = flattenRows(rawList);
 
 	const total = items.length;
 	const active = items.filter((s: any) => s.status === "active").length;
@@ -39,6 +40,27 @@ async function buildSubscribersPage(ctx: PluginContext) {
 			},
 		],
 	}));
+
+	// Temporary diagnostic: stash what this function observed, so we can compare
+	// against what the admin UI displays.
+	try {
+		const diagId = `admin_subs_diag_${Date.now()}`;
+		await ctx.storage.email_sends.put(diagId, {
+			id: diagId,
+			diag: "buildSubscribersPage",
+			at: new Date().toISOString(),
+			rawTopKeys: Object.keys((allSubscribers as any) ?? {}),
+			rawListLength: Array.isArray(rawList) ? rawList.length : -1,
+			rawFirstItemKeys: rawList[0] ? Object.keys(rawList[0]) : [],
+			flattenedCount: items.length,
+			flattenedFirstKeys: items[0] ? Object.keys(items[0]) : [],
+			flattenedEmails: items.slice(0, 5).map((s: any) => s.email ?? null),
+			stats: { total, active, unsubscribed },
+			rowsCount: rows.length,
+		});
+	} catch {
+		// swallow
+	}
 
 	return {
 		blocks: [
