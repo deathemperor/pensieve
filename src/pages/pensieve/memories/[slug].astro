@@ -356,16 +356,9 @@ const publishDate =
 					<p class="lumos-hint">{postLang === "vi" ? "Thắp sáng ký ức này" : "Illuminate this memory"}</p>
 				</div>
 
-				{/* Owl Post — subscribe form */}
-				<div class="owlpost-section">
-					<h3 class="owlpost-title">{postLang === "vi" ? "Cú Bưu Điện" : "Owl Post"}</h3>
-					<p class="owlpost-desc">{postLang === "vi" ? "Nhận ký ức mới qua email. Không spam, không phép thuật đen." : "Receive new memories by owl. No spam, no dark magic."}</p>
-					<form class="owlpost-form" data-subscribe-form>
-						<input type="email" name="email" required placeholder={postLang === "vi" ? "email của bạn" : "your@email.com"} class="owlpost-input" />
-						<button type="submit" class="owlpost-btn">{postLang === "vi" ? "Đăng ký" : "Subscribe"}</button>
-					</form>
-					<p class="owlpost-status" data-subscribe-status></p>
-				</div>
+				{/* Subscribe is handled by the site-wide Owl Post bar in Base.astro —
+				    keeping it out of the article body so visitors don't conflate
+				    "subscribe to updates" with "subscribe to this specific post". */}
 
 				<div class="article-comments">
 					<Comments collection="posts" contentId={post.data.id} threaded />
@@ -525,46 +518,7 @@ const publishDate =
 
 	initReadingProgress();
 
-	// Owl Post — subscribe form
-	(function () {
-		const form = document.querySelector('[data-subscribe-form]') as HTMLFormElement | null;
-		if (!form) return;
-		const status = document.querySelector('[data-subscribe-status]') as HTMLElement;
-		form.addEventListener('submit', async (e) => {
-			e.preventDefault();
-			const email = (form.querySelector('input[name=email]') as HTMLInputElement).value;
-			status.textContent = '';
-			status.className = 'owlpost-status';
-			try {
-				const res = await fetch('/_emdash/api/plugins/pensieve-engage/subscribe', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ email }),
-				});
-				const payload = await res.json();
-				// Plugin runtime wraps handler returns as {data: ...} and framework
-				// errors as {error: {code, message}}. Unwrap both.
-				const handler = res.ok ? (payload.data || {}) : {};
-				const envelopeError = res.ok ? null : payload.error;
-				if (handler.success) {
-					status.textContent = document.documentElement.lang === 'vi'
-						? 'Cú đã bay! Kiểm tra email chào mừng.'
-						: 'Owl dispatched! Check for your welcome letter.';
-					status.classList.add('success');
-					form.reset();
-				} else {
-					const fallback = document.documentElement.lang === 'vi' ? 'Có lỗi xảy ra' : 'Something went wrong';
-					const handlerErr = typeof handler.error === 'string' ? handler.error : handler.error?.message;
-					const envErr = typeof envelopeError === 'string' ? envelopeError : envelopeError?.message;
-					status.textContent = handlerErr || envErr || fallback;
-					status.classList.add('error');
-				}
-			} catch {
-				status.textContent = document.documentElement.lang === 'vi' ? 'Không gửi được cú' : 'Failed to send owl';
-				status.classList.add('error');
-			}
-		});
-	})();
+	// Subscribe form moved to Base.astro's site-wide Owl Post bar.
 
 	// Lumos — guest like button
 	(function () {
