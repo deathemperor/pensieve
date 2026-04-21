@@ -28,14 +28,13 @@ async function buildSubscribersPage(ctx: PluginContext) {
 	const active = items.filter((s: any) => s.status === "active").length;
 	const unsubscribed = items.filter((s: any) => s.status === "unsubscribed").length;
 
-	// SENTINEL-BUILD-2026-04-21-v2 — if you see this string in the admin
-	// page or API response, we know the latest bundle is live.
+	// Block Kit's table expects columns:[{key,label,...}] and rows as
+	// dictionaries keyed by column.key (not {cells:[...]}). See
+	// @emdash-cms/blocks dist/index.js where `row[col.key]` is read.
 	const rows = items.map((s: any) => ({
-		cells: [
-			s.email ?? "SENTINEL-null-email",
-			s.status ?? "SENTINEL-null-status",
-			s.createdAt ?? "—",
-		],
+		email: s.email,
+		status: s.status,
+		subscribed: s.createdAt,
 	}));
 
 	return {
@@ -52,8 +51,13 @@ async function buildSubscribersPage(ctx: PluginContext) {
 			{ type: "divider" },
 			{
 				type: "table",
-				columns: ["Email", "Status", "Subscribed"],
+				columns: [
+					{ key: "email", label: "Email" },
+					{ key: "status", label: "Status", format: "badge" },
+					{ key: "subscribed", label: "Subscribed", format: "relative_time" },
+				],
 				rows,
+				empty_text: "No subscribers yet.",
 			},
 		],
 	};
@@ -95,12 +99,10 @@ async function buildSendsPage(ctx: PluginContext) {
 	const totalDelivered = items.reduce((sum: number, s: any) => sum + (s.sent || 0), 0);
 
 	const rows = items.map((s: any) => ({
-		cells: [
-			s.slug || s.postSlug || "—",
-			String(s.subscriberCount ?? 0),
-			s.status || "—",
-			s.completedAt || s.startedAt || "—",
-		],
+		post: s.slug || s.postSlug || "—",
+		subscribers: s.subscriberCount ?? 0,
+		status: s.status || "—",
+		sent_at: s.completedAt || s.startedAt || null,
 	}));
 
 	return {
@@ -116,8 +118,14 @@ async function buildSendsPage(ctx: PluginContext) {
 			{ type: "divider" },
 			{
 				type: "table",
-				columns: ["Post", "Subscribers", "Status", "Sent At"],
+				columns: [
+					{ key: "post", label: "Post" },
+					{ key: "subscribers", label: "Subscribers", format: "number" },
+					{ key: "status", label: "Status", format: "badge" },
+					{ key: "sent_at", label: "Sent At", format: "relative_time" },
+				],
 				rows,
+				empty_text: "No sends yet.",
 			},
 		],
 	};
@@ -182,15 +190,11 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 			const avgReadingSec = Math.round(avgReadingMs / 1000);
 
 			return {
-				slug,
+				post: slug,
 				pageviews: agg.pageviews,
-				cells: [
-					slug,
-					String(agg.pageviews),
-					`${avgScroll}%`,
-					`${avgReadingSec}s`,
-					String(lumos),
-				],
+				scroll: `${avgScroll}%`,
+				read_time: `${avgReadingSec}s`,
+				lumos,
 			};
 		})
 		.sort((a, b) => b.pageviews - a.pageviews);
@@ -209,8 +213,15 @@ async function buildAnalyticsPage(ctx: PluginContext) {
 			{ type: "divider" },
 			{
 				type: "table",
-				columns: ["Post", "Pageviews", "Avg Scroll", "Avg Read Time", "Lumos"],
+				columns: [
+					{ key: "post", label: "Post" },
+					{ key: "pageviews", label: "Pageviews", format: "number" },
+					{ key: "scroll", label: "Avg Scroll" },
+					{ key: "read_time", label: "Avg Read Time" },
+					{ key: "lumos", label: "Lumos", format: "number" },
+				],
 				rows,
+				empty_text: "No reading events yet.",
 			},
 		],
 	};
