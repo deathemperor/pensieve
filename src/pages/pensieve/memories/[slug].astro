@@ -320,6 +320,32 @@ const publishDate =
 					<PortableText value={post.data.content} />
 				</div>
 
+				{/* Share — Web Share API on mobile, popover fallback on desktop */}
+				<div class="share-section">
+					<button type="button" class="share-btn" data-share-btn
+						data-share-title={post.data.title}
+						data-label-share={postLang === "vi" ? "Chia sẻ" : "Share"}
+						data-label-copied={postLang === "vi" ? "Đã chép liên kết" : "Link copied"}
+						aria-haspopup="menu" aria-expanded="false">
+						<svg class="share-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+							<circle cx="18" cy="5" r="3" />
+							<circle cx="6" cy="12" r="3" />
+							<circle cx="18" cy="19" r="3" />
+							<line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+							<line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+						</svg>
+						<span class="share-label">{postLang === "vi" ? "Chia sẻ" : "Share"}</span>
+					</button>
+					<div class="share-popover" data-share-popover hidden role="menu">
+						<button type="button" class="share-option" data-share-copy>
+							{postLang === "vi" ? "Chép liên kết" : "Copy link"}
+						</button>
+						<a class="share-option" data-share-x target="_blank" rel="noopener noreferrer">X / Twitter</a>
+						<a class="share-option" data-share-fb target="_blank" rel="noopener noreferrer">Facebook</a>
+						<a class="share-option" data-share-li target="_blank" rel="noopener noreferrer">LinkedIn</a>
+					</div>
+				</div>
+
 				{/* Lumos — guest like button */}
 				<div class="lumos-section">
 					<button class="lumos-btn" data-post-slug={slug} aria-label="Cast Lumos">
@@ -594,6 +620,77 @@ const publishDate =
 				dot.addEventListener('animationend', () => dot.remove());
 			}
 		}
+	})();
+
+	// ═══ Share button ═══
+	// Primary: navigator.share (OS share sheet on mobile/iOS).
+	// Fallback: popover with copy-link + X / Facebook / LinkedIn intent URLs.
+	(() => {
+		const btn = document.querySelector<HTMLButtonElement>('[data-share-btn]');
+		if (!btn) return;
+		const popover = document.querySelector<HTMLElement>('[data-share-popover]');
+		const copyBtn = document.querySelector<HTMLButtonElement>('[data-share-copy]');
+		const xLink = document.querySelector<HTMLAnchorElement>('[data-share-x]');
+		const fbLink = document.querySelector<HTMLAnchorElement>('[data-share-fb]');
+		const liLink = document.querySelector<HTMLAnchorElement>('[data-share-li]');
+		const labelEl = btn.querySelector<HTMLElement>('.share-label');
+		const title = btn.dataset.shareTitle || document.title;
+		const url = location.href;
+		const labelShare = btn.dataset.labelShare || 'Share';
+		const labelCopied = btn.dataset.labelCopied || 'Link copied';
+
+		// Wire the fallback social links with canonical intent URLs
+		if (xLink) xLink.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
+		if (fbLink) fbLink.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+		if (liLink) liLink.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+
+		function closePopover() {
+			if (popover) popover.hidden = true;
+			btn?.setAttribute('aria-expanded', 'false');
+		}
+		function openPopover() {
+			if (popover) popover.hidden = false;
+			btn?.setAttribute('aria-expanded', 'true');
+		}
+
+		btn.addEventListener('click', async (e) => {
+			e.preventDefault();
+			// Prefer OS share sheet when available (and user hasn't explicitly opened the popover)
+			const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+			if (nav.share) {
+				try {
+					await nav.share({ title, url });
+					return;
+				} catch {
+					// User cancelled or share unsupported for this data — fall through to popover
+				}
+			}
+			if (popover?.hidden) openPopover();
+			else closePopover();
+		});
+
+		copyBtn?.addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(url);
+				if (labelEl) {
+					labelEl.textContent = labelCopied;
+					setTimeout(() => { labelEl.textContent = labelShare; }, 1500);
+				}
+				closePopover();
+			} catch {
+				// Clipboard API refused — leave the popover open so user can manually copy
+			}
+		});
+
+		// Close popover on outside click or Escape
+		document.addEventListener('click', (e) => {
+			if (!popover || popover.hidden) return;
+			const t = e.target as Node;
+			if (!popover.contains(t) && !btn.contains(t)) closePopover();
+		});
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') closePopover();
+		});
 	})();
 </script>
 
@@ -1226,6 +1323,68 @@ const publishDate =
 		background: var(--color-surface);
 		padding: var(--tag-padding-y) var(--spacing-2);
 		border-radius: var(--radius);
+	}
+
+	/* Share section — sits between content and Lumos, visually understated */
+	.share-section {
+		position: relative;
+		display: flex;
+		justify-content: flex-end;
+		margin: var(--spacing-6) 0 var(--spacing-4);
+	}
+	.share-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.4rem 0.75rem;
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		background: transparent;
+		border: 1px solid var(--color-border);
+		border-radius: 6px;
+		cursor: pointer;
+		transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+	}
+	.share-btn:hover {
+		color: var(--color-text);
+		border-color: color-mix(in srgb, var(--color-text) 20%, var(--color-border));
+		background: color-mix(in srgb, var(--color-text) 3%, transparent);
+	}
+	.share-icon { flex-shrink: 0; }
+	.share-popover {
+		position: absolute;
+		top: calc(100% + 4px);
+		right: 0;
+		z-index: 20;
+		min-width: 11rem;
+		padding: 0.25rem;
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: 8px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+		display: flex;
+		flex-direction: column;
+		gap: 0.125rem;
+	}
+	.share-popover[hidden] { display: none; }
+	.share-option {
+		display: block;
+		padding: 0.5rem 0.6rem;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		background: transparent;
+		border: 0;
+		border-radius: 4px;
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+		transition: background 120ms ease, color 120ms ease;
+	}
+	.share-option:hover {
+		background: color-mix(in srgb, var(--color-text) 5%, transparent);
+		color: var(--color-text);
 	}
 
 	/* Comments section */
