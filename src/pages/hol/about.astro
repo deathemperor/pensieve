@@ -1,0 +1,86 @@
+---
+// src/pages/hol/about.astro
+import HolLayout from "../../components/hol/HolLayout.astro";
+const crumbs = [
+  { label: "HOL Archive", href: "/hol/" },
+  { label: "About" },
+];
+---
+<HolLayout title="About" crumbs={crumbs}>
+  <h1>About this archive</h1>
+  <p>
+    HOL (<a href="https://web.archive.org/web/*/holvn.org">holvn.org</a>)
+    was a Vietnamese-language vBulletin community forum active from the
+    early 2000s until it shut down. This site is a read-only
+    reconstruction of its content from Internet Archive snapshots.
+  </p>
+
+  <h2>Coverage</h2>
+  <p>
+    The archive is incomplete by design: only content captured by the
+    Internet Archive's crawlers could be recovered. Many threads,
+    attachments and entire sub-forums are permanently lost. Where data
+    is partial, pages are marked with a ⚠ notice.
+  </p>
+
+  <h2>Removal requests</h2>
+  <p>
+    Posts were public at the time of writing. If you would prefer your
+    content to be removed, send the URL of the thread or post below —
+    we will hide it from public view, usually within a few days.
+  </p>
+  <form class="hol-takedown-form" id="takedown-form">
+    <label>
+      Your email (we reply here):
+      <input type="email" name="email" required />
+    </label>
+    <label>
+      Thread / post URL:
+      <input type="url" name="url" placeholder="/hol/t/…" required />
+    </label>
+    <label>
+      Reason (optional):
+      <textarea name="reason" rows="3"></textarea>
+    </label>
+    <button type="submit">Request removal</button>
+  </form>
+  <script>
+    document.getElementById('takedown-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.currentTarget as HTMLFormElement;
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch('/hol/takedown/', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          window.location.href = '/hol/takedown-received/';
+        } else {
+          alert('Error: ' + response.statusText);
+        }
+      } catch (err) {
+        alert('Error submitting form: ' + (err instanceof Error ? err.message : String(err)));
+      }
+    });
+  </script>
+
+  <h2>Credits</h2>
+  <p>
+    Pipeline code: <a href="https://github.com/deathemperor/hol">github.com/deathemperor/hol</a>.
+    Source snapshots: Internet Archive Wayback Machine.
+  </p>
+</HolLayout>
+
+<style>
+.hol-takedown-form label { display: block; margin: .75rem 0; }
+.hol-takedown-form input, .hol-takedown-form textarea {
+  display: block; width: 100%; padding: .5rem;
+  border: 1px solid var(--hol-line); border-radius: 3px; font-size: 1em;
+}
+.hol-takedown-form button { padding: .5rem 1rem; background: var(--hol-accent);
+                             color: white; border: 0; border-radius: 3px;
+                             cursor: pointer; }
+</style>
