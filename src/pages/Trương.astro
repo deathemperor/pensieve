@@ -274,6 +274,20 @@ function formatGHDate(iso: string) {
 					</g>
 				</svg>
 
+				{/* Summoning circle — inner runes + outer invention years, counter-rotating */}
+				<div class="portrait-summoning-circle" aria-hidden="true">
+					<div class="sc-ring sc-ring-runes">
+						{"ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ".split("").map((r, i) => (
+							<span class="sc-rune" style={`--sc-angle: ${i * (360 / 24)}deg;`}>{r}</span>
+						))}
+					</div>
+					<div class="sc-ring sc-ring-years">
+						{["2007", "·", "2008", "·", "2009", "·", "2024", "·"].map((y, i, a) => (
+							<span class="sc-year" style={`--sc-angle: ${i * (360 / a.length)}deg;`}>{y}</span>
+						))}
+					</div>
+				</div>
+
 				{/* Ancient runes scrolling in a circle around portrait */}
 				<div class="portrait-runes-ring" aria-hidden="true">
 					<div class="runes-ring-inner">
@@ -1073,6 +1087,37 @@ function formatGHDate(iso: string) {
 	@keyframes runes-ring-spin {
 		to { transform: rotate(360deg); }
 	}
+
+	.portrait-summoning-circle {
+		position: absolute;
+		inset: -4%;
+		z-index: 0;
+		pointer-events: none;
+		color: rgba(240, 199, 94, 0.55);
+	}
+	.portrait-summoning-circle .sc-ring {
+		position: absolute;
+		inset: 0;
+		animation: sc-spin 60s linear infinite;
+	}
+	.portrait-summoning-circle .sc-ring-years {
+		inset: -5%;
+		animation: sc-spin 90s linear infinite reverse;
+		font-family: "Cinzel", "Trajan Pro", serif;
+		letter-spacing: 0.12em;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+	}
+	.portrait-summoning-circle .sc-rune,
+	.portrait-summoning-circle .sc-year {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: start center;
+		transform: rotate(var(--sc-angle));
+	}
+	.portrait-summoning-circle .sc-rune { font-size: 0.85rem; }
+	@keyframes sc-spin { to { transform: rotate(360deg); } }
 
 	/* Growing vines that creep around frame */
 	.portrait-vines {
