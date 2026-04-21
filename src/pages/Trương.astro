@@ -288,6 +288,24 @@ function formatGHDate(iso: string) {
 					</div>
 				</div>
 
+				{/* Grimoire — three translucent parchment pages drifting with faint sigil diagrams */}
+				<div class="portrait-grimoire-pages" aria-hidden="true">
+					{[0, 1, 2].map((i) => (
+						<svg class={`grimoire-page grimoire-page-${i + 1}`} viewBox="0 0 120 160" aria-hidden="true">
+							<rect x="2" y="2" width="116" height="156" rx="2" fill="rgba(255, 245, 215, 0.05)" stroke="rgba(240, 199, 94, 0.3)" stroke-width="0.6" />
+							<g stroke="rgba(240, 199, 94, 0.35)" stroke-width="0.4" fill="none">
+								<line x1="16" y1={18 + i * 4} x2="104" y2={18 + i * 4} />
+								<line x1="16" y1={28 + i * 4} x2="96" y2={28 + i * 4} />
+								<circle cx="60" cy={74 + i * 6} r={18 - i * 2} />
+								<path d={`M60 ${60 - i * 2} L${52 + i * 2} 74 L60 ${88 + i * 2} L${68 - i * 2} 74 Z`} />
+								<circle cx="60" cy={74 + i * 6} r={8 - i} opacity="0.6" />
+								<line x1="16" y1={120 + i * 2} x2="104" y2={120 + i * 2} />
+								<line x1="16" y1={130 + i * 2} x2="88" y2={130 + i * 2} />
+							</g>
+						</svg>
+					))}
+				</div>
+
 				{/* Ancient runes scrolling in a circle around portrait */}
 				<div class="portrait-runes-ring" aria-hidden="true">
 					<div class="runes-ring-inner">
@@ -1118,6 +1136,27 @@ function formatGHDate(iso: string) {
 	}
 	.portrait-summoning-circle .sc-rune { font-size: 0.85rem; }
 	@keyframes sc-spin { to { transform: rotate(360deg); } }
+
+	.portrait-grimoire-pages {
+		position: absolute;
+		inset: -8% -12%;
+		z-index: 0;
+		pointer-events: none;
+	}
+	.portrait-grimoire-pages .grimoire-page {
+		position: absolute;
+		width: 22%;
+		opacity: 0.55;
+		filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+		animation: grimoire-drift 18s ease-in-out infinite;
+	}
+	.grimoire-page-1 { --gp-rot: -12deg; top: 6%; left: -6%; animation-delay: 0s; }
+	.grimoire-page-2 { --gp-rot: 9deg; top: 58%; right: -8%; animation-delay: 6s; }
+	.grimoire-page-3 { --gp-rot: -4deg; top: 32%; left: 94%; animation-delay: 12s; }
+	@keyframes grimoire-drift {
+		0%, 100% { transform: translate(0, 0) rotate(var(--gp-rot, 0deg)); opacity: 0.45; }
+		50% { transform: translate(6px, -10px) rotate(var(--gp-rot, 0deg)); opacity: 0.65; }
+	}
 
 	/* Growing vines that creep around frame */
 	.portrait-vines {
