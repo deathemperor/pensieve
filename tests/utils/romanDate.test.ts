@@ -15,6 +15,7 @@ test("toRoman: edge cases", () => {
   assert.equal(toRoman(2000), "MM");
   assert.equal(toRoman(2021), "MMXXI");
   assert.equal(toRoman(2026), "MMXXVI");
+  assert.equal(toRoman(3999), "MMMCMXCIX");
 });
 
 test("toRoman: throws on invalid input", () => {
@@ -48,4 +49,10 @@ test("formatRomanDate: year precision shows year only", () => {
 test("formatRomanDate: rejects non-ISO date", () => {
   assert.throws(() => formatRomanDate("14/12/2021", "day"));
   assert.throws(() => formatRomanDate("2021-13-01", "day"));
+});
+
+test("formatRomanDate: rejects calendar-invalid dates", () => {
+  assert.throws(() => formatRomanDate("2021-02-30", "day"));
+  assert.throws(() => formatRomanDate("2021-04-31", "day"));
+  assert.throws(() => formatRomanDate("2024-02-30", "day"));
 });

@@ -37,6 +37,16 @@ export function formatRomanDate(isoDate: string, precision: DatePrecision): stri
   if (mo < 1 || mo > 12) throw new Error(`Bad month: ${mo}`);
   if (dy < 1 || dy > 31) throw new Error(`Bad day: ${dy}`);
 
+  // Reject calendar-invalid dates (e.g. 2021-02-30, 2021-04-31).
+  const probe = new Date(Date.UTC(yr, mo - 1, dy));
+  if (
+    probe.getUTCFullYear() !== yr ||
+    probe.getUTCMonth() !== mo - 1 ||
+    probe.getUTCDate() !== dy
+  ) {
+    throw new Error(`Calendar-invalid date: ${isoDate}`);
+  }
+
   if (precision === "year") return toRoman(yr);
   if (precision === "month") return `${toRoman(mo)} · ${toRoman(yr)}`;
   return `${toRoman(dy)} · ${toRoman(mo)} · ${toRoman(yr)}`;
