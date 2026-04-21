@@ -23,10 +23,12 @@
 		"adm-zip": "^0.5.17",
 		"astro": "^6.1.2",
 		"emdash": "^0.5.0",
+		"hono": "^4.12.14",
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
 		"react": "^19.2.4",
-		"react-dom": "^19.2.4"
+		"react-dom": "^19.2.4",
+		"sanitize-html": "^2.17.3"
 	},
 	"devDependencies": {
 		"@astrojs/check": "0.9.8",
@@ -35,5 +37,9 @@
 		"puppeteer": "23.11.1",
 		"tsx": "4.21.0",
 		"wrangler": "4.81.1"
+	},
+	"overrides": {
+		"hono": "^4.12.14",
+		"sanitize-html": "^2.17.3"
 	}
 }
