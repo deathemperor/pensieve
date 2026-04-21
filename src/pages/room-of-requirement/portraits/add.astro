@@ -1,0 +1,173 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) {
+  return Astro.redirect("/room-of-requirement/portraits", 302);
+}
+
+Astro.cache.set({ cacheDirectives: ["private", "no-store"] });
+---
+
+<Base title="New portrait" description="Add a contact to the private rolodex.">
+  <main class="add-page">
+    <header class="add-hero">
+      <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+      <h1>New portrait</h1>
+    </header>
+
+    <form id="portrait-form" class="add-form">
+      <label class="field">
+        <span>Full name <span class="req">*</span></span>
+        <input type="text" name="full_name" required maxlength="200" />
+      </label>
+
+      <label class="field">
+        <span>Display name</span>
+        <input type="text" name="display_name" maxlength="120" placeholder="Optional short form" />
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span>Title</span>
+          <input type="text" name="title" maxlength="120" />
+        </label>
+        <label class="field">
+          <span>Company</span>
+          <input type="text" name="company" maxlength="120" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Prestige tier <span class="req">*</span></span>
+        <select name="prestige_tier" required>
+          <option value="S">S — Founder</option>
+          <option value="A">A — Headmaster</option>
+          <option value="B">B — Professor</option>
+          <option value="C" selected>C — Scholar</option>
+          <option value="D">D — Visitor</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Tier score (0–100, default 50)</span>
+        <input type="number" name="tier_score" min="0" max="100" value="50" />
+      </label>
+
+      <label class="field">
+        <span>Primary email</span>
+        <input type="email" name="primary_email" maxlength="200" />
+      </label>
+
+      <label class="field">
+        <span>Primary phone</span>
+        <input type="tel" name="primary_phone" maxlength="40" />
+      </label>
+
+      <label class="field">
+        <span>Bio</span>
+        <textarea name="bio" rows="3" maxlength="500"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Tags (comma-separated)</span>
+        <input type="text" name="tags" placeholder="founder, ai, vn-tech" />
+      </label>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Save portrait</button>
+        <a class="btn" href="/room-of-requirement/portraits">Cancel</a>
+      </div>
+
+      <p id="error" class="error" hidden></p>
+    </form>
+  </main>
+</Base>
+
+<script>
+  const form = document.getElementById("portrait-form") as HTMLFormElement;
+  const errEl = document.getElementById("error") as HTMLParagraphElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errEl.hidden = true;
+
+    const fd = new FormData(form);
+    const channels: Array<{ kind: "email" | "phone"; value: string; is_primary: boolean }> = [];
+    const email = String(fd.get("primary_email") ?? "").trim();
+    const phone = String(fd.get("primary_phone") ?? "").trim();
+    if (email) channels.push({ kind: "email", value: email, is_primary: true });
+    if (phone) channels.push({ kind: "phone", value: phone, is_primary: !email });
+
+    const tagsRaw = String(fd.get("tags") ?? "").trim();
+    const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
+
+    const body = {
+      full_name: String(fd.get("full_name") ?? "").trim(),
+      display_name: String(fd.get("display_name") ?? "").trim() || undefined,
+      title:         String(fd.get("title")         ?? "").trim() || undefined,
+      company:       String(fd.get("company")       ?? "").trim() || undefined,
+      prestige_tier: String(fd.get("prestige_tier") ?? "C"),
+      tier_score:    Number(fd.get("tier_score")    ?? 50),
+      bio:           String(fd.get("bio")           ?? "").trim() || undefined,
+      tags,
+      channels,
+    };
+
+    const res = await fetch("/api/portraits", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      errEl.textContent = `Save failed: ${data.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+
+    const { contact } = (await res.json()) as { contact: { id: string } };
+    window.location.href = `/room-of-requirement/portraits/${contact.id}`;
+  });
+</script>
+
+<style>
+  .add-page { max-width: 640px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .add-hero { margin-bottom: 1.5rem; }
+  .back-link {
+    color: #8a877e; font-size: 0.875rem; text-decoration: none;
+  }
+  .back-link:hover { color: #d4a89a; }
+  .add-hero h1 {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: 2rem; margin: 0.5rem 0 0;
+  }
+  .add-form { display: flex; flex-direction: column; gap: 1.25rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field span { font-size: 0.8125rem; color: #8a877e; letter-spacing: 0.04em; }
+  .req { color: #d4a89a; }
+  input, select, textarea {
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0;
+    padding: 0.55rem 0.7rem; border-radius: 3px; font: inherit;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #d4a89a; outline: none;
+  }
+  textarea { resize: vertical; }
+  .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+  .btn {
+    padding: 0.55rem 1.1rem; border: 1px solid #3a3a3a; border-radius: 3px;
+    color: #e8e6e0; text-decoration: none; font: inherit; cursor: pointer;
+    background: transparent;
+  }
+  .btn:hover { border-color: #6a665e; background: #161616; }
+  .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+  .error { color: #e57373; font-size: 0.875rem; }
+</style>
