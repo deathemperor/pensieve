@@ -1,0 +1,45 @@
+name: CodeQL
+
+# Runs CodeQL static analysis on every PR + pushes to main + weekly scheduled
+# refresh. Uses the `security-and-quality` query suite so the results satisfy
+# both the `code_scanning` and `code_quality` rules on our main branch ruleset.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly re-scan so advisory-DB updates find issues in older code too.
+    - cron: '0 2 * * 1'
+
+permissions:
+  security-events: write
+  contents: read
+  actions: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # security-and-quality includes the default security suite PLUS
+          # the code-quality queries GitHub uses for its Code Quality check.
+          queries: security-and-quality
+
+      - name: Perform analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
