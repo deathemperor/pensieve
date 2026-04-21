@@ -54,6 +54,41 @@ Copy `main.js`, `manifest.json`, and `styles.css` into
 
 For development, `npm run dev` watches for changes. Symlink the plugin directory into your vault for fast iteration.
 
+## Install on mobile via BRAT
+
+Obsidian on iOS/Android can sideload this plugin via **BRAT** (Obsidian42 - BRAT), which pulls from GitHub releases.
+
+1. On mobile: Settings → Community plugins → Browse → install **Obsidian42 - BRAT** → enable.
+2. BRAT settings → **Add beta plugin** → paste `deathemperor/obsidian-pensieve-publisher`.
+3. Enable **Pensieve Publisher** in Community plugins.
+4. Configure the settings tab with your EmDash URL, API token, and (optional) Facebook credentials.
+
+BRAT auto-updates within a few hours of a new release.
+
+## Cutting a release
+
+The plugin source lives here (in the Pensieve monorepo). A second repo
+`deathemperor/obsidian-pensieve-publisher` hosts releases for BRAT.
+
+To publish a new version:
+
+1. Bump `version` in **both** `manifest.json` and `package.json` (they must match).
+2. Commit the bump in the monorepo.
+3. From this directory, run:
+   ```bash
+   npm run release
+   ```
+
+The release script (`scripts/release.sh`) will:
+- Build the plugin.
+- Clone the distribution repo into a temp dir.
+- Mirror the source tree (excluding `node_modules` / `data.json` / build caches).
+- Commit and push if anything changed.
+- Tag the version and push the tag.
+- Create a GitHub release with `main.js`, `manifest.json`, and `styles.css` attached as assets.
+
+Preconditions: `gh` CLI authenticated (`gh auth status` shows logged-in), `rsync` and `git` on PATH. The distribution repo URL + owner is hard-coded in the script — edit it if you fork this plugin to a different repo.
+
 ## Configuration
 
 Obsidian → Settings → Pensieve Publisher:

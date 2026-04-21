@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "node esbuild.config.mjs production",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"release": "bash scripts/release.sh"
 	},
 	"keywords": ["obsidian", "plugin", "emdash", "pensieve"],
 	"license": "MIT",
