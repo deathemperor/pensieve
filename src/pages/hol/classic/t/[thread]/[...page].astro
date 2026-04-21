@@ -4,6 +4,7 @@
 import ClassicLayout from "../../../../../components/hol/ClassicLayout.astro";
 import ClassicPostbit from "../../../../../components/hol/ClassicPostbit.astro";
 import ClassicPager from "../../../../../components/hol/ClassicPager.astro";
+import ClassicNotFound from "../../../../../components/hol/ClassicNotFound.astro";
 import { getHolDb } from "../../../../../lib/hol/db";
 import {
   countPostsInThread, getForum, getThread, getThreadPosts,
@@ -20,56 +21,93 @@ if (!idMatch) return Astro.redirect("/hol/classic/", 302);
 const threadId = parseInt(idMatch[1], 10);
 
 let pageNum = 1;
+let pageParseFailed = false;
 if (pagePath) {
   const m = pagePath.match(/^p\/(\d+)\/?$/);
-  if (!m) return new Response("Not found", { status: 404 });
-  pageNum = parseInt(m[1], 10);
+  if (!m) pageParseFailed = true;
+  else pageNum = parseInt(m[1], 10);
 }
 
 const db = getHolDb();
-const thread = await getThread(db, threadId);
-if (!thread) return new Response("Thread not found", { status: 404 });
+// getThread filters is_hidden=0 — spam-hidden AND truly-missing both land
+// in this null branch. Rather than returning a bare plain-text Response
+// (ugly) we render a styled 404 inside the ClassicLayout.
+const thread = pageParseFailed ? null : await getThread(db, threadId);
+const notFound = thread == null;
 
-const forum = await getForum(db, thread.forum_id);
-const total = await countPostsInThread(db, threadId);
-const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-if (pageNum < 1 || pageNum > totalPages) {
-  return new Response("Page out of range", { status: 404 });
+let forum = null as Awaited<ReturnType<typeof getForum>>;
+let total = 0;
+let totalPages = 1;
+let outOfRange = false;
+let posts: Awaited<ReturnType<typeof getThreadPosts>> = [];
+let crumbs: { label: string; href?: string }[] = [];
+let basePath = "";
+let modernHref = "/hol/";
+let title = "Chủ đề không tồn tại";
+
+if (thread) {
+  forum = await getForum(db, thread.forum_id);
+  total = await countPostsInThread(db, threadId);
+  totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  outOfRange = pageNum < 1 || pageNum > totalPages;
+  if (!outOfRange) {
+    posts = await getThreadPosts(db, threadId, { page: pageNum, pageSize: PAGE_SIZE });
+  }
+  const forumSlug = forum ? viSlug(forum.name) : "";
+  basePath = `/hol/classic/t/${thread.id}-${thread.title_slug}/`;
+  modernHref = `/hol/t/${thread.id}-${thread.title_slug}/${pageNum > 1 ? `p/${pageNum}/` : ""}`;
+  crumbs = [
+    ...(forum ? [{ label: forum.name, href: `/hol/classic/f/${forum.id}-${forumSlug}/` }] : []),
+    { label: thread.title },
+  ];
+  title = thread.title;
 }
 
-const posts = await getThreadPosts(db, threadId, {
-  page: pageNum, pageSize: PAGE_SIZE,
-});
-
-const forumSlug = forum ? viSlug(forum.name) : "";
-const basePath = `/hol/classic/t/${thread.id}-${thread.title_slug}/`;
-const modernHref = `/hol/t/${thread.id}-${thread.title_slug}/${pageNum > 1 ? `p/${pageNum}/` : ""}`;
-const crumbs = [
-  ...(forum ? [{ label: forum.name, href: `/hol/classic/f/${forum.id}-${forumSlug}/` }] : []),
-  { label: thread.title },
-];
+if (notFound || outOfRange) Astro.response.status = 404;
 ---
-<ClassicLayout title={thread.title} modernHref={modernHref} crumbs={crumbs}>
-  <!-- thread title bar (thead-style banner) -->
-  <table class="tborder" cellpadding="6" cellspacing="1">
-    <tr>
-      <td class="tcat">
-        <strong>{thread.title}</strong>
-        <span class="smallfont"> — {total.toLocaleString()} bài</span>
-      </td>
-    </tr>
-  </table>
+<ClassicLayout title={title} modernHref={modernHref} crumbs={crumbs}>
+  {notFound && (
+    <ClassicNotFound
+      kind="thread"
+      reason="missing"
+      backHref="/hol/classic/"
+      backLabel="Về trang chính"
+    />
+  )}
 
-  <!-- top pager -->
-  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+  {thread && outOfRange && (
+    <ClassicNotFound
+      kind="page"
+      reason="out_of_range"
+      backHref={basePath}
+      backLabel="Về trang 1 của chủ đề này"
+    />
+  )}
 
-  <!-- posts -->
-  {posts.map((p) => <ClassicPostbit post={p} />)}
+  {thread && !outOfRange && (
+    <>
+      <!-- thread title bar (thead-style banner) -->
+      <table class="tborder" cellpadding="6" cellspacing="1">
+        <tr>
+          <td class="tcat">
+            <strong>{thread.title}</strong>
+            <span class="smallfont"> — {total.toLocaleString()} bài</span>
+          </td>
+        </tr>
+      </table>
 
-  <!-- bottom pager -->
-  <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+      <!-- top pager -->
+      <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
 
-  <div class="smallfont hol-classic-note">
-    Trang {pageNum} / {totalPages} · hiển thị {PAGE_SIZE} bài / trang · theo chuẩn vBulletin 3
-  </div>
+      <!-- posts -->
+      {posts.map((p) => <ClassicPostbit post={p} />)}
+
+      <!-- bottom pager -->
+      <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+
+      <div class="smallfont hol-classic-note">
+        Trang {pageNum} / {totalPages} · hiển thị {PAGE_SIZE} bài / trang · theo chuẩn vBulletin 3
+      </div>
+    </>
+  )}
 </ClassicLayout>

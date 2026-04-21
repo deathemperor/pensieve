@@ -1,0 +1,35 @@
+---
+// src/components/hol/HolNotFound.astro
+// Styled "not found" body for the modern view. Wrap with HolLayout in
+// the caller. Reuses hol-archive.css tokens so it looks like the rest
+// of the modern design.
+interface Props {
+  kind: "thread" | "forum" | "member" | "page";
+  reason?: "hidden" | "missing" | "out_of_range";
+  backHref?: string;
+  backLabel?: string;
+}
+const {
+  kind,
+  reason = "missing",
+  backHref = "/hol/",
+  backLabel = "Về trang chính",
+} = Astro.props;
+
+const KIND_LABEL: Record<Props["kind"], string> = {
+  thread: "Chủ đề",
+  forum: "Forum",
+  member: "Thành viên",
+  page: "Trang",
+};
+const REASON_MSG: Record<NonNullable<Props["reason"]>, string> = {
+  hidden: "Mục này đã được gỡ khỏi kho lưu trữ.",
+  missing: "Không có trong các snapshot đã lưu từ Wayback Machine.",
+  out_of_range: "Số trang vượt quá số trang hiện có.",
+};
+---
+<div class="hol-not-found">
+  <h1>{KIND_LABEL[kind]} không tồn tại</h1>
+  <p class="hol-lede">{REASON_MSG[reason]}</p>
+  <p><a href={backHref} class="hol-link">← {backLabel}</a></p>
+</div>

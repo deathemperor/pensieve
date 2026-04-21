@@ -1,0 +1,66 @@
+---
+// src/components/hol/ClassicNotFound.astro
+//
+// Styled "not found" body for classic-view 404s. Renders vB3 tborder
+// tables so the page matches the rest of the classic chrome instead of
+// showing a bare plain-text response. Separate component so forum
+// index, thread page, members page all share the same look.
+interface Props {
+  /** What was looked up — "thread", "forum", "member", "page" */
+  kind: "thread" | "forum" | "member" | "page";
+  /** Whether the row likely exists but is hidden (spam/removed) vs
+   *  truly missing from the archive. Changes the explanation slightly. */
+  reason?: "hidden" | "missing" | "out_of_range";
+  /** Where the "go back" link should point. Usually forum or index. */
+  backHref?: string;
+  backLabel?: string;
+}
+const {
+  kind,
+  reason = "missing",
+  backHref = "/hol/classic/",
+  backLabel = "Về trang chính",
+} = Astro.props;
+
+const KIND_LABEL: Record<Props["kind"], string> = {
+  thread: "Chủ đề",
+  forum: "Forum",
+  member: "Thành viên",
+  page: "Trang",
+};
+
+const REASON_MSG: Record<NonNullable<Props["reason"]>, string> = {
+  hidden:
+    "Mục này đã được gỡ khỏi kho lưu trữ (phát hiện là spam hoặc nội dung lạm dụng).",
+  missing:
+    "Không có trong các snapshot đã lưu từ Wayback Machine. Có thể chưa bao giờ bị ghi lại, hoặc nằm ngoài phạm vi thu thập.",
+  out_of_range: "Số trang vượt quá số trang hiện có.",
+};
+---
+<table class="tborder" cellpadding="6" cellspacing="1">
+  <tr>
+    <td class="tcat">
+      <strong>{KIND_LABEL[kind]} không tồn tại</strong>
+    </td>
+  </tr>
+</table>
+
+<table class="tborder" cellpadding="6" cellspacing="1">
+  <tr>
+    <td class="alt1">
+      <div style="padding: 20px; text-align: center">
+        <div style="font-size: 14px; margin-bottom: 8px">
+          {KIND_LABEL[kind]} này không có trong kho lưu trữ.
+        </div>
+        <div class="smallfont" style="color: #8da9c6; max-width: 460px; margin: 0 auto 16px">
+          {REASON_MSG[reason]}
+        </div>
+        <div>
+          <a href={backHref} class="smallfont">
+            <strong>&laquo;</strong> {backLabel}
+          </a>
+        </div>
+      </div>
+    </td>
+  </tr>
+</table>

@@ -460,6 +460,23 @@ a:hover { color: var(--hol-accent-hi); }
 }
 .hol-local-nav-link:hover { color: var(--hol-ink); }
 
+/* 404-style "not found" block shared by modern forum/thread/member pages.
+ * Centered plain prose — no chrome, since the huuloc Base already frames
+ * the page. Emphasis is on the headline + a way back. */
+.hol-not-found {
+  max-width: 36rem;
+  margin: 3rem auto;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+.hol-not-found h1 {
+  font-size: 1.3rem;
+  margin: 0 0 0.75rem;
+  color: var(--hol-ink);
+}
+.hol-not-found .hol-lede { color: var(--hol-muted); }
+.hol-not-found a.hol-link { color: var(--hol-accent, #a0c8f0); }
+
 /* "Giao diện cổ điển" — visually distinct so nostalgia-seekers spot it.
  * Uses the Darkleaf blue as a hint at what they'll see on the other side. */
 .hol-local-nav-link.hol-classic-link {

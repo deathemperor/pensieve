@@ -5,6 +5,7 @@
 import HolLayout from "../../../../components/hol/HolLayout.astro";
 import ThreadRow from "../../../../components/hol/ThreadRow.astro";
 import Pager from "../../../../components/hol/Pager.astro";
+import HolNotFound from "../../../../components/hol/HolNotFound.astro";
 import { getHolDb } from "../../../../lib/hol/db";
 import {
   countThreadsInForum, getForum, listThreadsInForum,
@@ -16,45 +17,61 @@ const PAGE_SIZE = 30;
 const { forum: forumParam = "", page: pagePath } = Astro.params as {
   forum?: string; page?: string;
 };
-// forumParam looks like "10-hon-hen-offline-chuc-tung"; pull off leading int id.
 const forumIdMatch = forumParam.match(/^(\d+)/);
 if (!forumIdMatch) return Astro.redirect("/hol/", 302);
 const forumId = parseInt(forumIdMatch[1], 10);
 
-// pagePath looks like "" (page 1) or "page/3"
 let pageNum = 1;
+let pageParseFailed = false;
 if (pagePath) {
   const m = pagePath.match(/^page\/(\d+)\/?$/);
-  if (!m) return new Response("Not found", { status: 404 });
-  pageNum = parseInt(m[1], 10);
+  if (!m) pageParseFailed = true;
+  else pageNum = parseInt(m[1], 10);
 }
 
 const db = getHolDb();
-const forum = await getForum(db, forumId);
-if (!forum) return new Response("Forum not found", { status: 404 });
+const forum = pageParseFailed ? null : await getForum(db, forumId);
+const notFound = forum == null;
 
-const total = await countThreadsInForum(db, forumId);
-const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-if (pageNum < 1 || pageNum > totalPages) {
-  return new Response("Page out of range", { status: 404 });
+let total = 0;
+let totalPages = 1;
+let outOfRange = false;
+let threads: Awaited<ReturnType<typeof listThreadsInForum>> = [];
+let basePath = "";
+let classicHref = "/hol/classic/";
+let title = "Forum không tồn tại";
+let crumbs: { label: string; href?: string }[] = [];
+
+if (forum) {
+  total = await countThreadsInForum(db, forumId);
+  totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  outOfRange = pageNum < 1 || pageNum > totalPages;
+  if (!outOfRange) {
+    threads = await listThreadsInForum(db, forumId, { page: pageNum, pageSize: PAGE_SIZE });
+  }
+  const slug = viSlug(forum.name);
+  basePath = `/hol/f/${forum.id}-${slug}/`;
+  classicHref = `/hol/classic/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
+  crumbs = [{ label: forum.name }];
+  title = forum.name;
 }
 
-const threads = await listThreadsInForum(db, forumId, {
-  page: pageNum, pageSize: PAGE_SIZE,
-});
-const slug = viSlug(forum.name);
-const basePath = `/hol/f/${forum.id}-${slug}/`;
-const classicHref = `/hol/classic/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
-const crumbs = [
-  { label: forum.name },
-];
+if (notFound || outOfRange) Astro.response.status = 404;
 ---
-<HolLayout title={forum.name} crumbs={crumbs} classicHref={classicHref}>
-  <h1>{forum.name}</h1>
-  {forum.description && <p class="hol-forum-desc">{forum.description}</p>}
-  <p class="hol-forum-meta">{total.toLocaleString()} threads · page {pageNum} of {totalPages}</p>
-  <div class="hol-thread-list">
-    {threads.map((t) => <ThreadRow thread={t} />)}
-  </div>
-  <Pager basePath={basePath} page={pageNum} totalPages={totalPages} />
+<HolLayout title={title} crumbs={crumbs} classicHref={classicHref}>
+  {notFound && <HolNotFound kind="forum" reason="missing" backHref="/hol/" backLabel="Về trang chính" />}
+  {forum && outOfRange && (
+    <HolNotFound kind="page" reason="out_of_range" backHref={basePath} backLabel="Về trang 1" />
+  )}
+  {forum && !outOfRange && (
+    <>
+      <h1>{forum.name}</h1>
+      {forum.description && <p class="hol-forum-desc">{forum.description}</p>}
+      <p class="hol-forum-meta">{total.toLocaleString()} threads · page {pageNum} of {totalPages}</p>
+      <div class="hol-thread-list">
+        {threads.map((t) => <ThreadRow thread={t} />)}
+      </div>
+      <Pager basePath={basePath} page={pageNum} totalPages={totalPages} />
+    </>
+  )}
 </HolLayout>

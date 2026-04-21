@@ -6,6 +6,7 @@
 // to that author (existing searchPosts already prioritises author matches).
 import ClassicLayout from "../../../../components/hol/ClassicLayout.astro";
 import ClassicPager from "../../../../components/hol/ClassicPager.astro";
+import ClassicNotFound from "../../../../components/hol/ClassicNotFound.astro";
 import { getHolDb } from "../../../../lib/hol/db";
 import { countMembers, listMembers } from "../../../../lib/hol/queries";
 
@@ -13,10 +14,11 @@ const PAGE_SIZE = 50;
 
 const { page: pagePath } = Astro.params as { page?: string };
 let pageNum = 1;
+let pageParseFailed = false;
 if (pagePath) {
   const m = pagePath.match(/^page\/(\d+)\/?$/);
-  if (!m) return new Response("Not found", { status: 404 });
-  pageNum = parseInt(m[1], 10);
+  if (!m) pageParseFailed = true;
+  else pageNum = parseInt(m[1], 10);
 }
 
 // `?sort=name` to switch from post-count to alphabetical — mimics vB's
@@ -25,13 +27,12 @@ const sortParam = Astro.url.searchParams.get("sort");
 const order = sortParam === "name" ? "name" : "posts";
 
 const db = getHolDb();
-const total = await countMembers(db);
+const total = pageParseFailed ? 0 : await countMembers(db);
 const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-if (pageNum < 1 || pageNum > totalPages) {
-  return new Response("Page out of range", { status: 404 });
-}
+const outOfRange = pageParseFailed || pageNum < 1 || pageNum > totalPages;
 
-const members = await listMembers(db, { page: pageNum, pageSize: PAGE_SIZE }, order);
+const members = outOfRange ? [] : await listMembers(db, { page: pageNum, pageSize: PAGE_SIZE }, order);
+if (outOfRange) Astro.response.status = 404;
 
 function fmtDate(unix: number | null): string {
   if (!unix) return "—";
@@ -45,6 +46,16 @@ function searchHref(username: string): string {
 const basePath = "/hol/classic/members/";
 ---
 <ClassicLayout title="Members List" modernHref="/hol/search/" crumbs={[{ label: "Members" }]}>
+  {outOfRange && (
+    <ClassicNotFound
+      kind="page"
+      reason="out_of_range"
+      backHref="/hol/classic/members/"
+      backLabel="Về trang 1 Members List"
+    />
+  )}
+  {!outOfRange && (
+    <>
   <table class="tborder" cellpadding="6" cellspacing="1">
     <tr>
       <td class="tcat"><strong>Members List</strong>
@@ -91,4 +102,6 @@ const basePath = "/hol/classic/members/";
   </div>
 
   <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="page" />
+    </>
+  )}
 </ClassicLayout>

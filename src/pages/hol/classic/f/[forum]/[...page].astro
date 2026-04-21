@@ -3,6 +3,7 @@
 // Matches: /hol/classic/f/10-...hon-hen/ and /hol/classic/f/10-.../page/3/
 import ClassicLayout from "../../../../../components/hol/ClassicLayout.astro";
 import ClassicPager from "../../../../../components/hol/ClassicPager.astro";
+import ClassicNotFound from "../../../../../components/hol/ClassicNotFound.astro";
 import { getHolDb } from "../../../../../lib/hol/db";
 import {
   countThreadsInForum, getForum, listThreadsInForum,
@@ -19,28 +20,39 @@ if (!idMatch) return Astro.redirect("/hol/classic/", 302);
 const forumId = parseInt(idMatch[1], 10);
 
 let pageNum = 1;
+let pageParseFailed = false;
 if (pagePath) {
   const m = pagePath.match(/^page\/(\d+)\/?$/);
-  if (!m) return new Response("Not found", { status: 404 });
-  pageNum = parseInt(m[1], 10);
+  if (!m) pageParseFailed = true;
+  else pageNum = parseInt(m[1], 10);
 }
 
 const db = getHolDb();
-const forum = await getForum(db, forumId);
-if (!forum) return new Response("Forum not found", { status: 404 });
+const forum = pageParseFailed ? null : await getForum(db, forumId);
+const notFound = forum == null;
 
-const total = await countThreadsInForum(db, forumId);
-const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-if (pageNum < 1 || pageNum > totalPages) {
-  return new Response("Page out of range", { status: 404 });
+let total = 0;
+let totalPages = 1;
+let outOfRange = false;
+let threads: Awaited<ReturnType<typeof listThreadsInForum>> = [];
+let basePath = "";
+let modernHref = "/hol/";
+let title = "Forum không tồn tại";
+
+if (forum) {
+  total = await countThreadsInForum(db, forumId);
+  totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  outOfRange = pageNum < 1 || pageNum > totalPages;
+  if (!outOfRange) {
+    threads = await listThreadsInForum(db, forumId, { page: pageNum, pageSize: PAGE_SIZE });
+  }
+  const slug = viSlug(forum.name);
+  basePath = `/hol/classic/f/${forum.id}-${slug}/`;
+  modernHref = `/hol/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
+  title = forum.name;
 }
 
-const threads = await listThreadsInForum(db, forumId, {
-  page: pageNum, pageSize: PAGE_SIZE,
-});
-const slug = viSlug(forum.name);
-const basePath = `/hol/classic/f/${forum.id}-${slug}/`;
-const modernHref = `/hol/f/${forum.id}-${slug}/${pageNum > 1 ? `page/${pageNum}/` : ""}`;
+if (notFound || outOfRange) Astro.response.status = 404;
 
 function fmtDate(unix: number | null): string {
   if (!unix) return "—";
@@ -51,8 +63,28 @@ function fmtDate(unix: number | null): string {
   return timeStr === "00:00" ? dateStr : `${dateStr} ${timeStr}`;
 }
 ---
-<ClassicLayout title={forum.name} modernHref={modernHref} crumbs={[{ label: forum.name }]}>
-  <!-- forum title bar -->
+<ClassicLayout title={title} modernHref={modernHref} crumbs={forum ? [{ label: forum.name }] : []}>
+  {notFound && (
+    <ClassicNotFound
+      kind="forum"
+      reason="missing"
+      backHref="/hol/classic/"
+      backLabel="Về trang chính"
+    />
+  )}
+
+  {forum && outOfRange && (
+    <ClassicNotFound
+      kind="page"
+      reason="out_of_range"
+      backHref={basePath}
+      backLabel="Về trang 1 của forum này"
+    />
+  )}
+
+  {forum && !outOfRange && (
+    <>
+      <!-- forum title bar -->
   <table class="tborder" cellpadding="6" cellspacing="1">
     <tr>
       <td class="tcat"><strong>{forum.name}</strong>
@@ -115,4 +147,6 @@ function fmtDate(unix: number | null): string {
   </div>
 
   <ClassicPager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="page" />
+    </>
+  )}
 </ClassicLayout>
