@@ -246,40 +246,6 @@ function formatGHDate(iso: string) {
 				</dl>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
-				{/* Ocean wave silhouette underneath */}
-				<svg class="portrait-waves" viewBox="0 0 300 80" preserveAspectRatio="none" aria-hidden="true">
-					<defs>
-						<linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-							<stop offset="0%" stop-color="#f0c75e" stop-opacity="0.5" />
-							<stop offset="100%" stop-color="#f0c75e" stop-opacity="0" />
-						</linearGradient>
-					</defs>
-					<path class="wave-path wave-1" d="M0 40 Q50 20 100 40 T200 40 T300 40 L300 80 L0 80 Z" fill="url(#waveGrad)" />
-					<path class="wave-path wave-2" d="M0 50 Q75 30 150 50 T300 50 L300 80 L0 80 Z" fill="url(#waveGrad)" opacity="0.6" />
-				</svg>
-
-				{/* Frost crystals forming at corners */}
-				<svg class="portrait-frost portrait-frost-tl" viewBox="0 0 40 40" aria-hidden="true">
-					<g stroke="rgba(200, 220, 255, 0.85)" stroke-width="0.7" stroke-linecap="round" fill="none">
-						<line x1="20" y1="20" x2="5" y2="5" />
-						<line x1="20" y1="20" x2="20" y2="2" />
-						<line x1="20" y1="20" x2="2" y2="20" />
-						<line x1="10" y1="8" x2="14" y2="4" />
-						<line x1="10" y1="8" x2="8" y2="4" />
-						<line x1="5" y1="14" x2="2" y2="12" />
-					</g>
-				</svg>
-				<svg class="portrait-frost portrait-frost-br" viewBox="0 0 40 40" aria-hidden="true">
-					<g stroke="rgba(200, 220, 255, 0.85)" stroke-width="0.7" stroke-linecap="round" fill="none">
-						<line x1="20" y1="20" x2="35" y2="35" />
-						<line x1="20" y1="20" x2="20" y2="38" />
-						<line x1="20" y1="20" x2="38" y2="20" />
-						<line x1="30" y1="32" x2="26" y2="36" />
-						<line x1="30" y1="32" x2="32" y2="36" />
-						<line x1="35" y1="26" x2="38" y2="28" />
-					</g>
-				</svg>
-
 				{/* Lotus petals unfurling */}
 				<svg class="portrait-lotus" viewBox="0 0 200 200" aria-hidden="true">
 					<g fill="url(#flourishGrad)" opacity="0.6" stroke="rgba(240, 199, 94, 0.8)" stroke-width="0.6">
@@ -345,48 +311,6 @@ function formatGHDate(iso: string) {
 						</div>
 					</div>
 				</div>
-
-				{/* Mercury liquid blobs morphing */}
-				<div class="portrait-mercury" aria-hidden="true">
-					<span class="mercury-blob mercury-1" />
-					<span class="mercury-blob mercury-2" />
-					<span class="mercury-blob mercury-3" />
-				</div>
-
-				{/* Zodiac wheel rotating in deep background */}
-				<svg class="portrait-zodiac" viewBox="0 0 500 500" aria-hidden="true">
-					<g stroke="currentColor" stroke-width="0.5" fill="none">
-						<circle cx="250" cy="250" r="240" />
-						<circle cx="250" cy="250" r="220" stroke-dasharray="1 2" />
-						<circle cx="250" cy="250" r="200" />
-					</g>
-					{/* 12 zodiac segments */}
-					{Array.from({ length: 12 }).map((_, i) => (
-						<g transform={`rotate(${i * 30} 250 250)`}>
-							<line x1="250" y1="10" x2="250" y2="30" stroke="currentColor" stroke-width="1" />
-							<line x1="250" y1="35" x2="250" y2="48" stroke="currentColor" stroke-width="0.5" opacity="0.7" />
-							<circle cx="250" cy="25" r="2" fill="currentColor" />
-							<text x="250" y="56" text-anchor="middle" font-size="10" fill="currentColor" font-family="serif">
-								{["♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓"][i]}
-							</text>
-						</g>
-					))}
-				</svg>
-
-				{/* Stained glass pattern overlay */}
-				<svg class="portrait-stained-glass" viewBox="0 0 280 350" preserveAspectRatio="none" aria-hidden="true">
-					<g stroke="rgba(240, 199, 94, 0.35)" stroke-width="1" fill="none">
-						<path d="M0 100 L280 80" />
-						<path d="M0 180 L280 200" />
-						<path d="M0 270 L280 260" />
-						<path d="M70 0 L80 350" />
-						<path d="M140 0 L135 350" />
-						<path d="M210 0 L220 350" />
-						{/* Diamond accents */}
-						<polygon points="140,100 155,130 140,160 125,130" fill="rgba(240, 199, 94, 0.08)" />
-						<polygon points="140,180 155,210 140,240 125,210" fill="rgba(240, 199, 94, 0.08)" />
-					</g>
-				</svg>
 
 				{/* Ornate baroque frame border with scrollwork */}
 				<svg class="portrait-baroque" viewBox="0 0 320 390" preserveAspectRatio="none" aria-hidden="true">
@@ -508,50 +432,6 @@ function formatGHDate(iso: string) {
 					</svg>
 				</div>
 
-				{/* Flying silhouette bird traversing */}
-				<svg class="portrait-bird" viewBox="0 0 30 20" aria-hidden="true">
-					<path d="M2 10 Q8 4 14 10 Q20 4 28 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-				</svg>
-
-				{/* Animated compass / celestial dial rotating behind */}
-				<svg class="portrait-compass" viewBox="0 0 400 400" aria-hidden="true">
-					<g stroke="currentColor" stroke-width="0.8" fill="none">
-						<circle cx="200" cy="200" r="180" stroke-dasharray="2 4" />
-						<circle cx="200" cy="200" r="160" />
-						<circle cx="200" cy="200" r="140" stroke-dasharray="1 6" />
-						{Array.from({ length: 24 }).map((_, i) => (
-							<line x1="200" y1="20" x2="200" y2="40" transform={`rotate(${i * 15} 200 200)`} stroke-width={i % 6 === 0 ? 2 : 0.6} />
-						))}
-					</g>
-					<g fill="currentColor" opacity="0.9">
-						<polygon points="200,40 195,200 200,205 205,200" />
-						<polygon points="200,360 195,200 200,195 205,200" opacity="0.5" />
-					</g>
-				</svg>
-
-				{/* Flowing ribbon weaving around portrait */}
-				<svg class="portrait-ribbon" viewBox="0 0 400 500" preserveAspectRatio="none" aria-hidden="true">
-					<defs>
-						<linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-							<stop offset="0%" stop-color="#f0c75e" stop-opacity="0" />
-							<stop offset="20%" stop-color="#ffe6a8" stop-opacity="0.8" />
-							<stop offset="50%" stop-color="#fff0c2" />
-							<stop offset="80%" stop-color="#ffe6a8" stop-opacity="0.8" />
-							<stop offset="100%" stop-color="#f0c75e" stop-opacity="0" />
-						</linearGradient>
-					</defs>
-					<path class="ribbon-path" d="M20 100 Q60 40, 200 80 T380 100 Q350 250, 380 400 Q280 380, 200 420 Q100 380, 20 400 Q50 250, 20 100 Z"
-						fill="none" stroke="url(#ribbonGrad)" stroke-width="3" stroke-linecap="round" />
-				</svg>
-
-				{/* Gold liquid drips down frame edges */}
-				<div class="portrait-drips" aria-hidden="true">
-					<span class="drip" style="--drx: 15%; --drd: 0s; --drh: 50px;" />
-					<span class="drip" style="--drx: 35%; --drd: 2s; --drh: 70px;" />
-					<span class="drip" style="--drx: 65%; --drd: 3.5s; --drh: 45px;" />
-					<span class="drip" style="--drx: 85%; --drd: 5s; --drh: 60px;" />
-				</div>
-
 				{/* Soundwave pulsing rings — 6 concentric rings expanding */}
 				<div class="portrait-soundwaves" aria-hidden="true">
 					<span class="soundwave" style="--swd: 0s;" />
@@ -642,21 +522,6 @@ function formatGHDate(iso: string) {
 					</g>
 				</svg>
 
-				{/* Phoenix feathers drifting around */}
-				<div class="portrait-feathers" aria-hidden="true">
-					<svg class="feather feather-1" viewBox="0 0 30 80" aria-hidden="true">
-						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
-						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
-					</svg>
-					<svg class="feather feather-2" viewBox="0 0 30 80" aria-hidden="true">
-						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
-						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
-					</svg>
-					<svg class="feather feather-3" viewBox="0 0 30 80" aria-hidden="true">
-						<path d="M15 2 Q22 20 20 40 Q18 60 15 78 Q12 60 10 40 Q8 20 15 2 Z" fill="url(#flourishGrad)" opacity="0.8" />
-						<line x1="15" y1="5" x2="15" y2="78" stroke="#f0c75e" stroke-width="0.5" />
-					</svg>
-				</div>
 
 				{/* Gold rain falling from top */}
 				<div class="portrait-rain" aria-hidden="true">
@@ -1229,51 +1094,6 @@ function formatGHDate(iso: string) {
 		width: 280px;
 	}
 
-	/* Ocean wave silhouette at bottom */
-	.portrait-waves {
-		position: absolute;
-		bottom: -50px;
-		left: 0;
-		right: 0;
-		height: 60px;
-		pointer-events: none;
-		z-index: 2;
-		filter: drop-shadow(0 -2px 4px rgba(240, 199, 94, 0.5));
-	}
-
-	.wave-path {
-		animation: wave-rise 6s ease-in-out infinite;
-	}
-
-	.wave-2 { animation-delay: 1.5s; }
-
-	@keyframes wave-rise {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-6px); }
-	}
-
-	/* Frost crystals forming at corners */
-	.portrait-frost {
-		position: absolute;
-		width: 44px;
-		height: 44px;
-		pointer-events: none;
-		z-index: 5;
-		filter: drop-shadow(0 0 3px rgba(200, 220, 255, 0.9));
-		opacity: 0;
-		animation: frost-form 9s ease-in-out infinite;
-	}
-
-	.portrait-frost-tl { top: -10px; left: -10px; }
-	.portrait-frost-br { bottom: -10px; right: -10px; animation-delay: 4.5s; }
-
-	@keyframes frost-form {
-		0%, 10% { opacity: 0; transform: scale(0.3) rotate(0deg); }
-		20% { opacity: 0.9; transform: scale(1) rotate(30deg); }
-		60% { opacity: 0.9; transform: scale(1) rotate(30deg); }
-		80%, 100% { opacity: 0; transform: scale(1.3) rotate(60deg); }
-	}
-
 	/* Lotus petals unfurling */
 	.portrait-lotus {
 		position: absolute;
@@ -1432,84 +1252,6 @@ function formatGHDate(iso: string) {
 
 	@keyframes coin-spin {
 		to { transform: rotateY(360deg); }
-	}
-
-	/* Mercury liquid blobs */
-	.portrait-mercury {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 3;
-	}
-
-	.mercury-blob {
-		position: absolute;
-		width: 30px;
-		height: 30px;
-		border-radius: 50%;
-		background: radial-gradient(
-			circle at 30% 30%,
-			rgba(255, 240, 200, 0.9) 0%,
-			rgba(240, 199, 94, 0.7) 30%,
-			rgba(180, 140, 60, 0.5) 100%
-		);
-		box-shadow:
-			0 0 12px rgba(240, 199, 94, 0.7),
-			inset -2px -2px 4px rgba(0, 0, 0, 0.3),
-			inset 2px 2px 4px rgba(255, 255, 255, 0.4);
-		filter: blur(1px);
-		animation: mercury-morph 8s ease-in-out infinite;
-	}
-
-	.mercury-1 { top: 20%; left: -8px; animation-delay: 0s; }
-	.mercury-2 { top: 55%; right: -8px; animation-delay: 2.5s; }
-	.mercury-3 { bottom: 15%; left: 45%; animation-delay: 5s; }
-
-	@keyframes mercury-morph {
-		0%, 100% { border-radius: 50%; transform: translate(0, 0) scale(1); }
-		33% { border-radius: 40% 60% 55% 45% / 50% 45% 55% 50%; transform: translate(5px, -5px) scale(1.1); }
-		66% { border-radius: 55% 45% 40% 60% / 45% 55% 50% 50%; transform: translate(-3px, 6px) scale(0.9); }
-	}
-
-	/* Zodiac wheel in deep background */
-	.portrait-zodiac {
-		position: absolute;
-		top: 175px;
-		left: 50%;
-		width: 560px;
-		height: 560px;
-		margin-left: -280px;
-		margin-top: -280px;
-		pointer-events: none;
-		z-index: 0;
-		color: rgba(240, 199, 94, 0.18);
-		filter: drop-shadow(0 0 2px rgba(240, 199, 94, 0.3));
-		animation: zodiac-rotate 120s linear infinite;
-	}
-
-	@keyframes zodiac-rotate {
-		to { transform: rotate(360deg); }
-	}
-
-	/* Stained glass leading lines on photo */
-	.portrait-stained-glass {
-		position: absolute;
-		top: 14px;
-		left: 14px;
-		right: 14px;
-		bottom: 14px;
-		width: auto;
-		height: auto;
-		pointer-events: none;
-		z-index: 4;
-		opacity: 0.7;
-		mix-blend-mode: overlay;
-		animation: stained-shift 12s ease-in-out infinite;
-	}
-
-	@keyframes stained-shift {
-		0%, 100% { opacity: 0.5; filter: hue-rotate(0deg); }
-		50% { opacity: 0.9; filter: hue-rotate(15deg); }
 	}
 
 	/* Ornate baroque frame border scrollwork */
@@ -1766,124 +1508,6 @@ function formatGHDate(iso: string) {
 		0%, 90%, 100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
 		10% { opacity: 1; transform: scale(1.15) rotate(15deg); }
 		25% { opacity: 1; transform: scale(1) rotate(30deg); }
-	}
-
-	/* Flying silhouette bird traversing */
-	.portrait-bird {
-		position: absolute;
-		top: 30%;
-		left: -40px;
-		width: 30px;
-		height: 20px;
-		color: rgba(240, 199, 94, 0.8);
-		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.5));
-		z-index: 7;
-		pointer-events: none;
-		animation: bird-fly 20s linear infinite;
-	}
-
-	@keyframes bird-fly {
-		0%, 95%, 100% { opacity: 0; transform: translate(0, 0) scale(1); }
-		3% { opacity: 1; }
-		30% { transform: translate(150px, -25px) scale(0.9); }
-		60% { transform: translate(280px, 10px) scale(0.8); }
-		90% { opacity: 0.5; transform: translate(400px, -15px) scale(0.7); }
-	}
-
-	/* Animated compass / celestial dial */
-	.portrait-compass {
-		position: absolute;
-		top: 175px;
-		left: 50%;
-		width: 450px;
-		height: 450px;
-		margin-left: -225px;
-		margin-top: -225px;
-		pointer-events: none;
-		z-index: 0;
-		color: rgba(240, 199, 94, 0.22);
-		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.4));
-		animation: compass-rotate 90s linear infinite;
-	}
-
-	@keyframes compass-rotate {
-		to { transform: rotate(360deg); }
-	}
-
-	/* Flowing ribbon weaving around */
-	.portrait-ribbon {
-		position: absolute;
-		top: -50px;
-		left: 50%;
-		width: 400px;
-		height: 500px;
-		margin-left: -200px;
-		pointer-events: none;
-		z-index: 3;
-		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.7));
-	}
-
-	.ribbon-path {
-		stroke-dasharray: 2400;
-		stroke-dashoffset: 2400;
-		animation: ribbon-flow 20s linear infinite;
-	}
-
-	@keyframes ribbon-flow {
-		0% { stroke-dashoffset: 2400; }
-		100% { stroke-dashoffset: -2400; }
-	}
-
-	/* Gold liquid drips from top edge of frame */
-	.portrait-drips {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 140px;
-		pointer-events: none;
-		z-index: 5;
-		overflow: hidden;
-	}
-
-	.drip {
-		position: absolute;
-		top: 0;
-		left: var(--drx);
-		width: 3px;
-		height: var(--drh);
-		background: linear-gradient(
-			to bottom,
-			transparent 0%,
-			rgba(255, 240, 200, 0.5) 20%,
-			rgba(240, 199, 94, 0.9) 60%,
-			rgba(240, 199, 94, 1) 100%
-		);
-		border-radius: 0 0 50% 50%;
-		filter: blur(0.5px) drop-shadow(0 0 4px rgba(240, 199, 94, 0.7));
-		transform-origin: 0 0;
-		transform: scaleY(0);
-		animation: drip-fall 7s ease-in infinite;
-		animation-delay: var(--drd);
-	}
-
-	.drip::after {
-		content: "";
-		position: absolute;
-		left: -3px;
-		bottom: -4px;
-		width: 9px;
-		height: 9px;
-		border-radius: 50%;
-		background: radial-gradient(circle at 30% 30%, #fff0c2, #f0c75e);
-		box-shadow: 0 0 6px rgba(240, 199, 94, 0.8);
-	}
-
-	@keyframes drip-fall {
-		0% { transform: scaleY(0); opacity: 1; }
-		30% { transform: scaleY(1); opacity: 1; }
-		70% { transform: scaleY(1) translateY(0); opacity: 1; }
-		100% { transform: scaleY(1) translateY(80px); opacity: 0; }
 	}
 
 	/* Soundwave pulsing rings */
@@ -2178,49 +1802,6 @@ function formatGHDate(iso: string) {
 	@keyframes crystal-shimmer {
 		0%, 100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
 		50% { opacity: 0.9; transform: scale(1.02) rotate(1deg); }
-	}
-
-	/* Phoenix feathers drifting slowly */
-	.portrait-feathers {
-		position: absolute;
-		inset: -60px;
-		pointer-events: none;
-		z-index: 5;
-		overflow: visible;
-	}
-
-	.feather {
-		position: absolute;
-		width: 28px;
-		height: 75px;
-		filter: drop-shadow(0 2px 6px rgba(240, 199, 94, 0.7)) drop-shadow(0 0 12px rgba(240, 199, 94, 0.4));
-	}
-
-	.feather-1 {
-		top: 0;
-		left: 10%;
-		animation: feather-drift 14s ease-in-out infinite;
-	}
-
-	.feather-2 {
-		top: 30%;
-		right: 5%;
-		animation: feather-drift 16s ease-in-out 4s infinite;
-	}
-
-	.feather-3 {
-		top: 60%;
-		left: 5%;
-		animation: feather-drift 12s ease-in-out 8s infinite;
-	}
-
-	@keyframes feather-drift {
-		0% { opacity: 0; transform: translate(0, -40px) rotate(-10deg) scale(0.8); }
-		15% { opacity: 0.9; transform: translate(10px, 40px) rotate(5deg) scale(1); }
-		35% { opacity: 0.8; transform: translate(-15px, 120px) rotate(-12deg) scale(0.95); }
-		60% { opacity: 0.7; transform: translate(20px, 220px) rotate(18deg) scale(1.05); }
-		85% { opacity: 0.3; transform: translate(-8px, 320px) rotate(-8deg) scale(0.9); }
-		100% { opacity: 0; transform: translate(15px, 420px) rotate(10deg) scale(0.7); }
 	}
 
 	/* Gold rain falling from above the portrait */
