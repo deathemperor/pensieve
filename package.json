@@ -14,7 +14,7 @@
 	"dependencies": {
 		"@astrojs/cloudflare": "^13.1.6",
 		"@astrojs/react": "^5.0.0",
-		"@emdash-cms/cloudflare": "^0.1.0",
+		"@emdash-cms/cloudflare": "^0.5.0",
 		"@emdash-cms/plugin-forms": "^0.1.0",
 		"@emdash-cms/plugin-webhook-notifier": "^0.1.0",
 		"@resvg/resvg-wasm": "^2.6.2",
@@ -22,7 +22,7 @@
 		"@types/adm-zip": "^0.5.8",
 		"adm-zip": "^0.5.17",
 		"astro": "^6.1.2",
-		"emdash": "^0.1.0",
+		"emdash": "^0.5.0",
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
 		"react": "^19.2.4",

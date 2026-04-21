@@ -8,6 +8,6 @@
 		"./sandbox": "./src/sandbox-entry.ts"
 	},
 	"peerDependencies": {
-		"emdash": "^0.1.0"
+		"emdash": "^0.1.0 || ^0.5.0"
 	}
 }
