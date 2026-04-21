@@ -82,8 +82,13 @@ for chunk in "$TEMP_DIR"/data_*.sql; do
 done
 
 if [ "${1:-}" = "--remote" ]; then
-  echo "importing into REMOTE D1 (production)..."
-  bunx wrangler d1 execute HOL_DB --remote --file="$SQL_FILE"
+  echo "importing schema into REMOTE D1 (production)..."
+  bunx wrangler d1 execute HOL_DB --remote --file="$TEMP_DIR/schema.sql" > /dev/null
+  echo "importing data chunks into REMOTE D1..."
+  for chunk in "$TEMP_DIR"/data_*.sql; do
+    echo "  $(basename "$chunk")..."
+    bunx wrangler d1 execute HOL_DB --remote --file="$chunk" > /dev/null
+  done
 fi
 
 echo "done."
