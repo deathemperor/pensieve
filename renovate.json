@@ -1,0 +1,58 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:best-practices",
+		":dependencyDashboard",
+		":semanticCommits",
+		":timezone(Asia/Ho_Chi_Minh)"
+	],
+	"schedule": ["before 11am on Monday"],
+	"prConcurrentLimit": 5,
+	"prHourlyLimit": 2,
+	"minimumReleaseAge": "3 days",
+	"labels": ["dependencies"],
+	"rebaseWhen": "conflicted",
+	"lockFileMaintenance": {
+		"enabled": true,
+		"schedule": ["before 11am on Monday"]
+	},
+	"packageRules": [
+		{
+			"description": "EmDash core + plugins — update together so the CMS contract stays consistent.",
+			"matchPackageNames": ["emdash", "/^@emdash-cms//"],
+			"groupName": "emdash"
+		},
+		{
+			"description": "Astro + official integrations — they release in lockstep.",
+			"matchPackageNames": ["astro", "/^@astrojs//"],
+			"groupName": "astro"
+		},
+		{
+			"description": "Cloudflare tooling — wrangler + worker types must move together to avoid type/runtime drift.",
+			"matchPackageNames": ["wrangler", "/^@cloudflare//"],
+			"groupName": "cloudflare"
+		},
+		{
+			"description": "React + react-dom must match major.",
+			"matchPackageNames": ["react", "react-dom", "/^@types/react/"],
+			"groupName": "react"
+		},
+		{
+			"description": "Auto-merge patch/minor devDependency bumps — test failures still gate the merge.",
+			"matchDepTypes": ["devDependencies"],
+			"matchUpdateTypes": ["patch", "minor"],
+			"automerge": true
+		},
+		{
+			"description": "Auto-merge @types/* updates (declaration-only).",
+			"matchPackageNames": ["/^@types//"],
+			"matchUpdateTypes": ["patch", "minor"],
+			"automerge": true
+		},
+		{
+			"description": "Require explicit approval for major updates — breaking changes land when you say so.",
+			"matchUpdateTypes": ["major"],
+			"dependencyDashboardApproval": true
+		}
+	]
+}
