@@ -300,21 +300,15 @@ export default definePlugin({
 	hooks: {
 		"page:fragments": {
 			handler: async (event: any, ctx: PluginContext) => {
-				// Diagnostic: log every call so we can confirm the hook fires.
+				// Diagnostic: write to KV (always works when hook fires).
 				try {
-					const diagId = `pf_diag_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-					await ctx.storage.reading_events.put(diagId, {
-						id: diagId,
-						eventType: "hook_diag",
-						sessionId: "hook",
-						postSlug: event.page?.content?.slug ?? "",
-						data: {
-							pageKind: event.page?.kind ?? null,
-							collection: event.page?.content?.collection ?? null,
-							hasContent: !!event.page?.content,
-							pageKeys: event.page ? Object.keys(event.page) : [],
-						},
-						createdAt: new Date().toISOString(),
+					await ctx.kv.set(`pf_hit_${Date.now()}`, {
+						pageKind: event?.page?.kind ?? null,
+						collection: event?.page?.content?.collection ?? null,
+						slug: event?.page?.content?.slug ?? null,
+						hasCtxStorage: !!ctx?.storage,
+						hasCtxKv: !!ctx?.kv,
+						eventKeys: event ? Object.keys(event) : [],
 					});
 				} catch {
 					// ignore
