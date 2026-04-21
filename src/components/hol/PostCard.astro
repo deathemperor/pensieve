@@ -4,17 +4,35 @@ import GapNotice from "./GapNotice.astro";
 import type { Post } from "../../lib/hol/types";
 interface Props { post: Post; }
 const { post } = Astro.props;
-const posted = post.posted_at
-  ? new Date(post.posted_at * 1000).toISOString().slice(0, 10)
-  : null;
+
+// SQLite booleans come through as 0/1 ints; JSX renders 0 as text.
+// Coerce to real bools before using in truthy JSX guards.
+const isPartial      = post.is_partial === true || post.is_partial === 1;
+const hasBrokenImages = post.has_broken_images === true || post.has_broken_images === 1;
+
+// Format date + time (posted_at is unix seconds — we store the full moment,
+// even if the source only had "DD-MM-YY" precision we still have midnight).
+let postedIso: string | null = null;   // machine-readable for <time datetime>
+let postedHuman: string | null = null; // readable "2005-04-03 · 17:00"
+if (post.posted_at) {
+  const d = new Date(post.posted_at * 1000);
+  postedIso = d.toISOString();
+  const dateStr = postedIso.slice(0, 10);          // 2005-04-03
+  const timeStr = postedIso.slice(11, 16);         // 17:00
+  // Only show time when it's not midnight — a lot of archive-mode posts
+  // parsed only a date and default to 00:00; showing that is noise.
+  postedHuman = timeStr === "00:00"
+    ? dateStr
+    : `${dateStr} · ${timeStr}`;
+}
 ---
 <article class="hol-post" id={`post-${post.id}`}>
   <header class="hol-post-head">
     <span class="hol-post-pos">#{post.position_in_thread}</span>
     <span class="hol-post-author">{post.author_username ?? "unknown"}</span>
-    {posted && <time datetime={posted}>{posted}</time>}
+    {postedIso && <time datetime={postedIso}>{postedHuman}</time>}
   </header>
-  {post.is_partial && <GapNotice kind="posts_partial" />}
-  {post.has_broken_images && <GapNotice kind="image_lost" />}
+  {isPartial && <GapNotice kind="posts_partial" />}
+  {hasBrokenImages && <GapNotice kind="image_lost" />}
   <div class="hol-post-body" set:html={post.body_html} />
 </article>
