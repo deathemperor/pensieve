@@ -1,0 +1,41 @@
+---
+// src/components/hol/Pager.astro
+interface Props {
+  basePath: string;        // e.g. "/hol/f/nhat-ki-thuong-ngay/"
+  page: number;
+  totalPages: number;
+  pageParam?: string;      // path-segment style: /page/<n>/
+}
+const { basePath, page, totalPages, pageParam = "page" } = Astro.props;
+const hrefFor = (p: number) =>
+  p === 1 ? basePath : `${basePath}${pageParam}/${p}/`;
+
+const windowSize = 2;
+const start = Math.max(1, page - windowSize);
+const end   = Math.min(totalPages, page + windowSize);
+const pages: number[] = [];
+for (let i = start; i <= end; i++) pages.push(i);
+---
+{totalPages > 1 && (
+  <nav class="hol-pager" aria-label="Pagination">
+    {page > 1 && <a href={hrefFor(page - 1)}>‹ Prev</a>}
+    {start > 1 && <><a href={hrefFor(1)}>1</a><span>…</span></>}
+    {pages.map((p) => (
+      p === page
+        ? <span class="current" aria-current="page">{p}</span>
+        : <a href={hrefFor(p)}>{p}</a>
+    ))}
+    {end < totalPages && <><span>…</span><a href={hrefFor(totalPages)}>{totalPages}</a></>}
+    {page < totalPages && <a href={hrefFor(page + 1)}>Next ›</a>}
+  </nav>
+)}
+
+<style>
+.hol-pager { display: flex; gap: .35rem; justify-content: center;
+             margin: 1rem 0; font-size: .95em; }
+.hol-pager a, .hol-pager span { padding: .25rem .5rem; border-radius: 3px;
+                                  text-decoration: none; color: var(--hol-ink); }
+.hol-pager a { border: 1px solid var(--hol-line); }
+.hol-pager a:hover { background: #f3f6f9; }
+.hol-pager .current { background: var(--hol-accent); color: white; }
+</style>

@@ -1,0 +1,18 @@
+---
+// src/components/hol/GapNotice.astro
+// Render when something is missing / partial from Wayback.
+interface Props {
+  kind: "thread_missing" | "posts_partial" | "image_lost";
+  detail?: string;
+}
+const { kind, detail } = Astro.props;
+const message = {
+  thread_missing: "This thread was partially captured — some pages are missing.",
+  posts_partial:  "This post was reconstructed from multiple snapshots and may be incomplete.",
+  image_lost:     "Some images in this post were not archived.",
+}[kind];
+---
+<aside class="hol-gap" role="note">
+  <span aria-hidden="true">⚠</span> {message}
+  {detail && <span class="hol-gap-detail"> ({detail})</span>}
+</aside>

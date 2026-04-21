@@ -1,0 +1,17 @@
+---
+// src/pages/hol/takedown-received.astro
+import HolLayout from "../../components/hol/HolLayout.astro";
+const crumbs = [
+  { label: "HOL Archive", href: "/hol/" },
+  { label: "Takedown", href: "/hol/about/" },
+];
+---
+<HolLayout title="Request Received" crumbs={crumbs}>
+  <h1>Request Received</h1>
+  <p>
+    Your request has been logged. We'll email you at the address you provided once it's processed.
+  </p>
+  <p>
+    <a href="/hol/">Back to HOL Archive</a>
+  </p>
+</HolLayout>

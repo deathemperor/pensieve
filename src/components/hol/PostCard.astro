@@ -1,0 +1,39 @@
+---
+// src/components/hol/PostCard.astro
+import GapNotice from "./GapNotice.astro";
+import type { Post } from "../../lib/hol/types";
+interface Props { post: Post; }
+const { post } = Astro.props;
+const posted = post.posted_at
+  ? new Date(post.posted_at * 1000).toISOString().slice(0, 10)
+  : null;
+---
+<article class="hol-post" id={`post-${post.id}`}>
+  <header class="hol-post-head">
+    <span class="hol-post-pos">#{post.position_in_thread}</span>
+    <span class="hol-post-author">{post.author_username ?? "unknown"}</span>
+    {posted && <time datetime={posted}>{posted}</time>}
+  </header>
+  {post.is_partial && <GapNotice kind="posts_partial" />}
+  {post.has_broken_images && <GapNotice kind="image_lost" />}
+  <div class="hol-post-body" set:html={post.body_html} />
+</article>
+
+<style>
+.hol-post { border: 1px solid var(--hol-line); border-radius: 4px;
+            margin: 1rem 0; background: white; overflow: hidden; }
+.hol-post-head { display: flex; gap: .75rem; align-items: baseline;
+                 padding: .5rem .75rem; background: #f3f6f9;
+                 border-bottom: 1px solid var(--hol-line); font-size: .88em; }
+.hol-post-pos { color: var(--hol-dim); font-variant-numeric: tabular-nums; }
+.hol-post-author { font-weight: 600; color: var(--hol-accent); }
+.hol-post-head time { margin-left: auto; color: var(--hol-dim); }
+.hol-post-body { padding: .75rem 1rem; }
+.hol-post-body blockquote { margin: .5rem 0; padding: .5rem .75rem;
+                             background: #f8f9fb; border-left: 3px solid var(--hol-line);
+                             color: var(--hol-dim); }
+.hol-post-body img { max-width: 100%; height: auto; }
+.hol-post-body .image-lost { display: inline-block; padding: 2px 6px;
+                              background: #f0f0f0; color: var(--hol-dim);
+                              font-size: .85em; border-radius: 2px; }
+</style>

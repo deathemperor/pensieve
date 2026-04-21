@@ -1,0 +1,66 @@
+---
+// src/pages/hol/f/[forum]/[...page].astro
+// Matches: /hol/f/10-hon-hen-offline-chuc-tung/
+//          /hol/f/10-hon-hen-offline-chuc-tung/page/3/
+import HolLayout from "../../../../components/hol/HolLayout.astro";
+import ThreadRow from "../../../../components/hol/ThreadRow.astro";
+import Pager from "../../../../components/hol/Pager.astro";
+import { getHolDb } from "../../../../lib/hol/db";
+import {
+  countThreadsInForum, getForum, listThreadsInForum,
+} from "../../../../lib/hol/queries";
+import { viSlug } from "../../../../lib/hol/slug";
+
+const PAGE_SIZE = 30;
+
+const { forum: forumParam = "", page: pagePath } = Astro.params as {
+  forum?: string; page?: string;
+};
+// forumParam looks like "10-hon-hen-offline-chuc-tung"; pull off leading int id.
+const forumIdMatch = forumParam.match(/^(\d+)/);
+if (!forumIdMatch) return Astro.redirect("/hol/", 302);
+const forumId = parseInt(forumIdMatch[1], 10);
+
+// pagePath looks like "" (page 1) or "page/3"
+let pageNum = 1;
+if (pagePath) {
+  const m = pagePath.match(/^page\/(\d+)\/?$/);
+  if (!m) return new Response("Not found", { status: 404 });
+  pageNum = parseInt(m[1], 10);
+}
+
+const db = getHolDb();
+const forum = await getForum(db, forumId);
+if (!forum) return new Response("Forum not found", { status: 404 });
+
+const total = await countThreadsInForum(db, forumId);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+if (pageNum < 1 || pageNum > totalPages) {
+  return new Response("Page out of range", { status: 404 });
+}
+
+const threads = await listThreadsInForum(db, forumId, {
+  page: pageNum, pageSize: PAGE_SIZE,
+});
+const slug = viSlug(forum.name);
+const basePath = `/hol/f/${forum.id}-${slug}/`;
+const crumbs = [
+  { label: "HOL Archive", href: "/hol/" },
+  { label: forum.name },
+];
+---
+<HolLayout title={forum.name} crumbs={crumbs}>
+  <h1>{forum.name}</h1>
+  {forum.description && <p class="hol-forum-desc">{forum.description}</p>}
+  <p class="hol-forum-meta">{total.toLocaleString()} threads · page {pageNum} of {totalPages}</p>
+  <div class="hol-thread-list">
+    {threads.map((t) => <ThreadRow thread={t} />)}
+  </div>
+  <Pager basePath={basePath} page={pageNum} totalPages={totalPages} />
+</HolLayout>
+
+<style>
+.hol-forum-desc { color: var(--hol-dim); }
+.hol-forum-meta { color: var(--hol-dim); font-size: .9em; margin: .25rem 0 1rem; }
+.hol-thread-list { border-top: 1px solid var(--hol-line); }
+</style>

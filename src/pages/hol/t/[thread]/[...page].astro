@@ -1,0 +1,65 @@
+---
+// src/pages/hol/t/[thread]/[...page].astro
+import HolLayout from "../../../../components/hol/HolLayout.astro";
+import PostCard from "../../../../components/hol/PostCard.astro";
+import Pager from "../../../../components/hol/Pager.astro";
+import { getHolDb } from "../../../../lib/hol/db";
+import {
+  countPostsInThread, getForum, getThread, getThreadPosts,
+} from "../../../../lib/hol/queries";
+import { viSlug } from "../../../../lib/hol/slug";
+
+const PAGE_SIZE = 20;
+
+const { thread: threadParam = "", page: pagePath } = Astro.params as {
+  thread?: string; page?: string;
+};
+const idMatch = threadParam.match(/^(\d+)/);
+if (!idMatch) return Astro.redirect("/hol/", 302);
+const threadId = parseInt(idMatch[1], 10);
+
+let pageNum = 1;
+if (pagePath) {
+  const m = pagePath.match(/^p\/(\d+)\/?$/);
+  if (!m) return new Response("Not found", { status: 404 });
+  pageNum = parseInt(m[1], 10);
+}
+
+const db = getHolDb();
+const thread = await getThread(db, threadId);
+if (!thread) return new Response("Thread not found", { status: 404 });
+
+const forum = await getForum(db, thread.forum_id);
+const total = await countPostsInThread(db, threadId);
+const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+if (pageNum < 1 || pageNum > totalPages) {
+  return new Response("Page out of range", { status: 404 });
+}
+
+const posts = await getThreadPosts(db, threadId, {
+  page: pageNum, pageSize: PAGE_SIZE,
+});
+
+const forumSlug = forum ? viSlug(forum.name) : "";
+const basePath = `/hol/t/${thread.id}-${thread.title_slug}/`;
+const crumbs = [
+  { label: "HOL Archive", href: "/hol/" },
+  ...(forum ? [{ label: forum.name, href: `/hol/f/${forum.id}-${forumSlug}/` }] : []),
+  { label: thread.title },
+];
+---
+<HolLayout title={thread.title} crumbs={crumbs}>
+  <h1>{thread.title}</h1>
+  <p class="hol-thread-meta">
+    {total.toLocaleString()} posts · page {pageNum} of {totalPages}
+  </p>
+  <div class="hol-post-list">
+    {posts.map((p) => <PostCard post={p} />)}
+  </div>
+  <Pager basePath={basePath} page={pageNum} totalPages={totalPages} pageParam="p" />
+</HolLayout>
+
+<style>
+.hol-thread-meta { color: var(--hol-dim); font-size: .9em; }
+.hol-post-list { margin-top: 1rem; }
+</style>
