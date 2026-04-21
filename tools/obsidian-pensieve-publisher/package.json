@@ -1,0 +1,20 @@
+{
+	"name": "obsidian-pensieve-publisher",
+	"version": "0.1.0",
+	"description": "Obsidian plugin — publish notes to Pensieve (EmDash CMS) + Facebook.",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "node esbuild.config.mjs production",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": ["obsidian", "plugin", "emdash", "pensieve"],
+	"license": "MIT",
+	"devDependencies": {
+		"@types/node": "^20",
+		"builtin-modules": "^3",
+		"esbuild": "^0.25",
+		"obsidian": "latest",
+		"typescript": "^5"
+	}
+}
