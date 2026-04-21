@@ -48,6 +48,10 @@ const copy = {
   quidditchDesc: isVi
     ? "Các animation web, mỗi cái đi kèm nhật ký xây Claude Code đầy đủ — lướt qua từng prompt và chỉnh sửa."
     : "Web animations, each paired with a full Claude Code build diary — scrub through every prompt and edit.",
+  gamesMeta: isVi ? "Sân chơi" : "Games",
+  gamesDesc: isVi
+    ? "Tuyển tập game nhỏ tìm được trên GitHub — để chơi, để học cách chúng được dựng nên."
+    : "A curated collection of small games found on GitHub — to play, and to study how they were put together.",
   soonBadge: isVi ? "sắp" : "soon",
 };
 ---
@@ -164,6 +168,18 @@ const copy = {
             </div>
             <span class="project-arrow coming-badge">{copy.soonBadge}</span>
           </span>
+        </li>
+        <li>
+          <a href="/hogwarts/games/" class="project">
+            <div>
+              <div class="project-head">
+                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2.25" /><line x1="10" y1="17.5" x2="14" y2="17.5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><line x1="12" y1="15.5" x2="12" y2="19.5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><circle cx="21" cy="16" r="1.25" fill="currentColor" /><circle cx="24" cy="19" r="1.25" fill="currentColor" /></svg>The Games Room</h2>
+                <span class="project-meta">{copy.gamesMeta}</span>
+              </div>
+              <p class="project-desc">{copy.gamesDesc}</p>
+            </div>
+            <span class="project-arrow">&rarr;</span>
+          </a>
         </li>
         <li>
           <a class="project project-quidditch" href="/hogwarts/quidditch/">

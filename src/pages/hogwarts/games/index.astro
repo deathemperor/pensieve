@@ -1,0 +1,368 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { getCurrentLang } from "../../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+// Game registry — hand-curated. Extend this array to add more.
+type Game = {
+	slug: string;
+	title: string;
+	tagline: { vi: string; en: string };
+	year: number;
+	stack: string[];
+	screenshot: string;
+	screenshotAlt: { vi: string; en: string };
+	repo: string;
+	playUrl?: string;
+	author: { name: string; github?: string };
+};
+
+const games: Game[] = [
+	{
+		slug: "type-your-shark",
+		title: "Type Your Shark",
+		tagline: {
+			en: "A typing game with three difficulties and three rounds — loosely inspired by the original Typer Shark, retargeted at programmers with long, obscure words and a spell-check level.",
+			vi: "Game gõ phím với ba mức khó và ba vòng — lấy cảm hứng từ Typer Shark gốc, hướng tới dân lập trình với những từ dài, khó, kèm cả vòng kiểm tra chính tả.",
+		},
+		year: 2020,
+		stack: ["JavaScript", "jQuery", "Ruby on Rails", "PostgreSQL"],
+		screenshot:
+			"https://raw.githubusercontent.com/miriamgrigsby/type-your-shark-frontend/master/screenshot.png",
+		screenshotAlt: {
+			en: "Type Your Shark — gameplay screenshot with sharks carrying words to type",
+			vi: "Type Your Shark — ảnh gameplay với cá mập mang theo các từ cần gõ",
+		},
+		repo: "https://github.com/miriamgrigsby/type-your-shark-frontend",
+		author: { name: "Miriam Grigsby", github: "miriamgrigsby" },
+	},
+];
+---
+
+<Base
+	title={isVi ? "Sân Chơi — Pensieve" : "Games — Pensieve"}
+	description={isVi
+		? "Tuyển tập game được sưu tầm từ cộng đồng — mỗi cái là một buổi nghịch ngợm sáng tạo."
+		: "A curated collection of games found in the wild — each one a small act of playful making."}
+	breadcrumbs={[
+		{ label: "Hogwarts", href: "/" },
+		{ label: isVi ? "Sân Chơi" : "Games" },
+	]}
+>
+	<section class="games-hero">
+		<div class="games-hero-inner">
+			<div class="room-rule" />
+			<span class="room-label">Hogwarts</span>
+			<h1 class="room-title">{isVi ? "Sân Chơi" : "Games"}</h1>
+			<p class="room-subtitle">
+				{isVi
+					? "Một bộ sưu tập nho nhỏ — những game nhỏ gọn tìm được trên GitHub, lưu lại để chơi và để học cách chúng được làm nên."
+					: "A small collection — compact games discovered on GitHub, kept here to play with and to study how they were put together."}
+			</p>
+		</div>
+	</section>
+
+	<section class="games-section">
+		<div class="games-inner">
+			{games.length === 0 ? (
+				<p class="empty-state">
+					{isVi ? "Chưa có game nào. Quay lại sau nhé." : "No games yet. Check back soon."}
+				</p>
+			) : (
+				<div class="games-grid">
+					{games.map((game) => (
+						<article class="game-card">
+							<a class="game-shot" href={game.playUrl ?? game.repo} target="_blank" rel="noopener noreferrer">
+								<img
+									src={game.screenshot}
+									alt={game.screenshotAlt[currentLang]}
+									loading="lazy"
+									decoding="async"
+								/>
+								<span class="game-shot-hover">
+									{game.playUrl
+										? isVi ? "Chơi →" : "Play →"
+										: isVi ? "Xem mã →" : "View code →"}
+								</span>
+							</a>
+							<div class="game-body">
+								<header class="game-head">
+									<h2 class="game-title">{game.title}</h2>
+									<span class="game-year">{game.year}</span>
+								</header>
+								<p class="game-tagline">{game.tagline[currentLang]}</p>
+								<div class="game-stack">
+									{game.stack.map((tech) => (
+										<span class="stack-chip">{tech}</span>
+									))}
+								</div>
+								<footer class="game-foot">
+									<span class="game-author">
+										{isVi ? "Tác giả: " : "By "}
+										{game.author.github ? (
+											<a
+												href={`https://github.com/${game.author.github}`}
+												target="_blank"
+												rel="noopener noreferrer"
+											>{game.author.name}</a>
+										) : (
+											game.author.name
+										)}
+									</span>
+									<div class="game-links">
+										{game.playUrl && (
+											<a class="game-link" href={game.playUrl} target="_blank" rel="noopener noreferrer">
+												{isVi ? "Chơi" : "Play"}
+											</a>
+										)}
+										<a class="game-link" href={game.repo} target="_blank" rel="noopener noreferrer">
+											GitHub
+										</a>
+									</div>
+								</footer>
+							</div>
+						</article>
+					))}
+				</div>
+			)}
+		</div>
+	</section>
+</Base>
+
+<style>
+	.games-hero {
+		position: relative;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.games-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-24) var(--spacing-8) var(--spacing-20);
+	}
+
+	.room-rule {
+		width: 24px;
+		height: 1px;
+		background: var(--color-accent);
+		margin-bottom: var(--spacing-5);
+	}
+
+	.room-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin-bottom: var(--spacing-4);
+	}
+
+	.room-title {
+		font-family: var(--font-display);
+		font-size: clamp(1.875rem, 3.5vw, 3rem);
+		font-weight: var(--font-weight-display);
+		line-height: 1.1;
+		letter-spacing: -0.022em;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-5);
+	}
+
+	.room-subtitle {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed);
+		color: var(--color-text-secondary);
+		max-width: 55ch;
+		margin: 0;
+	}
+
+	.games-section {
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	.games-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8);
+	}
+
+	.games-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+		gap: var(--spacing-6);
+	}
+
+	/* Card — borrows Linear-like restraint. Image on top, meta below. */
+	.game-card {
+		display: flex;
+		flex-direction: column;
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		transition: border-color var(--transition-fast), transform var(--transition-fast);
+	}
+	.game-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-2px);
+	}
+
+	.game-shot {
+		position: relative;
+		display: block;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: var(--color-surface);
+		border-bottom: 1px solid var(--color-border);
+	}
+	.game-shot img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	.game-card:hover .game-shot img { transform: scale(1.03); }
+
+	/* Hover overlay: surfaces the action without visual chrome at rest */
+	.game-shot-hover {
+		position: absolute;
+		inset: auto 0 0 0;
+		padding: var(--spacing-3) var(--spacing-4);
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: #fff;
+		opacity: 0;
+		transform: translateY(4px);
+		transition: opacity 200ms ease, transform 200ms ease;
+	}
+	.game-card:hover .game-shot-hover {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.game-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+		padding: var(--spacing-5) var(--spacing-5) var(--spacing-4);
+		flex: 1;
+	}
+
+	.game-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--spacing-3);
+	}
+
+	.game-title {
+		font-family: var(--font-display);
+		font-size: var(--font-size-lg);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.012em;
+		margin: 0;
+	}
+
+	.game-year {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	.game-tagline {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		margin: 0;
+		flex: 1;
+	}
+
+	.game-stack {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-1);
+	}
+
+	.stack-chip {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-text-secondary);
+		padding: 2px var(--spacing-2);
+		border: 1px solid var(--color-border);
+		border-radius: 4px;
+	}
+
+	.game-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-3);
+		padding-top: var(--spacing-3);
+		border-top: 1px solid var(--color-border);
+	}
+
+	.game-author {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	.game-author a {
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		border-bottom: 1px solid transparent;
+		transition: color var(--transition-fast), border-color var(--transition-fast);
+	}
+
+	.game-author a:hover {
+		color: var(--color-text);
+		border-bottom-color: var(--color-text);
+	}
+
+	.game-links {
+		display: flex;
+		gap: var(--spacing-2);
+	}
+
+	.game-link {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		padding: var(--spacing-1) var(--spacing-2);
+		border: 1px solid var(--color-border);
+		border-radius: 4px;
+		transition: border-color var(--transition-fast), color var(--transition-fast);
+	}
+
+	.game-link:hover {
+		color: var(--color-text);
+		border-color: color-mix(in srgb, var(--color-text) 25%, var(--color-border));
+	}
+
+	.empty-state {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-muted);
+		text-align: center;
+		padding: var(--spacing-16) 0;
+	}
+
+	@media (max-width: 900px) {
+		.games-hero-inner {
+			padding: var(--spacing-16) var(--spacing-6) var(--spacing-12);
+		}
+		.games-inner {
+			padding: var(--spacing-12) var(--spacing-6);
+		}
+	}
+</style>
