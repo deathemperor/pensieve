@@ -229,7 +229,15 @@ function formatGHDate(iso: string) {
 					</div>
 					<div class="about-meta-row">
 						<dt>{isVi ? "Trên GitHub" : "GitHub"}</dt>
-						<dd>{isVi ? "Từ 2013 · 44 kho mã công khai · đang xây 37+ AI agent" : "Since 2013 · 44 public repos · shipping 37+ AI agents"}</dd>
+						<dd>
+							{ghUser ? (
+								isVi
+									? `Từ ${new Date(ghUser.created_at).getFullYear()} · ${ghUser.public_repos + (ghUser.owned_private_repos ?? 0)} kho mã · ∞ AI agent`
+									: `Since ${new Date(ghUser.created_at).getFullYear()} · ${ghUser.public_repos + (ghUser.owned_private_repos ?? 0)} repos · ∞ AI agents`
+							) : (
+								isVi ? "Từ 2013 · ∞ AI agent" : "Since 2013 · ∞ AI agents"
+							)}
+						</dd>
 					</div>
 				</dl>
 			</div>
