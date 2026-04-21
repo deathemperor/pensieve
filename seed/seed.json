@@ -277,6 +277,45 @@
 					"type": "string"
 				}
 			]
+		},
+		{
+			"slug": "ambitions",
+			"label": "Ambitions",
+			"labelSingular": "Ambition",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "tagline",
+					"label": "Tagline",
+					"type": "text"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "stage",
+					"label": "Stage",
+					"type": "string"
+				},
+				{
+					"slug": "domain",
+					"label": "Domain",
+					"type": "string"
+				}
+			]
 		}
 	],
 	"taxonomies": [
@@ -32125,6 +32164,192 @@
 					"hero_component": "src/animations/marauders-map/index.astro",
 					"primary_session_id": "",
 					"language": "en"
+				}
+			}
+		],
+		"ambitions": [
+			{
+				"id": "ai-serviced-apartment",
+				"slug": "ai-serviced-apartment",
+				"status": "draft",
+				"data": {
+					"title": "AI-powered serviced apartment",
+					"tagline": "Serviced apartment where AI runs guest experience, operations, and property management end-to-end.",
+					"stage": "stealth",
+					"domain": "hospitality",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A serviced apartment where AI runs guest experience, operations, and property management end-to-end. Open questions: what's AI-operated vs. human-operated, target segment, location strategy."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "farmstay-oasis",
+				"slug": "farmstay-oasis",
+				"status": "draft",
+				"data": {
+					"title": "Farmstay oasis",
+					"tagline": "A farmstay built as an oasis — trees, flowers, animals, aquarium. A place to breathe.",
+					"stage": "stealth",
+					"domain": "hospitality",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Abundant trees and flowering plants, farm and companion animals, a proper aquarium (continuing the fish-keeping thread). Open questions: boutique retreat or working farm, location, ecosystem sustainability."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-native-datacenter",
+				"slug": "ai-native-datacenter",
+				"status": "draft",
+				"data": {
+					"title": "AI-native datacenter",
+					"tagline": "A datacenter designed from first principles for AI workloads — not a retrofit of cloud-era infrastructure.",
+					"stage": "stealth",
+					"domain": "infrastructure",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Power, cooling, density, and topology rethought for AI-era chips. Open questions: location (grid, climate, latency), build vs. partner vs. colo."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-consulting-firm",
+				"slug": "ai-consulting-firm",
+				"status": "draft",
+				"data": {
+					"title": "AI-powered consulting firm",
+					"tagline": "Business advisory for AI adoption, strategy, and systems — across industries.",
+					"stage": "stealth",
+					"domain": "ai-services",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A consulting firm for AI adoption and all things business: strategy, operations, product, integration. Distinct from the AI-native university — this is advisory for companies, not education for individuals."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-cloud-management",
+				"slug": "ai-cloud-management",
+				"status": "draft",
+				"data": {
+					"title": "AI-powered cloud management",
+					"tagline": "Ops, cost, security, and scaling run by AI agents rather than human SRE teams.",
+					"stage": "stealth",
+					"domain": "ai-services",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Open questions: multi-cloud or single-cloud first, positioning vs. existing FinOps/SRE tooling, agent autonomy boundaries."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-food-production",
+				"slug": "ai-food-production",
+				"status": "draft",
+				"data": {
+					"title": "AI-powered food production",
+					"tagline": "AI applied across growing, processing, and distribution.",
+					"stage": "stealth",
+					"domain": "food",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Open questions: upstream (agriculture) or downstream (processing/distribution) first, crop focus, geography, relationship to the farmstay oasis ambition."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-native-university",
+				"slug": "ai-native-university",
+				"status": "draft",
+				"data": {
+					"title": "AI-native university",
+					"tagline": "A university built for and about AI — curriculum, pedagogy, and student experience AI-native from day one.",
+					"stage": "stealth",
+					"domain": "education",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Distinct from the consulting firm — this is education for individuals learning AI (and learning with AI). Open questions: accredited degree vs. alt credential, residential vs. online, human faculty + AI tutors or AI-first."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-agent-studio",
+				"slug": "ai-agent-studio",
+				"status": "draft",
+				"data": {
+					"title": "AI agent studio",
+					"tagline": "A studio that builds AI agents — as product, service, or platform.",
+					"stage": "stealth",
+					"domain": "tooling",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Possibly the vehicle that builds the other AI-powered ambitions. Open questions: product (our own agents) vs. service (agents for clients) vs. platform (tooling for others), vertical focus."
+								}
+							]
+						}
+					]
 				}
 			}
 		]
