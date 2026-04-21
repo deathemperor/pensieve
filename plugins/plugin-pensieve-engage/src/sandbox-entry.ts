@@ -20,6 +20,35 @@ function flattenRows(rows: any[]): any[] {
 	return rows.map((r: any) => (r?.data ? { id: r.id, ...r.data } : r));
 }
 
+/** "Apr 20, 2026 23:33 · 12h ago" — exact local time + compact relative. */
+function formatDateTime(iso: string | null | undefined): string {
+	if (!iso) return "—";
+	const d = new Date(iso);
+	if (Number.isNaN(d.getTime())) return "—";
+
+	const exact = new Intl.DateTimeFormat("en-GB", {
+		timeZone: "Asia/Ho_Chi_Minh",
+		year: "numeric",
+		month: "short",
+		day: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: false,
+	}).format(d);
+
+	const sec = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+	let rel: string;
+	if (sec < 60) rel = "just now";
+	else if (sec < 3600) rel = `${Math.floor(sec / 60)}m ago`;
+	else if (sec < 86400) rel = `${Math.floor(sec / 3600)}h ago`;
+	else if (sec < 604800) rel = `${Math.floor(sec / 86400)}d ago`;
+	else if (sec < 2592000) rel = `${Math.floor(sec / 604800)}w ago`;
+	else if (sec < 31536000) rel = `${Math.floor(sec / 2592000)}mo ago`;
+	else rel = `${Math.floor(sec / 31536000)}y ago`;
+
+	return `${exact} · ${rel}`;
+}
+
 async function buildSubscribersPage(ctx: PluginContext) {
 	const allSubscribers = await ctx.storage.subscribers.query({});
 	const items = flattenRows(allSubscribers.items ?? allSubscribers ?? []);
@@ -34,7 +63,7 @@ async function buildSubscribersPage(ctx: PluginContext) {
 	const rows = items.map((s: any) => ({
 		email: s.email,
 		status: s.status,
-		subscribed: s.createdAt,
+		subscribed: formatDateTime(s.createdAt),
 	}));
 
 	return {
@@ -54,7 +83,7 @@ async function buildSubscribersPage(ctx: PluginContext) {
 				columns: [
 					{ key: "email", label: "Email" },
 					{ key: "status", label: "Status", format: "badge" },
-					{ key: "subscribed", label: "Subscribed", format: "relative_time" },
+					{ key: "subscribed", label: "Subscribed" },
 				],
 				rows,
 				empty_text: "No subscribers yet.",
@@ -102,7 +131,7 @@ async function buildSendsPage(ctx: PluginContext) {
 		post: s.slug || s.postSlug || "—",
 		subscribers: s.subscriberCount ?? 0,
 		status: s.status || "—",
-		sent_at: s.completedAt || s.startedAt || null,
+		sent_at: formatDateTime(s.completedAt || s.startedAt),
 	}));
 
 	return {
@@ -122,7 +151,7 @@ async function buildSendsPage(ctx: PluginContext) {
 					{ key: "post", label: "Post" },
 					{ key: "subscribers", label: "Subscribers", format: "number" },
 					{ key: "status", label: "Status", format: "badge" },
-					{ key: "sent_at", label: "Sent At", format: "relative_time" },
+					{ key: "sent_at", label: "Sent At" },
 				],
 				rows,
 				empty_text: "No sends yet.",
