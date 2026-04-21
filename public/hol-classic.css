@@ -52,9 +52,17 @@
   width: 764px;
   max-width: 100%;
   margin: 0 auto;
-  background: #12395d;
-  border-left: 6px solid #0a1f38;   /* stand-in for leftborder.gif */
+  background-color: #12395d;
+  /* Authentic darkleaf canvas edges: 6px repeat-y leftborder.gif on both
+   * sides (original used <img> with repeat-y style). Fallback color keeps
+   * the silhouette if the gif 404s. */
+  border-left: 6px solid #0a1f38;
   border-right: 6px solid #0a1f38;
+  background-image:
+    url('/hol-assets/darkleaf/misc/gradients/leftborder.gif'),
+    url('/hol-assets/darkleaf/misc/gradients/rightborder.gif');
+  background-repeat: repeat-y, repeat-y;
+  background-position: left top, right top;
 }
 
 .hol-classic-page {
@@ -105,50 +113,74 @@
 .hol-classic-search button:hover { background: #12395d; }
 .hol-classic-toplinks { white-space: nowrap; }
 
+/* Banner row: authentic bannerbg.gif repeat-x under the 363×46 logo.gif
+ * on the left and 403×46 rightbanner.gif on the right. */
 .hol-classic-banner {
   background: linear-gradient(180deg, #12395d 0%, #0e2c4a 100%);
-  border-bottom: 1px solid #000;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: #fff;
-}
-.hol-classic-banner .hol-classic-logo {
-  font-family: "Trebuchet MS", "Georgia", serif;
-  font-size: 28px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  color: #f0ead0;
-  text-shadow: 0 1px 0 #000;
-}
-.hol-classic-banner .hol-classic-logo span { color: #cae5fd; }
-.hol-classic-banner .hol-classic-slogan {
-  font-style: italic;
-  font-size: 13px;
-  color: #b4d4f4;
-}
-
-.hol-classic-navrow {
-  background: #0e2c4a;
+  background-image: url('/hol-assets/darkleaf/misc/bannerbg.gif');
+  background-repeat: repeat-x;
+  background-color: #0e2c4a;
   border-bottom: 1px solid #000;
   padding: 0;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  color: #fff;
+  min-height: 46px;
+  overflow: hidden;
+}
+.hol-classic-banner .hol-classic-logo-img,
+.hol-classic-banner .hol-classic-rightbanner {
+  display: block;
+  flex-shrink: 0;
+}
+.hol-classic-banner .hol-classic-rightbanner { margin-left: auto; }
+
+/* Slogan strip: topbg.gif repeat-x with the 217×33 slogan.gif on left. */
+.hol-classic-sloganrow {
+  background: #13253c;
+  background-image: url('/hol-assets/darkleaf/misc/topbg.gif');
+  background-repeat: repeat-x;
+  border-bottom: 1px solid #000;
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0;
+}
+.hol-classic-sloganrow img { display: block; }
+
+/* Nav button row: navbg.gif repeat-x with real 34px-tall button gifs. */
+.hol-classic-navrow {
+  background: #0e2c4a;
+  background-image: url('/hol-assets/darkleaf/misc/navbg.gif');
+  background-repeat: repeat-x;
+  border-bottom: 1px solid #000;
+  padding: 0;
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 2px;
+  gap: 0;
+  min-height: 34px;
 }
 .hol-classic-navrow a {
   display: inline-block;
-  padding: 10px 14px;
+  box-sizing: border-box;
+  height: 34px;
+  line-height: 0;
+}
+.hol-classic-navrow a img { display: block; height: 34px; width: auto; }
+
+/* text-only fallback entries in the nav row (About, Modern view toggle). */
+.hol-classic-navrow .nav-text {
+  padding: 0 14px;
   color: #cae5fd;
   font-size: 11px;
-  border-left: 1px solid #000;
+  line-height: 34px;
   height: 34px;
-  line-height: 14px;
-  box-sizing: border-box;
+  border-left: 1px solid #000;
 }
-.hol-classic-navrow a:hover { background: #12395d; color: #fff; text-decoration: none; }
+.hol-classic-navrow .nav-text:hover { background: #12395d; color: #fff; text-decoration: none; }
 
 .hol-classic-sep {
   height: 2px;
@@ -276,12 +308,22 @@
   line-height: 90px;
 }
 .hol-classic .postbit .postuser .userinfo { flex: 1; }
+/* Username tab: authentic user-left.gif on left + right-tab.gif on right,
+ * over a horizontal gradient fallback. vB3 used the same trick to get a
+ * rounded-tab look without corner images. */
 .hol-classic .postbit .postuser .username-tab {
   background: linear-gradient(90deg, #1a3d62 0%, #12395d 100%);
+  background-image:
+    url('/hol-assets/darkleaf/buttons/right-tab.gif'),
+    url('/hol-assets/darkleaf/buttons/user-left.gif');
+  background-repeat: no-repeat, no-repeat;
+  background-position: right top, left top;
   border-top: 1px solid #000;
   border-bottom: 1px solid #000;
-  padding: 4px 8px;
+  padding: 0 36px 0 12px;
   margin-bottom: 4px;
+  min-height: 26px;
+  line-height: 26px;
 }
 .hol-classic .postbit .postuser .bigusername {
   color: #0099ff;
@@ -293,10 +335,19 @@
   color: #8da9c6;
 }
 .hol-classic .postbit .postuser .userstats .row {
-  padding: 2px 0;
-  border-bottom: 1px dotted #2a4a6d;
+  padding: 2px 0 4px;
+  /* Authentic dotted separator: the original dotted_line.gif tile repeated
+   * along the bottom, exactly how vB3 rendered stat-row separators. */
+  background-image: url('/hol-assets/darkleaf/misc/dotted_line.gif');
+  background-repeat: repeat-x;
+  background-position: left bottom;
+  margin-bottom: 2px;
 }
-.hol-classic .postbit .postuser .userstats .row:last-child { border-bottom: 0; }
+.hol-classic .postbit .postuser .userstats .row:last-child {
+  background-image: none;
+  padding-bottom: 2px;
+  margin-bottom: 0;
+}
 .hol-classic .postbit .postuser .userstats b { color: #cae5fd; }
 
 .hol-classic .postbit .postbody {

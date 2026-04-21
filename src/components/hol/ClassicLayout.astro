@@ -52,24 +52,52 @@ const fullCrumbs = [rootCrumb, ...crumbs];
           </span>
         </div>
 
-        <!-- banner (logo + slogan) -->
+        <!-- banner: authentic holvn logo.gif (363×46) + rightbanner.gif
+             (403×46) on bannerbg.gif tile, exactly as captured from
+             Wayback 2007. -->
         <div class="hol-classic-banner">
-          <div class="hol-classic-logo">
-            HOL<span>vn</span>
-          </div>
-          <div class="hol-classic-slogan">
-            Home Online Community · archived 2005–2012
-          </div>
+          <a href="/hol/classic/" class="hol-classic-logo-img">
+            <img
+              src="/hol-assets/darkleaf/misc/logo.gif"
+              alt="Home Online Community"
+              width="363"
+              height="46"
+            />
+          </a>
+          <img
+            class="hol-classic-rightbanner"
+            src="/hol-assets/darkleaf/misc/rightbanner.gif"
+            width="403"
+            height="46"
+            alt=""
+            aria-hidden="true"
+          />
         </div>
 
-        <!-- nav buttons -->
+        <!-- slogan strip: topbg.gif repeat-x with authentic slogan.gif -->
+        <div class="hol-classic-sloganrow">
+          <img
+            src="/hol-assets/darkleaf/misc/slogan.gif"
+            width="217"
+            height="33"
+            alt="holvn.org — archived forum"
+          />
+        </div>
+
+        <!-- nav buttons: real 34px-tall Darkleaf gifs over navbg.gif
+             tile. Original skin had Arcade/Jukebox/Register/Shop too —
+             omitted here since this is read-only. Only Members + Search
+             are real clickable gifs; About + Modern view are text. -->
         <div class="hol-classic-navrow">
-          <a href="/hol/classic/">Forum</a>
-          <a href="/hol/classic/members/">Members</a>
-          <a href="/hol/search/">Search</a>
-          <a href="/hol/about/">About</a>
-          {modernHref && <a href={modernHref} title="Switch to modern view">Modern view →</a>}
-          {!modernHref && <a href="/hol/" title="Switch to modern view">Modern view →</a>}
+          <a href="/hol/classic/members/" title="Members List">
+            <img src="/hol-assets/darkleaf/buttons/nav_members.gif" alt="Members" height="34" />
+          </a>
+          <a href="/hol/search/" title="Search">
+            <img src="/hol-assets/darkleaf/buttons/nav_search.gif" alt="Search" height="34" />
+          </a>
+          <a href="/hol/about/" class="nav-text" title="Giới thiệu">About</a>
+          {modernHref && <a href={modernHref} class="nav-text" title="Switch to modern view">Modern view →</a>}
+          {!modernHref && <a href="/hol/" class="nav-text" title="Switch to modern view">Modern view →</a>}
         </div>
 
         <div class="hol-classic-sep"></div>
