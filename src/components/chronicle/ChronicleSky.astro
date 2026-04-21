@@ -3,12 +3,15 @@ import { parseChronicleDate } from "../../utils/chronicleDate";
 import { monthToAngleDeg, ringRadiusForYear, fanCluster } from "../../utils/chronicleGeometry";
 import { getChronicleCategory } from "../../themes/chronicleCategories";
 import { toRoman } from "../../utils/romanDate";
+import { getCurrentLang } from "../../utils/lang";
 
 interface Props {
   entries: any[];
 }
 
 const { entries } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
 
 const parsedEntries = entries.map((e) => {
   const p = parseChronicleDate({
@@ -76,7 +79,7 @@ function polar(radius: number, angleDeg: number) {
         data-id={p.entry.id}
         data-category={cat.slug}
         style={`left:calc(50% + ${x}px);top:calc(50% + ${y}px);--star:${cat.hex};`}
-        aria-label={`Open event: ${title}`}
+        aria-label={isVi ? `Mở sự kiện: ${title}` : `Open event: ${title}`}
       >
         <span class="cc-star-label">{toRoman(p.year)}</span>
       </button>
