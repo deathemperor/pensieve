@@ -709,6 +709,9 @@ function formatGHDate(iso: string) {
 					<div class="portrait-vignette" aria-hidden="true" />
 					<div class="portrait-sheen" aria-hidden="true" />
 
+					{/* Candle glow — warm tungsten flicker overlay replacing cold photography lighting */}
+					<div class="portrait-candle-glow" aria-hidden="true" />
+
 					{/* Twinkling stars at corners */}
 					<span class="portrait-star portrait-star-tl" aria-hidden="true" />
 					<span class="portrait-star portrait-star-tr" aria-hidden="true" />
@@ -2515,6 +2518,23 @@ function formatGHDate(iso: string) {
 		60%, 100% { transform: translateX(70%); opacity: 0; }
 	}
 
+	.portrait-candle-glow {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		pointer-events: none;
+		background: radial-gradient(ellipse at 30% 40%, rgba(255, 186, 110, 0.14) 0%, rgba(255, 186, 110, 0.06) 35%, transparent 70%);
+		mix-blend-mode: screen;
+		animation: candle-flicker 4.7s ease-in-out infinite;
+	}
+
+	@keyframes candle-flicker {
+		0%, 100% { opacity: 0.9; transform: scale(1); }
+		20% { opacity: 1; transform: scale(1.01); }
+		40% { opacity: 0.85; transform: scale(0.99); }
+		60% { opacity: 0.95; transform: scale(1.005); }
+		80% { opacity: 0.9; transform: scale(0.995); }
+	}
 
 	.about-meta {
 		margin: var(--spacing-8) 0 0;
