@@ -16,8 +16,69 @@ if [ ! -f "$SQL_FILE" ]; then
   (cd "$HOL_REPO" && uv run python scripts/export_for_d1.py "$SQL_FILE")
 fi
 
-echo "importing into local D1..."
-bunx wrangler d1 execute HOL_DB --local --file="$SQL_FILE"
+# D1 has a per-statement size limit (~1MB). Split the SQL file into chunks
+# and import them sequentially.
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
+
+python3 << PYSCRIPT
+import sys
+with open("$SQL_FILE", 'r') as f:
+    lines = f.readlines()
+
+# Find where INSERTs start
+insert_start = None
+for i, line in enumerate(lines):
+    if line.startswith('INSERT INTO'):
+        insert_start = i
+        break
+
+if insert_start is None:
+    print("ERROR: No INSERTs found in $SQL_FILE", file=sys.stderr)
+    sys.exit(1)
+
+# Write schema
+with open("$TEMP_DIR/schema.sql", 'w') as f:
+    f.writelines(lines[:insert_start])
+
+# Write data in chunks (by size, ~200KB per chunk to stay under D1's limit)
+chunk_num = 1
+chunk_lines = []
+chunk_size = 0
+max_size = 150000  # 150KB per chunk (one large post ~161KB may exceed, but that's OK)
+
+for i in range(insert_start, len(lines)):
+    line = lines[i]
+    line_size = len(line.encode('utf-8'))
+
+    # If adding this line would exceed the limit, and we have content, save the chunk
+    if chunk_size + line_size > max_size and chunk_lines:
+        with open(f"$TEMP_DIR/data_{chunk_num:03d}.sql", 'w') as f:
+            f.writelines(chunk_lines)
+        chunk_num += 1
+        chunk_lines = []
+        chunk_size = 0
+
+    chunk_lines.append(line)
+    chunk_size += line_size
+
+# Write the last chunk
+if chunk_lines:
+    with open(f"$TEMP_DIR/data_{chunk_num:03d}.sql", 'w') as f:
+        f.writelines(chunk_lines)
+    chunk_num += 1
+
+print(f"Split into {chunk_num - 1} data chunks")
+PYSCRIPT
+
+echo "importing schema into local D1..."
+bunx wrangler d1 execute HOL_DB --local --file="$TEMP_DIR/schema.sql" > /dev/null
+
+echo "importing data chunks into local D1..."
+for chunk in "$TEMP_DIR"/data_*.sql; do
+  echo "  $(basename "$chunk")..."
+  bunx wrangler d1 execute HOL_DB --local --file="$chunk" > /dev/null
+done
 
 if [ "${1:-}" = "--remote" ]; then
   echo "importing into REMOTE D1 (production)..."
