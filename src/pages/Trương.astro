@@ -306,6 +306,21 @@ function formatGHDate(iso: string) {
 					))}
 				</div>
 
+				{/* Light threads — a 3D-looking lattice drawing itself in light beside the portrait */}
+				<svg class="portrait-light-threads" viewBox="0 0 200 260" aria-hidden="true">
+					<g stroke="url(#flourishGrad)" stroke-width="0.8" fill="none" stroke-linecap="round">
+						<path class="lt-stroke lt-1" d="M20 40 L100 20 L180 40 L180 140 L100 160 L20 140 Z" />
+						<path class="lt-stroke lt-2" d="M100 20 L100 160" />
+						<path class="lt-stroke lt-3" d="M20 40 L100 80 L180 40" />
+						<path class="lt-stroke lt-4" d="M20 140 L100 100 L180 140" />
+						<path class="lt-stroke lt-5" d="M100 80 L100 100" />
+						<circle class="lt-node" cx="100" cy="20" r="2" />
+						<circle class="lt-node" cx="100" cy="160" r="2" />
+						<circle class="lt-node" cx="100" cy="80" r="1.5" />
+						<circle class="lt-node" cx="100" cy="100" r="1.5" />
+					</g>
+				</svg>
+
 				{/* Ancient runes scrolling in a circle around portrait */}
 				<div class="portrait-runes-ring" aria-hidden="true">
 					<div class="runes-ring-inner">
@@ -1156,6 +1171,38 @@ function formatGHDate(iso: string) {
 	@keyframes grimoire-drift {
 		0%, 100% { transform: translate(0, 0) rotate(var(--gp-rot, 0deg)); opacity: 0.45; }
 		50% { transform: translate(6px, -10px) rotate(var(--gp-rot, 0deg)); opacity: 0.65; }
+	}
+
+	.portrait-light-threads {
+		position: absolute;
+		bottom: 4%;
+		right: -18%;
+		width: 24%;
+		height: auto;
+		z-index: 1;
+		pointer-events: none;
+		opacity: 0.7;
+	}
+	.portrait-light-threads .lt-stroke {
+		stroke-dasharray: 400;
+		stroke-dashoffset: 400;
+		animation: lt-draw 8s ease-in-out infinite;
+	}
+	.portrait-light-threads .lt-1 { animation-delay: 0s; }
+	.portrait-light-threads .lt-2 { animation-delay: 0.8s; }
+	.portrait-light-threads .lt-3 { animation-delay: 1.6s; }
+	.portrait-light-threads .lt-4 { animation-delay: 2.4s; }
+	.portrait-light-threads .lt-5 { animation-delay: 3.2s; }
+	.portrait-light-threads .lt-node { fill: rgba(240, 199, 94, 0.9); opacity: 0; animation: lt-node-pulse 8s ease-in-out infinite; }
+	@keyframes lt-draw {
+		0%, 10% { stroke-dashoffset: 400; }
+		50%, 70% { stroke-dashoffset: 0; }
+		100% { stroke-dashoffset: 400; }
+	}
+	@keyframes lt-node-pulse {
+		0%, 40% { opacity: 0; }
+		60%, 70% { opacity: 1; }
+		100% { opacity: 0; }
 	}
 
 	/* Growing vines that creep around frame */
