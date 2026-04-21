@@ -5,8 +5,13 @@ name: Claude PR Review
 # concerns their 7 specialist reviewers split — security, quality, performance,
 # docs, bilingual copy, project-specific conventions from AGENTS.md.
 #
+# Auth: uses a Claude Pro/Max OAuth token (CLAUDE_CODE_OAUTH_TOKEN secret).
+# Reviews count against the subscription's Claude Code quota rather than
+# metered API billing. To rotate the token, run `claude setup-token` locally
+# and paste the new value into the repo secret.
+#
 # To enable:
-# 1. Add ANTHROPIC_API_KEY to repo secrets (Settings → Secrets and variables → Actions)
+# 1. Add CLAUDE_CODE_OAUTH_TOKEN to repo secrets (generate via `claude setup-token`)
 # 2. Install the Claude GitHub app (open Claude Code and run /install-github-app)
 # 3. Open a PR — this workflow runs on opened, synchronize, and reopened events.
 
@@ -31,7 +36,7 @@ jobs:
 
       - uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
           # Note: only repo and PR number are interpolated into the prompt;
           # both are structural identifiers, not user-supplied free text. PR
