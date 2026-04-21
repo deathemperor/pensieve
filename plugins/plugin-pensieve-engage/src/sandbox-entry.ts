@@ -733,12 +733,16 @@ export default definePlugin({
 		beacon: {
 			public: true,
 			handler: async (routeCtx: any, ctx: PluginContext) => {
-				let body: any;
-				try {
-					body = await routeCtx.request.json();
-				} catch {
-					return new Response("Invalid JSON", { status: 400 });
-				}
+				// Runtime pre-parses the body into routeCtx.input. Reading
+				// routeCtx.request.json() here fails because the body stream
+				// has already been consumed.
+				const body = (routeCtx.input ?? {}) as {
+					postSlug?: string;
+					sessionId?: string;
+					eventType?: string;
+					data?: Record<string, unknown>;
+					t?: number;
+				};
 
 				const { postSlug, sessionId, eventType, data, t } = body;
 
