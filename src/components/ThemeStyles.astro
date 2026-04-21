@@ -7,51 +7,33 @@ interface Props {
 
 const { theme } = Astro.props;
 const p = theme.palette;
+// Site is always dark. darkPalette overrides win wherever provided; we fall
+// back to palette for accent-level tokens which don't typically differ by mode.
 const dp = theme.darkPalette ?? {};
+const pick = <K extends keyof typeof p>(key: K): string =>
+	(dp as Record<string, string | undefined>)[key as string] ?? (p[key] as string);
 
-const lightVars = `
-	--color-bg: ${p.bg};
-	--color-bg-subtle: ${p.bgSubtle};
-	--color-text: ${p.text};
-	--color-text-secondary: ${p.textSecondary};
-	--color-muted: ${p.muted};
-	--color-border: ${p.border};
-	--color-border-subtle: ${p.borderSubtle};
-	--color-surface: ${p.surface};
-	--color-accent: ${p.accent};
-	--color-accent-hover: ${p.accentHover};
-	--color-on-accent: ${p.onAccent};
+const vars = `
+	--color-bg: ${pick("bg")};
+	--color-bg-subtle: ${pick("bgSubtle")};
+	--color-text: ${pick("text")};
+	--color-text-secondary: ${pick("textSecondary")};
+	--color-muted: ${pick("muted")};
+	--color-border: ${pick("border")};
+	--color-border-subtle: ${pick("borderSubtle")};
+	--color-surface: ${pick("surface")};
+	--color-accent: ${pick("accent")};
+	--color-accent-hover: ${pick("accentHover")};
+	--color-on-accent: ${pick("onAccent")};
 	--font-sans: ${theme.fonts.sans};
 	--font-mono: ${theme.fonts.mono};
 `.trim();
-
-const darkEntries = Object.entries(dp)
-	.map(([k, v]) => {
-		const cssVar =
-			k === "bgSubtle"
-				? "--color-bg-subtle"
-				: k === "textSecondary"
-					? "--color-text-secondary"
-					: k === "borderSubtle"
-						? "--color-border-subtle"
-						: k === "accentHover"
-							? "--color-accent-hover"
-							: k === "onAccent"
-								? "--color-on-accent"
-								: `--color-${k.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
-		return `${cssVar}: ${v};`;
-	})
-	.join("\n\t\t");
-
-const darkBlock = darkEntries
-	? `\n@media (prefers-color-scheme: dark) {\n\t:root:not(.light) {\n\t\t${darkEntries}\n\t}\n}\n:root.dark {\n\t${darkEntries}\n}`
-	: "";
 
 const backgroundBlock = theme.backgroundCSS
 	? `\nbody { background: ${theme.backgroundCSS} fixed; }`
 	: "";
 
-const css = `:root {\n\t${lightVars.replace(/\n/g, "\n\t")}\n}${darkBlock}${backgroundBlock}`;
+const css = `:root {\n\t${vars.replace(/\n/g, "\n\t")}\n}${backgroundBlock}`;
 ---
 
 {theme.fonts.googleFontsHref && (

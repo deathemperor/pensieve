@@ -4,16 +4,18 @@
 */
 
 :root {
-	/* Color tokens — light mode default */
-	--color-bg: #fafbfc;
-	--color-bg-subtle: #f4f5f8;
-	--color-text: #08090a;
-	--color-text-secondary: #3d4452;
-	--color-muted: #62676c;
-	--color-border: rgba(8, 9, 10, 0.08);
-	--color-border-subtle: rgba(8, 9, 10, 0.05);
-	--color-surface: #f4f5f8;
-	--color-surface-elevated: #ffffff;
+	color-scheme: dark;
+
+	/* Color tokens — site is always dark. */
+	--color-bg: #08090a;
+	--color-bg-subtle: #101113;
+	--color-text: #f7f8f8;
+	--color-text-secondary: #8a8f98;
+	--color-muted: #62666d;
+	--color-border: rgba(255, 255, 255, 0.05);
+	--color-border-subtle: rgba(255, 255, 255, 0.03);
+	--color-surface: #101113;
+	--color-surface-elevated: #141516;
 
 	/* Default accent — overridden per category via ThemeStyles */
 	--color-accent: #5e6ad2;
@@ -104,29 +106,3 @@
 	--shadow-btn-active: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-	:root:not(.light) {
-		--color-bg: #08090a;
-		--color-bg-subtle: #101113;
-		--color-text: #f7f8f8;
-		--color-text-secondary: #8a8f98;
-		--color-muted: #62666d;
-		--color-border: rgba(255, 255, 255, 0.05);
-		--color-border-subtle: rgba(255, 255, 255, 0.03);
-		--color-surface: #101113;
-		--color-surface-elevated: #141516;
-	}
-}
-
-:root.dark {
-	--color-bg: #08090a;
-	--color-bg-subtle: #101113;
-	--color-text: #f7f8f8;
-	--color-text-secondary: #8a8f98;
-	--color-muted: #62666d;
-	--color-border: rgba(255, 255, 255, 0.05);
-	--color-border-subtle: rgba(255, 255, 255, 0.03);
-	--color-surface: #101113;
-	--color-surface-elevated: #141516;
-}

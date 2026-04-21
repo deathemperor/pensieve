@@ -131,8 +131,7 @@ const isLoggedIn = !!Astro.locals.user;
 		<title>{fullTitle}</title>
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="manifest" href="/manifest.json" />
-		<meta name="theme-color" content="#08090a" media="(prefers-color-scheme: dark)" />
-		<meta name="theme-color" content="#fafbfc" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#08090a" />
 		<link rel="apple-touch-icon" href="/icon-maskable.svg" />
 		<link
 			rel="alternate"
@@ -151,19 +150,6 @@ const isLoggedIn = !!Astro.locals.user;
 		<meta name="ai-content-declaration" content="site-code:ai-generated; content:human-written" />
 		<meta name="generator" content="Astro + Claude Code" />
 		{theme && <ThemeStyles theme={theme} />}
-		<script is:inline>
-			// Apply theme immediately to prevent flash
-			(function () {
-				var c = document.cookie;
-				var i = c.indexOf("theme=");
-				var theme = i >= 0 ? c.slice(i + 6).split(";")[0] : null;
-				if (theme === "dark" || theme === "light") {
-					document.documentElement.classList.add(theme);
-				} else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-					document.documentElement.classList.add("dark");
-				}
-			})();
-		</script>
 	</head>
 	<body>
 		<EmDashBodyStart page={pageCtx} />
@@ -198,19 +184,6 @@ const isLoggedIn = !!Astro.locals.user;
 							</>
 						);
 					})}
-					<details class="nav-lang breadcrumb-lang">
-						<summary>
-							{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
-						</summary>
-						<div class="nav-dropdown">
-							<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
-								Tiếng Việt
-							</a>
-							<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
-								English
-							</a>
-						</div>
-					</details>
 				</nav>
 			</header>
 		) : (
@@ -404,145 +377,11 @@ const isLoggedIn = !!Astro.locals.user;
 					<p class="footer-copyright">
 						© <span class="footer-name" role="button" tabindex="0" title="Expecto Patronum!">Trương Hữu Lộc</span>
 					</p>
-					<div class="theme-switcher">
-						<button
-							type="button"
-							class="theme-btn"
-							data-theme="light"
-							aria-label="Lumos"
-						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><circle cx="12" cy="12" r="5"></circle><line
-									x1="12"
-									y1="1"
-									x2="12"
-									y2="3"></line><line x1="12" y1="21" x2="12" y2="23"
-								></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"
-								></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"
-								></line><line x1="1" y1="12" x2="3" y2="12"></line><line
-									x1="21"
-									y1="12"
-									x2="23"
-									y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"
-								></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"
-								></line></svg
-							>
-						</button>
-						<button
-							type="button"
-							class="theme-btn"
-							data-theme="dark"
-							aria-label="Nox"
-						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-								></path></svg
-							>
-						</button>
-						<button
-							type="button"
-							class="theme-btn"
-							data-theme="system"
-							aria-label="System theme"
-						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 24 24"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								><rect x="2" y="3" width="20" height="14" rx="2" ry="2"
-								></rect><line x1="8" y1="21" x2="16" y2="21"></line><line
-									x1="12"
-									y1="17"
-									x2="12"
-									y2="21"></line></svg
-							>
-						</button>
-					</div>
 				</div>
 			</div>
 		</footer>
 
 		<script>
-			// Theme switcher
-			const THEME_REGEX = /theme=([^;]+)/;
-			const themeBtns =
-				document.querySelectorAll<HTMLButtonElement>(".theme-btn");
-			const root = document.documentElement;
-
-			function setCookie(
-				name: string,
-				value: string,
-				maxAge: number = 31536000
-			) {
-				const secure = location.protocol === "https:" ? "; Secure" : "";
-				if (value === "") {
-					document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax${secure}`;
-				} else {
-					document.cookie = `${name}=${value}; path=/; max-age=${maxAge}; SameSite=Lax${secure}`;
-				}
-			}
-
-			function setTheme(theme: string) {
-				if (theme === "system") {
-					setCookie("theme", "");
-					root.classList.remove("light", "dark");
-					if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-						root.classList.add("dark");
-					}
-				} else {
-					setCookie("theme", theme);
-					root.classList.remove("light", "dark");
-					root.classList.add(theme);
-				}
-				updateActiveBtn(theme);
-			}
-
-			function updateActiveBtn(theme: string) {
-				themeBtns.forEach((btn) => {
-					btn.classList.toggle("active", btn.dataset.theme === theme);
-				});
-			}
-
-			function getStoredTheme(): string {
-				const match = document.cookie.match(THEME_REGEX);
-				return match ? match[1] : "system";
-			}
-
-			// Initialize
-			const storedTheme = getStoredTheme();
-			setTheme(storedTheme);
-
-			themeBtns.forEach((btn) => {
-				btn.addEventListener("click", () => {
-					const t = btn.dataset.theme || "system";
-					setTheme(t);
-					if (t === "light") window.SpellSounds?.lumos();
-					else if (t === "dark") window.SpellSounds?.nox();
-					else window.SpellSounds?.sparkle();
-				});
-			});
-
 			// Expecto Patronum — click name to summon stag
 			const footerName = document.querySelector(".footer-name");
 			if (footerName) {
@@ -551,15 +390,6 @@ const isLoggedIn = !!Astro.locals.user;
 					window.MagicalCreatures?.summon("stag");
 				});
 			}
-
-			// Listen for system preference changes
-			window
-				.matchMedia("(prefers-color-scheme: dark)")
-				.addEventListener("change", (e) => {
-					if (getStoredTheme() === "system") {
-						root.classList.toggle("dark", e.matches);
-					}
-				});
 		</script>
 
 		<style is:global>
@@ -751,9 +581,6 @@ const isLoggedIn = !!Astro.locals.user;
 				font-size: var(--font-size-xs);
 				height: var(--nav-height);
 			}
-
-			/* Language switcher in breadcrumb header sits on the right edge */
-			.breadcrumb-lang { margin-left: auto; }
 
 			.breadcrumb-home {
 				display: inline-flex;
@@ -1300,44 +1127,6 @@ const isLoggedIn = !!Astro.locals.user;
 
 			.footer-name:hover {
 				color: var(--color-text-secondary);
-			}
-
-			/* Theme switcher */
-			.theme-switcher {
-				display: flex;
-				gap: var(--spacing-1);
-				padding: var(--spacing-1);
-				background: var(--color-surface);
-				border-radius: var(--radius);
-			}
-
-			.theme-btn {
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				width: 32px;
-				height: 28px;
-				background: transparent;
-				border: none;
-				color: var(--color-muted);
-				border-radius: var(--radius);
-				cursor: pointer;
-				transition: all var(--transition-fast);
-			}
-
-			.theme-btn:hover {
-				color: var(--color-text-secondary);
-			}
-
-			.theme-btn.active {
-				background: var(--color-bg);
-				color: var(--color-text);
-				box-shadow: var(--shadow-btn-active);
-			}
-
-			.theme-btn svg {
-				width: 16px;
-				height: 16px;
 			}
 
 			/* Nixie — CC buddy */
