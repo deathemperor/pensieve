@@ -7,7 +7,16 @@ export function pensieveEngagePlugin(): PluginDescriptor {
 		format: "standard",
 		entrypoint: "plugin-pensieve-engage/sandbox",
 		options: {},
-		capabilities: ["email:send", "read:content", "read:users", "network:fetch"],
+		capabilities: [
+			"email:send",
+			"read:content",
+			"read:users",
+			"network:fetch",
+			// page:inject is required for the page:fragments hook that injects
+			// the reading-analytics beacon. Without it the hook is silently
+			// skipped at registration, so no pageviews were ever recorded.
+			"page:inject",
+		],
 		allowedHosts: ["api.resend.com"],
 		storage: {
 			subscribers: {
