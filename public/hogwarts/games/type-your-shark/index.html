@@ -15,11 +15,19 @@
          Hides auth UI, stubs fetch to localhost:3000 so save/load calls fail
          silently, and unlocks the game surface at load. -->
     <style>
+        /* Hide the Rails-backed auth chrome; stats modal stays so the player
+           can review their locally-saved game history. */
         #auth-container,
         #blackout,
-        #blackout2,
-        #myBtn,
-        #myModal { display: none !important; }
+        #blackout2 { display: none !important; }
+        /* Inside the stats modal, hide account-management buttons that have
+           no meaning without a real user account. */
+        #delete-user,
+        #update-user,
+        #update-user-info { display: none !important; }
+        /* The "Your Stats" button is normally unlocked after login; here we
+           always want it visible. */
+        #myBtn { visibility: visible !important; }
         #easy-button,
         #medium-button,
         #hard-button { display: inline-block; }
@@ -34,20 +42,148 @@
         .pensieve-archive-banner a:hover { text-decoration: underline; }
     </style>
     <script>
-        // Intercept backend calls so the game runs offline. Anything targeting
-        // the author's localhost:3000 Rails app returns a benign empty array.
+        // Pensieve backend shim. The original game POSTs to a Rails API that
+        // isn't part of the archive — so instead we route those requests to
+        // a localStorage-backed router that mimics the response shapes the
+        // game expects. Stats and game history persist across browser sessions
+        // on the player's device.
         (function () {
             const realFetch = window.fetch.bind(window);
+            const STORAGE_KEY = 'pensieve:type-your-shark:v1';
+            const GUEST_USER_ID = 'guest';
+            const GUEST_USERNAME = 'Guest';
+
+            function readState() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (!raw) return { games: [], nextId: 1 };
+                    const parsed = JSON.parse(raw);
+                    return { games: parsed.games || [], nextId: parsed.nextId || 1 };
+                } catch {
+                    return { games: [], nextId: 1 };
+                }
+            }
+            function writeState(state) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+            function snapshotUser(state) {
+                const games = state.games;
+                const totalPoints = games.reduce((s, g) => s + (g.points || 0), 0);
+                const totalSharks = games.reduce((s, g) => s + (g.sharks_killed || 0), 0);
+                const counts = { easy: 0, medium: 0, hard: 0 };
+                for (const g of games) if (counts[g.difficulty] !== undefined) counts[g.difficulty]++;
+                const avgDifficulty =
+                    games.length === 0
+                        ? 'easy'
+                        : Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+                return {
+                    id: GUEST_USER_ID,
+                    user_id: GUEST_USER_ID,
+                    username: GUEST_USERNAME,
+                    total_games: games.length,
+                    total_sharks_killed: totalSharks,
+                    total_points: totalPoints,
+                    avg_difficulty: avgDifficulty,
+                    games: games.slice(),
+                };
+            }
+            function json(body, status) {
+                return new Response(JSON.stringify(body), {
+                    status: status || 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
             window.fetch = function (input, init) {
                 const url = typeof input === 'string' ? input : (input && input.url) || '';
-                if (/localhost:300[01]|127\.0\.0\.1/.test(url)) {
-                    return Promise.resolve(new Response('[]', {
-                        status: 200,
-                        headers: { 'Content-Type': 'application/json' }
-                    }));
+                const method = (init && init.method) || (typeof input === 'object' && input.method) || 'GET';
+                if (!/localhost:300[01]|127\.0\.0\.1/.test(url)) return realFetch(input, init);
+
+                const path = url.replace(/^https?:\/\/[^/]+/, '');
+                const state = readState();
+                const user = snapshotUser(state);
+
+                // POST /games — new game record
+                if (method === 'POST' && path === '/games') {
+                    let body = {};
+                    try { body = init && init.body ? JSON.parse(init.body) : {}; } catch { }
+                    const record = {
+                        id: state.nextId,
+                        points: body.points || 0,
+                        sharks_killed: body.sharks_killed || 0,
+                        difficulty: body.difficulty || 'easy',
+                        user_id: GUEST_USER_ID,
+                    };
+                    state.games.push(record);
+                    state.nextId += 1;
+                    writeState(state);
+                    return Promise.resolve(json(record));
                 }
-                return realFetch(input, init);
+
+                // PATCH /games/:id — update in-flight game score
+                const patchGame = method === 'PATCH' && path.match(/^\/games\/(\w+)/);
+                if (patchGame) {
+                    const id = Number(patchGame[1]);
+                    let body = {};
+                    try { body = init && init.body ? JSON.parse(init.body) : {}; } catch { }
+                    const rec = state.games.find((g) => g.id === id);
+                    if (rec) {
+                        if (body.points !== undefined) rec.points = body.points;
+                        if (body.sharks_killed !== undefined) rec.sharks_killed = body.sharks_killed;
+                        writeState(state);
+                    }
+                    return Promise.resolve(json(rec || {}));
+                }
+
+                // DELETE /games/:id — remove a game from history
+                const delGame = method === 'DELETE' && path.match(/^\/games\/(\w+)/);
+                if (delGame) {
+                    const id = Number(delGame[1]);
+                    state.games = state.games.filter((g) => g.id !== id);
+                    writeState(state);
+                    return Promise.resolve(json({}));
+                }
+
+                // GET /users/:id — return the guest's aggregate + game list
+                if (method === 'GET' && /^\/users\//.test(path)) {
+                    return Promise.resolve(json(user));
+                }
+
+                // Auth endpoints — the forms are hidden, but keep these
+                // responsive in case something triggers them.
+                if (method === 'POST' && path === '/login') {
+                    return Promise.resolve(json({ token: 'guest', user }));
+                }
+                if (method === 'POST' && path === '/users') {
+                    return Promise.resolve(json({ token: 'guest', user }));
+                }
+                if (method === 'GET' && path === '/profile') {
+                    return Promise.resolve(json(user));
+                }
+                if (method === 'DELETE' && /^\/users\//.test(path)) {
+                    localStorage.removeItem(STORAGE_KEY);
+                    return Promise.resolve(json({}));
+                }
+                if (method === 'PATCH' && /^\/users\//.test(path)) {
+                    return Promise.resolve(json(user));
+                }
+
+                // Unknown — empty array so nothing crashes
+                return Promise.resolve(json([]));
             };
+
+            // Seed the auth-state the game reads at load so its unlock path runs.
+            // The CSS also hides the auth chrome; this is belt-and-suspenders.
+            const initialState = readState();
+            const initialSnapshot = snapshotUser(initialState);
+            localStorage.setItem('token', 'guest');
+            localStorage.setItem('userId', GUEST_USER_ID);
+            localStorage.setItem('user', GUEST_USERNAME);
+            localStorage.setItem('userGames', String(initialSnapshot.total_games));
+            localStorage.setItem('userSharks', String(initialSnapshot.total_sharks_killed));
+            localStorage.setItem('userPoints', String(initialSnapshot.total_points));
+            localStorage.setItem('userAvgDiff', initialSnapshot.avg_difficulty);
+            localStorage.setItem('userGamesObj', JSON.stringify(initialSnapshot.games));
         })();
     </script>
 </head>
