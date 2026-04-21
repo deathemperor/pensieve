@@ -19,7 +19,7 @@ case "$COMMIT_SOURCE" in
 esac
 
 CANONICAL_NAME="deathemperor"
-CANONICAL_EMAIL="loc.truongh@gmail.com"
+CANONICAL_EMAIL="deathemperor@gmail.com"
 
 # Already has a co-author line with this email? Leave alone.
 if grep -Fqi "<${CANONICAL_EMAIL}>" "$COMMIT_MSG_FILE"; then
