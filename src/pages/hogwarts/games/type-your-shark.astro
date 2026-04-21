@@ -119,14 +119,14 @@ const attribution = isVi
 		border-bottom-color: var(--color-text);
 	}
 
-	/* The frame itself. The game has a fixed 1017px min-width layout, so on
-	   narrow viewports we allow horizontal scroll inside the iframe rather
-	   than trying to scale it. Height is generous enough for all three UI
-	   states (title, gameplay, end-of-game stats popover). */
+	/* The frame itself. The game has a fixed 1017px min-width layout — we
+	   break out of the standard wide-width container so the game gets as
+	   much horizontal room as the viewport allows. Capped at 1400px so it
+	   doesn't stretch absurdly on ultrawide monitors. */
 	.game-frame-holder {
-		max-width: var(--wide-width);
+		max-width: 1400px;
 		margin: 0 auto;
-		padding: var(--spacing-8) var(--spacing-8) var(--spacing-16);
+		padding: var(--spacing-8) var(--spacing-6) var(--spacing-16);
 	}
 
 	.game-frame {
@@ -143,7 +143,7 @@ const attribution = isVi
 			padding: var(--spacing-12) var(--spacing-6) var(--spacing-8);
 		}
 		.game-frame-holder {
-			padding: var(--spacing-6);
+			padding: var(--spacing-6) var(--spacing-3) var(--spacing-12);
 		}
 		.game-frame {
 			height: 900px;
