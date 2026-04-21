@@ -29,7 +29,7 @@
 		"react-dom": "^19.2.4"
 	},
 	"devDependencies": {
-		"@astrojs/check": "^0.9.7",
+		"@astrojs/check": "0.9.8",
 		"@cloudflare/workers-types": "^4.20260401.1",
 		"@types/node": "^22.7.0",
 		"puppeteer": "23.11.1",
