@@ -681,6 +681,13 @@ const isLoggedIn = !!Astro.locals.user;
 				.breadcrumb-middle-sep {
 					display: none;
 				}
+				/* With middle crumbs removed, the first-parent crumb has
+				   room to breathe — don't keep shrinking it. Only the leaf
+				   absorbs any remaining overflow. */
+				.breadcrumb-link,
+				.breadcrumb-current:not(.breadcrumb-leaf) {
+					flex-shrink: 0;
+				}
 			}
 
 			.breadcrumb-with-icon {
