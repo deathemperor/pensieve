@@ -32171,7 +32171,7 @@
 			{
 				"id": "ai-serviced-apartment",
 				"slug": "ai-serviced-apartment",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-powered serviced apartment",
 					"tagline": "Serviced apartment where AI runs guest experience, operations, and property management end-to-end.",
@@ -32194,7 +32194,7 @@
 			{
 				"id": "farmstay-oasis",
 				"slug": "farmstay-oasis",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "Farmstay oasis",
 					"tagline": "A farmstay built as an oasis — trees, flowers, animals, aquarium. A place to breathe.",
@@ -32217,7 +32217,7 @@
 			{
 				"id": "ai-native-datacenter",
 				"slug": "ai-native-datacenter",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-native datacenter",
 					"tagline": "A datacenter designed from first principles for AI workloads — not a retrofit of cloud-era infrastructure.",
@@ -32240,7 +32240,7 @@
 			{
 				"id": "ai-consulting-firm",
 				"slug": "ai-consulting-firm",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-powered consulting firm",
 					"tagline": "Business advisory for AI adoption, strategy, and systems — across industries.",
@@ -32263,7 +32263,7 @@
 			{
 				"id": "ai-cloud-management",
 				"slug": "ai-cloud-management",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-powered cloud management",
 					"tagline": "Ops, cost, security, and scaling run by AI agents rather than human SRE teams.",
@@ -32286,7 +32286,7 @@
 			{
 				"id": "ai-food-production",
 				"slug": "ai-food-production",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-powered food production",
 					"tagline": "AI applied across growing, processing, and distribution.",
@@ -32309,7 +32309,7 @@
 			{
 				"id": "ai-native-university",
 				"slug": "ai-native-university",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI-native university",
 					"tagline": "A university built for and about AI — curriculum, pedagogy, and student experience AI-native from day one.",
@@ -32332,7 +32332,7 @@
 			{
 				"id": "ai-agent-studio",
 				"slug": "ai-agent-studio",
-				"status": "draft",
+				"status": "published",
 				"data": {
 					"title": "AI agent studio",
 					"tagline": "A studio that builds AI agents — as product, service, or platform.",

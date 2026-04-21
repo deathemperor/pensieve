@@ -1,0 +1,428 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import { PortableText } from "emdash/ui";
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { entries: ambitionsRaw, cacheHint } = await getEmDashCollection("ambitions");
+Astro.cache.set(cacheHint);
+
+interface Ambition {
+	id: string;
+	slug: string;
+	title: string;
+	tagline: string;
+	stage: string;
+	domain: string;
+	content: unknown;
+}
+
+const ambitions: Ambition[] = ambitionsRaw
+	.filter((e) => e.data.status === "published")
+	.map((e) => ({
+		id: e.id,
+		slug: e.slug ?? e.id,
+		title: e.data.title,
+		tagline: e.data.tagline ?? "",
+		stage: e.data.stage ?? "stealth",
+		domain: e.data.domain ?? "",
+		content: e.data.content,
+	}));
+
+const domainLabels: Record<string, Record<string, string>> = {
+	en: {
+		hospitality: "Hospitality",
+		infrastructure: "Infrastructure",
+		"ai-services": "AI Services",
+		food: "Food",
+		education: "Education",
+		tooling: "Tooling",
+	},
+	vi: {
+		hospitality: "Lưu Trú",
+		infrastructure: "Hạ Tầng",
+		"ai-services": "Dịch Vụ AI",
+		food: "Thực Phẩm",
+		education: "Giáo Dục",
+		tooling: "Công Cụ",
+	},
+};
+
+const stageLabels: Record<string, Record<string, string>> = {
+	en: { stealth: "Stealth", exploring: "Exploring", building: "Building", shipped: "Shipped", parked: "Parked" },
+	vi: { stealth: "Ẩn Danh", exploring: "Dò Xét", building: "Luyện Chế", shipped: "Hiện Thân", parked: "Tạm Gác" },
+};
+
+// Faint domain tint — same gold family but each domain gets a subtle chromatic shift
+const domainTint: Record<string, string> = {
+	hospitality: "#d4a843",
+	infrastructure: "#c9a24e",
+	"ai-services": "#c8b26a",
+	food: "#c9935a",
+	education: "#c7ab5f",
+	tooling: "#bfa46b",
+};
+---
+
+<Base
+	title={isVi ? "Tấm Gương Ảo Vọng — Ước Vọng Xây Dựng" : "The Mirror of Erised — Ambitions"}
+	description={isVi
+		? "Tấm gương không phản chiếu khuôn mặt, mà phản chiếu khát vọng sâu thẳm nhất trong trái tim."
+		: "A mirror that shows not your face, but the deepest desire of your heart."}
+	breadcrumbs={[
+		{ label: "Room of Requirement", href: "/room-of-requirement" },
+		{ label: isVi ? "Tấm Gương Ảo Vọng" : "Mirror of Erised" },
+	]}
+>
+	<section class="moe-hero">
+		<div class="moe-hero-inner">
+			<div class="moe-rule" />
+			<span class="moe-label">{isVi ? "Tấm Gương Ảo Vọng" : "The Mirror of Erised"}</span>
+			<h1 class="moe-title">{isVi ? "Ước Vọng" : "Visions"}</h1>
+			<p class="moe-inscription" aria-label="Erised inscription" lang="x-erised">
+				Erised stra ehru oyt ube cafru oyt on wohsi
+			</p>
+			<p class="moe-translation">
+				{isVi
+					? "Ta không phản chiếu khuôn mặt ngươi, mà phản chiếu khát vọng sâu thẳm trong tim."
+					: "I show not your face but your heart's desire."}
+			</p>
+			<p class="moe-warning">
+				{isVi ? (
+					<>
+						<em>Lời cảnh báo của cụ Dumbledore —</em> Tấm gương này không mang lại tri thức hay sự thật. Có những kẻ đã gục ngã trước nó, bị mê hoặc bởi những gì họ thấy. Vì vậy hãy ghi nhớ: những gì bên dưới là <strong>viễn cảnh, không phải lời hứa</strong>.
+					</>
+				) : (
+					<>
+						<em>Dumbledore's warning —</em> this mirror gives neither knowledge nor truth. Men have wasted away before it, entranced by what they saw. So remember: what lies below are <strong>visions, not promises</strong>.
+					</>
+				)}
+			</p>
+		</div>
+	</section>
+
+	<section class="moe-mirror" aria-label={isVi ? "Bên trong tấm gương" : "Inside the mirror"}>
+		<svg class="moe-frame" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+			<defs>
+				<linearGradient id="moe-gold" x1="0" y1="0" x2="1" y2="0">
+					<stop offset="0%" stop-color="#8a6a1f" />
+					<stop offset="18%" stop-color="#d4a843" />
+					<stop offset="50%" stop-color="#f0d98a" />
+					<stop offset="82%" stop-color="#d4a843" />
+					<stop offset="100%" stop-color="#8a6a1f" />
+				</linearGradient>
+			</defs>
+			<rect x="0" y="26" width="1200" height="2" fill="url(#moe-gold)" />
+			<circle cx="20" cy="27" r="5" fill="#d4a843" />
+			<circle cx="1180" cy="27" r="5" fill="#d4a843" />
+			<path d="M580 20 L600 12 L620 20 L600 28 Z" fill="#d4a843" />
+			<path d="M560 27 L580 27 M620 27 L640 27" stroke="#d4a843" stroke-width="1" />
+		</svg>
+
+		<div class="moe-grid">
+			{ambitions.map((a) => {
+				const tint = domainTint[a.domain] ?? "#c9a84a";
+				return (
+					<article class="moe-vision" style={`--tint: ${tint};`} data-stage={a.stage}>
+						<div class="moe-vision-head">
+							<span class="moe-domain">{domainLabels[lang]?.[a.domain] ?? a.domain}</span>
+							<span class="moe-stage">
+								<span class="moe-stage-dot" />
+								{stageLabels[lang]?.[a.stage] ?? a.stage}
+							</span>
+						</div>
+						<h2 class="moe-vision-title">{a.title}</h2>
+						{a.tagline && <p class="moe-tagline">{a.tagline}</p>}
+						{a.content != null && (
+							<div class="moe-content">
+								<PortableText value={a.content} />
+							</div>
+						)}
+						<div class="moe-shimmer" aria-hidden="true" />
+					</article>
+				);
+			})}
+		</div>
+
+		<svg class="moe-frame moe-frame-bottom" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true">
+			<rect x="0" y="32" width="1200" height="2" fill="url(#moe-gold)" />
+			<circle cx="20" cy="33" r="5" fill="#d4a843" />
+			<circle cx="1180" cy="33" r="5" fill="#d4a843" />
+		</svg>
+	</section>
+
+	<section class="moe-footer">
+		<p class="moe-footer-note">
+			{isVi ? (
+				<>
+					Những gì bạn vừa thấy là những hình ảnh tôi thấy khi đứng trước tấm gương quá lâu. Không phải lời hứa — chỉ là phản chiếu. Một số có thể mờ dần. Một số có thể bước ra khỏi gương và trở thành thật.
+				</>
+			) : (
+				<>
+					What you just saw are the shapes I see when I stand before the mirror too long. Not promises — just reflections. Some may fade. Some may step out of the glass and become real.
+				</>
+			)}
+		</p>
+		<p class="moe-footer-sig">
+			— <a href="/Trương" class="moe-sig-link">{isVi ? "Lộc" : "Loc"}</a>
+		</p>
+	</section>
+</Base>
+
+<style>
+	.moe-hero {
+		padding: 5rem 1.5rem 3rem;
+		max-width: 880px;
+		margin: 0 auto;
+		text-align: center;
+	}
+	.moe-hero-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.25rem;
+	}
+	.moe-rule {
+		width: 1px;
+		height: 3rem;
+		background: linear-gradient(to bottom, transparent, #d4a843, transparent);
+		opacity: 0.6;
+	}
+	.moe-label {
+		font-size: 0.72rem;
+		letter-spacing: 0.32em;
+		text-transform: uppercase;
+		color: #c9a84a;
+		opacity: 0.78;
+	}
+	.moe-title {
+		font-family: "Inter Tight", system-ui, sans-serif;
+		font-size: clamp(2.6rem, 6vw, 4rem);
+		font-weight: 300;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: #f0e6d2;
+		text-shadow: 0 0 40px rgba(212, 168, 67, 0.18);
+	}
+	.moe-inscription {
+		font-family: "Inter Tight", serif;
+		font-style: italic;
+		font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+		letter-spacing: 0.08em;
+		color: #d4a843;
+		opacity: 0.85;
+		margin: 0.5rem 0 0;
+		text-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+	}
+	.moe-translation {
+		font-size: 1rem;
+		color: #e0d8c4;
+		opacity: 0.78;
+		margin: 0;
+		max-width: 36rem;
+		font-style: italic;
+	}
+	.moe-warning {
+		font-size: 0.88rem;
+		color: #b8ac90;
+		opacity: 0.68;
+		max-width: 38rem;
+		line-height: 1.6;
+		margin: 1rem 0 0;
+	}
+	.moe-warning em {
+		color: #c9a84a;
+		font-style: normal;
+		font-weight: 500;
+	}
+	.moe-warning strong {
+		color: #e0d8c4;
+		font-weight: 500;
+	}
+
+	.moe-mirror {
+		position: relative;
+		padding: 0 1.5rem 3rem;
+		max-width: 1100px;
+		margin: 1rem auto 0;
+	}
+	.moe-frame {
+		width: 100%;
+		height: 34px;
+		display: block;
+		filter: drop-shadow(0 0 6px rgba(212, 168, 67, 0.3));
+	}
+	.moe-frame-bottom {
+		margin-top: 1.25rem;
+		transform: scaleY(-1);
+	}
+
+	.moe-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.25rem;
+		padding: 2rem 0 1rem;
+	}
+
+	.moe-vision {
+		position: relative;
+		background: linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.03) 0%,
+			rgba(212, 168, 67, 0.025) 100%
+		);
+		border: 1px solid rgba(212, 168, 67, 0.18);
+		border-radius: 4px;
+		padding: 1.5rem 1.25rem 1.25rem;
+		overflow: hidden;
+		transition: border-color 0.5s ease, background 0.5s ease, transform 0.4s ease;
+	}
+	.moe-vision::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(
+			ellipse 60% 40% at 50% 0%,
+			color-mix(in oklab, var(--tint) 18%, transparent),
+			transparent 70%
+		);
+		opacity: 0.6;
+		pointer-events: none;
+	}
+	.moe-vision:hover {
+		border-color: color-mix(in oklab, var(--tint) 55%, transparent);
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--tint) 6%, transparent) 0%,
+			rgba(212, 168, 67, 0.04) 100%
+		);
+		transform: translateY(-2px);
+	}
+	.moe-vision:hover .moe-shimmer {
+		opacity: 1;
+	}
+
+	.moe-vision-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.68rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		margin-bottom: 0.75rem;
+	}
+	.moe-domain {
+		color: var(--tint);
+		opacity: 0.9;
+	}
+	.moe-stage {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: #a89a7a;
+		opacity: 0.7;
+	}
+	.moe-stage-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--tint);
+		box-shadow: 0 0 6px var(--tint);
+		opacity: 0.7;
+	}
+	[data-stage="stealth"] .moe-stage-dot { opacity: 0.45; }
+	[data-stage="exploring"] .moe-stage-dot { opacity: 0.7; }
+	[data-stage="building"] .moe-stage-dot { opacity: 0.9; animation: moe-pulse 2.4s ease-in-out infinite; }
+	[data-stage="shipped"] .moe-stage-dot { opacity: 1; box-shadow: 0 0 10px var(--tint); }
+	[data-stage="parked"] .moe-stage-dot { opacity: 0.25; }
+
+	@keyframes moe-pulse {
+		0%, 100% { transform: scale(1); opacity: 0.9; }
+		50% { transform: scale(1.2); opacity: 1; }
+	}
+
+	.moe-vision-title {
+		font-family: "Inter Tight", system-ui, sans-serif;
+		font-size: 1.25rem;
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		margin: 0 0 0.5rem;
+		color: #f0e6d2;
+	}
+	.moe-tagline {
+		font-size: 0.95rem;
+		color: #c9bfa6;
+		line-height: 1.55;
+		margin: 0 0 0.9rem;
+		opacity: 0.88;
+	}
+	.moe-content {
+		font-size: 0.88rem;
+		line-height: 1.6;
+		color: #9e957e;
+		opacity: 0.78;
+		border-top: 1px solid rgba(212, 168, 67, 0.12);
+		padding-top: 0.85rem;
+	}
+	.moe-content :global(p) {
+		margin: 0 0 0.5rem;
+	}
+	.moe-content :global(p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.moe-shimmer {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			115deg,
+			transparent 40%,
+			color-mix(in oklab, var(--tint) 22%, transparent) 50%,
+			transparent 60%
+		);
+		opacity: 0;
+		transition: opacity 0.8s ease;
+		pointer-events: none;
+		mix-blend-mode: overlay;
+	}
+
+	.moe-footer {
+		max-width: 620px;
+		margin: 0 auto;
+		padding: 3rem 1.5rem 5rem;
+		text-align: center;
+	}
+	.moe-footer-note {
+		font-size: 0.95rem;
+		color: #c9bfa6;
+		line-height: 1.7;
+		opacity: 0.78;
+		font-style: italic;
+	}
+	.moe-footer-sig {
+		margin-top: 1rem;
+		font-size: 0.9rem;
+		color: #a89a7a;
+		opacity: 0.65;
+	}
+	.moe-sig-link {
+		color: #d4a843;
+		text-decoration: none;
+		border-bottom: 1px solid transparent;
+		transition: border-color 0.3s ease;
+	}
+	.moe-sig-link:hover {
+		border-bottom-color: #d4a843;
+	}
+
+	@media (max-width: 640px) {
+		.moe-hero { padding: 3rem 1rem 2rem; }
+		.moe-grid { grid-template-columns: 1fr; gap: 1rem; }
+		.moe-vision { padding: 1.25rem 1rem 1rem; }
+	}
+</style>
