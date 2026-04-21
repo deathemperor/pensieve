@@ -1,0 +1,183 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+import { getContact } from "../../../lib/portraits/db";
+import type { ContactWithChannels } from "../../../lib/portraits/types";
+
+const auth = await requireAdmin(Astro);
+const db = (env as any).DB;
+const id = Astro.params.id;
+
+if (typeof id !== "string" || !id) {
+  return new Response("Bad request", { status: 400 });
+}
+
+const contact: ContactWithChannels | null = await getContact(db, id);
+
+// Guests can only read placeholder rows. 404 on anything else to avoid existence-leak.
+if (!contact || (!auth.admin && contact.is_placeholder !== 1)) {
+  return new Response("Not found", { status: 404 });
+}
+
+const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
+const primaryEmail = contact.channels.find((c) => c.kind === "email" && c.is_primary === 1)
+  ?? contact.channels.find((c) => c.kind === "email");
+const primaryPhone = contact.channels.find((c) => c.kind === "phone" && c.is_primary === 1)
+  ?? contact.channels.find((c) => c.kind === "phone");
+
+const tierNames = {
+  S: "Founder", A: "Headmaster", B: "Professor", C: "Scholar", D: "Visitor",
+} as const;
+
+Astro.cache.set({
+  maxAge: auth.admin ? 0 : 3600,
+  sharedMaxAge: auth.admin ? 0 : 3600,
+  cacheDirectives: auth.admin ? ["private", "no-store"] : ["public"],
+});
+---
+
+<Base title={`${contact.display_name ?? contact.full_name} — Portrait`} description={contact.bio ?? ""}>
+  <main class="detail-page">
+    <header class="detail-hero">
+      <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+      <div class="detail-identity">
+        <div class="detail-photo" data-tier={contact.prestige_tier}>
+          <span class="initials">
+            {contact.full_name.split(" ").map((p) => p[0] ?? "").join("").slice(0, 2).toUpperCase()}
+          </span>
+        </div>
+        <div class="detail-meta">
+          <h1>{contact.display_name ?? contact.full_name}</h1>
+          {contact.title || contact.company ? (
+            <p class="role">{contact.title}{contact.title && contact.company ? " · " : ""}{contact.company}</p>
+          ) : null}
+          <div class="badges">
+            <span class="tier-badge">{tierNames[contact.prestige_tier]}</span>
+            <span class="score">score {contact.tier_score}</span>
+            {contact.is_placeholder === 1 && <span class="demo-ribbon">★ demo</span>}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {contact.bio && <section class="section"><p class="bio">{contact.bio}</p></section>}
+
+    <section class="section">
+      <h2 class="section-title">Channels</h2>
+      {contact.channels.length === 0 ? (
+        <p class="muted">No channels recorded.</p>
+      ) : (
+        <ul class="channel-list">
+          {contact.channels.map((ch) => (
+            <li class="channel">
+              <span class="channel-kind">{ch.kind}</span>
+              <span class="channel-value">
+                {ch.kind === "email" ? (
+                  <a href={`mailto:${ch.value}`}>{ch.value}</a>
+                ) : ch.kind === "phone" ? (
+                  <a href={`tel:${ch.value.replace(/[^+\d]/g, "")}`}>{ch.value}</a>
+                ) : ch.kind === "url" || ch.kind === "linkedin" || ch.kind === "twitter" || ch.kind === "x" || ch.kind === "facebook" ? (
+                  <a href={ch.value} target="_blank" rel="noopener noreferrer">{ch.value}</a>
+                ) : (
+                  ch.value
+                )}
+              </span>
+              {ch.label && <span class="channel-label">{ch.label}</span>}
+              {ch.is_primary === 1 && <span class="primary-dot" title="primary">●</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    {tags.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Tags</h2>
+        <div class="tags">
+          {tags.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      </section>
+    )}
+
+    <section class="section meta">
+      <dl>
+        <dt>Source</dt><dd>{contact.source}</dd>
+        {contact.location && <><dt>Location</dt><dd>{contact.location}</dd></>}
+        <dt>Added</dt><dd>{new Date(contact.created_at).toLocaleDateString()}</dd>
+        <dt>Updated</dt><dd>{new Date(contact.updated_at).toLocaleDateString()}</dd>
+      </dl>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .detail-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  .back-link:hover { color: #d4a89a; }
+
+  .detail-identity {
+    display: flex; gap: 1.5rem; align-items: flex-start;
+    margin-top: 1rem;
+  }
+  .detail-photo {
+    width: 120px; height: 120px; border-radius: 4px;
+    background: #1a1a1a; display: grid; place-items: center;
+    border: 1px solid #2a2a2a; flex-shrink: 0;
+  }
+  .detail-photo[data-tier="S"] { border-color: #e7c76b; box-shadow: 0 0 12px rgba(231,199,107,0.2); }
+  .detail-photo[data-tier="A"] { border-color: #c8cbd0; }
+  .detail-photo[data-tier="B"] { border-color: #cd8a4e; }
+  .initials {
+    font-family: "Inter Tight", sans-serif; font-weight: 600;
+    font-size: 1.75rem; color: #666;
+  }
+  .detail-meta h1 {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: clamp(1.5rem, 4vw, 2.25rem); margin: 0;
+    color: #e8e6e0;
+  }
+  .role { color: #9a968c; margin: 0.25rem 0 0.5rem; }
+  .badges { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .tier-badge {
+    font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #8a877e; border: 1px solid #3a3a3a; padding: 0.1rem 0.4rem; border-radius: 2px;
+  }
+  .score { font-size: 0.75rem; color: #6a665e; }
+  .demo-ribbon { font-size: 0.75rem; color: #d4a89a; }
+
+  .section { padding: 1.5rem 0; border-top: 1px solid #1a1a1a; margin-top: 1.5rem; }
+  .section-title {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #9a968c; margin: 0 0 0.75rem;
+  }
+  .bio { color: #bdb8ac; line-height: 1.6; margin: 0; }
+  .muted { color: #6a665e; }
+
+  .channel-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .channel { display: flex; gap: 0.75rem; align-items: baseline; font-size: 0.9375rem; }
+  .channel-kind {
+    width: 5rem; text-transform: uppercase; font-size: 0.6875rem;
+    letter-spacing: 0.08em; color: #6a665e;
+  }
+  .channel-value a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .channel-value a:hover { border-bottom-color: #d4a89a; color: #d4a89a; }
+  .channel-label { font-size: 0.75rem; color: #6a665e; }
+  .primary-dot { color: #d4a89a; font-size: 0.6rem; }
+
+  .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.75rem; padding: 0.15rem 0.5rem;
+    border: 1px solid #2a2a2a; border-radius: 2px; color: #9a968c;
+  }
+
+  .meta dl {
+    display: grid; grid-template-columns: 6rem 1fr; gap: 0.35rem 1rem;
+    font-size: 0.875rem;
+  }
+  .meta dt { color: #6a665e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
+  .meta dd { color: #bdb8ac; margin: 0; }
+</style>
