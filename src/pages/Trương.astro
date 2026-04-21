@@ -739,6 +739,14 @@ function formatGHDate(iso: string) {
 					{isVi ? "Tôi không đọc bùa chú. Tôi viết ra chúng." : "I do not cast spells. I build them."}
 				</span>
 
+				{/* Lộc sigil — the name means "blessing". Etched on the portrait
+				    like a painter's seal; blooms when the name-meaning paragraph
+				    enters view, then settles into a permanent faint presence. */}
+				<div class="portrait-loc-seal" id="portrait-loc-seal" aria-hidden="true">
+					<span class="loc-glyph">祿</span>
+					<span class="loc-caption">{isVi ? "Lộc · phúc lộc" : "Lộc · blessing"}</span>
+				</div>
+
 				<figcaption class="photo-caption">
 					<span class="photo-caption-dot" aria-hidden="true" />
 					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
@@ -799,6 +807,63 @@ function formatGHDate(iso: string) {
 	<section class="about-section">
 		<div class="about-inner">
 			<div class="about-prose">
+				<aside class="origin-seal" aria-label={isVi ? "Bản Mệnh và Dòng Dõi" : "Natal chart and heritage"}>
+						<div class="origin-seal-grid">
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Bản Mệnh" : "Natal"}</h3>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-rat" viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<path d="M 10 17 Q 6 17 6 13 Q 6 9 12 8 Q 20 6 27 9 Q 30 10 31 13 Q 33 11 35 12 Q 36 14 34 15 Q 32 16 30 15 Q 29 17 27 17 L 10 17 Z" fill="currentColor"/>
+										<circle cx="25" cy="6" r="2.4" fill="currentColor"/>
+										<circle cx="29" cy="12" r="0.8" fill="#0b0b0d"/>
+										<path d="M 8 16 Q 2 17 1 12 Q 0 5 6 4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+										<path d="M 14 17 L 14 20 M 22 17 L 22 20" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+									</svg>
+									<span class="origin-label">Giáp Tý · 子</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☉</span>
+									<span class="origin-label">{isVi ? "Mặt Trời ở Bạch Dương" : "sun in Aries"}</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☾</span>
+									<span class="origin-label">{isVi ? "Mặt Trăng ở Bạch Dương" : "moon in Aries"}</span>
+								</div>
+							</div>
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Dòng Dõi" : "Heritage"}</h3>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-cjk">黃</span>
+									<span class="origin-label">Huỳnh · {isVi ? "Hoa" : "Chinese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-lotus" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 16 Q 14 8 16 2 Q 18 8 16 16 Z"/>
+											<path d="M 16 16 Q 10 10 11 4 Q 15 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 22 10 21 4 Q 17 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 4 13 3 7 Q 11 11 16 16 Z" opacity="0.56"/>
+											<path d="M 16 16 Q 28 13 29 7 Q 21 11 16 16 Z" opacity="0.56"/>
+										</g>
+									</svg>
+									<span class="origin-label">Nguyễn · {isVi ? "Việt" : "Vietnamese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-spire" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 1 L 15 3 L 17 3 Z"/>
+											<path d="M 13 3 L 19 3 L 18 7 L 14 7 Z"/>
+											<path d="M 11 7 L 21 7 L 20 11 L 12 11 Z"/>
+											<path d="M 9 11 L 23 11 L 22 15 L 10 15 Z"/>
+											<rect x="6" y="15" width="20" height="3"/>
+										</g>
+									</svg>
+									<span class="origin-label">Võ · Khmer</span>
+								</div>
+							</div>
+						</div>
+						<p class="origin-caption">{isVi ? "Kẻ mở vòng tuần hoàn · ba dòng sông trong một thân" : "a circle starter · three rivers in one body"}</p>
+					</aside>
 				{isVi ? (
 					<>
 						<p>
@@ -2655,6 +2720,11 @@ function formatGHDate(iso: string) {
 
 	/* Prose */
 	.about-prose {
+		/* max-width moved to direct <p> children so .prose-intro can
+		   span wider with its 2-column seal layout. */
+	}
+
+	.about-prose > p {
 		max-width: 62ch;
 	}
 
@@ -2665,6 +2735,7 @@ function formatGHDate(iso: string) {
 		color: var(--color-text-secondary);
 		margin: 0 0 var(--spacing-5);
 	}
+
 
 	.about-prose p:last-child {
 		margin-bottom: 0;
@@ -3152,6 +3223,172 @@ function formatGHDate(iso: string) {
 	@media (max-width: 600px) {
 		.portrait-incantation { font-size: 0.9rem; white-space: normal; }
 	}
+
+	/* Lộc sigil — 祿, the "blessing" character. Painter's-seal on the
+	   portrait. Starts nearly invisible; first bloom fires when the
+	   name-meaning paragraph enters the viewport, then the sigil settles
+	   into a faint always-on presence and brightens on hover. */
+	.portrait-loc-seal {
+		position: absolute;
+		right: 16px;
+		bottom: 64px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		pointer-events: auto;
+		z-index: 6;
+		opacity: 0;
+		transform: scale(0.94);
+		transition: opacity 2.2s ease, transform 2.2s ease;
+	}
+	.loc-glyph {
+		font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+		font-size: 28px;
+		font-weight: 400;
+		color: #d4a843;
+		line-height: 1;
+		text-shadow: 0 0 0 rgba(212, 168, 67, 0);
+		transition: text-shadow 1.6s ease, color 1.6s ease, transform 400ms ease;
+	}
+	.loc-caption {
+		font-family: var(--font-mono, "SF Mono", ui-monospace, monospace);
+		font-size: 10px;
+		letter-spacing: 0.08em;
+		color: rgba(212, 168, 67, 0.0);
+		white-space: nowrap;
+		transition: color 600ms ease;
+	}
+	/* First-bloom state — added by IntersectionObserver when the
+	   name-meaning paragraph enters view. */
+	.portrait-loc-seal.is-bloomed {
+		opacity: 0.35;
+		transform: scale(1);
+	}
+	.portrait-loc-seal.is-blooming .loc-glyph {
+		animation: locBloom 2.4s ease-out 1;
+	}
+	@keyframes locBloom {
+		0%   { color: #d4a843; text-shadow: 0 0 0 rgba(212, 168, 67, 0); transform: scale(0.98); }
+		30%  { color: #ffe38a; text-shadow: 0 0 18px rgba(255, 227, 138, 0.95), 0 0 4px rgba(255, 227, 138, 0.7); transform: scale(1.14); }
+		100% { color: #d4a843; text-shadow: 0 0 0 rgba(212, 168, 67, 0); transform: scale(1); }
+	}
+	/* Settled hover — once bloomed, hover brightens and reveals caption. */
+	.portrait-loc-seal.is-bloomed:hover {
+		opacity: 0.9;
+	}
+	.portrait-loc-seal.is-bloomed:hover .loc-glyph {
+		color: #ffe38a;
+		text-shadow: 0 0 10px rgba(255, 227, 138, 0.6);
+	}
+	.portrait-loc-seal.is-bloomed:hover .loc-caption {
+		color: rgba(212, 168, 67, 0.9);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.portrait-loc-seal { transition: opacity 0.3s ease; }
+		.portrait-loc-seal.is-blooming .loc-glyph { animation: none; }
+	}
+	@media (max-width: 600px) {
+		.portrait-loc-seal { right: 8px; bottom: 48px; }
+		.loc-glyph { font-size: 22px; }
+		.loc-caption { font-size: 9px; }
+	}
+
+	/* Origin Seal — natal chart (rat + Aries) and heritage (Huỳnh · Nguyễn ·
+	   Võ) float-right inside the prose so paragraphs wrap around it.
+	   Gold = Eastern lineage, pink = Western horoscope. */
+	.origin-seal {
+		float: right;
+		width: 360px;
+		margin: 4px 0 var(--spacing-5, 20px) var(--spacing-8, 32px);
+		padding: var(--spacing-4, 16px) var(--spacing-5, 20px);
+		border: 1px solid var(--color-border, rgba(233, 230, 220, 0.14));
+		border-left: 2px solid #d4a843;
+		background: linear-gradient(180deg, rgba(212, 168, 67, 0.03), transparent);
+		border-radius: 3px;
+	}
+	.origin-seal-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--spacing-3, 12px) var(--spacing-6, 24px);
+	}
+	.origin-col-title {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 10px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-muted, #8e877c);
+		margin: 0 0 6px;
+		font-weight: 500;
+	}
+	.origin-row {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		margin-bottom: 4px;
+		font-size: var(--font-size-sm, 14px);
+	}
+	.origin-glyph {
+		color: #d4a843;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+	.origin-glyph-cjk {
+		font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+		font-size: 22px;
+		min-width: 28px;
+	}
+	.origin-glyph-astro {
+		font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Symbola", sans-serif;
+		font-size: 16px;
+		letter-spacing: 0.05em;
+		min-width: 48px;
+		color: #e8a5b5;
+	}
+	.origin-glyph-rat,
+	.origin-glyph-lotus,
+	.origin-glyph-spire { display: inline-block; }
+	.origin-glyph-rat { width: 38px; height: 22px; }
+	.origin-glyph-lotus,
+	.origin-glyph-spire { width: 30px; height: 20px; }
+	.origin-label {
+		font-family: var(--font-sans, "Inter Tight", -apple-system, sans-serif);
+		color: var(--color-text, #e9e6dc);
+		font-size: var(--font-size-sm, 14px);
+		letter-spacing: 0.01em;
+		white-space: nowrap;
+	}
+	.origin-caption {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		color: var(--color-muted, #8e877c);
+		text-align: center;
+		margin: 10px 0 0;
+		padding-top: 10px;
+		border-top: 1px dashed var(--color-border, rgba(233, 230, 220, 0.14));
+	}
+	/* Clearfix so the prose section sits below the float cleanly. */
+	.about-prose::after {
+		content: "";
+		display: block;
+		clear: both;
+	}
+
+	@media (max-width: 900px) {
+		.origin-seal {
+			float: none;
+			width: auto;
+			max-width: 460px;
+			margin: 0 0 var(--spacing-5, 20px);
+		}
+	}
+	@media (max-width: 600px) {
+		.origin-seal { padding: var(--spacing-3, 12px) var(--spacing-4, 16px); }
+		.origin-seal-grid { gap: var(--spacing-2, 10px) var(--spacing-4, 16px); }
+		.origin-glyph-cjk { font-size: 20px; min-width: 26px; }
+		.origin-glyph-astro { font-size: 14px; min-width: 42px; }
+	}
 </style>
 
 <script is:inline>
@@ -3179,5 +3416,36 @@ function formatGHDate(iso: string) {
 
 		window.addEventListener('mousemove', handleMove, { passive: true });
 		window.addEventListener('mouseleave', reset);
+	})();
+
+	// Lộc sigil — bloom when the name-meaning paragraph enters view,
+	// then settle into a faint always-on presence. One-shot.
+	(function() {
+		const seal = document.getElementById('portrait-loc-seal');
+		const firstProse = document.querySelector('.about-prose p');
+		if (!seal || !firstProse) return;
+
+		function bloom() {
+			seal.classList.add('is-bloomed', 'is-blooming');
+			window.setTimeout(() => seal.classList.remove('is-blooming'), 2400);
+		}
+
+		if (!('IntersectionObserver' in window)) {
+			// Fallback: no observer → just settle in without the flash.
+			seal.classList.add('is-bloomed');
+			return;
+		}
+
+		const io = new IntersectionObserver((entries, obs) => {
+			for (const e of entries) {
+				if (e.isIntersecting) {
+					bloom();
+					obs.disconnect();
+					break;
+				}
+			}
+		}, { threshold: 0.35 });
+
+		io.observe(firstProse);
 	})();
 </script>
