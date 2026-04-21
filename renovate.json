@@ -9,7 +9,6 @@
 	"schedule": ["before 11am on Monday"],
 	"prConcurrentLimit": 5,
 	"prHourlyLimit": 2,
-	"minimumReleaseAge": "3 days",
 	"labels": ["dependencies"],
 	"rebaseWhen": "conflicted",
 	"platformAutomerge": true,
