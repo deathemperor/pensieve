@@ -4,7 +4,6 @@ import type {
   Channel,
   CreateContactInput,
   ListContactsOptions,
-  TierCode,
 } from "./types";
 
 type D1 = import("@cloudflare/workers-types").D1Database;

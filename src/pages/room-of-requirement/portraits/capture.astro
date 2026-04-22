@@ -3,7 +3,7 @@ export const prerender = false;
 
 import Base from "../../../layouts/Base.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
-import CardStatusPoller from "../../../components/portraits/CardStatusPoller.tsx";
+// CardStatusPoller.tsx kept in the repo for Phase 3+ reuse; capture.astro polls inline via vanilla JS.
 
 const auth = await requireAdmin(Astro);
 if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
@@ -41,7 +41,6 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
   const captureStep = document.getElementById("capture-step") as HTMLDivElement;
   const resultStep = document.getElementById("result-step") as HTMLDivElement;
   const preview = document.getElementById("preview") as HTMLImageElement;
-  const pollerSlot = document.getElementById("poller-slot") as HTMLDivElement;
   const err = document.getElementById("upload-error") as HTMLParagraphElement;
 
   input.addEventListener("change", async () => {

@@ -26,10 +26,6 @@ if (!contact || (!auth.admin && contact.is_placeholder !== 1)) {
 }
 
 const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
-const primaryEmail = contact.channels.find((c) => c.kind === "email" && c.is_primary === 1)
-  ?? contact.channels.find((c) => c.kind === "email");
-const primaryPhone = contact.channels.find((c) => c.kind === "phone" && c.is_primary === 1)
-  ?? contact.channels.find((c) => c.kind === "phone");
 
 const tierNames = {
   S: "Founder", A: "Headmaster", B: "Professor", C: "Scholar", D: "Visitor",
@@ -42,7 +38,7 @@ if (auth.admin) {
   const rs = await db
     .prepare("SELECT id, captured_at, ocr_status FROM contact_cards WHERE contact_id=? ORDER BY captured_at DESC")
     .bind(contact.id)
-    .all<CardSummary>();
+    .all() as { results: CardSummary[] };
   cards = (rs.results ?? []) as CardSummary[];
 }
 
