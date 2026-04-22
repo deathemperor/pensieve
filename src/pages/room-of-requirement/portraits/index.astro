@@ -6,6 +6,7 @@ import Base from "../../../layouts/Base.astro";
 import TierSection from "../../../components/portraits/TierSection.astro";
 import CorridorTable from "../../../components/portraits/CorridorTable.astro";
 import GuestBanner from "../../../components/portraits/GuestBanner.astro";
+import RemindersPill from "../../../components/portraits/RemindersPill.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
 import { listContacts } from "../../../lib/portraits/db";
 import type { Contact, TierCode } from "../../../lib/portraits/types";
@@ -46,6 +47,7 @@ Astro.response.headers.set(
           <a class="btn" href="/room-of-requirement/portraits/capture">📷 Capture card</a>
         </div>
       )}
+      {auth.admin && <RemindersPill db={db} />}
     </header>
 
     {!auth.admin && <GuestBanner />}
