@@ -41,6 +41,11 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
         </label>
       </div>
 
+      <div class="field">
+        <button type="button" id="suggest-tier-btn" class="btn btn-small">🤖 Suggest tier from name + title + company</button>
+        <p id="suggest-tier-result" class="suggest-hint" hidden></p>
+      </div>
+
       <label class="field">
         <span>Prestige tier <span class="req">*</span></span>
         <select name="prestige_tier" required>
@@ -133,6 +138,49 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
     const { contact } = (await res.json()) as { contact: { id: string } };
     window.location.href = `/room-of-requirement/portraits/${contact.id}`;
   });
+
+  const suggestBtn = document.getElementById("suggest-tier-btn") as HTMLButtonElement | null;
+  const suggestResult = document.getElementById("suggest-tier-result") as HTMLParagraphElement | null;
+  suggestBtn?.addEventListener("click", async () => {
+    const fd = new FormData(form);
+    const payload = {
+      full_name: String(fd.get("full_name") ?? "").trim(),
+      title: String(fd.get("title") ?? "").trim() || undefined,
+      company: String(fd.get("company") ?? "").trim() || undefined,
+      bio: String(fd.get("bio") ?? "").trim() || undefined,
+    };
+    if (!payload.full_name) {
+      if (suggestResult) {
+        suggestResult.textContent = "Enter a name first.";
+        suggestResult.hidden = false;
+      }
+      return;
+    }
+    suggestBtn.disabled = true;
+    suggestBtn.textContent = "Thinking…";
+    try {
+      const res = await fetch("/api/portraits/suggest-tier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json() as { tier?: string; reason?: string; error?: string; hint?: string };
+      if (res.ok && data.tier) {
+        const sel = form.querySelector<HTMLSelectElement>('select[name="prestige_tier"]');
+        if (sel) sel.value = data.tier;
+        if (suggestResult) {
+          suggestResult.textContent = `Suggested ${data.tier}: ${data.reason}`;
+          suggestResult.hidden = false;
+        }
+      } else if (suggestResult) {
+        suggestResult.textContent = `No suggestion: ${data.error ?? res.statusText}${data.hint ? ` (${data.hint})` : ""}`;
+        suggestResult.hidden = false;
+      }
+    } finally {
+      suggestBtn.disabled = false;
+      suggestBtn.textContent = "🤖 Suggest tier from name + title + company";
+    }
+  });
 </script>
 
 <style>
@@ -170,4 +218,7 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
   .btn-primary { border-color: #d4a89a; color: #d4a89a; }
   .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
   .error { color: #e57373; font-size: 0.875rem; }
+  .btn-small { padding: 0.35rem 0.7rem; font-size: 0.8125rem; background: transparent; border: 1px solid #3a3a3a; border-radius: 3px; color: #d4a89a; cursor: pointer; }
+  .btn-small:hover { border-color: #d4a89a; background: rgba(212, 168, 154, 0.04); }
+  .suggest-hint { color: #8a877e; font-size: 0.8125rem; margin: 0.5rem 0 0; }
 </style>
