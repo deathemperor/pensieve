@@ -32,6 +32,17 @@ const tierNames = {
   S: "Founder", A: "Headmaster", B: "Professor", C: "Scholar", D: "Visitor",
 } as const;
 
+// Phase 2: list any cards attached to this contact (admin view only).
+interface CardSummary { id: string; captured_at: string; ocr_status: string }
+let cards: CardSummary[] = [];
+if (auth.admin) {
+  const rs = await db
+    .prepare("SELECT id, captured_at, ocr_status FROM contact_cards WHERE contact_id=? ORDER BY captured_at DESC")
+    .bind(contact.id)
+    .all<CardSummary>();
+  cards = (rs.results ?? []) as CardSummary[];
+}
+
 // Astro.cache.set only honors maxAge/swr/tags; set the full Cache-Control directly for "private, no-store".
 Astro.cache.set({ maxAge: auth.admin ? 0 : 3600 });
 Astro.response.headers.set(
@@ -99,6 +110,20 @@ Astro.response.headers.set(
         <h2 class="section-title">Tags</h2>
         <div class="tags">
           {tags.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      </section>
+    )}
+
+    {auth.admin && cards.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Cards</h2>
+        <div class="cards-grid">
+          {cards.map((c) => (
+            <a class="card-tile" href={`/api/portraits/cards/${c.id}/image`} target="_blank" rel="noopener noreferrer">
+              <img src={`/api/portraits/cards/${c.id}/image`} alt="business card" loading="lazy" />
+              <span class={`card-status card-status-${c.ocr_status}`}>{c.ocr_status}</span>
+            </a>
+          ))}
         </div>
       </section>
     )}
@@ -181,4 +206,12 @@ Astro.response.headers.set(
   }
   .meta dt { color: #6a665e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
   .meta dd { color: #bdb8ac; margin: 0; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+  .card-tile { position: relative; display: block; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; }
+  .card-tile img { width: 100%; height: 90px; object-fit: cover; }
+  .card-status { position: absolute; top: 4px; right: 4px; font-size: 0.625rem; padding: 0.1rem 0.4rem; border-radius: 2px; background: #0008; color: #e8e6e0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .card-status-parsed { background: rgba(120, 170, 110, 0.2); color: #a9cfa0; }
+  .card-status-failed { background: rgba(229, 115, 115, 0.2); color: #e57373; }
+  .card-status-pending, .card-status-parsing { background: rgba(212, 168, 154, 0.2); color: #d4a89a; }
 </style>
