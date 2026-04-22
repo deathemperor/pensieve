@@ -2,20 +2,6 @@ import handler from "@astrojs/cloudflare/entrypoints/server";
 export { PluginBridge } from "@emdash-cms/cloudflare/sandbox";
 
 /**
- * OpenClawContainer stub — the real implementation lives on worktree-Ron.
- * Prod has existing Durable Objects bound to this class name; removing the
- * export would require a destructive delete-class migration. This stub keeps
- * the export alive so deploys from main succeed without touching DO storage.
- * Safe to remove once worktree-Ron merges (or a delete-class migration runs).
- */
-export class OpenClawContainer {
-	constructor(_state: unknown, _env: unknown) {}
-	async fetch() {
-		return new Response("OpenClaw is not deployed on this branch.", { status: 503 });
-	}
-}
-
-/**
  * Custom worker wrapping the Astro handler.
  *
  * With base: "/" Astro owns the entire domain. The worker only
