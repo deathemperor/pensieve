@@ -172,7 +172,7 @@ Astro.response.headers.set(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ contact_id: cid, to: email, subject, body }),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = (await res.json().catch(() => ({}))) as { resend_id?: string; error?: string; hint?: string };
       if (res.ok) {
         alert(`Sent. Resend ID: ${data.resend_id ?? "unknown"}`);
         window.location.reload();
