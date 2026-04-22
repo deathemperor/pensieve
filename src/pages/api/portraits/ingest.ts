@@ -11,11 +11,14 @@ function verifyBearer(request: Request, secret: string): boolean {
   const h = request.headers.get("authorization") ?? "";
   if (!h.startsWith("Bearer ")) return false;
   const provided = h.slice(7);
-  // Constant-time compare
-  if (provided.length !== secret.length) return false;
-  let diff = 0;
-  for (let i = 0; i < provided.length; i++) {
-    diff |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
+  // Constant-time compare. Always iterate max(provided, secret) length so
+  // timing doesn't leak length; OR the length inequality into the result.
+  const maxLen = Math.max(provided.length, secret.length);
+  let diff = provided.length ^ secret.length;
+  for (let i = 0; i < maxLen; i++) {
+    const pc = i < provided.length ? provided.charCodeAt(i) : 0;
+    const sc = i < secret.length ? secret.charCodeAt(i) : 0;
+    diff |= pc ^ sc;
   }
   return diff === 0;
 }

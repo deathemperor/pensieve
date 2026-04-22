@@ -132,7 +132,7 @@ Astro.response.headers.set(
         <h2 class="section-title">Cards</h2>
         <div class="cards-grid">
           {cards.map((c) => (
-            <a class="card-tile" href={`/api/portraits/cards/${c.id}/image`} target="_blank" rel="noopener noreferrer">
+            <a class="card-tile" href={`/api/portraits/cards/${c.id}/image`}>
               <img src={`/api/portraits/cards/${c.id}/image`} alt="business card" loading="lazy" />
               <span class={`card-status card-status-${c.ocr_status}`}>{c.ocr_status}</span>
             </a>

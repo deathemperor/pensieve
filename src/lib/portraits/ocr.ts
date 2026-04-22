@@ -83,7 +83,14 @@ export async function extractContactFromCard(
   mimeType: "image/jpeg" | "image/png" | "image/webp",
 ): Promise<OcrResult<ExtractedCard>> {
   const client = new Anthropic({ apiKey });
-  const b64 = btoa(String.fromCharCode(...imageBytes));
+  // Chunked base64 encode — spreading a Uint8Array with >~64K elements
+  // into String.fromCharCode hits V8's argument-count limit (RangeError).
+  let binary = "";
+  const CHUNK = 8192;
+  for (let off = 0; off < imageBytes.length; off += CHUNK) {
+    binary += String.fromCharCode(...imageBytes.subarray(off, off + CHUNK));
+  }
+  const b64 = btoa(binary);
 
   let text: string;
   try {
