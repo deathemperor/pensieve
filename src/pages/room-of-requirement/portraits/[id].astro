@@ -6,6 +6,8 @@ import Base from "../../../layouts/Base.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
 import { getContact } from "../../../lib/portraits/db";
 import type { ContactWithChannels } from "../../../lib/portraits/types";
+import Timeline from "../../../components/portraits/Timeline.astro";
+import NotesTab from "../../../components/portraits/NotesTab.astro";
 
 const auth = await requireAdmin(Astro);
 const db = (env as any).DB;
@@ -113,6 +115,9 @@ Astro.response.headers.set(
         </div>
       </section>
     )}
+
+    {auth.admin && <Timeline db={db} contactId={contact.id} />}
+    {auth.admin && <NotesTab db={db} contactId={contact.id} />}
 
     {auth.admin && cards.length > 0 && (
       <section class="section">

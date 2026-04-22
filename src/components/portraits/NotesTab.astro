@@ -1,0 +1,61 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { renderMarkdown } from "../../lib/portraits/markdown";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+
+interface NoteRow { id: string; body: string; created_at: string; updated_at: string }
+const rs = await db
+  .prepare("SELECT id, body, created_at, updated_at FROM contact_notes WHERE contact_id=? ORDER BY created_at DESC")
+  .bind(contactId)
+  .all<NoteRow>();
+const rows = (rs.results ?? []) as NoteRow[];
+---
+
+<section class="section notes">
+  <h2 class="section-title">Notes</h2>
+  {rows.length === 0 ? <p class="muted">No notes yet.</p> : (
+    <ul class="notes-list">
+      {rows.map((n) => (
+        <li class="note">
+          <div class="note-meta">{new Date(n.created_at).toLocaleDateString()}</div>
+          <div class="note-body" set:html={renderMarkdown(n.body)} />
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <form id="note-form" class="note-form">
+    <textarea name="body" rows="3" placeholder="Markdown OK" required maxlength="4000"></textarea>
+    <button type="submit">＋ add note</button>
+  </form>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("note-form");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const res = await fetch(`/api/portraits/${contactId}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: String(fd.get("body") ?? "").trim() }),
+    });
+    if (res.ok) window.location.reload();
+  });
+</script>
+
+<style>
+  .notes-list { list-style: none; padding: 0; margin: 0 0 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+  .note { padding: 0.75rem; border: 1px solid #2a2a2a; border-radius: 3px; }
+  .note-meta { color: #6a665e; font-size: 0.75rem; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+  .note-body { color: #bdb8ac; line-height: 1.55; }
+  .note-body :global(p) { margin: 0.25rem 0; }
+  .note-body :global(strong) { color: #e8e6e0; }
+  .note-body :global(code) { background: #1a1a1a; padding: 0.1rem 0.3rem; border-radius: 2px; }
+  .note-form { display: flex; flex-direction: column; gap: 0.5rem; }
+  .note-form textarea { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.5rem 0.7rem; border-radius: 3px; font: inherit; resize: vertical; }
+  .note-form button { align-self: flex-start; background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
+  .note-form button:hover { background: rgba(212, 168, 154, 0.08); }
+</style>
