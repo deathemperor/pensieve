@@ -1,0 +1,98 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const e = env as any;
+const integrations = [
+  {
+    name: "vCard / CSV import",
+    status: "ready",
+    hint: "Drop a .vcf from iCloud, iOS Contacts, or Google export.",
+    href: "/room-of-requirement/portraits/import",
+    action: "Open importer",
+  },
+  {
+    name: "openclaw / iOS Shortcut ingest",
+    status: e.PORTRAITS_INGEST_TOKEN ? "ready" : "needs-secret",
+    hint: e.PORTRAITS_INGEST_TOKEN
+      ? "Bearer-token endpoint active at POST /api/portraits/ingest."
+      : "Set PORTRAITS_INGEST_TOKEN via `npx wrangler secret put PORTRAITS_INGEST_TOKEN`.",
+  },
+  {
+    name: "Claude vision OCR (card capture)",
+    status: e.ANTHROPIC_API_KEY ? "ready" : "needs-secret",
+    hint: e.ANTHROPIC_API_KEY
+      ? "OCR fires automatically on card upload."
+      : "Set ANTHROPIC_API_KEY via wrangler secret. Card uploads work but OCR stays pending until the key is set.",
+  },
+  {
+    name: "Resend outreach",
+    status: e.RESEND_API_KEY ? "ready" : "needs-secret",
+    hint: e.RESEND_API_KEY
+      ? "Compose emails from any email channel on the detail page."
+      : "Set RESEND_API_KEY. Outreach compose returns 503 until the key is set.",
+  },
+  {
+    name: "Google Contacts OAuth sync",
+    status: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET ? "ready" : "not-configured",
+    hint: "Register an OAuth app at console.cloud.google.com with redirect URI https://huuloc.com/api/portraits/integrations/google/callback, then set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET via wrangler secret. Live sync endpoint is deferred to a follow-up phase.",
+  },
+  {
+    name: "iOS Shortcut",
+    status: "docs-only",
+    hint: "Download a .shortcut that posts to /api/portraits/ingest. Bearer token required. File distribution pending.",
+  },
+  {
+    name: "Facebook / LinkedIn",
+    status: "csv-only",
+    hint: "Meta retired friends-list API; LinkedIn gates its export behind paid partnership. Use their Download Your Information / Connections Export flows, then import via vCard/CSV.",
+  },
+];
+---
+
+<Base title="Sync — Portraits" description="Integration status.">
+  <main class="sync-page">
+    <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+    <h1>Sync & integrations</h1>
+    <p class="hint">How data flows into your rolodex.</p>
+
+    <ul class="integrations">
+      {integrations.map((ig) => (
+        <li class={`integration status-${ig.status}`}>
+          <div class="row">
+            <strong class="name">{ig.name}</strong>
+            <span class={`pill pill-${ig.status}`}>{ig.status.replace(/-/g, " ")}</span>
+          </div>
+          <p class="hint">{ig.hint}</p>
+          {ig.href && ig.action && <a class="btn" href={ig.href}>{ig.action}</a>}
+        </li>
+      ))}
+    </ul>
+  </main>
+</Base>
+
+<style>
+  .sync-page { max-width: 780px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 1.5rem; }
+  .integrations { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .integration { padding: 1rem; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .integration .row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .name { color: #e8e6e0; }
+  .pill { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 2px; border: 1px solid #3a3a3a; color: #9a968c; }
+  .pill-ready { border-color: #7aa56a; color: #a9cfa0; background: rgba(120, 170, 110, 0.08); }
+  .pill-needs-secret, .pill-not-configured { border-color: #d4a89a; color: #d4a89a; background: rgba(212, 168, 154, 0.08); }
+  .pill-docs-only, .pill-csv-only { border-color: #2a2a2a; color: #6a665e; }
+  .integration .hint { margin: 0.5rem 0 0; font-size: 0.875rem; color: #bdb8ac; }
+  .btn { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.9rem; border: 1px solid #d4a89a; border-radius: 3px; color: #d4a89a; text-decoration: none; font-size: 0.875rem; }
+  .btn:hover { background: rgba(212, 168, 154, 0.08); }
+</style>
