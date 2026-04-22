@@ -2,7 +2,6 @@
 import { parseChronicleDate } from "../../utils/chronicleDate";
 import { monthToAngleDeg, ringRadiusForYear, fanCluster } from "../../utils/chronicleGeometry";
 import { getChronicleCategory } from "../../themes/chronicleCategories";
-import { toRoman } from "../../utils/romanDate";
 import { getCurrentLang } from "../../utils/lang";
 
 interface Props {
@@ -64,7 +63,7 @@ function polar(radius: number, angleDeg: number) {
         <div
           class="year-tick"
           style={`left:50%;top:calc(50% - ${r}px);transform:translate(-50%,-50%);`}
-        >{toRoman(year)}</div>
+        >{year}</div>
       </Fragment>
     );
   })}
@@ -81,7 +80,7 @@ function polar(radius: number, angleDeg: number) {
         style={`left:calc(50% + ${x}px);top:calc(50% + ${y}px);--star:${cat.hex};`}
         aria-label={isVi ? `Mở sự kiện: ${title}` : `Open event: ${title}`}
       >
-        <span class="cc-star-label">{toRoman(p.year)}</span>
+        <span class="cc-star-label">{p.year}</span>
       </button>
     );
   })}
