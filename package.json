@@ -29,7 +29,8 @@
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
 		"react": "^19.2.4",
-		"react-dom": "^19.2.4"
+		"react-dom": "^19.2.4",
+		"reactflow": "^11.11.4"
 	},
 	"devDependencies": {
 		"@astrojs/check": "0.9.8",
