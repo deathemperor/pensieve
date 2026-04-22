@@ -21,7 +21,7 @@ export const POST: APIRoute = async (ctx) => {
   if (!apiKey) return json({ error: "unavailable", hint: "set ANTHROPIC_API_KEY" }, 503);
 
   const result = await suggestTier(apiKey, body as any);
-  if (!result.ok) return json({ error: result.error }, 502);
+  if (result.ok === false) return json({ error: result.error }, 502);
   return json({ tier: result.tier, reason: result.reason });
 };
 
