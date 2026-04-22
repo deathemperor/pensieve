@@ -21,32 +21,7 @@ interface GitHubUser {
 	created_at: string;
 }
 
-interface GitHubEvent {
-	type: string;
-	repo: { name: string };
-	created_at: string;
-	payload: {
-		commits?: { message: string; sha: string }[];
-		action?: string;
-		ref?: string;
-		ref_type?: string;
-	};
-}
-
-interface GitHubRepo {
-	name: string;
-	description: string | null;
-	html_url: string;
-	language: string | null;
-	stargazers_count: number;
-	updated_at: string;
-	fork: boolean;
-	private: boolean;
-}
-
 let ghUser: GitHubUser | null = null;
-let ghEvents: GitHubEvent[] = [];
-let ghRepos: GitHubRepo[] = [];
 
 // Cache GitHub API responses at Cloudflare's edge (1 hour).
 // Visitors never hit GitHub directly — only one request per hour per edge PoP.
@@ -61,149 +36,21 @@ const ghFetchOpts = {
 	cf: { cacheTtl: 3600, cacheEverything: true },
 } as RequestInit;
 
-// When authenticated, /user returns private repo counts; /events (no /public) includes private activity
+// When authenticated, /user returns private repo counts
 const userEndpoint = ghToken
 	? "https://api.github.com/user"
 	: "https://api.github.com/users/deathemperor";
-const eventsEndpoint = ghToken
-	? "https://api.github.com/users/deathemperor/events?per_page=30"
-	: "https://api.github.com/users/deathemperor/events/public?per_page=30";
-const reposEndpoint = ghToken
-	? "https://api.github.com/user/repos?sort=pushed&per_page=10&affiliation=owner"
-	: "https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner";
-
-// GraphQL query for accurate commit count (last 30 days, all repos)
-let recentCommitCount = 0;
-let claudeEraCommitCount = 232; // fallback if GraphQL unavailable or rate-limited
 
 try {
-	const fetches: Promise<Response>[] = [
-		fetch(userEndpoint, ghFetchOpts),
-		fetch(eventsEndpoint, ghFetchOpts),
-		fetch(reposEndpoint, ghFetchOpts),
-	];
-	// GraphQL for commit stats (requires auth)
-	if (ghToken) {
-		const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-		fetches.push(
-			fetch("https://api.github.com/graphql", {
-				method: "POST",
-				headers: { ...ghHeaders, "Content-Type": "application/json" },
-				body: JSON.stringify({
-					query: `{ viewer { last30: contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } claudeEra: contributionsCollection(from: "2026-01-29T00:00:00Z") { totalCommitContributions restrictedContributionsCount } } }`,
-				}),
-				cf: { cacheTtl: 3600, cacheEverything: true },
-			} as RequestInit),
-		);
-	}
-	const results = await Promise.all(fetches);
-	const [userRes, eventsRes, reposRes] = results;
+	const userRes = await fetch(userEndpoint, ghFetchOpts);
 	if (userRes.ok) ghUser = await userRes.json();
-	if (eventsRes.ok) ghEvents = await eventsRes.json();
-	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
-	if (results[3]?.ok) {
-		const gql = await results[3].json();
-		const last30 = gql?.data?.viewer?.last30;
-		const era = gql?.data?.viewer?.claudeEra;
-		recentCommitCount = (last30?.totalCommitContributions ?? 0) + (last30?.restrictedContributionsCount ?? 0);
-		const eraTotal = (era?.totalCommitContributions ?? 0) + (era?.restrictedContributionsCount ?? 0);
-		if (eraTotal > 0) claudeEraCommitCount = eraTotal;
-	}
 } catch {
-	// GitHub API unavailable — render without stats
-}
-
-// Fallback: count push events if GraphQL unavailable
-const commitEvents = ghEvents.filter((e) => e.type === "PushEvent");
-if (!recentCommitCount) {
-	const hasCommitDetails = commitEvents.some((e) => e.payload.commits && e.payload.commits.length > 0);
-	recentCommitCount = hasCommitDetails
-		? commitEvents.reduce((sum, e) => sum + (e.payload.commits?.length ?? 0), 0)
-		: commitEvents.length;
-}
-
-// Activity by day of week
-const dayNames = isVi
-	? ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
-	: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const dayActivity = new Array(7).fill(0);
-for (const e of ghEvents) {
-	const day = new Date(e.created_at).getDay();
-	dayActivity[day]++;
-}
-const maxDayActivity = Math.max(...dayActivity, 1);
-
-// Recent activity feed (last 10 meaningful events)
-const activityFeed = ghEvents
-	.filter((e) => ["PushEvent", "CreateEvent", "PullRequestEvent", "IssuesEvent"].includes(e.type))
-	.slice(0, 10)
-	.map((e) => {
-		// Check if this event is from a private repo (not in public repos list)
-		const repoFullName = e.repo.name;
-		const repo = repoFullName.replace("deathemperor/", "");
-		const isPrivateRepo = ghToken && !ghRepos.some((r) => !r.private && r.name === repo);
-		const displayRepo = isPrivateRepo ? (isVi ? "kho riêng" : "private repo") : repo;
-		const date = new Date(e.created_at);
-		const timeAgo = formatTimeAgo(date);
-		let action = e.type;
-		if (e.type === "PushEvent") {
-			const commits = e.payload.commits;
-			if (commits && commits.length > 0) {
-				action = isVi
-					? `${commits.length} commit tới ${displayRepo}`
-					: `${commits.length} commit${commits.length !== 1 ? "s" : ""} to ${displayRepo}`;
-			} else {
-				action = isVi
-					? `đẩy mã tới ${displayRepo}`
-					: `pushed to ${displayRepo}`;
-			}
-		} else if (e.type === "CreateEvent") {
-			action = isVi
-				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} trong ` : ""}${displayRepo}`
-				: `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} in ` : ""}${displayRepo}`;
-		} else if (e.type === "PullRequestEvent") {
-			action = isVi
-				? `${e.payload.action} PR trong ${displayRepo}`
-				: `${e.payload.action} PR in ${displayRepo}`;
-		} else if (e.type === "IssuesEvent") {
-			action = isVi
-				? `${e.payload.action} issue trong ${displayRepo}`
-				: `${e.payload.action} issue in ${displayRepo}`;
-		}
-		return { action, timeAgo, date };
-	});
-
-const langColors: Record<string, string> = {
-	TypeScript: "#3178c6",
-	JavaScript: "#f1e05a",
-	Python: "#3572a5",
-	HTML: "#e34c26",
-	CSS: "#563d7c",
-	Go: "#00add8",
-	Rust: "#dea584",
-	Shell: "#89e051",
-	Astro: "#ff5a03",
-};
-
-function formatTimeAgo(date: Date) {
-	const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-	if (seconds < 60) return isVi ? "vừa xong" : "just now";
-	const minutes = Math.floor(seconds / 60);
-	if (minutes < 60) return isVi ? `${minutes} ph trước` : `${minutes}m ago`;
-	const hours = Math.floor(minutes / 60);
-	if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
-	const days = Math.floor(hours / 24);
-	if (days < 7) return isVi ? `${days} ngày trước` : `${days}d ago`;
-	return date.toLocaleDateString(isVi ? "vi-VN" : "en-US", { month: "short", day: "numeric" });
-}
-
-function formatGHDate(iso: string) {
-	return new Date(iso).toLocaleDateString(isVi ? "vi-VN" : "en-US", { year: "numeric", month: "long" });
+	// GitHub API unavailable — render without the hero pill
 }
 ---
 
 <Base title="Trương Hữu Lộc" description={isVi ? "Trương Hữu Lộc — kỹ sư, nhà văn, người nuôi cá" : "Trương Hữu Lộc — engineer, writer, fishkeeper"} breadcrumbs={[{ label: "Trương" }]}>
-	<section class="about-hero">
+	<section id="about" class="about-hero">
 		<div class="about-hero-inner">
 			<div class="about-hero-text">
 				<div class="about-rule" />
@@ -739,6 +586,14 @@ function formatGHDate(iso: string) {
 					{isVi ? "Tôi không đọc bùa chú. Tôi viết ra chúng." : "I do not cast spells. I build them."}
 				</span>
 
+				{/* Lộc sigil — the name means "blessing". Etched on the portrait
+				    like a painter's seal; blooms when the name-meaning paragraph
+				    enters view, then settles into a permanent faint presence. */}
+				<div class="portrait-loc-seal" id="portrait-loc-seal" aria-hidden="true">
+					<span class="loc-glyph">祿</span>
+					<span class="loc-caption">{isVi ? "Lộc · phúc lộc" : "Lộc · blessing"}</span>
+				</div>
+
 				<figcaption class="photo-caption">
 					<span class="photo-caption-dot" aria-hidden="true" />
 					{isVi ? "Sài Gòn · 2026" : "Saigon · 2026"}
@@ -747,58 +602,339 @@ function formatGHDate(iso: string) {
 		</div>
 	</section>
 
-	<section class="about-section">
+	<section id="pensieve-dives" class="about-section">
 		<div class="about-inner">
-			<h2 class="section-heading">{isVi ? "Cộng Đồng" : "Community"}</h2>
+			<h2 class="section-heading">
+				{isVi ? "Lặn Ký Ức — Wrapped" : "Pensieve Dives — Wrapped"}
+				<a href="#pensieve-dives" class="anchor-link" aria-label="Link to Pensieve Dives">#</a>
+			</h2>
 			<p class="section-desc">
 				{isVi
-					? "Nơi tôi đã làm và vẫn đang làm — bút danh deathemperor trên khắp các diễn đàn Việt Nam từ đầu những năm 2000."
-					: "Where I've been, and where I still am — as deathemperor across Vietnamese forums since the early 2000s."}
+					? "Dumbledore lưu ký ức người khác trong dãy lọ bạc. Tôi cũng vậy — 1.064 lọ chấm điểm trên IMDb suốt một thập kỷ. Bản Wrapped này không phải về điểm số tôi cho — mà là về thể loại, về nội dung, về cốt truyện. Những gì đọng lại sau khi cả dãy kệ đã được trưng cất."
+					: "Dumbledore kept others' memories in rows of silvery vials. I do too — 1,064 of them, tracked over a decade. This Wrapped isn't about the scores I gave. It's about the genres, the content, the plots. What the whole shelf reveals once it's distilled."}
 			</p>
-			<div class="community-grid">
-				<a href="https://gamevn.com" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">gamevn.com</span>
-					<span class="community-role">{isVi ? "Thành viên từ 2002" : "Member since 2002"}</span>
-					<span class="community-desc">
+
+			<div class="wrapped-grid">
+				{/* Card 1 — HERO */}
+				<article class="wrap-card wrap-hero">
+					<div class="wrap-stat">1,064</div>
+					<div class="wrap-label">{isVi ? "Lọ Ký Ức · 1924 – 2026" : "Vials · 1924 – 2026"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Diễn đàn game lớn nhất Việt Nam. Những thread đầu tay viết về Sim City 4, KOTOR, và cả thập niên console-PC của những năm 2000."
-							: "Vietnam's biggest gaming forum. Earliest threads cover Sim City 4, KOTOR, and the whole 2000s console-PC era."}
-					</span>
-				</a>
-				<a href="https://www.vbulletin.org/forum/" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">vBulletin.org</span>
-					<span class="community-role">{isVi ? "Cộng tác viên" : "Contributor"}</span>
-					<span class="community-desc">
+							? "Một thế kỷ điện ảnh trong Pensieve. 93% là phim điện ảnh, 5% là truyền hình dài tập — bạn là người xem phim, không phải binge-er. Ba lọ 'Video Game' lén vào (StarCraft II là một trong số đó)."
+							: "A century of cinema in one Pensieve. 93% film, 5% TV series — you're a moviegoer, not a binge-watcher. Three 'Video Game' vials snuck in (StarCraft II is one of them)."}
+					</p>
+				</article>
+
+				{/* Card 2 — THEMATIC FINGERPRINT (the plot-content answer, with expandable top-5 per cluster) */}
+				<article class="wrap-card wrap-wide wrap-fingerprint">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Dấu Vân Tay Cốt Truyện — Bạn Lặn Về Đâu" : "Thematic fingerprint — what you dive into"}
+					</div>
+					<p class="wrap-note wrap-note-top">
 						{isVi
-							? "Tham gia tích cực trong cộng đồng phần mềm diễn đàn — nơi hàng ngàn diễn đàn Việt Nam ngày ấy chạy trên đó."
-							: "Active in the forum-software community — the platform that powered a thousand Vietnamese forums back in the day."}
-					</span>
-				</a>
-				<a href="/hol" class="community-card">
-					<span class="community-name">holvn.org (HOL)</span>
-					<span class="community-role">{isVi ? "Đang dựng lại" : "Rebuilding now"}</span>
-					<span class="community-desc">
+							? "Trích chéo 797 tóm tắt Wikipedia của phim bạn đã chấm điểm, tìm chủ đề cốt truyện lặp đi lặp lại. Không phải thể loại — thể loại là cái kệ. Đây là điều truyện thực sự nói về. Bấm vào mỗi chủ đề để xem 5 phim tiêu biểu nhất."
+							: "Cross-referenced from 797 Wikipedia plot summaries against strict plot-word clusters. Not genres — genres are the shelf. These are what the stories are actually about. Click any theme to see the 5 most-recognized exemplars in your library."}
+					</p>
+					<ul class="fingerprint-bars">
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Không gian / Sci-Fi" : "Space / Sci-Fi"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:10.2%"></span></span>
+									<span class="fp-pct">10.2%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Interstellar <em>(2014)</em></li>
+									<li>The Matrix <em>(1999)</em></li>
+									<li>Star Wars: The Empire Strikes Back <em>(1980)</em></li>
+									<li>Avengers: Endgame <em>(2019)</em></li>
+									<li>Avengers: Infinity War <em>(2018)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Gia đình / Mối quan hệ" : "Family drama"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:10.0%"></span></span>
+									<span class="fp-pct">10.0%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Godfather <em>(1972)</em></li>
+									<li>Gladiator <em>(2000)</em></li>
+									<li>The Godfather Part II <em>(1974)</em></li>
+									<li>American Beauty <em>(1999)</em></li>
+									<li>The Lion King <em>(1994)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Bí ẩn / Thám tử" : "Mystery / Detective"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:8.5%"></span></span>
+									<span class="fp-pct">8.5%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Stranger Things <em>(2016)</em></li>
+									<li>Shutter Island <em>(2010)</em></li>
+									<li>Pirates of the Caribbean: Black Pearl <em>(2003)</em></li>
+									<li>The Usual Suspects <em>(1995)</em></li>
+									<li>No Country for Old Men <em>(2007)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Siêu nhiên / Kinh dị" : "Supernatural / Horror"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.7%"></span></span>
+									<span class="fp-pct">7.7%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Green Mile <em>(1999)</em></li>
+									<li>Pirates of the Caribbean: Black Pearl <em>(2003)</em></li>
+									<li>The Hobbit: An Unexpected Journey <em>(2012)</em></li>
+									<li>World War Z <em>(2013)</em></li>
+									<li>Harry Potter and the Chamber of Secrets <em>(2002)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Điệp viên / Mật vụ" : "Espionage / Agent"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.4%"></span></span>
+									<span class="fp-pct">7.4%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Departed <em>(2006)</em></li>
+									<li>Kill Bill: Vol. 1 <em>(2003)</em></li>
+									<li>Captain America: The Winter Soldier <em>(2014)</em></li>
+									<li>Kill Bill: Vol. 2 <em>(2004)</em></li>
+									<li>Skyfall <em>(2012)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Chết chóc / Báo thù" : "Mortality / Revenge"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:7.3%"></span></span>
+									<span class="fp-pct">7.3%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>The Shawshank Redemption <em>(1994)</em></li>
+									<li>Gladiator <em>(2000)</em></li>
+									<li>Inglourious Basterds <em>(2009)</em></li>
+									<li>The Silence of the Lambs <em>(1991)</em></li>
+									<li>Avengers: Endgame <em>(2019)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Chiến tranh" : "War / Soldier"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:4.9%"></span></span>
+									<span class="fp-pct">4.9%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Inglourious Basterds <em>(2009)</em></li>
+									<li>Saving Private Ryan <em>(1998)</em></li>
+									<li>Schindler's List <em>(1993)</em></li>
+									<li>No Country for Old Men <em>(2007)</em></li>
+									<li>Taxi Driver <em>(1976)</em></li>
+								</ul>
+							</details>
+						</li>
+						<li>
+							<details class="fp-item">
+								<summary>
+									<span class="fp-name">{isVi ? "Trưởng thành / Thiếu niên" : "Coming of age"}</span>
+									<span class="fp-bar"><span class="fp-fill" style="--fp:4.5%"></span></span>
+									<span class="fp-pct">4.5%</span>
+								</summary>
+								<ul class="fp-titles">
+									<li>Stranger Things <em>(2016)</em></li>
+									<li>Back to the Future <em>(1985)</em></li>
+									<li>American Beauty <em>(1999)</em></li>
+									<li>The Hunger Games <em>(2012)</em></li>
+									<li>12 Angry Men <em>(1957)</em></li>
+								</ul>
+							</details>
+						</li>
+					</ul>
+				</article>
+
+				{/* Card 3 — Signature genre combo */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">308 ×</div>
+					<div class="wrap-label">
+						{isVi ? "Bộ Ba Chữ Ký — Action + Adventure" : "Signature combo — Action + Adventure"}
+					</div>
+					<p class="wrap-note">
 						{isVi
-							? "Diễn đàn vBulletin Việt Nam đã đóng cửa — tôi đang dựng lại bản đọc từ snapshot Wayback Machine, sống tại /hol trên trang này."
-							: "A defunct Vietnamese vBulletin forum — reconstructing a read-only archive from Wayback Machine snapshots, live at /hol on this site."}
-					</span>
-				</a>
-				<a href="https://facebook.com/groups/romy" class="community-card" target="_blank" rel="noopener">
-					<span class="community-name">{isVi ? "Rô Mỹ (Cá Rô Trung Mỹ Việt Nam)" : "Rô Mỹ (American Cichlids Vietnam)"}</span>
-					<span class="community-role">{isVi ? "Admin trưởng" : "Head admin"}</span>
-					<span class="community-desc">
+							? "Cặp thể loại lặp lại nhiều nhất trong kệ: 308 phim. Thêm Sci-Fi thành bộ ba (203 phim). Bạn thích phim lớn — nhưng phim lớn mà có xương có thịt: Action + Drama × 136."
+							: "Your most-returned-to genre pair: 308 films. Add Sci-Fi and you get the trio (203). You want big films — but big films with weight beneath them: Action + Drama × 136 combos."}
+					</p>
+				</article>
+
+				{/* Card 4 — Director loyalty (count, no rating) */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">×19</div>
+					<div class="wrap-label">
+						{isVi ? "Steven Spielberg — Mối Quan Hệ Sâu Nhất" : "Steven Spielberg — deepest relationship"}
+					</div>
+					<ul class="wrap-list">
+						<li><span class="wrap-list-score">×19</span> Steven Spielberg</li>
+						<li><span class="wrap-list-score">×12</span> Ridley Scott</li>
+						<li><span class="wrap-list-score">×11</span> Christopher Nolan</li>
+						<li><span class="wrap-list-score">×10</span> Quentin Tarantino</li>
+						<li><span class="wrap-list-score">×10</span> Robert Zemeckis</li>
+						<li><span class="wrap-list-score">×10</span> Tim Burton</li>
+					</ul>
+				</article>
+
+				{/* Card 5 — Runtime */}
+				<article class="wrap-card">
+					<div class="wrap-stat">115m</div>
+					<div class="wrap-label">{isVi ? "Độ Dài Trung Vị" : "Median runtime"}</div>
+					<p class="wrap-note">
 						{isVi
-							? "Nhóm Facebook cộng đồng chơi cá rô Mỹ ở Việt Nam — dẫn dắt đội quản trị qua một lần thay máu năm 2021."
-							: "Facebook community for American cichlid keepers in Vietnam — led the admin-team evolution in 2021."}
-					</span>
-				</a>
+							? "Bạn đọc gọn. Phim trên 3 giờ chỉ có 13 lọ trong 1.064 — đúng 1,3%. Bom tấn 2 giờ mới là sân chơi của bạn."
+							: "You read tight. Films over 3 hours: just 13 vials in 1,064 — exactly 1.3%. The 2-hour blockbuster is your home."}
+					</p>
+				</article>
+
+				{/* Card 6 — Double golden age */}
+				<article class="wrap-card">
+					<div class="wrap-stat">76%</div>
+					<div class="wrap-label">{isVi ? "Kỷ Nguyên Vàng Đôi — 2000s + 2010s" : "Double golden age — 2000s + 2010s"}</div>
+					<p class="wrap-note">
+						{isVi
+							? "2000s 39% · 2010s 37%. Hai thập kỷ liền hấp thụ sự chú ý của bạn. Phim cũ nhất đã chấm: 1924. Phim mới nhất: 2026."
+							: "2000s 39% · 2010s 37%. Two back-to-back decades absorbed your attention. Oldest rated: 1924. Newest: 2026."}
+					</p>
+				</article>
+
+				{/* Card 7 — Horror aversion */}
+				<article class="wrap-card">
+					<div class="wrap-stat">7.6%</div>
+					<div class="wrap-label">{isVi ? "Kinh Dị — Bạn Không Lặn Vào Đây" : "Horror — you don't dive here"}</div>
+					<p class="wrap-note">
+						{isVi
+							? "Chỉ 81 trong 1.064 phim. So với Action 48%, Drama 42% — nỗi sợ không phải thứ bạn tìm. Bạn thích bóng tối khi nó có ý nghĩa (Chernobyl, Parasite) chứ không phải bóng tối chỉ để hù dọa."
+							: "Only 81 of 1,064. Compare: Action 48%, Drama 42%. Fear isn't what you seek. You love dark when it means something (Chernobyl, Parasite), not dark that just jump-scares."}
+					</p>
+				</article>
+
+				{/* Card 8 — Episode-level critic (keep) */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">10 × 3</div>
+					<div class="wrap-label">{isVi ? "Chấm Điểm Ở Cấp Độ Tập" : "Episode-level critic"}</div>
+					<p class="wrap-note">
+						{isVi
+							? "Game of Thrones tổng thể: 5. Nhưng từng tập riêng — The Rains of Castamere, Battle of the Bastards, The Winds of Winter — đều 10/10. Bạn đọc TV như đọc sách, chương này hay hơn chương khác."
+							: "Game of Thrones overall: you gave it 5. But three individual episodes — The Rains of Castamere, Battle of the Bastards, The Winds of Winter — each a standalone 10/10. You read TV like a novel, one chapter at a time."}
+					</p>
+				</article>
+
+				{/* Card 9 — Childhood TV (keep) */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Tuổi Thơ Là Không Thể Đụng Đến" : "Childhood TV is untouchable"}
+					</div>
+					<div class="wrap-sentimental">
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Spellbinder</span>
+							<span class="wrap-senti-meta">1995 · you 10 / world 8.1</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Ocean Girl</span>
+							<span class="wrap-senti-meta">1994 · you 10 / world 7.3</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Friends</span>
+							<span class="wrap-senti-meta">1994 · you 10 / world 8.8</span>
+						</div>
+					</div>
+				</article>
 			</div>
+
+			<p class="vial-footer">
+				<a
+					href="https://www.imdb.com/user/p.v4edzbzfd5cz2hfddgjlbzxpl4/ratings/"
+					target="_blank"
+					rel="noopener"
+				>
+					{isVi ? "Lặn vào toàn bộ dãy kệ trên IMDb →" : "Dive the full shelf on IMDb →"}
+				</a>
+			</p>
 		</div>
 	</section>
 
-	<section class="about-section">
+	<section id="origin" class="about-section">
 		<div class="about-inner">
 			<div class="about-prose">
+				<aside class="origin-seal" aria-label={isVi ? "Bản Mệnh và Dòng Dõi" : "Natal chart and heritage"}>
+						<div class="origin-seal-grid">
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Bản Mệnh" : "Natal"}</h3>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-rat" viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<path d="M 10 17 Q 6 17 6 13 Q 6 9 12 8 Q 20 6 27 9 Q 30 10 31 13 Q 33 11 35 12 Q 36 14 34 15 Q 32 16 30 15 Q 29 17 27 17 L 10 17 Z" fill="currentColor"/>
+										<circle cx="25" cy="6" r="2.4" fill="currentColor"/>
+										<circle cx="29" cy="12" r="0.8" fill="#0b0b0d"/>
+										<path d="M 8 16 Q 2 17 1 12 Q 0 5 6 4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+										<path d="M 14 17 L 14 20 M 22 17 L 22 20" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+									</svg>
+									<span class="origin-label">Giáp Tý · 子</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☉</span>
+									<span class="origin-label">{isVi ? "Mặt Trời ở Bạch Dương" : "sun in Aries"}</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☾</span>
+									<span class="origin-label">{isVi ? "Mặt Trăng ở Bạch Dương" : "moon in Aries"}</span>
+								</div>
+							</div>
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Dòng Dõi" : "Heritage"}</h3>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-cjk">黃</span>
+									<span class="origin-label">Huỳnh · {isVi ? "Hoa" : "Chinese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-lotus" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 16 Q 14 8 16 2 Q 18 8 16 16 Z"/>
+											<path d="M 16 16 Q 10 10 11 4 Q 15 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 22 10 21 4 Q 17 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 4 13 3 7 Q 11 11 16 16 Z" opacity="0.56"/>
+											<path d="M 16 16 Q 28 13 29 7 Q 21 11 16 16 Z" opacity="0.56"/>
+										</g>
+									</svg>
+									<span class="origin-label">Nguyễn · {isVi ? "Việt" : "Vietnamese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-spire" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 1 L 15 3 L 17 3 Z"/>
+											<path d="M 13 3 L 19 3 L 18 7 L 14 7 Z"/>
+											<path d="M 11 7 L 21 7 L 20 11 L 12 11 Z"/>
+											<path d="M 9 11 L 23 11 L 22 15 L 10 15 Z"/>
+											<rect x="6" y="15" width="20" height="3"/>
+										</g>
+									</svg>
+									<span class="origin-label">Võ · Khmer</span>
+								</div>
+							</div>
+						</div>
+						<p class="origin-caption">{isVi ? "Kẻ mở vòng tuần hoàn · ba dòng sông trong một thân" : "a circle starter · three rivers in one body"}</p>
+					</aside>
 				{isVi ? (
 					<>
 						<p>
@@ -894,9 +1030,12 @@ function formatGHDate(iso: string) {
 		</div>
 	</section>
 
-	<section class="about-section">
+	<section id="elsewhere" class="about-section">
 		<div class="about-inner">
-			<h2 class="section-heading">{isVi ? "Liên Kết" : "Elsewhere"}</h2>
+			<h2 class="section-heading">
+				{isVi ? "Liên Kết" : "Elsewhere"}
+				<a href="#elsewhere" class="anchor-link" aria-label="Link to Elsewhere">#</a>
+			</h2>
 			<div class="links-row">
 				<a href="https://github.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
 					<svg class="profile-icon" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
@@ -927,133 +1066,62 @@ function formatGHDate(iso: string) {
 		</div>
 	</section>
 
-	{ghUser && (
-		<section class="about-section">
-			<div class="about-inner">
-				<h2 class="section-heading">{isVi ? "Hoạt Động GitHub" : "GitHub Activity"}</h2>
-				<p class="section-desc">
-					{isVi ? "Dữ liệu trực tiếp từ GitHub API." : "Live data from the GitHub API."}
-					{isVi ? `Trên GitHub từ ${formatGHDate(ghUser.created_at)}.` : `On GitHub since ${formatGHDate(ghUser.created_at)}.`}
-				</p>
 
-				{/* Coding Eras Timeline */}
-				<div class="eras-timeline">
-					<h3 class="chart-title">{isVi ? "Các thời kỳ lập trình" : "Coding eras"}</h3>
-					<div class="eras-track">
-						<div class="era" style="--era-color: var(--color-muted);">
-							<span class="era-bar" style="flex: 16;" />
-							<div class="era-info">
-								<span class="era-label">{isVi ? "Tự lực" : "Solo"}</span>
-								<span class="era-commits">{isVi ? "1.755 commit" : "1,755 commits"}</span>
-								<span class="era-dates">2006 — {isVi ? "Th6 2022" : "Jun 2022"}</span>
-								<span class="era-note">{isVi ? "Lập trình thủ công, không AI hỗ trợ" : "Manual coding, no AI assist"}</span>
-							</div>
-						</div>
-						<div class="era" style="--era-color: #7c3aed;">
-							<span class="era-bar" style="flex: 3.5;" />
-							<div class="era-info">
-								<span class="era-label">GitHub Copilot</span>
-								<span class="era-commits">{isVi ? "8.106 commit" : "8,106 commits"}</span>
-								<span class="era-dates">{isVi ? "Th6 2022 — Th1 2026" : "Jun 2022 — Jan 2026"}</span>
-								<span class="era-note">{isVi ? "Lập trình có AI hỗ trợ (bản xem trước công khai)" : "AI-assisted coding (public preview)"}</span>
-							</div>
-						</div>
-						<div class="era era-current" style="--era-color: #e8784d;">
-							<span class="era-bar" style="flex: 0.5;" />
-							<div class="era-info">
-								<span class="era-label">Claude Code</span>
-								<span class="era-commits">{isVi ? `${claudeEraCommitCount.toLocaleString("vi-VN")} commit` : `${claudeEraCommitCount.toLocaleString("en-US")} commit${claudeEraCommitCount !== 1 ? "s" : ""}`}</span>
-								<span class="era-dates">{isVi ? "29 Th1, 2026 — nay" : "Jan 29, 2026 — now"}</span>
-								<span class="era-note">{isVi ? "Không có mã người viết — hoàn toàn do AI tạo" : "Zero human code — fully AI-generated"}</span>
-							</div>
-						</div>
-					</div>
+	<section id="community" class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading">
+				{isVi ? "Cộng Đồng" : "Community"}
+				<a href="#community" class="anchor-link" aria-label="Link to Community">#</a>
+			</h2>
+			<p class="section-desc">
+				{isVi
+					? "Nơi tôi đã đi qua — bút danh deathemperor trên khắp các diễn đàn Việt Nam từ đầu những năm 2000. Giờ phần lớn đã ngủ yên."
+					: "Where I've been — as deathemperor across Vietnamese forums since the early 2000s. Most of them are dormant now."}
+			</p>
+			<div class="community-grid">
+				<div class="community-card">
+					<span class="community-name">gamevn.com</span>
+					<span class="community-role">C O N T R A · {isVi ? "đến từ Graveyard" : "from Graveyard"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Tham gia" : "Joined"}</dt><dd>26.5.2002</dd></div>
+						<div><dt>{isVi ? "Lần cuối" : "Last seen"}</dt><dd>28.9.2023</dd></div>
+						<div><dt>{isVi ? "Bài viết" : "Posts"}</dt><dd>1,857</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Diễn đàn game lớn nhất Việt Nam. Những thread đầu tay viết về Sim City 4, KOTOR, và cả thập niên console-PC của những năm 2000."
+							: "Vietnam's biggest gaming forum. Earliest threads cover Sim City 4, KOTOR, and the whole 2000s console-PC era."}
+					</span>
 				</div>
-
-				<div class="gh-stats">
-					<div class="gh-stat">
-						<span class="gh-stat-value">{ghUser.public_repos + (ghUser.owned_private_repos ?? 0)}</span>
-						<span class="gh-stat-label">{isVi ? "kho mã" : "repos"}</span>
-					</div>
-					<div class="gh-stat">
-						<span class="gh-stat-value">{recentCommitCount}</span>
-						<span class="gh-stat-label">{isVi ? "commit 30 ngày" : "commits (30d)"}</span>
-					</div>
-					<div class="gh-stat">
-						<span class="gh-stat-value">{ghUser.followers}</span>
-						<span class="gh-stat-label">{isVi ? "người theo dõi" : "followers"}</span>
-					</div>
+				<div class="community-card">
+					<span class="community-name">vBulletin.org</span>
+					<span class="community-role">{isVi ? "Cộng tác viên · thập niên 2000" : "Contributor · 2000s"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Trạng thái" : "Status"}</dt><dd>{isVi ? "Diễn đàn đã đóng" : "Forum shut down"}</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Tham gia tích cực trong cộng đồng phần mềm diễn đàn — nơi hàng ngàn diễn đàn Việt Nam ngày ấy chạy trên đó. Số liệu đã mất theo diễn đàn."
+							: "Active in the forum-software community — the platform that powered a thousand Vietnamese forums back in the day. Stats vanished with the forum."}
+					</span>
 				</div>
-
-				{/* Day-of-week activity chart */}
-				<div class="activity-chart">
-					<h3 class="chart-title">{isVi ? "Hoạt động theo ngày" : "Activity by day"}</h3>
-					<div class="chart-bars">
-						{dayNames.map((name, i) => (
-							<div class="chart-col">
-								<div class="chart-bar-wrap">
-									<div
-										class="chart-bar"
-										style={`height: ${(dayActivity[i] / maxDayActivity) * 100}%;`}
-									/>
-								</div>
-								<span class="chart-label">{name}</span>
-							</div>
-						))}
-					</div>
+				<div class="community-card">
+					<span class="community-name">holvn.org (HOL)</span>
+					<span class="community-role">{isVi ? "Đang dựng lại · sống tại /hol" : "Rebuilding · live at /hol"}</span>
+					<dl class="community-stats">
+						<div><dt>{isVi ? "Bài cứu được" : "Posts rescued"}</dt><dd>25,933</dd></div>
+						<div><dt>{isVi ? "Chủ đề" : "Threads"}</dt><dd>8,588</dd></div>
+						<div><dt>{isVi ? "Diễn đàn con" : "Sub-forums"}</dt><dd>57</dd></div>
+					</dl>
+					<span class="community-desc">
+						{isVi
+							? "Diễn đàn vBulletin Việt Nam đã đóng cửa — tôi đang dựng lại bản đọc từ snapshot Wayback Machine."
+							: "A defunct Vietnamese vBulletin forum — reconstructing a read-only archive from Wayback Machine snapshots."}
+					</span>
 				</div>
-
-				{/* Recent repos */}
-				{ghRepos.filter((r) => !r.private).length > 0 && (
-					<div class="repos-section">
-						<h3 class="chart-title">{isVi ? "Kho mã gần đây" : "Recent repositories"}</h3>
-						<div class="repos-grid">
-							{ghRepos.filter((r) => !r.private).slice(0, 6).map((repo) => (
-								<a href={repo.html_url} class="repo-card" target="_blank" rel="noopener">
-									<span class="repo-name">{repo.name}</span>
-									{repo.description && (
-										<span class="repo-desc">{repo.description}</span>
-									)}
-									<span class="repo-meta">
-										{repo.language && (
-											<span class="repo-lang">
-												<span
-													class="repo-lang-dot"
-													style={`background: ${langColors[repo.language] ?? "var(--color-muted)"};`}
-												/>
-												{repo.language}
-											</span>
-										)}
-										{repo.stargazers_count > 0 && (
-											<span class="repo-stars">
-												&#9733; {repo.stargazers_count}
-											</span>
-										)}
-									</span>
-								</a>
-							))}
-						</div>
-					</div>
-				)}
-
-				{/* Activity feed */}
-				{activityFeed.length > 0 && (
-					<div class="feed-section">
-						<h3 class="chart-title">{isVi ? "Hoạt động gần đây" : "Recent activity"}</h3>
-						<div class="feed-list">
-							{activityFeed.map((item) => (
-								<div class="feed-item">
-									<span class="feed-dot" />
-									<span class="feed-action">{item.action}</span>
-									<span class="feed-time">{item.timeAgo}</span>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
 			</div>
-		</section>
-	)}
+		</div>
+	</section>
 </Base>
 
 <style>
@@ -2629,6 +2697,12 @@ function formatGHDate(iso: string) {
 	/* Sections */
 	.about-section {
 		border-bottom: 1px solid var(--color-border);
+		/* Offset anchor-scroll so #community etc. don't land with the
+		   heading pressed against the top edge. */
+		scroll-margin-top: 1.5rem;
+	}
+	.about-hero {
+		scroll-margin-top: 1.5rem;
 	}
 
 	.about-inner {
@@ -2644,6 +2718,30 @@ function formatGHDate(iso: string) {
 		letter-spacing: -0.012em;
 		color: var(--color-text);
 		margin: 0 0 var(--spacing-2);
+		/* Contain the anchor-link so it sits on the heading baseline. */
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.45rem;
+	}
+
+	/* Pilcrow-style anchor, appears on heading hover. Click copies the
+	   URL fragment into history — native browser behavior, no JS. */
+	.anchor-link {
+		color: var(--color-muted);
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-weight: 400;
+		font-size: 0.7em;
+		text-decoration: none;
+		opacity: 0;
+		transform: translateX(-0.2rem);
+		transition: opacity 180ms, transform 180ms, color 180ms;
+		line-height: 1;
+	}
+	.section-heading:hover .anchor-link,
+	.anchor-link:focus-visible {
+		opacity: 1;
+		transform: translateX(0);
+		color: var(--color-accent, var(--color-text));
 	}
 
 	.section-desc {
@@ -2655,6 +2753,11 @@ function formatGHDate(iso: string) {
 
 	/* Prose */
 	.about-prose {
+		/* max-width moved to direct <p> children so .prose-intro can
+		   span wider with its 2-column seal layout. */
+	}
+
+	.about-prose > p {
 		max-width: 62ch;
 	}
 
@@ -2665,6 +2768,7 @@ function formatGHDate(iso: string) {
 		color: var(--color-text-secondary);
 		margin: 0 0 var(--spacing-5);
 	}
+
 
 	.about-prose p:last-child {
 		margin-bottom: 0;
@@ -2721,184 +2825,6 @@ function formatGHDate(iso: string) {
 		opacity: 0.7;
 	}
 
-	/* Coding eras */
-	.eras-timeline {
-		margin-bottom: var(--spacing-10);
-	}
-
-	.eras-track {
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-3);
-	}
-
-	.era {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-4);
-	}
-
-	.era-bar {
-		height: 6px;
-		background: var(--era-color);
-		border-radius: 3px;
-		opacity: 0.5;
-		min-width: 20px;
-	}
-
-	.era-current .era-bar {
-		opacity: 1;
-		box-shadow: 0 0 8px color-mix(in srgb, var(--era-color) 40%, transparent);
-	}
-
-	.era-info {
-		display: flex;
-		align-items: baseline;
-		gap: var(--spacing-3);
-		flex-shrink: 0;
-	}
-
-	.era-label {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		color: var(--era-color);
-		white-space: nowrap;
-	}
-
-	.era-commits {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--color-text-secondary);
-		font-weight: 500;
-		white-space: nowrap;
-	}
-
-	.era-dates {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--color-muted);
-		white-space: nowrap;
-	}
-
-	.era-note {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-secondary);
-		white-space: nowrap;
-	}
-
-	/* GitHub stats */
-	.gh-stats {
-		display: flex;
-		gap: var(--spacing-8);
-		margin-bottom: var(--spacing-10);
-	}
-
-	.gh-stat {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.gh-stat-value {
-		font-family: var(--font-display);
-		font-size: var(--font-size-2xl);
-		font-weight: var(--font-weight-display);
-		color: var(--color-text);
-		letter-spacing: -0.02em;
-	}
-
-	.gh-stat-label {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-xs);
-		color: var(--color-muted);
-	}
-
-	/* Activity chart */
-	.activity-chart {
-		margin-bottom: var(--spacing-10);
-	}
-
-	.chart-title {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-sm);
-		font-weight: 600;
-		color: var(--color-text);
-		margin: 0 0 var(--spacing-4);
-	}
-
-	.chart-bars {
-		display: flex;
-		gap: var(--spacing-2);
-		height: 80px;
-		align-items: flex-end;
-	}
-
-	.chart-col {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--spacing-2);
-	}
-
-	.chart-bar-wrap {
-		width: 100%;
-		height: 60px;
-		display: flex;
-		align-items: flex-end;
-	}
-
-	.chart-bar {
-		width: 100%;
-		min-height: 2px;
-		background: var(--color-accent);
-		border-radius: 2px 2px 0 0;
-		opacity: 0.7;
-		transition: opacity var(--transition-fast);
-	}
-
-	.chart-col:hover .chart-bar {
-		opacity: 1;
-	}
-
-	.chart-label {
-		font-family: var(--font-mono);
-		font-size: 10px;
-		color: var(--color-muted);
-	}
-
-	/* Repos */
-	.repos-section {
-		margin-bottom: var(--spacing-10);
-	}
-
-	.repos-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-		gap: var(--spacing-3);
-	}
-
-	.repo-card {
-		display: flex;
-		flex-direction: column;
-		gap: var(--spacing-1);
-		padding: var(--spacing-4) var(--spacing-5);
-		background: var(--color-surface-elevated);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		text-decoration: none;
-		color: inherit;
-		transition:
-			border-color var(--transition-fast),
-			transform var(--transition-fast);
-	}
-
-	.repo-card:hover {
-		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
-		transform: translateY(-1px);
-	}
-
 	.community-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -2909,20 +2835,12 @@ function formatGHDate(iso: string) {
 	.community-card {
 		display: flex;
 		flex-direction: column;
-		gap: 0.35rem;
+		gap: 0.5rem;
 		padding: 1rem;
 		border: 1px solid var(--color-border, rgba(240, 199, 94, 0.2));
 		border-radius: 0.5rem;
 		background: rgba(240, 199, 94, 0.03);
 		color: inherit;
-		text-decoration: none;
-		transition: border-color 200ms, background 200ms, transform 200ms;
-	}
-
-	.community-card:hover {
-		border-color: rgba(240, 199, 94, 0.55);
-		background: rgba(240, 199, 94, 0.06);
-		transform: translateY(-1px);
 	}
 
 	.community-name {
@@ -2933,10 +2851,41 @@ function formatGHDate(iso: string) {
 	}
 
 	.community-role {
-		font-size: 0.8rem;
+		font-size: 0.75rem;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		color: var(--color-muted, rgba(255, 255, 255, 0.55));
+	}
+
+	.community-stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem 1rem;
+		margin: 0.25rem 0 0.15rem;
+		padding: 0.5rem 0;
+		border-top: 1px dashed rgba(240, 199, 94, 0.18);
+		border-bottom: 1px dashed rgba(240, 199, 94, 0.18);
+	}
+	.community-stats > div {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	.community-stats dt {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 0.65rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-muted, rgba(255, 255, 255, 0.45));
+		font-weight: 400;
+	}
+	.community-stats dd {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--color-accent, #f0c75e);
+		margin: 0;
+		line-height: 1.2;
 	}
 
 	.community-desc {
@@ -2945,91 +2894,318 @@ function formatGHDate(iso: string) {
 		color: var(--color-text-dim, rgba(255, 255, 255, 0.75));
 	}
 
-	.repo-name {
-		font-family: var(--font-mono);
-		font-size: var(--font-size-sm);
-		font-weight: 500;
-		color: var(--color-accent);
+	/* ─ Pensieve Dives — Wrapped flashcard grid ────────────────────── */
+	/* Asymmetric grid: big hero card up top, three mid-size stat cards
+	   below it on one row, two "tall" interpretive cards, one wide
+	   sentimental card at the bottom. Silver palette matches the
+	   Pensieve canon; oversized numeric typography does the Spotify-
+	   Wrapped lift while the copy stays HP-flavored underneath. */
+	.wrapped-grid {
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 0.875rem;
+		margin-top: 1rem;
 	}
 
-	.repo-desc {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-xs);
-		color: var(--color-text-secondary);
-		line-height: var(--leading-relaxed);
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-
-	.repo-meta {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-3);
-		margin-top: var(--spacing-1);
-	}
-
-	.repo-lang {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--spacing-1);
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--color-muted);
-	}
-
-	.repo-lang-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-	}
-
-	.repo-stars {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--color-muted);
-	}
-
-	/* Activity feed */
-	.feed-list {
+	.wrap-card {
+		grid-column: span 2;
 		display: flex;
 		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1.1rem 1.1rem 1.2rem;
+		border: 1px solid rgba(200, 210, 225, 0.14);
+		border-top: 2px solid rgba(200, 210, 225, 0.32);
+		border-radius: 0.5rem;
+		background: linear-gradient(
+			180deg,
+			rgba(200, 210, 225, 0.045) 0%,
+			rgba(200, 210, 225, 0.015) 100%
+		);
+		transition: border-color 200ms, background 200ms, transform 200ms;
+		min-height: 150px;
 	}
 
-	.feed-item {
-		display: flex;
-		align-items: baseline;
-		gap: var(--spacing-3);
-		padding: var(--spacing-2) 0;
-		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+	.wrap-card:hover {
+		border-color: rgba(200, 210, 225, 0.32);
+		border-top-color: rgba(200, 210, 225, 0.55);
+		background: linear-gradient(
+			180deg,
+			rgba(200, 210, 225, 0.07) 0%,
+			rgba(200, 210, 225, 0.025) 100%
+		);
+		transform: translateY(-1px);
 	}
 
-	.feed-item:last-child {
-		border-bottom: none;
+	/* Hero — full-width headline card */
+	.wrap-hero {
+		grid-column: span 6;
+		flex-direction: row;
+		align-items: center;
+		gap: 1.5rem;
+		padding: 1.4rem 1.6rem;
+		min-height: unset;
 	}
-
-	.feed-dot {
-		width: 5px;
-		height: 5px;
-		border-radius: 50%;
-		background: var(--color-accent);
+	.wrap-hero .wrap-stat {
+		font-size: 4.5rem;
+		line-height: 1;
 		flex-shrink: 0;
-		margin-top: 6px;
+	}
+	.wrap-hero .wrap-label {
+		font-size: 0.75rem;
+		margin-bottom: 0.4rem;
+	}
+	.wrap-hero .wrap-note {
+		margin-top: 0;
 	}
 
-	.feed-action {
-		font-family: var(--font-sans);
-		font-size: var(--font-size-sm);
-		color: var(--color-text-secondary);
+	/* Tall cards — more room for multi-line lists/context */
+	.wrap-tall {
+		grid-column: span 3;
+	}
+
+	/* Wide card — sentimental shelf full-width */
+	.wrap-wide {
+		grid-column: span 6;
+	}
+
+	.wrap-stat {
+		font-family: var(--font-display, "Inter Tight", sans-serif);
+		font-size: 2.25rem;
+		font-weight: 700;
+		letter-spacing: -0.035em;
+		line-height: 1;
+		color: rgba(230, 235, 245, 0.98);
+		margin: 0.1rem 0 0.35rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.wrap-stat-pct {
+		font-size: 0.55em;
+		font-weight: 500;
+		color: rgba(200, 210, 225, 0.55);
+		letter-spacing: -0.01em;
+	}
+	.wrap-stat-delta {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 1.6rem;
+		letter-spacing: -0.015em;
+	}
+	.wrap-stat-warn {
+		color: rgba(255, 170, 150, 0.92);
+	}
+
+	.wrap-label {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.68rem;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		color: rgba(200, 210, 225, 0.72);
+		margin: 0;
+	}
+	.wrap-label-top {
+		margin-bottom: 0.75rem;
+	}
+
+	.wrap-note {
+		font-size: 0.88rem;
+		line-height: 1.5;
+		color: var(--color-text-dim, rgba(255, 255, 255, 0.72));
+		margin: auto 0 0 0; /* push to bottom of the card */
+	}
+	.wrap-hero .wrap-note {
+		font-size: 0.92rem;
 		flex: 1;
 	}
 
-	.feed-time {
+	/* Directors-list card */
+	.wrap-list {
+		list-style: none;
+		padding: 0;
+		margin: 0.5rem 0 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+	.wrap-list li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: baseline;
+		font-size: 0.88rem;
+		line-height: 1.35;
+		color: rgba(230, 235, 245, 0.92);
+	}
+	.wrap-list li em {
+		font-style: normal;
+		color: rgba(200, 210, 225, 0.55);
+		font-size: 0.8rem;
+	}
+	.wrap-list-score {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgba(200, 210, 225, 0.88);
+		min-width: 2.2rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* Thematic fingerprint — horizontal bar chart, the plot-content reveal */
+	.wrap-fingerprint .wrap-note-top {
+		margin: 0 0 1rem;
+	}
+	.fingerprint-bars {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.4rem 2rem;
+	}
+	.fingerprint-bars > li {
+		font-size: 0.85rem;
+	}
+	.fp-item {
+		border: none;
+	}
+	.fp-item > summary {
+		display: grid;
+		grid-template-columns: 10rem 1fr 3rem;
+		align-items: center;
+		gap: 0.75rem;
+		list-style: none;
+		cursor: pointer;
+		padding: 0.15rem 0;
+		border-radius: 0.25rem;
+		transition: background 180ms;
+	}
+	.fp-item > summary::-webkit-details-marker {
+		display: none;
+	}
+	.fp-item > summary::marker {
+		display: none;
+		content: '';
+	}
+	.fp-item:hover > summary,
+	.fp-item[open] > summary {
+		background: rgba(200, 210, 225, 0.04);
+	}
+	.fp-titles {
+		list-style: none;
+		margin: 0.3rem 0 0.6rem 0;
+		padding: 0.3rem 0.5rem 0.3rem 1.1rem;
+		border-left: 1px solid rgba(200, 210, 225, 0.14);
+	}
+	.fp-titles li {
+		font-size: 0.78rem;
+		line-height: 1.5;
+		color: rgba(230, 235, 245, 0.82);
+		padding: 0.1rem 0;
+	}
+	.fp-titles em {
+		font-style: normal;
+		color: rgba(200, 210, 225, 0.45);
+		font-size: 0.72rem;
+		margin-left: 0.25rem;
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+	}
+	.fp-name {
+		color: rgba(230, 235, 245, 0.88);
+		font-weight: 500;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.fp-bar {
+		position: relative;
+		height: 6px;
+		background: rgba(200, 210, 225, 0.07);
+		border-radius: 3px;
+		overflow: hidden;
+	}
+	.fp-fill {
+		display: block;
+		height: 100%;
+		width: calc(var(--fp) * 5);
+		max-width: 100%;
+		background: linear-gradient(90deg,
+			rgba(200, 210, 225, 0.55) 0%,
+			rgba(200, 210, 225, 0.35) 100%);
+		border-radius: 3px;
+	}
+	.fp-pct {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.75rem;
+		color: rgba(200, 210, 225, 0.75);
+		font-variant-numeric: tabular-nums;
+		text-align: right;
+	}
+	@media (max-width: 720px) {
+		.fingerprint-bars {
+			grid-template-columns: 1fr;
+		}
+		.fingerprint-bars li {
+			grid-template-columns: 8rem 1fr 3rem;
+		}
+	}
+
+	/* Sentimental 10s — three-column subgrid */
+	.wrap-sentimental {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 0.9rem;
+		margin-bottom: 0.75rem;
+	}
+	.wrap-senti-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.7rem 0.85rem;
+		background: rgba(200, 210, 225, 0.04);
+		border-left: 2px solid rgba(200, 210, 225, 0.38);
+		border-radius: 0 0.35rem 0.35rem 0;
+	}
+	.wrap-senti-title {
+		font-family: var(--font-display, "Inter Tight", sans-serif);
+		font-size: 1rem;
+		font-weight: 600;
+		color: rgba(230, 235, 245, 0.96);
+	}
+	.wrap-senti-meta {
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.72rem;
+		color: rgba(200, 210, 225, 0.55);
+	}
+
+	/* Responsive — collapse asymmetric grid on narrow viewports */
+	@media (max-width: 900px) {
+		.wrapped-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.wrap-card { grid-column: span 1; }
+		.wrap-hero { grid-column: span 2; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+		.wrap-hero .wrap-stat { font-size: 3.5rem; }
+		.wrap-tall { grid-column: span 2; }
+		.wrap-wide { grid-column: span 2; }
+	}
+	@media (max-width: 520px) {
+		.wrapped-grid { grid-template-columns: 1fr; }
+		.wrap-card { grid-column: span 1; }
+		.wrap-hero, .wrap-tall, .wrap-wide { grid-column: span 1; }
+		.wrap-stat { font-size: 2rem; }
+		.wrap-hero .wrap-stat { font-size: 3rem; }
+	}
+
+	.vial-footer {
+		margin-top: 1.5rem;
 		font-family: var(--font-mono);
 		font-size: var(--font-size-xs);
+	}
+	.vial-footer a {
 		color: var(--color-muted);
-		white-space: nowrap;
+		text-decoration: none;
+		transition: color 200ms;
+	}
+	.vial-footer a:hover {
+		color: rgba(200, 210, 225, 0.9);
 	}
 
 	/* Responsive */
@@ -3063,10 +3239,6 @@ function formatGHDate(iso: string) {
 		.about-inner {
 			padding: var(--spacing-12) var(--spacing-6);
 		}
-
-		.gh-stats {
-			gap: var(--spacing-6);
-		}
 	}
 
 	@media (max-width: 600px) {
@@ -3076,11 +3248,6 @@ function formatGHDate(iso: string) {
 
 		.about-inner {
 			padding: var(--spacing-10) var(--spacing-5);
-		}
-
-		.gh-stats {
-			flex-wrap: wrap;
-			gap: var(--spacing-4);
 		}
 
 		.links-row {
@@ -3152,6 +3319,172 @@ function formatGHDate(iso: string) {
 	@media (max-width: 600px) {
 		.portrait-incantation { font-size: 0.9rem; white-space: normal; }
 	}
+
+	/* Lộc sigil — 祿, the "blessing" character. Painter's-seal on the
+	   portrait. Starts nearly invisible; first bloom fires when the
+	   name-meaning paragraph enters the viewport, then the sigil settles
+	   into a faint always-on presence and brightens on hover. */
+	.portrait-loc-seal {
+		position: absolute;
+		right: 16px;
+		bottom: 64px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		pointer-events: auto;
+		z-index: 6;
+		opacity: 0;
+		transform: scale(0.94);
+		transition: opacity 2.2s ease, transform 2.2s ease;
+	}
+	.loc-glyph {
+		font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+		font-size: 28px;
+		font-weight: 400;
+		color: #d4a843;
+		line-height: 1;
+		text-shadow: 0 0 0 rgba(212, 168, 67, 0);
+		transition: text-shadow 1.6s ease, color 1.6s ease, transform 400ms ease;
+	}
+	.loc-caption {
+		font-family: var(--font-mono, "SF Mono", ui-monospace, monospace);
+		font-size: 10px;
+		letter-spacing: 0.08em;
+		color: rgba(212, 168, 67, 0.0);
+		white-space: nowrap;
+		transition: color 600ms ease;
+	}
+	/* First-bloom state — added by IntersectionObserver when the
+	   name-meaning paragraph enters view. */
+	.portrait-loc-seal.is-bloomed {
+		opacity: 0.35;
+		transform: scale(1);
+	}
+	.portrait-loc-seal.is-blooming .loc-glyph {
+		animation: locBloom 2.4s ease-out 1;
+	}
+	@keyframes locBloom {
+		0%   { color: #d4a843; text-shadow: 0 0 0 rgba(212, 168, 67, 0); transform: scale(0.98); }
+		30%  { color: #ffe38a; text-shadow: 0 0 18px rgba(255, 227, 138, 0.95), 0 0 4px rgba(255, 227, 138, 0.7); transform: scale(1.14); }
+		100% { color: #d4a843; text-shadow: 0 0 0 rgba(212, 168, 67, 0); transform: scale(1); }
+	}
+	/* Settled hover — once bloomed, hover brightens and reveals caption. */
+	.portrait-loc-seal.is-bloomed:hover {
+		opacity: 0.9;
+	}
+	.portrait-loc-seal.is-bloomed:hover .loc-glyph {
+		color: #ffe38a;
+		text-shadow: 0 0 10px rgba(255, 227, 138, 0.6);
+	}
+	.portrait-loc-seal.is-bloomed:hover .loc-caption {
+		color: rgba(212, 168, 67, 0.9);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.portrait-loc-seal { transition: opacity 0.3s ease; }
+		.portrait-loc-seal.is-blooming .loc-glyph { animation: none; }
+	}
+	@media (max-width: 600px) {
+		.portrait-loc-seal { right: 8px; bottom: 48px; }
+		.loc-glyph { font-size: 22px; }
+		.loc-caption { font-size: 9px; }
+	}
+
+	/* Origin Seal — natal chart (rat + Aries) and heritage (Huỳnh · Nguyễn ·
+	   Võ) float-right inside the prose so paragraphs wrap around it.
+	   Gold = Eastern lineage, pink = Western horoscope. */
+	.origin-seal {
+		float: right;
+		width: 360px;
+		margin: 4px 0 var(--spacing-5, 20px) var(--spacing-8, 32px);
+		padding: var(--spacing-4, 16px) var(--spacing-5, 20px);
+		border: 1px solid var(--color-border, rgba(233, 230, 220, 0.14));
+		border-left: 2px solid #d4a843;
+		background: linear-gradient(180deg, rgba(212, 168, 67, 0.03), transparent);
+		border-radius: 3px;
+	}
+	.origin-seal-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: var(--spacing-3, 12px) var(--spacing-6, 24px);
+	}
+	.origin-col-title {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 10px;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--color-muted, #8e877c);
+		margin: 0 0 6px;
+		font-weight: 500;
+	}
+	.origin-row {
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		margin-bottom: 4px;
+		font-size: var(--font-size-sm, 14px);
+	}
+	.origin-glyph {
+		color: #d4a843;
+		flex-shrink: 0;
+		line-height: 1;
+	}
+	.origin-glyph-cjk {
+		font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+		font-size: 22px;
+		min-width: 28px;
+	}
+	.origin-glyph-astro {
+		font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols 2", "Symbola", sans-serif;
+		font-size: 16px;
+		letter-spacing: 0.05em;
+		min-width: 48px;
+		color: #e8a5b5;
+	}
+	.origin-glyph-rat,
+	.origin-glyph-lotus,
+	.origin-glyph-spire { display: inline-block; }
+	.origin-glyph-rat { width: 38px; height: 22px; }
+	.origin-glyph-lotus,
+	.origin-glyph-spire { width: 30px; height: 20px; }
+	.origin-label {
+		font-family: var(--font-sans, "Inter Tight", -apple-system, sans-serif);
+		color: var(--color-text, #e9e6dc);
+		font-size: var(--font-size-sm, 14px);
+		letter-spacing: 0.01em;
+		white-space: nowrap;
+	}
+	.origin-caption {
+		font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		color: var(--color-muted, #8e877c);
+		text-align: center;
+		margin: 10px 0 0;
+		padding-top: 10px;
+		border-top: 1px dashed var(--color-border, rgba(233, 230, 220, 0.14));
+	}
+	/* Clearfix so the prose section sits below the float cleanly. */
+	.about-prose::after {
+		content: "";
+		display: block;
+		clear: both;
+	}
+
+	@media (max-width: 900px) {
+		.origin-seal {
+			float: none;
+			width: auto;
+			max-width: 460px;
+			margin: 0 0 var(--spacing-5, 20px);
+		}
+	}
+	@media (max-width: 600px) {
+		.origin-seal { padding: var(--spacing-3, 12px) var(--spacing-4, 16px); }
+		.origin-seal-grid { gap: var(--spacing-2, 10px) var(--spacing-4, 16px); }
+		.origin-glyph-cjk { font-size: 20px; min-width: 26px; }
+		.origin-glyph-astro { font-size: 14px; min-width: 42px; }
+	}
 </style>
 
 <script is:inline>
@@ -3179,5 +3512,36 @@ function formatGHDate(iso: string) {
 
 		window.addEventListener('mousemove', handleMove, { passive: true });
 		window.addEventListener('mouseleave', reset);
+	})();
+
+	// Lộc sigil — bloom when the name-meaning paragraph enters view,
+	// then settle into a faint always-on presence. One-shot.
+	(function() {
+		const seal = document.getElementById('portrait-loc-seal');
+		const firstProse = document.querySelector('.about-prose p');
+		if (!seal || !firstProse) return;
+
+		function bloom() {
+			seal.classList.add('is-bloomed', 'is-blooming');
+			window.setTimeout(() => seal.classList.remove('is-blooming'), 2400);
+		}
+
+		if (!('IntersectionObserver' in window)) {
+			// Fallback: no observer → just settle in without the flash.
+			seal.classList.add('is-bloomed');
+			return;
+		}
+
+		const io = new IntersectionObserver((entries, obs) => {
+			for (const e of entries) {
+				if (e.isIntersecting) {
+					bloom();
+					obs.disconnect();
+					break;
+				}
+			}
+		}, { threshold: 0.35 });
+
+		io.observe(firstProse);
 	})();
 </script>

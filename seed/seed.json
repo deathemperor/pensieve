@@ -277,6 +277,120 @@
 					"type": "string"
 				}
 			]
+		},
+		{
+			"slug": "ambitions",
+			"label": "Ambitions",
+			"labelSingular": "Ambition",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "tagline",
+					"label": "Tagline",
+					"type": "text"
+				},
+				{
+					"slug": "content",
+					"label": "Content",
+					"type": "portableText",
+					"searchable": true
+				},
+				{
+					"slug": "stage",
+					"label": "Stage",
+					"type": "string"
+				},
+				{
+					"slug": "domain",
+					"label": "Domain",
+					"type": "string"
+				}
+			]
+		},
+		{
+			"slug": "wishlist",
+			"label": "Wishlist",
+			"labelSingular": "Wish",
+			"supports": [
+				"drafts",
+				"revisions"
+			],
+			"fields": [
+				{
+					"slug": "title",
+					"label": "Title",
+					"type": "string",
+					"required": true,
+					"searchable": true
+				},
+				{
+					"slug": "brand",
+					"label": "Brand",
+					"type": "string"
+				},
+				{
+					"slug": "product_url",
+					"label": "Product URL",
+					"type": "string"
+				},
+				{
+					"slug": "image",
+					"label": "Image",
+					"type": "image"
+				},
+				{
+					"slug": "category",
+					"label": "Category",
+					"type": "string"
+				},
+				{
+					"slug": "priority",
+					"label": "Priority",
+					"type": "string"
+				},
+				{
+					"slug": "notes",
+					"label": "Notes",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"slug": "chronicle",
+			"label": "Celestial Chronicle",
+			"labelSingular": "Chronicle Entry",
+			"supports": [
+				"drafts",
+				"revisions",
+				"search"
+			],
+			"fields": [
+				{ "slug": "title", "label": "Title", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "subtitle_en", "label": "Subtitle (EN)", "type": "text" },
+				{ "slug": "subtitle_vi", "label": "Subtitle (VI)", "type": "text" },
+				{ "slug": "event_date", "label": "Event Date (ISO yyyy-mm-dd)", "type": "string", "required": true },
+				{ "slug": "date_precision", "label": "Date Precision", "type": "string", "required": true },
+				{ "slug": "category", "label": "Category", "type": "string", "required": true },
+				{ "slug": "location", "label": "Location (JSON)", "type": "text" },
+				{ "slug": "linked_post_ids", "label": "Linked Post IDs (comma-separated)", "type": "string" },
+				{ "slug": "external_url", "label": "External URL", "type": "string" },
+				{ "slug": "external_url_label", "label": "External URL Label", "type": "string" },
+				{ "slug": "source", "label": "Source", "type": "string", "required": true },
+				{ "slug": "source_id", "label": "Source ID", "type": "string" },
+				{ "slug": "visibility", "label": "Visibility", "type": "string" }
+			]
 		}
 	],
 	"taxonomies": [
@@ -32125,6 +32239,497 @@
 					"hero_component": "src/animations/marauders-map/index.astro",
 					"primary_session_id": "",
 					"language": "en"
+				}
+			}
+		],
+		"ambitions": [
+			{
+				"id": "ai-serviced-apartment",
+				"slug": "ai-serviced-apartment",
+				"status": "published",
+				"data": {
+					"title": "AI-powered serviced apartment",
+					"tagline": "Serviced apartment where AI runs guest experience, operations, and property management end-to-end.",
+					"stage": "stealth",
+					"domain": "hospitality",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A serviced apartment where AI runs guest experience, operations, and property management end-to-end. Open questions: what's AI-operated vs. human-operated, target segment, location strategy."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "farmstay-oasis",
+				"slug": "farmstay-oasis",
+				"status": "published",
+				"data": {
+					"title": "Farmstay oasis",
+					"tagline": "A farmstay built as an oasis — trees, flowers, animals, aquarium. A place to breathe.",
+					"stage": "stealth",
+					"domain": "hospitality",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Abundant trees and flowering plants, farm and companion animals, a proper aquarium (continuing the fish-keeping thread). Open questions: boutique retreat or working farm, location, ecosystem sustainability."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-native-datacenter",
+				"slug": "ai-native-datacenter",
+				"status": "published",
+				"data": {
+					"title": "AI-native datacenter",
+					"tagline": "A datacenter designed from first principles for AI workloads — not a retrofit of cloud-era infrastructure.",
+					"stage": "stealth",
+					"domain": "infrastructure",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Power, cooling, density, and topology rethought for AI-era chips. Open questions: location (grid, climate, latency), build vs. partner vs. colo."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-consulting-firm",
+				"slug": "ai-consulting-firm",
+				"status": "published",
+				"data": {
+					"title": "AI-powered consulting firm",
+					"tagline": "Business advisory for AI adoption, strategy, and systems — across industries.",
+					"stage": "stealth",
+					"domain": "ai-services",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "A consulting firm for AI adoption and all things business: strategy, operations, product, integration. Distinct from the AI-native university — this is advisory for companies, not education for individuals."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-cloud-management",
+				"slug": "ai-cloud-management",
+				"status": "published",
+				"data": {
+					"title": "AI-powered cloud management",
+					"tagline": "Ops, cost, security, and scaling run by AI agents rather than human SRE teams.",
+					"stage": "stealth",
+					"domain": "ai-services",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Open questions: multi-cloud or single-cloud first, positioning vs. existing FinOps/SRE tooling, agent autonomy boundaries."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-food-production",
+				"slug": "ai-food-production",
+				"status": "published",
+				"data": {
+					"title": "AI-powered food production",
+					"tagline": "AI applied across growing, processing, and distribution.",
+					"stage": "stealth",
+					"domain": "food",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Open questions: upstream (agriculture) or downstream (processing/distribution) first, crop focus, geography, relationship to the farmstay oasis ambition."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-native-university",
+				"slug": "ai-native-university",
+				"status": "published",
+				"data": {
+					"title": "AI-native university",
+					"tagline": "A university built for and about AI — curriculum, pedagogy, and student experience AI-native from day one.",
+					"stage": "stealth",
+					"domain": "education",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Distinct from the consulting firm — this is education for individuals learning AI (and learning with AI). Open questions: accredited degree vs. alt credential, residential vs. online, human faculty + AI tutors or AI-first."
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"id": "ai-agent-studio",
+				"slug": "ai-agent-studio",
+				"status": "published",
+				"data": {
+					"title": "AI agent studio",
+					"tagline": "A studio that builds AI agents — as product, service, or platform.",
+					"stage": "stealth",
+					"domain": "tooling",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"children": [
+								{
+									"_type": "span",
+									"text": "Possibly the vehicle that builds the other AI-powered ambitions. Open questions: product (our own agents) vs. service (agents for clients) vs. platform (tooling for others), vertical focus."
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"wishlist": [
+			{
+				"id": "onewheel-gt-s",
+				"slug": "onewheel-gt-s",
+				"status": "published",
+				"data": {
+					"title": "Onewheel GT S-Series (Rally XL)",
+					"brand": "Onewheel",
+					"product_url": "https://onewheel.com/products/onewheel-gt-s-series#rally-xl",
+					"category": "transport",
+					"priority": "want",
+					"notes": "Rally XL variant — longer range, heavier tire for uneven terrain."
+				}
+			},
+			{
+				"id": "eight-sleep-pod-5-ultra",
+				"slug": "eight-sleep-pod-5-ultra",
+				"status": "published",
+				"data": {
+					"title": "Eight Sleep Pod 5 Ultra",
+					"brand": "Eight Sleep",
+					"product_url": "https://www.eightsleep.com/product/pod-cover/",
+					"category": "health",
+					"priority": "want",
+					"notes": "Temperature-regulating mattress cover — the flagship sleep tech."
+				}
+			},
+			{
+				"id": "xdesk-air-pro",
+				"slug": "xdesk-air-pro",
+				"status": "published",
+				"data": {
+					"title": "XDesk Air Pro",
+					"brand": "XDesk",
+					"product_url": "https://www.xdesk.com/air-pro",
+					"category": "desk",
+					"priority": "want",
+					"notes": "Height-adjustable desk frame, serious load rating."
+				}
+			},
+			{
+				"id": "herman-miller-embody",
+				"slug": "herman-miller-embody",
+				"status": "published",
+				"data": {
+					"title": "Herman Miller Embody",
+					"brand": "Herman Miller",
+					"product_url": "https://www.hermanmiller.com/products/seating/office-chairs/embody-chairs/",
+					"category": "chair",
+					"priority": "want",
+					"notes": "Spine-supporting task chair — the long-sit answer."
+				}
+			},
+			{
+				"id": "apple-pro-display-xdr",
+				"slug": "apple-pro-display-xdr",
+				"status": "published",
+				"data": {
+					"title": "Apple Pro Display XDR",
+					"brand": "Apple",
+					"product_url": "https://www.apple.com/pro-display-xdr/",
+					"category": "display",
+					"priority": "want",
+					"notes": "Reference-grade HDR display."
+				}
+			},
+			{
+				"id": "grovemade-desk-shelf",
+				"slug": "grovemade-desk-shelf",
+				"status": "published",
+				"data": {
+					"title": "Grovemade Wood Desk Shelf",
+					"brand": "Grovemade",
+					"product_url": "https://grovemade.com/product/wood-desk-shelf/",
+					"category": "desk",
+					"priority": "want",
+					"notes": "Hardwood monitor shelf — lifts display to eye level, reclaims desk surface."
+				}
+			},
+			{
+				"id": "apollo-twin-mkii",
+				"slug": "apollo-twin-mkii",
+				"status": "published",
+				"data": {
+					"title": "Universal Audio Apollo Twin (Gen 2)",
+					"brand": "Universal Audio",
+					"product_url": "https://www.uaudio.com/audio-interfaces/apollo/apollo-twin-mkii.html",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Thunderbolt audio interface with Unison preamps and onboard DSP."
+				}
+			},
+			{
+				"id": "yamaha-hs8",
+				"slug": "yamaha-hs8",
+				"status": "published",
+				"data": {
+					"title": "Yamaha HS8",
+					"brand": "Yamaha",
+					"product_url": "https://usa.yamaha.com/products/proaudio/speakers/hs_series/hs8.html",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Studio monitors — flat response, the lab-standard pair."
+				}
+			},
+			{
+				"id": "sennheiser-hd-650",
+				"slug": "sennheiser-hd-650",
+				"status": "published",
+				"data": {
+					"title": "Sennheiser HD 650",
+					"brand": "Sennheiser",
+					"product_url": "https://www.sennheiser-hearing.com/en-US/p/hd-650/",
+					"category": "audio",
+					"priority": "want",
+					"notes": "Open-back reference headphones — transparent, long-session comfortable."
+				}
+			},
+			{
+				"id": "belkin-charging-station",
+				"slug": "belkin-charging-station",
+				"status": "published",
+				"data": {
+					"title": "Belkin BoostCharge Pro 3-in-1 (MagSafe)",
+					"brand": "Belkin",
+					"product_url": "https://www.belkin.com/boostcharge-pro-3-in-1-wireless-charging-dock-with-magsafe-15w/WIZ016.html",
+					"category": "charging",
+					"priority": "want",
+					"notes": "iPhone + Watch + AirPods on one surface. Clean desk footprint."
+				}
+			},
+			{
+				"id": "wobkey-rainy-75-lite",
+				"slug": "wobkey-rainy-75-lite",
+				"status": "published",
+				"data": {
+					"title": "Rainy 75 Lite",
+					"brand": "Wobkey",
+					"product_url": "https://wobkey.com/products/rainy-75",
+					"category": "keyboard",
+					"priority": "want",
+					"notes": "Gasket-mount 75% keyboard — tuned for typing feel over gaming specs."
+				}
+			},
+			{
+				"id": "artisan-mousepad",
+				"slug": "artisan-mousepad",
+				"status": "published",
+				"data": {
+					"title": "Artisan mousepad",
+					"brand": "Artisan",
+					"product_url": "https://artisan-jp.com/en/",
+					"category": "accessory",
+					"priority": "want",
+					"notes": "Japanese cloth pad — pick a Ninja FX variant for balanced glide."
+				}
+			}
+		],
+		"chronicle": [
+			{
+				"id": "met-daity-jewel-2004-03-15",
+				"slug": "met-daity-jewel-2004-03-15",
+				"status": "published",
+				"data": {
+					"title": "Met her — DAITY_JEWEL",
+					"title_en": "Met her — DAITY_JEWEL",
+					"title_vi": "Gặp bạn ấy — DAITY_JEWEL",
+					"subtitle_en": "a decade before it ended",
+					"subtitle_vi": "một thập kỷ trước khi kết thúc",
+					"event_date": "2004-03-15",
+					"date_precision": "day",
+					"category": "love",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "left-vng-2015-03-13",
+				"slug": "left-vng-2015-03-13",
+				"status": "published",
+				"data": {
+					"title": "Left VNG",
+					"title_en": "Left VNG",
+					"title_vi": "Rời VNG",
+					"subtitle_en": "nine years, a door closes",
+					"subtitle_vi": "chín năm, một cánh cửa khép lại",
+					"event_date": "2015-03-13",
+					"date_precision": "day",
+					"category": "threshold",
+					"location": "{\"name\":\"VNG\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "founded-gvn-studio-2015-05",
+				"slug": "founded-gvn-studio-2015-05",
+				"status": "published",
+				"data": {
+					"title": "Founded GVN Studio",
+					"title_en": "Founded GVN Studio",
+					"title_vi": "Lập GVN Studio",
+					"subtitle_en": "the studio begins",
+					"subtitle_vi": "khởi sự",
+					"event_date": "2015-05-01",
+					"date_precision": "month",
+					"category": "work",
+					"location": "{\"name\":\"GVN Studio\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "old-trafford-birthday-2018-03-31",
+				"slug": "old-trafford-birthday-2018-03-31",
+				"status": "published",
+				"data": {
+					"title": "Old Trafford, on my birthday (United won)",
+					"title_en": "Old Trafford, on my birthday (United won)",
+					"title_vi": "Old Trafford, đúng sinh nhật (MU thắng)",
+					"subtitle_en": "the Theatre of Dreams, in person",
+					"subtitle_vi": "Nhà hát của những giấc mơ, tận mắt",
+					"event_date": "2018-03-31",
+					"date_precision": "day",
+					"category": "milestone",
+					"location": "{\"name\":\"Old Trafford\",\"city\":\"Manchester\",\"country\":\"GB\",\"lat\":53.46,\"lng\":-2.29}",
+					"linked_post_ids": "muc-tieu-lon-va-y-chi-kien-cuong",
+					"external_url": "https://en.wikipedia.org/wiki/2017%E2%80%9318_Manchester_United_F.C._season",
+					"external_url_label": "match — MU 2–0 Swansea",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "proposed-buckingham-2018-04-02",
+				"slug": "proposed-buckingham-2018-04-02",
+				"status": "published",
+				"data": {
+					"title": "Proposed at Buckingham Palace",
+					"title_en": "Proposed at Buckingham Palace",
+					"title_vi": "Cầu hôn trước cổng Buckingham",
+					"subtitle_en": "a ring, a knee, a palace gate",
+					"subtitle_vi": "một chiếc nhẫn, một đầu gối, cổng hoàng cung",
+					"event_date": "2018-04-02",
+					"date_precision": "day",
+					"category": "love",
+					"location": "{\"name\":\"Buckingham Palace\",\"city\":\"London\",\"country\":\"GB\",\"lat\":51.50,\"lng\":-0.14}",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "joined-papaya-2021-05-04",
+				"slug": "joined-papaya-2021-05-04",
+				"status": "published",
+				"data": {
+					"title": "Joined Papaya",
+					"title_en": "Joined Papaya",
+					"title_vi": "Vào Papaya",
+					"subtitle_en": "a new field to till",
+					"subtitle_vi": "một cánh đồng mới",
+					"event_date": "2021-05-04",
+					"date_precision": "day",
+					"category": "threshold",
+					"location": "{\"name\":\"Papaya\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "dad-2021-05-21",
+				"slug": "dad-2021-05-21",
+				"status": "published",
+				"data": {
+					"title": "Dad",
+					"title_en": "Dad",
+					"title_vi": "Ba",
+					"subtitle_en": "the day the world got quieter",
+					"subtitle_vi": "ngày thế gian lặng đi",
+					"event_date": "2021-05-21",
+					"date_precision": "day",
+					"category": "loss",
+					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "linh-dan-born-2021-12-14",
+				"slug": "linh-dan-born-2021-12-14",
+				"status": "published",
+				"data": {
+					"title": "Ngọc Linh Đan arrived (Fawn · Nai)",
+					"title_en": "Ngọc Linh Đan arrived (Fawn · Nai)",
+					"title_vi": "Ngọc Linh Đan chào đời (Fawn · Nai)",
+					"subtitle_en": "a small precious bell",
+					"subtitle_vi": "một cái chuông nhỏ quý giá",
+					"event_date": "2021-12-14",
+					"date_precision": "day",
+					"category": "family",
+					"location": "{\"name\":\"Hạnh Phúc Hospital\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
+					"source": "manual",
+					"visibility": "public"
 				}
 			}
 		]

@@ -1,0 +1,88 @@
+---
+import { parseChronicleDate } from "../../utils/chronicleDate";
+import { monthToAngleDeg, ringRadiusForYear, fanCluster } from "../../utils/chronicleGeometry";
+import { getChronicleCategory } from "../../themes/chronicleCategories";
+import { toRoman } from "../../utils/romanDate";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+  entries: any[];
+}
+
+const { entries } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const parsedEntries = entries.map((e) => {
+  const p = parseChronicleDate({
+    event_date: e.data.event_date,
+    date_precision: e.data.date_precision,
+  });
+  return { id: e.id, entry: e, parsed: p };
+});
+
+const populatedYears = [...new Set(parsedEntries.map((e) => e.parsed.year))]
+  .sort((a, b) => a - b);
+
+const scale = { innerPx: 70, outerPx: 210 };
+
+const placements = parsedEntries.map((p) => {
+  const radius = ringRadiusForYear(p.parsed.year, populatedYears, scale);
+  const angleDeg = monthToAngleDeg(p.parsed.month);
+  // Year-precision stars land at 0deg (top of ring) by convention.
+  return { id: p.id, entry: p.entry, year: p.parsed.year, radius, angle: angleDeg ?? 0 };
+});
+
+const fanned = fanCluster(
+  placements.map((p) => ({ id: p.id, angle: p.angle })),
+  { thresholdDeg: 4, fanDeg: 3 },
+);
+const fannedById = new Map(fanned.map((f) => [f.id, f.angle]));
+const final = placements.map((p) => ({ ...p, angle: fannedById.get(p.id)! }));
+
+function polar(radius: number, angleDeg: number) {
+  // angle 0 = top (12 o'clock), clockwise.
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: Math.cos(rad) * radius,
+    y: Math.sin(rad) * radius,
+  };
+}
+---
+
+<div class="cc-sky" id="cc-sky">
+  <div class="cc-stars"></div>
+
+  {populatedYears.map((year) => {
+    const r = ringRadiusForYear(year, populatedYears, scale);
+    return (
+      <Fragment>
+        <div
+          class="cc-ring"
+          style={`width:${r * 2}px;height:${r * 2}px;`}
+        ></div>
+        <div
+          class="year-tick"
+          style={`left:50%;top:calc(50% - ${r}px);transform:translate(-50%,-50%);`}
+        >{toRoman(year)}</div>
+      </Fragment>
+    );
+  })}
+
+  {final.map((p) => {
+    const { x, y } = polar(p.radius, p.angle);
+    const cat = getChronicleCategory(p.entry.data.category);
+    const title = p.entry.data.title_en ?? p.entry.data.title_vi ?? p.entry.data.title;
+    return (
+      <button
+        class="cc-star"
+        data-id={p.entry.id}
+        data-category={cat.slug}
+        style={`left:calc(50% + ${x}px);top:calc(50% + ${y}px);--star:${cat.hex};`}
+        aria-label={isVi ? `Mở sự kiện: ${title}` : `Open event: ${title}`}
+      >
+        <span class="cc-star-label">{toRoman(p.year)}</span>
+      </button>
+    );
+  })}
+</div>

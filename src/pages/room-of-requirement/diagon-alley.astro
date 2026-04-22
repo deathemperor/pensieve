@@ -1,0 +1,468 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { entries: wishesRaw, cacheHint } = await getEmDashCollection("wishlist");
+Astro.cache.set(cacheHint);
+
+interface Wish {
+	id: string;
+	slug: string;
+	title: string;
+	brand: string;
+	productUrl: string;
+	category: string;
+	priority: string;
+	notes: string;
+	image: { src?: string; alt?: string } | null;
+}
+
+const priorityRank: Record<string, number> = {
+	want: 0,
+	someday: 1,
+	acquired: 2,
+};
+
+const wishes: Wish[] = wishesRaw
+	.filter((e) => e.data.status === "published")
+	.map((e) => ({
+		id: e.id,
+		slug: e.slug ?? e.id,
+		title: e.data.title,
+		brand: e.data.brand ?? "",
+		productUrl: e.data.product_url ?? "",
+		category: e.data.category ?? "",
+		priority: e.data.priority ?? "want",
+		notes: e.data.notes ?? "",
+		image: e.data.image ?? null,
+	}))
+	.sort((a, b) => {
+		const pa = priorityRank[a.priority] ?? 9;
+		const pb = priorityRank[b.priority] ?? 9;
+		if (pa !== pb) return pa - pb;
+		return a.title.localeCompare(b.title);
+	});
+
+const categoryLabels: Record<string, Record<string, string>> = {
+	en: {
+		transport: "Transport",
+		health: "Health",
+		desk: "Desk",
+		chair: "Seating",
+		display: "Display",
+		audio: "Audio",
+		keyboard: "Keyboard",
+		charging: "Charging",
+		accessory: "Accessory",
+	},
+	vi: {
+		transport: "Di Chuyển",
+		health: "Sức Khoẻ",
+		desk: "Bàn",
+		chair: "Ghế",
+		display: "Màn Hình",
+		audio: "Âm Thanh",
+		keyboard: "Bàn Phím",
+		charging: "Sạc",
+		accessory: "Phụ Kiện",
+	},
+};
+
+const priorityLabels: Record<string, Record<string, string>> = {
+	en: { want: "Want", someday: "Someday", acquired: "Acquired" },
+	vi: { want: "Muốn", someday: "Một Ngày Nào Đó", acquired: "Đã Có" },
+};
+
+function hostFromUrl(url: string) {
+	try {
+		return new URL(url).hostname.replace(/^www\./, "");
+	} catch {
+		return "";
+	}
+}
+
+const categories = Array.from(new Set(wishes.map((w) => w.category).filter(Boolean))).sort();
+---
+
+<Base
+	title={isVi ? "Hẻm Xéo — Danh Sách Ước Muốn" : "Diagon Alley — Wishlist"}
+	description={isVi
+		? "Danh sách các món đồ tôi đang để mắt tới. Mỗi ô cửa hàng là một cửa tiệm trong Hẻm Xéo."
+		: "Things I've got my eye on. Each storefront is a shop in Diagon Alley."}
+	breadcrumbs={[
+		{ label: "Room of Requirement", href: "/room-of-requirement" },
+		{ label: isVi ? "Hẻm Xéo" : "Diagon Alley" },
+	]}
+>
+	<section class="da-hero">
+		<div class="da-hero-inner">
+			<div class="da-rule" />
+			<span class="da-label">{isVi ? "Hẻm Xéo" : "Diagon Alley"}</span>
+			<h1 class="da-title">{isVi ? "Danh Sách Ước Muốn" : "The Wishlist"}</h1>
+			<p class="da-subtitle">
+				{isVi
+					? "Những ô cửa hàng tôi hay dừng lại ngắm khi đi qua. Bấm vào để ghé thăm cửa tiệm."
+					: "Storefronts I linger in front of. Tap any window to visit the shop."}
+			</p>
+			<div class="da-meta">
+				<span class="da-meta-stat">
+					<span class="da-meta-value">{wishes.length}</span>
+					<span class="da-meta-label">{isVi ? "ước muốn" : "wishes"}</span>
+				</span>
+				<span class="da-meta-dot" />
+				<span class="da-meta-stat">
+					<span class="da-meta-value">{categories.length}</span>
+					<span class="da-meta-label">{isVi ? "danh mục" : "categories"}</span>
+				</span>
+			</div>
+		</div>
+	</section>
+
+	<section class="da-street" aria-label={isVi ? "Các cửa tiệm" : "The shops"}>
+		<div class="da-grid">
+			{wishes.map((w) => {
+				const host = hostFromUrl(w.productUrl);
+				return (
+					<article class="da-shop" data-priority={w.priority} data-category={w.category}>
+						<div class="da-shop-eaves" aria-hidden="true">
+							<svg viewBox="0 0 200 18" preserveAspectRatio="none">
+								<path d="M0 18 L10 6 L20 18 L30 6 L40 18 L50 6 L60 18 L70 6 L80 18 L90 6 L100 18 L110 6 L120 18 L130 6 L140 18 L150 6 L160 18 L170 6 L180 18 L190 6 L200 18 Z" fill="#b8862f" opacity="0.28" />
+							</svg>
+						</div>
+						<div class="da-shop-sign">
+							<span class="da-brand">{w.brand || host}</span>
+							<span class="da-category">{categoryLabels[lang]?.[w.category] ?? w.category}</span>
+						</div>
+						<div class="da-shop-window">
+							{w.image?.src ? (
+								<img class="da-shop-image" src={w.image.src} alt={w.image.alt ?? w.title} loading="lazy" />
+							) : (
+								<div class="da-shop-placeholder" aria-hidden="true">
+									<svg viewBox="0 0 64 64" width="48" height="48">
+										<rect x="12" y="18" width="40" height="30" rx="2" fill="none" stroke="#d4a843" stroke-width="1.5" opacity="0.45" />
+										<circle cx="22" cy="28" r="3" fill="none" stroke="#d4a843" stroke-width="1.5" opacity="0.45" />
+										<path d="M14 44 L24 34 L32 40 L42 30 L50 44" fill="none" stroke="#d4a843" stroke-width="1.5" opacity="0.45" stroke-linejoin="round" />
+									</svg>
+								</div>
+							)}
+							<h2 class="da-shop-title">{w.title}</h2>
+							{w.notes && <p class="da-shop-notes">{w.notes}</p>}
+						</div>
+						<div class="da-shop-footer">
+							{w.priority !== "want" && (
+								<span class="da-priority">{priorityLabels[lang]?.[w.priority] ?? w.priority}</span>
+							)}
+							{w.productUrl ? (
+								<a class="da-visit" href={w.productUrl} target="_blank" rel="noopener noreferrer">
+									<span>{isVi ? "Ghé cửa tiệm" : "Visit shop"}</span>
+									<svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M7 17L17 7M17 7H9M17 7V15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+								</a>
+							) : (
+								<span class="da-no-link">{isVi ? "Chưa có liên kết" : "No link yet"}</span>
+							)}
+							{host && <span class="da-host">{host}</span>}
+						</div>
+						<div class="da-shop-awning" aria-hidden="true" />
+					</article>
+				);
+			})}
+		</div>
+	</section>
+
+	<section class="da-footer">
+		<p class="da-footer-note">
+			{isVi ? (
+				<>
+					Danh sách này không phải lịch mua sắm — chỉ là những ô cửa kính tôi hay dừng lại nhìn vào. Một số sẽ theo tôi về, một số sẽ ở lại trên vỉa hè.
+				</>
+			) : (
+				<>
+					This isn't a shopping schedule — just windows I keep stopping in front of. Some may come home with me, some will stay on the street.
+				</>
+			)}
+		</p>
+	</section>
+</Base>
+
+<style>
+	.da-hero {
+		padding: 5rem 1.5rem 2.5rem;
+		max-width: 820px;
+		margin: 0 auto;
+		text-align: center;
+	}
+	.da-hero-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+	}
+	.da-rule {
+		width: 1px;
+		height: 3rem;
+		background: linear-gradient(to bottom, transparent, #c9a84a, transparent);
+		opacity: 0.6;
+	}
+	.da-label {
+		font-size: 0.72rem;
+		letter-spacing: 0.32em;
+		text-transform: uppercase;
+		color: #c9a84a;
+		opacity: 0.78;
+	}
+	.da-title {
+		font-family: "Inter Tight", system-ui, sans-serif;
+		font-size: clamp(2.2rem, 5vw, 3.4rem);
+		font-weight: 300;
+		letter-spacing: -0.02em;
+		margin: 0;
+		color: #f0e6d2;
+		text-shadow: 0 0 32px rgba(212, 168, 67, 0.16);
+	}
+	.da-subtitle {
+		font-size: 1rem;
+		color: #c9bfa6;
+		opacity: 0.78;
+		margin: 0;
+		max-width: 34rem;
+		font-style: italic;
+	}
+	.da-meta {
+		display: inline-flex;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 0.5rem;
+		font-size: 0.82rem;
+		color: #a89a7a;
+	}
+	.da-meta-dot {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: #c9a84a;
+		opacity: 0.6;
+	}
+	.da-meta-value {
+		font-weight: 500;
+		color: #e0d8c4;
+		margin-right: 0.35rem;
+	}
+
+	.da-street {
+		max-width: 1200px;
+		margin: 1rem auto 0;
+		padding: 1rem 1.5rem 2rem;
+	}
+	.da-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1.5rem 1.25rem;
+	}
+
+	.da-shop {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		background: linear-gradient(
+			180deg,
+			rgba(255, 255, 255, 0.035) 0%,
+			rgba(212, 168, 67, 0.02) 100%
+		);
+		border: 1px solid rgba(212, 168, 67, 0.2);
+		border-radius: 2px;
+		overflow: hidden;
+		transition: border-color 0.4s ease, transform 0.35s ease;
+		padding: 1rem 1rem 0.9rem;
+	}
+	.da-shop:hover {
+		border-color: rgba(212, 168, 67, 0.55);
+		transform: translateY(-2px);
+	}
+	.da-shop:hover .da-shop-awning {
+		background-position: 0 0;
+	}
+	.da-shop-eaves {
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: -1px;
+		height: 12px;
+		line-height: 0;
+	}
+	.da-shop-eaves svg {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+
+	.da-shop-sign {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.5rem;
+		padding: 0.25rem 0 0.75rem;
+		border-bottom: 1px solid rgba(212, 168, 67, 0.15);
+		margin-bottom: 0.9rem;
+	}
+	.da-brand {
+		font-family: "Inter Tight", system-ui, sans-serif;
+		font-size: 0.82rem;
+		font-weight: 500;
+		letter-spacing: 0.03em;
+		color: #d4a843;
+	}
+	.da-category {
+		font-size: 0.64rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: #8a7c5f;
+	}
+
+	.da-shop-window {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.da-shop-image {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		object-fit: cover;
+		border-radius: 2px;
+		border: 1px solid rgba(212, 168, 67, 0.12);
+	}
+	.da-shop-placeholder {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(
+			ellipse at center,
+			rgba(212, 168, 67, 0.06),
+			transparent 70%
+		);
+		border: 1px dashed rgba(212, 168, 67, 0.2);
+		border-radius: 2px;
+	}
+	.da-shop-title {
+		font-family: "Inter Tight", system-ui, sans-serif;
+		font-size: 1.05rem;
+		font-weight: 500;
+		letter-spacing: -0.005em;
+		margin: 0;
+		color: #f0e6d2;
+		line-height: 1.3;
+	}
+	.da-shop-notes {
+		font-size: 0.85rem;
+		color: #a89a7a;
+		line-height: 1.5;
+		margin: 0;
+		opacity: 0.85;
+	}
+
+	.da-shop-footer {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+		padding-top: 0.85rem;
+		margin-top: 0.85rem;
+		border-top: 1px solid rgba(212, 168, 67, 0.1);
+	}
+	.da-priority {
+		font-size: 0.65rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: #8a7c5f;
+		border: 1px solid rgba(138, 124, 95, 0.3);
+		padding: 0.15rem 0.45rem;
+		border-radius: 2px;
+	}
+	.da-visit {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.82rem;
+		color: #d4a843;
+		text-decoration: none;
+		font-weight: 500;
+		padding: 0.3rem 0.65rem;
+		border: 1px solid rgba(212, 168, 67, 0.3);
+		border-radius: 2px;
+		transition: background 0.3s ease, border-color 0.3s ease;
+	}
+	.da-visit:hover {
+		background: rgba(212, 168, 67, 0.08);
+		border-color: rgba(212, 168, 67, 0.5);
+	}
+	.da-visit svg {
+		opacity: 0.8;
+	}
+	.da-no-link {
+		font-size: 0.78rem;
+		color: #6b6147;
+		font-style: italic;
+	}
+	.da-host {
+		margin-left: auto;
+		font-size: 0.7rem;
+		color: #6b6147;
+		letter-spacing: 0.03em;
+	}
+
+	.da-shop-awning {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 2px;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			#d4a843 50%,
+			transparent 100%
+		);
+		background-size: 200% 100%;
+		background-position: 100% 0;
+		transition: background-position 0.8s ease;
+		opacity: 0.5;
+	}
+
+	[data-priority="acquired"] {
+		opacity: 0.55;
+	}
+	[data-priority="acquired"] .da-shop-title {
+		text-decoration: line-through;
+		text-decoration-color: rgba(240, 230, 210, 0.35);
+	}
+
+	.da-footer {
+		max-width: 620px;
+		margin: 0 auto;
+		padding: 3rem 1.5rem 5rem;
+		text-align: center;
+	}
+	.da-footer-note {
+		font-size: 0.95rem;
+		color: #c9bfa6;
+		line-height: 1.7;
+		opacity: 0.78;
+		font-style: italic;
+	}
+
+	@media (max-width: 640px) {
+		.da-hero { padding: 3rem 1rem 2rem; }
+		.da-grid { grid-template-columns: 1fr; gap: 1rem; }
+		.da-shop { padding: 0.9rem 0.9rem 0.8rem; }
+	}
+</style>
