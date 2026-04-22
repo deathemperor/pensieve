@@ -1,0 +1,140 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+
+interface EdgeRow {
+  id: string;
+  src_id: string;
+  dst_id: string;
+  kind: string;
+  note: string | null;
+}
+const rs = await db
+  .prepare(`
+    SELECT e.id, e.src_id, e.dst_id, e.kind, e.note FROM contact_edges e
+    WHERE e.src_id = ? OR e.dst_id = ?
+  `)
+  .bind(contactId, contactId)
+  .all<EdgeRow>();
+const edges = (rs.results ?? []) as EdgeRow[];
+
+// Hydrate the OTHER side of each edge with contact data.
+interface OtherContact { id: string; full_name: string; company: string | null; prestige_tier: string }
+const otherIds = Array.from(new Set(edges.map((e) => e.src_id === contactId ? e.dst_id : e.src_id)));
+let others = new Map<string, OtherContact>();
+if (otherIds.length > 0) {
+  const placeholders = otherIds.map(() => "?").join(",");
+  const rs2 = await db
+    .prepare(`SELECT id, full_name, company, prestige_tier FROM contacts WHERE id IN (${placeholders}) AND deleted_at IS NULL`)
+    .bind(...otherIds)
+    .all<OtherContact>();
+  for (const c of (rs2.results ?? []) as OtherContact[]) others.set(c.id, c);
+}
+
+const kindLabel: Record<string, string> = {
+  introduced_by: "introduced by",
+  works_with: "works with",
+  mentor_of: "mentor of",
+  invested_in: "invested in",
+  spouse: "spouse of",
+  same_company: "also at",
+};
+---
+
+<section class="section relationships">
+  <h2 class="section-title">Relationships</h2>
+  {edges.length === 0 ? (
+    <p class="muted">No relationships linked yet.</p>
+  ) : (
+    <ul class="edges-list">
+      {edges.map((e) => {
+        const direction = e.src_id === contactId ? "outgoing" : "incoming";
+        const otherId = direction === "outgoing" ? e.dst_id : e.src_id;
+        const other = others.get(otherId);
+        if (!other) return null;
+        const label = kindLabel[e.kind] ?? e.kind;
+        const prefix = direction === "outgoing" ? "→" : "←";
+        return (
+          <li class="edge">
+            <span class="direction">{prefix}</span>
+            <span class="kind">{label}</span>
+            <a class="other" href={`/room-of-requirement/portraits/${other.id}`}>
+              {other.full_name}
+              {other.company && <span class="other-company"> · {other.company}</span>}
+            </a>
+            <button class="delete-edge" data-eid={e.id} title="unlink">✕</button>
+          </li>
+        );
+      })}
+    </ul>
+  )}
+
+  <form id="link-form" class="link-form">
+    <input type="text" name="dst_id" placeholder="Target contact ID (e.g. pp_01 or ULID)" required />
+    <select name="kind" required>
+      <option value="introduced_by">introduced by</option>
+      <option value="works_with">works with</option>
+      <option value="mentor_of">mentor of</option>
+      <option value="invested_in">invested in</option>
+      <option value="spouse">spouse of</option>
+      <option value="same_company">also at</option>
+    </select>
+    <button type="submit">＋ link</button>
+  </form>
+  <p class="hint muted">Use a contact ID from the URL (e.g. `pp_05`). Full picker UI lands in a later phase.</p>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("link-form");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const res = await fetch(`/api/portraits/${contactId}/edges`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dst_id: String(fd.get("dst_id") ?? "").trim(),
+        kind: String(fd.get("kind") ?? ""),
+      }),
+    });
+    if (res.ok) window.location.reload();
+    else {
+      const d = await res.json().catch(() => ({}));
+      alert(`Link failed: ${d.error ?? res.statusText}`);
+    }
+  });
+
+  document.querySelectorAll("button.delete-edge").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const eid = btn.getAttribute("data-eid");
+      if (!eid) return;
+      if (!confirm("Unlink this relationship?")) return;
+      const res = await fetch(`/api/portraits/${contactId}/edges/${eid}`, { method: "DELETE" });
+      if (res.ok) window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .edges-list { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.375rem; }
+  .edge { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.4rem 0.5rem; border: 1px solid #1a1a1a; border-radius: 3px; }
+  .edge .direction { color: #8a877e; font-size: 1rem; min-width: 1ch; }
+  .edge .kind { color: #6a665e; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; min-width: 8rem; }
+  .edge .other { color: #e8e6e0; text-decoration: none; flex: 1; }
+  .edge .other:hover { color: #d4a89a; }
+  .edge .other-company { color: #8a877e; font-size: 0.875rem; }
+  .edge button.delete-edge {
+    background: transparent; border: 1px solid #2a2a2a; color: #6a665e;
+    padding: 0.1rem 0.35rem; border-radius: 2px; cursor: pointer; font-size: 0.75rem;
+  }
+  .edge button.delete-edge:hover { border-color: #e57373; color: #e57373; }
+  .link-form { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+  .link-form input, .link-form select { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.6rem; border-radius: 3px; font: inherit; }
+  .link-form input { flex: 1; min-width: 180px; }
+  .link-form button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
+  .link-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .hint { font-size: 0.8125rem; margin-top: 0.5rem; }
+  .muted { color: #6a665e; }
+</style>
