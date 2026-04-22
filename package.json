@@ -24,6 +24,8 @@
 		"adm-zip": "^0.5.17",
 		"astro": "^6.1.2",
 		"emdash": "^0.5.0",
+		"isomorphic-dompurify": "^3.9.0",
+		"marked": "^18.0.2",
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
 		"react": "^19.2.4",
