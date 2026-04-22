@@ -1,0 +1,118 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+
+interface EdgeRow {
+  id: string;
+  src_id: string;
+  src_name: string;
+  src_tier: string;
+  dst_id: string;
+  dst_name: string;
+  dst_tier: string;
+  kind: string;
+}
+
+const rs = await db
+  .prepare(`
+    SELECT
+      e.id, e.kind,
+      e.src_id, cs.full_name AS src_name, cs.prestige_tier AS src_tier,
+      e.dst_id, cd.full_name AS dst_name, cd.prestige_tier AS dst_tier
+    FROM contact_edges e
+    JOIN contacts cs ON cs.id = e.src_id AND cs.deleted_at IS NULL
+    JOIN contacts cd ON cd.id = e.dst_id AND cd.deleted_at IS NULL
+    ORDER BY cs.full_name ASC, cd.full_name ASC
+    LIMIT 500
+  `)
+  .all<EdgeRow>();
+
+const edges = (rs.results ?? []) as EdgeRow[];
+
+// Group by source
+const bySrc = new Map<string, { name: string; tier: string; edges: EdgeRow[] }>();
+for (const e of edges) {
+  const g = bySrc.get(e.src_id) ?? { name: e.src_name, tier: e.src_tier, edges: [] };
+  g.edges.push(e);
+  bySrc.set(e.src_id, g);
+}
+
+const kindLabel: Record<string, string> = {
+  introduced_by: "introduced by",
+  works_with: "works with",
+  mentor_of: "mentor of",
+  invested_in: "invested in",
+  spouse: "spouse of",
+  same_company: "also at",
+};
+
+// Totals
+const nodeIds = new Set<string>();
+for (const e of edges) { nodeIds.add(e.src_id); nodeIds.add(e.dst_id); }
+---
+
+<Base title="Portraits graph — Room of Requirement" description="All relationships in the private rolodex.">
+  <main class="graph-page">
+    <header>
+      <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+      <h1>Relationship graph</h1>
+      <p class="hint">{nodeIds.size} nodes · {edges.length} edges</p>
+    </header>
+
+    {edges.length === 0 ? (
+      <p class="muted">No edges yet. Link contacts from the Relationships section on any detail page.</p>
+    ) : (
+      <div class="groups">
+        {Array.from(bySrc.entries()).map(([srcId, g]) => (
+          <section class="group">
+            <h2 class={`group-title tier-${g.tier}`}>
+              <a href={`/room-of-requirement/portraits/${srcId}`}>{g.name}</a>
+              <span class="group-count">{g.edges.length}</span>
+            </h2>
+            <ul class="group-edges">
+              {g.edges.map((e) => (
+                <li>
+                  <span class="kind">{kindLabel[e.kind] ?? e.kind}</span>
+                  <a href={`/room-of-requirement/portraits/${e.dst_id}`}>{e.dst_name}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    )}
+  </main>
+</Base>
+
+<style>
+  .graph-page { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  .back-link:hover { color: #d4a89a; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 2rem; }
+  .muted { color: #6a665e; }
+  .groups { display: flex; flex-direction: column; gap: 1.5rem; }
+  .group { padding: 1rem; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .group-title { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.125rem; margin: 0 0 0.5rem; display: flex; align-items: baseline; gap: 0.5rem; }
+  .group-title a { color: #e8e6e0; text-decoration: none; }
+  .group-title a:hover { color: #d4a89a; }
+  .group-title.tier-S a { color: #f8e08c; }
+  .group-title.tier-A a { color: #e6e8ea; }
+  .group-title.tier-B a { color: #cd8a4e; }
+  .group-count { color: #6a665e; font-size: 0.75rem; font-weight: 400; }
+  .group-edges { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+  .group-edges li { display: flex; gap: 0.75rem; font-size: 0.9rem; }
+  .kind { color: #6a665e; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; min-width: 8rem; }
+  .group-edges a { color: #bdb8ac; text-decoration: none; }
+  .group-edges a:hover { color: #d4a89a; }
+</style>
