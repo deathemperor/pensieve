@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { requireAdmin } from "../../../../lib/portraits/auth";
 import { extractContactFromCard } from "../../../../lib/portraits/ocr";
+import { ulid } from "../../../../lib/portraits/ulid";
 
 export const prerender = false;
 
@@ -79,18 +80,3 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function ulid(): string {
-  const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-  const now = Date.now();
-  const rand = crypto.getRandomValues(new Uint8Array(10));
-  let time = "";
-  let t = now;
-  for (let i = 0; i < 10; i++) { time = CROCKFORD[t % 32] + time; t = Math.floor(t / 32); }
-  let randStr = "";
-  let bits = 0, acc = 0;
-  for (let i = 0; i < 10; i++) {
-    acc = (acc << 8) | rand[i]; bits += 8;
-    while (bits >= 5) { bits -= 5; randStr += CROCKFORD[(acc >> bits) & 31]; }
-  }
-  return time + randStr;
-}

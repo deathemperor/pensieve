@@ -1,17 +1,7 @@
 import handler from "@astrojs/cloudflare/entrypoints/server";
 import { nextBirthdayOccurrence } from "./lib/portraits/reminders";
+import { ulid as portraitsUlid } from "./lib/portraits/ulid";
 export { PluginBridge } from "@emdash-cms/cloudflare/sandbox";
-
-function portraitsUlid(): string {
-	const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-	const now = Date.now();
-	const rand = crypto.getRandomValues(new Uint8Array(10));
-	let time = "", t = now;
-	for (let i = 0; i < 10; i++) { time = CROCKFORD[t % 32] + time; t = Math.floor(t / 32); }
-	let rs = "", bits = 0, acc = 0;
-	for (let i = 0; i < 10; i++) { acc = (acc << 8) | rand[i]; bits += 8; while (bits >= 5) { bits -= 5; rs += CROCKFORD[(acc >> bits) & 31]; } }
-	return time + rs;
-}
 
 /**
  * OpenClawContainer stub — the real implementation lives on worktree-Ron.

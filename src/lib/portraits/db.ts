@@ -5,6 +5,7 @@ import type {
   CreateContactInput,
   ListContactsOptions,
 } from "./types";
+import { ulid } from "./ulid";
 
 type D1 = import("@cloudflare/workers-types").D1Database;
 
@@ -139,44 +140,3 @@ export async function createContact(
   return full;
 }
 
-// 26-char Crockford-base32 ULID, monotonic within process.
-// Kept inline to avoid a dependency; hot path is admin-only.
-let _lastMs = 0;
-let _lastRand: Uint8Array = new Uint8Array(10);
-const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-function ulid(): string {
-  const now = Date.now();
-  let rand: Uint8Array;
-  if (now === _lastMs) {
-    // monotonic increment
-    rand = new Uint8Array(_lastRand);
-    for (let i = 9; i >= 0; i--) {
-      rand[i] = (rand[i] + 1) & 0xff;
-      if (rand[i] !== 0) break;
-    }
-  } else {
-    rand = crypto.getRandomValues(new Uint8Array(10));
-    _lastMs = now;
-  }
-  _lastRand = rand;
-
-  let time = "";
-  let t = now;
-  for (let i = 0; i < 10; i++) {
-    time = CROCKFORD[t % 32] + time;
-    t = Math.floor(t / 32);
-  }
-
-  let randStr = "";
-  let bits = 0;
-  let acc = 0;
-  for (let i = 0; i < 10; i++) {
-    acc = (acc << 8) | rand[i];
-    bits += 8;
-    while (bits >= 5) {
-      bits -= 5;
-      randStr += CROCKFORD[(acc >> bits) & 31];
-    }
-  }
-  return time + randStr;
-}

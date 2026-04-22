@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { requireAdmin } from "../../../../../lib/portraits/auth";
+import { ulid } from "../../../../../lib/portraits/ulid";
 
 export const prerender = false;
 
@@ -63,14 +64,4 @@ export const POST: APIRoute = async (ctx) => {
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "private, no-store" } });
-}
-function ulid(): string {
-  const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-  const now = Date.now();
-  const rand = crypto.getRandomValues(new Uint8Array(10));
-  let time = "", t = now;
-  for (let i = 0; i < 10; i++) { time = CROCKFORD[t % 32] + time; t = Math.floor(t / 32); }
-  let rs = "", bits = 0, acc = 0;
-  for (let i = 0; i < 10; i++) { acc = (acc << 8) | rand[i]; bits += 8; while (bits >= 5) { bits -= 5; rs += CROCKFORD[(acc >> bits) & 31]; } }
-  return time + rs;
 }
