@@ -166,7 +166,7 @@ Astro.response.headers.set("Cache-Control", "private, no-store");
       });
       const data = await res.json() as { tier?: string; reason?: string; error?: string; hint?: string };
       if (res.ok && data.tier) {
-        const sel = form.querySelector<HTMLSelectElement>('select[name="prestige_tier"]');
+        const sel = form.querySelector('select[name="prestige_tier"]') as unknown as HTMLSelectElement | null;
         if (sel) sel.value = data.tier;
         if (suggestResult) {
           suggestResult.textContent = `Suggested ${data.tier}: ${data.reason}`;
