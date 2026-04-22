@@ -1,6 +1,6 @@
 ---
 import { getChronicleCategory } from "../../themes/chronicleCategories";
-import { formatRomanDate, toRoman } from "../../utils/romanDate";
+import { formatRomanDate } from "../../utils/romanDate";
 import { groupByYear } from "../../utils/chronicleDate";
 import { getCurrentLang } from "../../utils/lang";
 
@@ -29,7 +29,7 @@ const groups = groupByYear(entries.map((e) => ({
 
   {groups.map((g) => (
     <Fragment>
-      <div class="cc-year" id={`cc-year-${g.year}`}>{toRoman(g.year)}</div>
+      <div class="cc-year" id={`cc-year-${g.year}`}>{g.year}</div>
       {g.entries.map((row) => {
         const e = (row as any).__entry;
         const cat = getChronicleCategory(e.data.category);
