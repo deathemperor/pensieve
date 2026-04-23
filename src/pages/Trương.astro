@@ -765,21 +765,21 @@ try {
 						{ year: "2021", co: "Papaya", rune: "ᛞ",
 						  title: { en: "Director of Engineering → CTSPO", vi: "Director of Engineering → CTSPO" },
 						  note: { en: "Stepped into insurance. Papaya Pro designed in 1 month. 10+ insurers integrated.", vi: "Bước vào ngành bảo hiểm. Papaya Pro trong 1 tháng. Tích hợp 10+ hãng bảo hiểm." } },
-						{ year: "2022", co: "Papaya", rune: "ᛜ",
-						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
-						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
-						{ year: "2023", co: "Papaya", rune: "ᛊ",
-						  title: { en: "Hoàn Mỹ onboarded · eClaim shipped", vi: "Onboard Hoàn Mỹ · ra mắt eClaim" },
+						{ year: "2022", co: "Papaya", rune: "ᛊ",
+						  title: { en: "Hoàn Mỹ onboarded · Non-life TPA launched", vi: "Onboard Hoàn Mỹ · ra mắt TPA phi-nhân-thọ" },
 						  note: { en: "Modern insurance stack (policy · claim · hospital · payment) built in 3 months for 10k insured. eClaim on iOS, Android, Web, macOS.", vi: "Hệ thống bảo hiểm hiện đại (policy · claim · hospital · payment) trong 3 tháng cho 10.000 bệnh nhân đầu tiên. eClaim trên iOS, Android, Web, macOS." } },
 						{ year: "2024", date: { en: "Nov", vi: "Tháng 11" }, co: "Papaya", rune: "ᛏ",
 						  title: { en: "+ COO (Chief Technology & Operating Officer)", vi: "+ COO (Chief Technology & Operating Officer)" },
 						  note: { en: "-12% opex · 2× claims/assessor/day.", vi: "-12% chi phí vận hành · gấp đôi số claims mỗi assessor xử lý mỗi ngày." } },
-						{ year: "2025", date: { en: "Jan", vi: "Tháng 1" }, co: "Papaya", rune: "ᛒ", major: true,
-						  title: { en: "Board seat · Papaya One launched", vi: "HĐQT · ra mắt Papaya One" },
-						  note: { en: "Agentic claim submission — one interaction. 95% 5-star rating.", vi: "Submit claim một lần chạm. Đạt 95% 5-sao." } },
+						{ year: "2025", co: "Papaya", rune: "ᛜ", major: true,
+						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
+						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
 						{ year: "2025", co: "Papaya · Oasis", rune: "ᛖ",
 						  title: { en: "Architect of Oasis", vi: "Kiến trúc Oasis" },
 						  note: { en: "Regional agentic insurance platform. Claim automation · fraud prevention · agentic OCR · agentic data + privacy · multi-cloud + on-prem.", vi: "Nền tảng agentic bảo hiểm khu vực. Tự động hoá claim · chống gian lận · OCR agentic · dữ liệu + quyền riêng tư agentic · đa-cloud + on-prem." } },
+						{ year: "2026", date: { en: "Jan", vi: "Tháng 1" }, co: "Papaya", rune: "ᛒ", major: true,
+						  title: { en: "Board seat · Papaya One launched", vi: "HĐQT · ra mắt Papaya One" },
+						  note: { en: "Agentic claim submission — one interaction. 95% 5-star rating.", vi: "Submit claim một lần chạm. Đạt 95% 5-sao." } },
 						{ year: "2026", co: "Papaya", rune: "ᛝ", major: true, now: true,
 						  title: { en: "700B+ VND — zero humans", vi: "700 tỷ VND — không có con người" },
 						  note: { en: "Accumulated claim payout · automated. 400k+ insured served · 30% YoY.", vi: "Chi trả tích luỹ · tự động hoàn toàn. Phục vụ 400k+ người được bảo hiểm · tăng 30%/năm." } },
@@ -2831,28 +2831,57 @@ try {
 		margin-top: var(--spacing-6, 1.5rem);
 	}
 	.hero-profile-link {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.25rem;
-		height: 2.25rem;
-		border-radius: 0.45rem;
-		border: 1px solid rgba(240, 199, 94, 0.2);
-		background: rgba(240, 199, 94, 0.04);
+		width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 50%;
+		border: 1px solid rgba(240, 199, 94, 0.25);
+		background: radial-gradient(circle at 32% 28%,
+			rgba(240, 199, 94, 0.12) 0%,
+			rgba(240, 199, 94, 0.04) 65%,
+			rgba(240, 199, 94, 0.02) 100%);
 		color: var(--color-muted);
 		text-decoration: none;
-		transition: color 180ms, border-color 180ms, background 180ms, transform 180ms;
+		transition: color 220ms, border-color 220ms, background 220ms, transform 220ms, box-shadow 260ms;
+	}
+	/* Dashed sigil ring — hidden by default, orbits on hover/focus.
+	   Matches the chronology's major-milestone sigil but tighter. */
+	.hero-profile-link::before {
+		content: "";
+		position: absolute;
+		inset: -0.32rem;
+		border-radius: 50%;
+		border: 1px dashed rgba(240, 199, 94, 0);
+		pointer-events: none;
+		transition: border-color 240ms;
 	}
 	.hero-profile-link:hover,
 	.hero-profile-link:focus-visible {
 		color: var(--color-accent, #f0c75e);
-		border-color: rgba(240, 199, 94, 0.55);
-		background: rgba(240, 199, 94, 0.09);
+		border-color: rgba(240, 199, 94, 0.65);
+		background: radial-gradient(circle at 32% 28%,
+			rgba(240, 199, 94, 0.22) 0%,
+			rgba(240, 199, 94, 0.08) 65%,
+			rgba(240, 199, 94, 0.03) 100%);
 		transform: translateY(-1px);
+		box-shadow:
+			0 0 14px rgba(240, 199, 94, 0.22),
+			0 0 28px rgba(240, 199, 94, 0.1);
+	}
+	.hero-profile-link:hover::before,
+	.hero-profile-link:focus-visible::before {
+		border-color: rgba(240, 199, 94, 0.5);
+		animation: hero-link-sigil 9s linear infinite;
+	}
+	@keyframes hero-link-sigil {
+		to { transform: rotate(360deg); }
 	}
 	.hero-profile-more {
-		margin-left: 0.25rem;
-		opacity: 0.7;
+		margin-left: 0.35rem;
+		opacity: 0.75;
 	}
 	.hero-profile-more:hover,
 	.hero-profile-more:focus-visible {
@@ -3183,17 +3212,65 @@ try {
 
 	/* Hero — full-width headline card */
 	.wrap-hero {
+		position: relative;
 		grid-column: span 6;
 		flex-direction: row;
 		align-items: center;
 		gap: 1.5rem;
 		padding: 1.4rem 1.6rem;
 		min-height: unset;
+		overflow: hidden; /* clip the memory-swirl to the card */
 	}
+	/* Silvery filigree rim — top + bottom double-line with center gem.
+	   Vertical echo of the portrait's baroque frame, scaled to card size. */
+	.wrap-hero::before,
+	.wrap-hero::after {
+		content: "";
+		position: absolute;
+		left: 50%;
+		width: 70%;
+		max-width: 360px;
+		height: 1px;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(200, 210, 225, 0.0) 6%,
+			rgba(200, 210, 225, 0.4) 50%,
+			rgba(200, 210, 225, 0.0) 94%,
+			transparent 100%);
+		transform: translateX(-50%);
+		pointer-events: none;
+	}
+	.wrap-hero::before { top: 6px; }
+	.wrap-hero::after  { bottom: 6px; }
+
 	.wrap-hero .wrap-stat {
+		position: relative;
 		font-size: 4.5rem;
 		line-height: 1;
 		flex-shrink: 0;
+		isolation: isolate; /* so the swirl sits behind the number cleanly */
+	}
+	/* Slow silvery memory-swirl behind the "1,064" — mimics Dumbledore's
+	   silver substance drifting inside the Pensieve. 32s rotation is slow
+	   enough to be ambient, never distracting. Conic gradient + blur. */
+	.wrap-hero .wrap-stat::before {
+		content: "";
+		position: absolute;
+		inset: -30% -25%;
+		background: conic-gradient(from 0deg,
+			rgba(200, 210, 225, 0) 0%,
+			rgba(200, 210, 225, 0.16) 18%,
+			rgba(200, 210, 225, 0) 40%,
+			rgba(200, 210, 225, 0.10) 62%,
+			rgba(200, 210, 225, 0) 82%,
+			rgba(200, 210, 225, 0.14) 100%);
+		filter: blur(22px);
+		animation: pensieve-swirl 32s linear infinite;
+		z-index: -1;
+		pointer-events: none;
+	}
+	@keyframes pensieve-swirl {
+		to { transform: rotate(360deg); }
 	}
 	.wrap-hero .wrap-label {
 		font-size: 0.75rem;
@@ -3367,6 +3444,7 @@ try {
 		overflow: hidden;
 	}
 	.fp-fill {
+		position: relative;
 		display: block;
 		height: 100%;
 		width: calc(var(--fp) * 5);
@@ -3375,6 +3453,28 @@ try {
 			rgba(200, 210, 225, 0.55) 0%,
 			rgba(200, 210, 225, 0.35) 100%);
 		border-radius: 3px;
+		overflow: hidden;
+	}
+	/* Slow silver shimmer pass — echoes the Pensieve's moving memory
+	   substance. ~9s cycle with a long "rest" so it reads as ambient,
+	   not a loading bar. Staggered per-bar via CSS variable --fp (the
+	   theme percent) so the shimmer waves don't lock-step. */
+	.fp-fill::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.45) 50%,
+			transparent 100%);
+		transform: translateX(-100%);
+		animation: fp-shimmer 9s ease-in-out infinite;
+		animation-delay: calc(var(--fp, 10) * -0.12s);
+		pointer-events: none;
+	}
+	@keyframes fp-shimmer {
+		0%        { transform: translateX(-120%); }
+		55%, 100% { transform: translateX(220%); }
 	}
 	.fp-pct {
 		font-family: var(--font-mono, "JetBrains Mono", monospace);
@@ -3952,6 +4052,10 @@ try {
 	@media (prefers-reduced-motion: reduce) {
 		.chron-node.chron-major .chron-rune::before { animation: none; }
 		.chron-node.chron-now .chron-rune { animation: none; }
+		.hero-profile-link:hover::before,
+		.hero-profile-link:focus-visible::before { animation: none; }
+		.wrap-hero .wrap-stat::before { animation: none; }
+		.fp-fill::after { animation: none; }
 	}
 	/* Clearfix so the prose section sits below the float cleanly. */
 	.about-prose::after {
