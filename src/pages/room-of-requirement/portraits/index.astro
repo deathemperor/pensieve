@@ -7,6 +7,7 @@ import TierSection from "../../../components/portraits/TierSection.astro";
 import CorridorTable from "../../../components/portraits/CorridorTable.astro";
 import GuestBanner from "../../../components/portraits/GuestBanner.astro";
 import RemindersPill from "../../../components/portraits/RemindersPill.astro";
+import PipelinePill from "../../../components/portraits/PipelinePill.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
 import { listContacts } from "../../../lib/portraits/db";
 import type { Contact, TierCode } from "../../../lib/portraits/types";
@@ -58,7 +59,12 @@ Astro.response.headers.set(
           <a class="btn" href="/room-of-requirement/portraits/graph">🕸 Graph</a>
         </div>
       )}
-      {auth.admin && <RemindersPill db={db} />}
+      {auth.admin && (
+        <div class="header-pills">
+          <RemindersPill db={db} />
+          <PipelinePill db={db} />
+        </div>
+      )}
     </header>
 
     {!auth.admin && <GuestBanner />}
@@ -126,4 +132,6 @@ Astro.response.headers.set(
     text-align: center;
     color: #6a665e;
   }
+
+  .header-pills { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 </style>
