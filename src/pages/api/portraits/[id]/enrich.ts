@@ -28,7 +28,7 @@ export const POST: APIRoute = async (ctx) => {
 
   const query = buildQuery(contact.full_name, contact.company);
   const result = await searchGoogleCse(apiKey, cseId, query, 10);
-  if (!result.ok) return json({ error: result.error }, 502);
+  if (!result.ok) return json({ error: (result as { ok: false; error: string }).error }, 502);
 
   // Upsert: UNIQUE(contact_id, url) turns dups into a silent no-op (INSERT OR IGNORE).
   const now = new Date().toISOString();
