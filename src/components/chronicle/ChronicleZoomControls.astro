@@ -22,6 +22,7 @@ const sortedYears = [...years].sort((a, b) => b - a);
     data-zoom="in"
     aria-label={isVi ? "Phóng to" : "Zoom in"}
   >+</button>
+  <span class="cc-zoom-readout" data-zoom-readout aria-live="polite">1.0×</span>
   <select class="cc-year-jump" aria-label={isVi ? "Tới năm" : "Jump to year"}>
     <option value="">{isVi ? "— tới năm —" : "— jump —"}</option>
     {sortedYears.map((y) => <option value={y}>{y}</option>)}

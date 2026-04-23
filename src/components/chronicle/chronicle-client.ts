@@ -112,11 +112,17 @@ declare global {
 
   // ---------- Zoom ----------
   const frameRoot = document.documentElement;
-  let zoom = 1;
+  const readout = document.querySelector<HTMLElement>("[data-zoom-readout]");
+  const initial = parseFloat(
+    getComputedStyle(frameRoot).getPropertyValue("--chronicle-zoom-scale") || "1",
+  );
+  let zoom = Number.isFinite(initial) && initial > 0 ? initial : 1;
   function setZoom(next: number) {
     zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, next));
     frameRoot.style.setProperty("--chronicle-zoom-scale", String(zoom));
+    if (readout) readout.textContent = `${zoom.toFixed(1)}×`;
   }
+  setZoom(zoom);
 
   document.querySelectorAll<HTMLButtonElement>(".cc-zoom-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -126,6 +132,21 @@ declare global {
       else if (action === "reset") setZoom(1);
     });
   });
+
+  // ---------- Back-to-top on ledger ----------
+  const ledger = document.getElementById("cc-ledger");
+  const backBtn = ledger?.querySelector<HTMLButtonElement>("[data-back-to-top]");
+  if (ledger && backBtn) {
+    const updateBackVisibility = () => {
+      if (ledger.scrollTop > 180) backBtn.setAttribute("data-visible", "");
+      else backBtn.removeAttribute("data-visible");
+    };
+    ledger.addEventListener("scroll", updateBackVisibility, { passive: true });
+    backBtn.addEventListener("click", () => {
+      ledger.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    updateBackVisibility();
+  }
 
   // ---------- Year jump ----------
   (document.querySelector(".cc-year-jump") as unknown as HTMLSelectElement | null)?.addEventListener("change", (e) => {

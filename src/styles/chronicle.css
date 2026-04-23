@@ -419,11 +419,66 @@
   text-align: center;
 }
 
+/* === Zoom level readout === */
+.cc-zoom-readout {
+  padding: 0 8px;
+  color: var(--chronicle-gold);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  min-width: 36px;
+  justify-content: center;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+/* === Back-to-top anchor on ledger === */
+.cc-back-to-top {
+  position: sticky;
+  bottom: 12px;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  margin-top: 12px;
+  background: rgba(8, 9, 10, 0.85);
+  border: 1px solid rgba(212, 168, 67, 0.22);
+  color: var(--chronicle-gold);
+  border-radius: 20px;
+  font-family: "Inter Tight", sans-serif;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, background 0.2s;
+}
+.cc-back-to-top[data-visible] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.cc-back-to-top:hover {
+  background: rgba(212, 168, 67, 0.12);
+}
+
 /* === Responsive === */
 @media (max-width: 820px) {
+  :root { --chronicle-zoom-scale: 0.72; }
   .cc-body { grid-template-columns: 1fr; }
-  .cc-sky { min-height: 420px; }
+  .cc-sky { min-height: 380px; }
   .cc-ledger { padding: 20px; }
   .cc-atlas-body { grid-template-columns: 1fr; }
   .cc-atlas-list { max-height: 300px; }
+}
+@media (max-width: 480px) {
+  :root { --chronicle-zoom-scale: 0.58; }
+  .cc-sky { min-height: 340px; }
+  .cc-zoom-controls {
+    right: 10px;
+    bottom: 10px;
+    flex-wrap: wrap;
+    max-width: 60%;
+    justify-content: flex-end;
+  }
 }

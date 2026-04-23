@@ -875,6 +875,37 @@ try {
 		</div>
 	</section>
 
+	<section id="life-in-dates" class="about-section">
+		<div class="about-inner">
+			<a class="life-tile" href="/pensieve/chronicle">
+				<div class="life-tile-inner">
+					<div class="life-tile-stars" aria-hidden="true">
+						<span class="life-star life-star-a"></span>
+						<span class="life-star life-star-b"></span>
+						<span class="life-star life-star-c"></span>
+						<span class="life-star life-star-d"></span>
+					</div>
+					<div class="life-tile-body">
+						<p class="life-tile-kicker">
+							{isVi ? "Cuộc Đời Theo Ngày" : "Life in Dates"}
+						</p>
+						<h2 class="life-tile-title">
+							{isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}
+						</h2>
+						<p class="life-tile-desc">
+							{isVi
+								? "Các sự kiện được ghim trên bầu trời — mỗi chấm sáng là một ngày quan trọng. Vòng tròn đồng tâm theo năm, góc theo tháng."
+								: "Events pinned to the sky — each glowing dot is a day that mattered. Rings by year, angle by month."}
+						</p>
+						<span class="life-tile-cta">
+							{isVi ? "Mở bầu trời →" : "Open the sky →"}
+						</span>
+					</div>
+				</div>
+			</a>
+		</div>
+	</section>
+
 	<section id="origin" class="about-section">
 		<div class="about-inner">
 			<div class="about-prose">
@@ -2722,6 +2753,86 @@ try {
 		display: inline-flex;
 		align-items: baseline;
 		gap: 0.45rem;
+	}
+
+	/* "Life in Dates" tile — entry point to /pensieve/chronicle */
+	.life-tile {
+		display: block;
+		text-decoration: none;
+		border-radius: 14px;
+		overflow: hidden;
+		border: 1px solid rgba(212, 168, 67, 0.18);
+		background:
+			radial-gradient(ellipse at 20% 30%, rgba(94, 106, 210, 0.12) 0%, transparent 55%),
+			radial-gradient(ellipse at 80% 70%, rgba(212, 168, 67, 0.08) 0%, transparent 60%),
+			linear-gradient(180deg, #0a0b10 0%, #050608 100%);
+		transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+	}
+	.life-tile:hover,
+	.life-tile:focus-visible {
+		border-color: rgba(212, 168, 67, 0.4);
+		transform: translateY(-2px);
+		box-shadow: 0 10px 40px rgba(212, 168, 67, 0.08);
+		outline: none;
+	}
+	.life-tile-inner {
+		position: relative;
+		padding: 32px 36px;
+		min-height: 180px;
+		display: flex;
+		align-items: center;
+	}
+	.life-tile-stars {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
+	.life-star {
+		position: absolute;
+		width: 4px; height: 4px;
+		border-radius: 50%;
+		background: #d4a843;
+		box-shadow: 0 0 6px #d4a843, 0 0 12px rgba(212, 168, 67, 0.4);
+	}
+	.life-star-a { top: 18%; left: 14%; opacity: 0.8; }
+	.life-star-b { top: 68%; left: 28%; background: #5e6ad2; box-shadow: 0 0 6px #5e6ad2, 0 0 12px rgba(94, 106, 210, 0.4); opacity: 0.7; }
+	.life-star-c { top: 30%; right: 22%; background: #c678dd; box-shadow: 0 0 6px #c678dd, 0 0 12px rgba(198, 120, 221, 0.4); opacity: 0.6; }
+	.life-star-d { bottom: 20%; right: 12%; background: #b54b3c; box-shadow: 0 0 6px #b54b3c, 0 0 12px rgba(181, 75, 60, 0.4); opacity: 0.5; }
+	.life-tile-body {
+		position: relative;
+		max-width: 640px;
+	}
+	.life-tile-kicker {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 11px;
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		color: rgba(212, 168, 67, 0.7);
+		margin: 0 0 8px;
+	}
+	.life-tile-title {
+		font-family: "Inter Tight", sans-serif;
+		font-size: clamp(22px, 2.5vw, 30px);
+		font-weight: 600;
+		color: #f7f8f8;
+		margin: 0 0 10px;
+	}
+	.life-tile-desc {
+		color: #8a8f98;
+		font-size: 14px;
+		line-height: 1.55;
+		margin: 0 0 14px;
+	}
+	.life-tile-cta {
+		font-family: "Inter Tight", sans-serif;
+		font-size: 13px;
+		color: #d4a843;
+		letter-spacing: 0.05em;
+		transition: letter-spacing 0.2s;
+	}
+	.life-tile:hover .life-tile-cta {
+		letter-spacing: 0.12em;
 	}
 
 	/* Pilcrow-style anchor, appears on heading hover. Click copies the

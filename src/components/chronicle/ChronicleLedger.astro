@@ -22,6 +22,12 @@ const groups = groupByYear(entries.map((e) => ({
 ---
 
 <div class="cc-ledger" id="cc-ledger">
+  <button
+    type="button"
+    class="cc-back-to-top"
+    data-back-to-top
+    aria-label={isVi ? "Lên đầu danh sách" : "Back to top"}
+  >↑ {isVi ? "Lên đầu" : "top"}</button>
   <div class="cc-ledger-heading">
     {isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}
     <small>{isVi ? "Theo thứ tự thời gian" : "In chronological star-order"}</small>
