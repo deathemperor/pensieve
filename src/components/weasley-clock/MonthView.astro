@@ -45,7 +45,7 @@ const headings = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 					c.isToday
 						? <DayCell date={c.date} occurrences={c.occurrences} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />
 						: (
-							<a class="wc-month__cell-link" href={`/hogwarts/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}>
+							<a class="wc-month__cell-link" href={`/nydus/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}>
 								<DayCell date={c.date} occurrences={c.occurrences} isToday={false} isDimmed={c.isDimmed} variant="month" />
 							</a>
 						)

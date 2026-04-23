@@ -19,7 +19,7 @@ function shiftAnchor(direction: -1 | 1): string {
 }
 
 function viewUrl(v: "day" | "week" | "month" | "year"): string {
-	return `/hogwarts/weasley-clock?view=${v}&anchor=${anchor.toISOString().slice(0, 10)}`;
+	return `/nydus/weasley-clock?view=${v}&anchor=${anchor.toISOString().slice(0, 10)}`;
 }
 
 function rangeLabel(): string {
@@ -32,10 +32,10 @@ function rangeLabel(): string {
 <header class="wc-header">
 	<ClockWidget />
 	<nav class="wc-header__nav">
-		<a class="wc-header__btn" href={`/hogwarts/weasley-clock?view=${view}&anchor=${shiftAnchor(-1)}`}>←</a>
+		<a class="wc-header__btn" href={`/nydus/weasley-clock?view=${view}&anchor=${shiftAnchor(-1)}`}>←</a>
 		<span class="wc-header__range">{rangeLabel()}</span>
-		<a class="wc-header__btn" href={`/hogwarts/weasley-clock?view=${view}&anchor=${shiftAnchor(1)}`}>→</a>
-		<a class="wc-header__btn wc-header__btn--today" href={`/hogwarts/weasley-clock?view=${view}`}>{t.today}</a>
+		<a class="wc-header__btn" href={`/nydus/weasley-clock?view=${view}&anchor=${shiftAnchor(1)}`}>→</a>
+		<a class="wc-header__btn wc-header__btn--today" href={`/nydus/weasley-clock?view=${view}`}>{t.today}</a>
 	</nav>
 	<div class="wc-header__switch" role="tablist">
 		<a role="tab" aria-selected={view === "day"} href={viewUrl("day")}>D</a>
@@ -48,7 +48,7 @@ function rangeLabel(): string {
 <script is:inline define:vars={{ viewData: { view, anchor: anchor.toISOString().slice(0, 10) } }}>
 	document.addEventListener("keydown", (e) => {
 		if (e.target && (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) return;
-		const base = `/hogwarts/weasley-clock`;
+		const base = `/nydus/weasley-clock`;
 		const map = { "1": "day", "d": "day", "2": "week", "w": "week", "3": "month", "m": "month", "4": "year", "y": "year" };
 		if (map[e.key]) {
 			location.href = `${base}?view=${map[e.key]}&anchor=${viewData.anchor}`;

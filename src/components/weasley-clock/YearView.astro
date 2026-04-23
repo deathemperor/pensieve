@@ -54,7 +54,7 @@ function monthCells(month: number): { date: Date; occs: FamilyOccurrence[] }[] {
 						<a
 							class="wc-year__cell"
 							style={cellStyle(c.occs.length, dom)}
-							href={`/hogwarts/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}
+							href={`/nydus/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}
 							title={c.occs.map((o) => o.event.title_vi || o.event.title_en).join("\n")}
 						></a>
 					);
