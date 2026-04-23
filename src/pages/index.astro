@@ -23,7 +23,12 @@ const copy = {
     : ", putting AI agents to work on the craft side of software. Writes long-form in Vietnamese and English — mostly about memory, family, fish, and the things worth keeping.",
   sectionGrounds: isVi ? "Khuôn Viên" : "The Grounds",
   sectionHogwarts: "Hogwarts",
+  sectionNydus: "Nydus",
   sectionBeyond: isVi ? "Ngoài Cổng Trường" : "Beyond the Gates",
+  weasleyClockMeta: isVi ? "Lịch gia đình · dương + âm" : "Family calendar · solar + lunar",
+  weasleyClockDesc: isVi
+    ? "Đồng hồ Weasley trong nhà Nydus. Giỗ, sinh nhật, lễ Tết — hiển thị cả dương lịch và âm lịch."
+    : "The Weasley Clock in our home, Nydus. Anniversaries, birthdays, cultural observances — shown in both Gregorian and Vietnamese lunar calendars.",
   pensieveMeta: isVi ? "VI · EN · 130 bài" : "VI · EN · 130 posts",
   pensieveDesc: isVi
     ? "Những câu chuyện dài cứu về từ Facebook, sắp xếp theo chủ đề và có cả hai phiên bản tiếng Việt và tiếng Anh."
@@ -215,6 +220,24 @@ const copy = {
                 <span class="project-meta">{copy.quidditchMeta}</span>
               </div>
               <p class="project-desc">{copy.quidditchDesc}</p>
+            </div>
+            <span class="project-arrow">&rarr;</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <span class="section-label">{copy.sectionNydus}</span>
+      <ul class="project-list">
+        <li>
+          <a href="/nydus/weasley-clock" class="project">
+            <div>
+              <div class="project-head">
+                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2.25"/><path d="M16 8 L16 16 L22 19" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>The Weasley Clock</h2>
+                <span class="project-meta">{copy.weasleyClockMeta}</span>
+              </div>
+              <p class="project-desc">{copy.weasleyClockDesc}</p>
             </div>
             <span class="project-arrow">&rarr;</span>
           </a>
