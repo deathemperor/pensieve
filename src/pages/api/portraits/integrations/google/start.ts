@@ -4,7 +4,10 @@ import { requireAdmin } from "../../../../../lib/portraits/auth";
 
 export const prerender = false;
 
-const SCOPES = ["https://www.googleapis.com/auth/contacts.readonly"];
+const SCOPES = [
+  "https://www.googleapis.com/auth/contacts.readonly",
+  "https://www.googleapis.com/auth/drive.readonly",
+];
 
 export const GET: APIRoute = async (ctx) => {
   const auth = await requireAdmin(ctx as any);

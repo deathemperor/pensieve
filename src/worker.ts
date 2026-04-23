@@ -91,9 +91,23 @@ export default {
 		return handler.fetch(request, env, ctx);
 	},
 
-	async scheduled(_event: ScheduledEvent, env: any, _ctx: ExecutionContext) {
+	async scheduled(event: ScheduledEvent, env: any, _ctx: ExecutionContext) {
 		const db = env.DB;
 		if (!db) return;
+
+		// Hourly: scan enabled Drive folders for new card images.
+		if (event.cron === "0 * * * *") {
+			try {
+				const { scanFolder } = await import("./pages/api/portraits/integrations/drive/scan");
+				const rs = await db.prepare("SELECT folder_id FROM drive_scan_folders WHERE enabled = 1").all();
+				for (const row of ((rs.results ?? []) as Array<{ folder_id: string }>)) {
+					await scanFolder(env, row.folder_id, { limit: 100 });
+				}
+			} catch (err) {
+				console.error("drive scan cron failed:", err);
+			}
+			return;
+		}
 
 		const today = new Date();
 		const todayKey = today.toISOString().slice(0, 10);
