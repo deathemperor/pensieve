@@ -1,0 +1,225 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../../layouts/Base.astro";
+import { requireAdmin } from "../../../../lib/portraits/auth";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+const eid = Astro.params.eid;
+if (typeof eid !== "string" || !eid) return new Response("Bad request", { status: 400 });
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+
+interface EventRow { id: string; name: string; location: string | null; happened_at: string; note: string | null }
+const ev = await db
+  .prepare("SELECT id, name, location, happened_at, note FROM contact_card_events WHERE id = ?")
+  .bind(eid)
+  .first<EventRow>();
+if (!ev) return new Response("Not found", { status: 404 });
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<Base title={`${ev.name} — Events`} description={ev.note ?? ""}>
+  <main class="event-detail">
+    <a class="back-link" href="/room-of-requirement/portraits/events">← {isVi ? "Sự kiện" : "Events"}</a>
+    <h1>{ev.name}</h1>
+    <p class="meta">
+      {fmtDate(ev.happened_at)}
+      {ev.location && <> · {ev.location}</>}
+    </p>
+    {ev.note && <p class="note">{ev.note}</p>}
+
+    <section class="upload-section">
+      <h2 class="section-title">{isVi ? "Tải lên hàng loạt" : "Batch upload"}</h2>
+      <p class="hint">
+        {isVi
+          ? "Chọn tối đa 20 ảnh danh thiếp. Mỗi tấm được OCR riêng; trạng thái hiện ngay bên dưới."
+          : "Pick up to 20 card photos. Each is OCR'd independently; status streams below."}
+      </p>
+      <label class="upload-area">
+        <input id="batch-input" type="file" accept="image/*" multiple />
+        <span>📁 {isVi ? "Chọn ảnh card" : "Choose card images"}</span>
+      </label>
+      <p id="upload-status" class="muted hint" hidden></p>
+    </section>
+
+    <section id="cards-grid" class="cards-section" data-eid={eid}>
+      <h2 class="section-title">{isVi ? "Thẻ trong sự kiện" : "Cards in this event"}</h2>
+      <div id="cards-root" class="cards-grid"></div>
+      <p id="cards-empty" class="muted" hidden>{isVi ? "Chưa có thẻ nào. Tải lên ở trên." : "No cards yet. Upload above."}</p>
+    </section>
+  </main>
+</Base>
+
+<script define:vars={{ eid }}>
+  const input = document.getElementById("batch-input");
+  const status = document.getElementById("upload-status");
+  const grid = document.getElementById("cards-root");
+  const empty = document.getElementById("cards-empty");
+
+  async function refresh() {
+    const res = await fetch(`/api/portraits/events/${eid}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const cards = data.cards ?? [];
+
+    grid.replaceChildren();
+    if (cards.length === 0) { empty.hidden = false; return; }
+    empty.hidden = true;
+
+    for (const c of cards) {
+      const tile = document.createElement("div");
+      tile.className = `card-tile status-${c.ocr_status}`;
+      tile.setAttribute("data-card-id", c.id);
+
+      const img = document.createElement("img");
+      img.src = `/api/portraits/cards/${c.id}/image`;
+      img.alt = "card";
+      img.loading = "lazy";
+      tile.appendChild(img);
+
+      const badge = document.createElement("span");
+      badge.className = "card-status";
+      badge.textContent = c.ocr_status;
+      tile.appendChild(badge);
+
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
+      if (c.ocr_status === "parsed" && c.extracted) {
+        const e = c.extracted;
+        const nm = document.createElement("div");
+        nm.className = "card-name";
+        nm.textContent = e.name ?? "—";
+        meta.appendChild(nm);
+        if (e.company) {
+          const co = document.createElement("div");
+          co.className = "card-company";
+          co.textContent = e.company;
+          meta.appendChild(co);
+        }
+        if (c.contact_id) {
+          const ok = document.createElement("div");
+          ok.className = "card-attached";
+          ok.textContent = "✓ attached";
+          meta.appendChild(ok);
+        } else {
+          const btn = document.createElement("button");
+          btn.className = "tiny-btn";
+          btn.textContent = "Create contact";
+          btn.addEventListener("click", async () => {
+            btn.disabled = true;
+            const payload = {
+              create: {
+                full_name: e.name ?? "Unknown",
+                title: e.title ?? undefined,
+                company: e.company ?? undefined,
+                prestige_tier: "C",
+                tags: ["event-" + eid],
+                channels: [
+                  ...(e.emails ?? []).map((v, i) => ({ kind: "email", value: v, is_primary: i === 0 })),
+                  ...(e.phones ?? []).map((v) => ({ kind: "phone", value: v, is_primary: false })),
+                ],
+              },
+            };
+            const r = await fetch(`/api/portraits/cards/${c.id}/attach`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            if (r.ok) refresh();
+            else btn.disabled = false;
+          });
+          meta.appendChild(btn);
+        }
+      } else if (c.ocr_status === "failed") {
+        meta.textContent = c.error ? String(c.error).slice(0, 80) : "OCR failed";
+      } else {
+        meta.textContent = c.ocr_status === "parsing" ? "reading…" : "queued";
+      }
+      tile.appendChild(meta);
+
+      grid.appendChild(tile);
+    }
+  }
+
+  async function uploadBatch(files) {
+    if (files.length === 0) return;
+    status.hidden = false;
+    status.textContent = `Uploading ${files.length} card${files.length === 1 ? "" : "s"}…`;
+    const fd = new FormData();
+    for (const f of files) fd.append("card", f);
+    const res = await fetch(`/api/portraits/events/${eid}/cards`, { method: "POST", body: fd });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      status.textContent = `Upload failed: ${d.error ?? res.statusText}`;
+      return;
+    }
+    const data = await res.json();
+    status.textContent = `Accepted ${data.accepted.length} card${data.accepted.length === 1 ? "" : "s"}. OCR running…`;
+    await refresh();
+  }
+
+  input.addEventListener("change", async () => {
+    const files = Array.from(input.files ?? []).slice(0, 20);
+    if (files.length > 0) {
+      await uploadBatch(files);
+      input.value = "";
+    }
+  });
+
+  // Initial + interval refresh while any card is still pending/parsing
+  refresh();
+  setInterval(async () => {
+    const tiles = grid.querySelectorAll(".card-tile");
+    const anyPending = Array.from(tiles).some((t) => t.className.includes("status-pending") || t.className.includes("status-parsing"));
+    if (anyPending) await refresh();
+  }, 2500);
+</script>
+
+<style>
+  .event-detail { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .meta { color: #8a877e; margin: 0 0 0.5rem; }
+  .note { color: #bdb8ac; margin: 0 0 1.5rem; }
+  .section-title { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0 0 0.75rem; }
+  .hint { color: #8a877e; font-size: 0.875rem; }
+  .muted { color: #6a665e; }
+
+  .upload-section { padding: 1rem 0; border-top: 1px solid #1a1a1a; margin-top: 1rem; }
+  .upload-area {
+    display: block; border: 2px dashed #3a3a3a; border-radius: 6px;
+    padding: 1.5rem 1rem; text-align: center; cursor: pointer; color: #d4a89a;
+    transition: border-color 150ms ease;
+  }
+  .upload-area:hover { border-color: #d4a89a; }
+  .upload-area input { display: none; }
+
+  .cards-section { padding: 1rem 0; border-top: 1px solid #1a1a1a; margin-top: 1rem; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.8rem; }
+  .card-tile { position: relative; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; background: #101010; }
+  .card-tile img { width: 100%; height: 110px; object-fit: cover; display: block; }
+  .card-status { position: absolute; top: 4px; right: 4px; font-size: 0.625rem; padding: 0.1rem 0.4rem; border-radius: 2px; background: #0008; color: #e8e6e0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .card-tile.status-parsed .card-status { background: rgba(120, 170, 110, 0.3); color: #a9cfa0; }
+  .card-tile.status-failed .card-status { background: rgba(229, 115, 115, 0.3); color: #e57373; }
+  .card-tile.status-pending .card-status, .card-tile.status-parsing .card-status { background: rgba(212, 168, 154, 0.3); color: #d4a89a; }
+  .card-meta { padding: 0.5rem 0.6rem; font-size: 0.8125rem; color: #bdb8ac; display: flex; flex-direction: column; gap: 0.25rem; }
+  .card-name { color: #e8e6e0; font-weight: 500; }
+  .card-company { color: #8a877e; font-size: 0.75rem; }
+  .card-attached { color: #a9cfa0; font-size: 0.75rem; }
+  .tiny-btn { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.2rem 0.5rem; border-radius: 2px; cursor: pointer; font: inherit; font-size: 0.75rem; align-self: flex-start; }
+  .tiny-btn:hover { background: rgba(212, 168, 154, 0.08); }
+  .tiny-btn:disabled { opacity: 0.5; cursor: wait; }
+</style>
