@@ -101,6 +101,26 @@
   color: #f7f8f8;
   text-shadow: 0 0 6px rgba(8, 9, 10, 1);
 }
+.cc-star:focus-visible {
+  outline: 2px solid var(--chronicle-gold);
+  outline-offset: 3px;
+  border-radius: 50%;
+}
+
+.cc-ring[data-year-active] {
+  border-color: var(--chronicle-gold);
+  box-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
+  animation: cc-ring-pulse 1.6s ease-out;
+}
+.year-tick[data-year-active] {
+  color: var(--chronicle-gold);
+  font-weight: 600;
+}
+@keyframes cc-ring-pulse {
+  0% { box-shadow: 0 0 0 rgba(212, 168, 67, 0.0); }
+  30% { box-shadow: 0 0 20px rgba(212, 168, 67, 0.5); }
+  100% { box-shadow: 0 0 10px rgba(212, 168, 67, 0.3); }
+}
 
 .cc-compass {
   position: absolute; left: 50%; top: 50%;

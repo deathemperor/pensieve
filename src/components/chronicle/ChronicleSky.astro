@@ -58,10 +58,12 @@ function polar(radius: number, angleDeg: number) {
       <Fragment>
         <div
           class="cc-ring"
+          data-year={year}
           style={`width:${r * 2}px;height:${r * 2}px;`}
         ></div>
         <div
           class="year-tick"
+          data-year={year}
           style={`left:50%;top:calc(50% - ${r}px);transform:translate(-50%,-50%);`}
         >{year}</div>
       </Fragment>
