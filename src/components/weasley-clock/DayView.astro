@@ -1,0 +1,5 @@
+---
+interface Props { anchor: Date; occurrences: any[]; }
+const { anchor, occurrences } = Astro.props;
+---
+<div class="wc-view-stub">stub · {occurrences.length} occurrences · {anchor.toISOString().slice(0, 10)}</div>

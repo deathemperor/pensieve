@@ -1,0 +1,5 @@
+---
+interface Props { view: "day" | "week" | "month" | "year"; anchor: Date; }
+const { view, anchor } = Astro.props;
+---
+<div class="wc-header-stub">stub header · {view} · {anchor.toISOString().slice(0, 10)}</div>
