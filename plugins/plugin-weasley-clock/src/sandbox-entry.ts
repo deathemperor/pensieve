@@ -1,7 +1,169 @@
 import { definePlugin } from "emdash";
+import type { PluginContext } from "emdash";
+import { encryptToken } from "./lib/crypto";
+import { verifyGoogleIdToken } from "./lib/jwt";
+import { generateState, consumeState, type OAuthStateStore } from "./lib/oauth-state";
+
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_CALENDARLIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList";
+const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+
+function redirectUri(origin: string): string {
+	return `${origin}/_emdash/api/plugins/weasley-clock/oauth/google/callback`;
+}
+
+function getOrigin(routeCtx: any): string {
+	const raw = routeCtx.url ?? routeCtx.request?.url;
+	if (!raw) throw new Error("Route context missing url");
+	return new URL(raw).origin;
+}
+
+// Wrap ctx.storage.oauth_state in the narrow OAuthStateStore interface.
+// EmDash's ctx.storage.<namespace> exposes put/get/delete with rows shaped
+// { id, data: {...} } — our helper expects exactly that shape.
+function stateStoreFor(ctx: PluginContext): OAuthStateStore {
+	const ns = (ctx.storage as any).oauth_state;
+	return {
+		async put(id, data) { await ns.put(id, data); },
+		async get(id) { return ns.get(id); },
+		async delete(id) { await ns.delete(id); },
+	};
+}
+
+async function findAccountIdByEmail(ctx: PluginContext, email: string): Promise<string | null> {
+	const all = await (ctx.storage as any).oauth_accounts.query({});
+	const items = all.items ?? all ?? [];
+	const existing = items.find((r: any) => r.data?.provider === "google" && r.data?.account_email === email);
+	return existing ? existing.id : null;
+}
 
 export default definePlugin({
-	setup() {
-		// Phase 1: empty. Later phases register hooks, cron, admin pages.
+	hooks: {
+		"plugin:install": {
+			handler: async (_event: unknown, ctx: PluginContext) => {
+				ctx.log.info("weasley-clock: plugin installed");
+			},
+		},
+	},
+
+	routes: {
+		"oauth/google/initiate": {
+			public: false,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const origin = getOrigin(routeCtx);
+				const clientId = (ctx.env as any).GOOGLE_OAUTH_CLIENT_ID;
+				if (!clientId) return { error: "GOOGLE_OAUTH_CLIENT_ID not configured" };
+
+				const returnUrl = typeof routeCtx.input?.return_url === "string"
+					? routeCtx.input.return_url
+					: "/_emdash/admin/weasley-clock/feeds";
+				const state = await generateState(stateStoreFor(ctx), { returnUrl });
+
+				const params = new URLSearchParams({
+					client_id: clientId,
+					redirect_uri: redirectUri(origin),
+					response_type: "code",
+					scope: SCOPE,
+					access_type: "offline",
+					prompt: "consent",
+					state,
+				});
+
+				return { redirect: `${GOOGLE_AUTH_URL}?${params.toString()}` };
+			},
+		},
+
+		"oauth/google/callback": {
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const url = new URL(routeCtx.url ?? routeCtx.request?.url);
+				const code = url.searchParams.get("code");
+				const state = url.searchParams.get("state");
+				const errorParam = url.searchParams.get("error");
+
+				if (errorParam) {
+					ctx.log.info(`oauth/callback: user denied consent (${errorParam})`);
+					return { redirect: `/_emdash/admin/weasley-clock/feeds?error=${encodeURIComponent(errorParam)}` };
+				}
+				if (!code || !state) return { error: "Missing code or state" };
+
+				const stateRow = await consumeState(stateStoreFor(ctx), state);
+				if (!stateRow) return { error: "Invalid or expired state — please retry" };
+
+				const clientId = (ctx.env as any).GOOGLE_OAUTH_CLIENT_ID;
+				const clientSecret = (ctx.env as any).GOOGLE_OAUTH_CLIENT_SECRET;
+				const encKey = (ctx.env as any).OAUTH_ENC_KEY;
+				if (!clientId || !clientSecret || !encKey) return { error: "OAuth not fully configured" };
+
+				const origin = getOrigin(routeCtx);
+				const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+					method: "POST",
+					headers: { "Content-Type": "application/x-www-form-urlencoded" },
+					body: new URLSearchParams({
+						grant_type: "authorization_code",
+						code,
+						client_id: clientId,
+						client_secret: clientSecret,
+						redirect_uri: redirectUri(origin),
+					}),
+				});
+				if (!tokenRes.ok) {
+					const text = await tokenRes.text();
+					ctx.log.info(`oauth/callback: token exchange failed ${tokenRes.status}: ${text}`);
+					return { error: "Token exchange failed" };
+				}
+				const tokens = (await tokenRes.json()) as {
+					access_token: string;
+					refresh_token?: string;
+					expires_in: number;
+					id_token: string;
+					scope: string;
+				};
+
+				// User can unselect scopes on Google's consent screen. If they did,
+				// tokens.scope would not contain calendar.readonly. Reject with a
+				// clear error rather than silently storing a useless token.
+				if (!tokens.scope.split(/\s+/).includes(SCOPE)) {
+					return { error: "Required calendar read access was not granted. Please accept all requested scopes." };
+				}
+
+				if (!tokens.refresh_token) {
+					return { error: "Google did not return a refresh_token — please revoke access in your Google account settings and try again" };
+				}
+
+				const idPayload = await verifyGoogleIdToken(tokens.id_token, clientId);
+
+				const accessEnc = await encryptToken(tokens.access_token, encKey);
+				const refreshEnc = await encryptToken(tokens.refresh_token, encKey);
+
+				const accountId = await findAccountIdByEmail(ctx, idPayload.email);
+				const now = new Date().toISOString();
+				const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
+				const existingRow = accountId ? await (ctx.storage as any).oauth_accounts.get(accountId) : null;
+
+				const row = {
+					id: accountId ?? "acc_" + state.slice(0, 16).toLowerCase(),
+					provider: "google" as const,
+					account_email: idPayload.email,
+					display_name: idPayload.name ?? null,
+					access_token_enc: accessEnc.ciphertext_b64,
+					access_token_iv: accessEnc.iv_b64,
+					refresh_token_enc: refreshEnc.ciphertext_b64,
+					refresh_token_iv: refreshEnc.iv_b64,
+					access_token_expires_at: expiresAt,
+					scope: tokens.scope,
+					status: "active" as const,
+					last_sync_error: null,
+					// Preserve original connected_at when re-authorising; set now on new rows
+					connected_at: existingRow?.data?.connected_at ?? now,
+					last_synced_at: existingRow?.data?.last_synced_at ?? null,
+					revoked_at: null,
+				};
+				await (ctx.storage as any).oauth_accounts.put(row.id, row);
+
+				return { redirect: stateRow.return_url || "/_emdash/admin/weasley-clock/feeds" };
+			},
+		},
 	},
 });

@@ -9,7 +9,6 @@ export function weasleyClockPlugin(): PluginDescriptor {
 		options: {},
 		capabilities: [
 			"network:fetch",
-			"read:secrets",
 		],
 		allowedHosts: [
 			"accounts.google.com",
