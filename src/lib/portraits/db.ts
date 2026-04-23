@@ -4,6 +4,7 @@ import type {
   Channel,
   CreateContactInput,
   ListContactsOptions,
+  TierCode,
 } from "./types";
 import { ulid } from "./ulid";
 
@@ -138,5 +139,62 @@ export async function createContact(
   const full = await getContact(db, id);
   if (!full) throw new Error("createContact: row vanished after insert");
   return full;
+}
+
+export interface UpdateContactInput {
+  full_name?: string;
+  display_name?: string | null;
+  title?: string | null;
+  company?: string | null;
+  company_domain?: string | null;
+  prestige_tier?: TierCode;
+  tier_score?: number;
+  location?: string | null;
+  bio?: string | null;
+  tags?: string[];
+  birthday?: string | null;
+}
+
+export async function updateContact(
+  db: D1,
+  id: string,
+  patch: UpdateContactInput,
+): Promise<ContactWithChannels | null> {
+  const existing = await getContact(db, id);
+  if (!existing) return null;
+
+  const fields: string[] = [];
+  const binds: unknown[] = [];
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    if (key === "tags") {
+      fields.push("tags = ?");
+      binds.push(value ? JSON.stringify(value) : null);
+    } else {
+      fields.push(`${key} = ?`);
+      binds.push(value);
+    }
+  }
+  if (fields.length === 0) return existing;
+
+  const now = new Date().toISOString();
+  fields.push("updated_at = ?");
+  binds.push(now);
+  binds.push(id);
+
+  await db.prepare(`UPDATE contacts SET ${fields.join(", ")} WHERE id = ? AND deleted_at IS NULL`)
+    .bind(...binds)
+    .run();
+
+  return getContact(db, id);
+}
+
+export async function softDeleteContact(db: D1, id: string): Promise<boolean> {
+  const now = new Date().toISOString();
+  const res = await db
+    .prepare("UPDATE contacts SET deleted_at = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL")
+    .bind(now, now, id)
+    .run();
+  return res.meta.changes > 0;
 }
 
