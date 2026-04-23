@@ -16,9 +16,20 @@ const { slug } = Astro.params;
 const { entries: raw, cacheHint } = await (getEmDashCollection as any)("chronicle");
 Astro.cache.set(cacheHint);
 
-const entry = (raw as any[]).find((e) => e.id === slug || e.slug === slug);
-if (!entry) {
+const published = (raw as any[])
+	.filter((e) => e.data.status !== "draft")
+	.sort((a, b) => b.data.event_date.localeCompare(a.data.event_date));
+
+const idx = published.findIndex((e) => e.id === slug || e.slug === slug);
+if (idx < 0) {
 	return Astro.redirect("/pensieve/chronicle", 302);
+}
+const entry = published[idx];
+const prevEntry = idx > 0 ? published[idx - 1] : null; // newer
+const nextEntry = idx < published.length - 1 ? published[idx + 1] : null; // older
+
+function pickTitle(e: any): string {
+	return (isVi ? e.data.title_vi : e.data.title_en) ?? e.data.title ?? "";
 }
 
 const cat = getChronicleCategory(entry.data.category);
@@ -38,9 +49,17 @@ const postSlugs = (entry.data.linked_post_ids ?? "")
 
 const siteBack = isVi ? "← Trở lại Biên Niên Sử" : "← Back to the Chronicle";
 const metaDescription = subtitle ?? `${title} — ${entry.data.event_date}`;
+const permalinkSlug = entry.slug ?? entry.id;
+const ogImage = `/pensieve/chronicle/${permalinkSlug}/og.png`;
 ---
 
-<Base title={`${title} — ${isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}`} description={metaDescription}>
+<Base
+	title={`${title} — ${isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}`}
+	description={metaDescription}
+	image={ogImage}
+	type="article"
+	publishedTime={entry.data.event_date ? new Date(`${entry.data.event_date}T00:00:00Z`).toISOString() : null}
+>
 	<main class="cc-permalink-page">
 		<a href="/pensieve/chronicle" class="cc-permalink-back">{siteBack}</a>
 
@@ -106,6 +125,23 @@ const metaDescription = subtitle ?? `${title} — ${entry.data.event_date}`;
 				</footer>
 			)}
 		</article>
+
+		{(prevEntry || nextEntry) && (
+			<nav class="cc-permalink-nav" aria-label={isVi ? "Điều hướng" : "Navigation"}>
+				{prevEntry ? (
+					<a href={`/pensieve/chronicle/${prevEntry.slug ?? prevEntry.id}`} class="cc-permalink-nav-link cc-permalink-nav-prev">
+						<span class="cc-permalink-nav-dir">{isVi ? "↞ Mới hơn" : "↞ Newer"}</span>
+						<span class="cc-permalink-nav-title">{pickTitle(prevEntry)}</span>
+					</a>
+				) : <span />}
+				{nextEntry ? (
+					<a href={`/pensieve/chronicle/${nextEntry.slug ?? nextEntry.id}`} class="cc-permalink-nav-link cc-permalink-nav-next">
+						<span class="cc-permalink-nav-dir">{isVi ? "Cũ hơn ↠" : "Older ↠"}</span>
+						<span class="cc-permalink-nav-title">{pickTitle(nextEntry)}</span>
+					</a>
+				) : <span />}
+			</nav>
+		)}
 	</main>
 </Base>
 
@@ -211,4 +247,40 @@ const metaDescription = subtitle ?? `${title} — ${entry.data.event_date}`;
 		text-decoration: none;
 	}
 	.cc-permalink-link:hover { text-decoration: underline; }
+
+	.cc-permalink-nav {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 14px;
+		margin-top: 28px;
+	}
+	.cc-permalink-nav-link {
+		display: block;
+		padding: 14px 16px;
+		border: 1px solid rgba(212, 168, 67, 0.12);
+		border-radius: 10px;
+		text-decoration: none;
+		color: #f7f8f8;
+		background: rgba(8, 9, 10, 0.4);
+		transition: border-color 0.2s, background 0.2s;
+	}
+	.cc-permalink-nav-link:hover {
+		border-color: rgba(212, 168, 67, 0.35);
+		background: rgba(212, 168, 67, 0.05);
+	}
+	.cc-permalink-nav-next { text-align: right; }
+	.cc-permalink-nav-dir {
+		display: block;
+		font-family: "JetBrains Mono", monospace;
+		font-size: 10px;
+		color: var(--chronicle-gold);
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		margin-bottom: 4px;
+	}
+	.cc-permalink-nav-title {
+		font-family: "Inter Tight", sans-serif;
+		font-size: 13px;
+		color: #c5c8cc;
+	}
 </style>

@@ -8,7 +8,12 @@ const isVi = lang === "vi";
 
 <div class="cc-legend" role="list" aria-label={isVi ? "Chú thích danh mục" : "Category legend"}>
   {chronicleCategories.map((c) => (
-    <span role="listitem">
+    <span
+      role="listitem"
+      data-legend-category={c.slug}
+      tabindex="0"
+      title={isVi ? `Lọc theo ${c.label_vi}` : `Filter to ${c.label_en}`}
+    >
       <i style={`background:${c.hex};`}></i>
       {isVi ? c.label_vi : c.label_en}
     </span>

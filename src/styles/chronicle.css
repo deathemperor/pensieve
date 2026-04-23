@@ -107,6 +107,45 @@
   border-radius: 50%;
 }
 
+/* Ambient pulse — very subtle, makes the sky feel alive. Only runs
+   when the reader has motion enabled. Per-star delay keeps it from
+   looking like a synchronized strobe. */
+@media (prefers-reduced-motion: no-preference) {
+  .cc-star::before {
+    animation: cc-star-breathe 4.8s ease-in-out infinite;
+  }
+  .cc-star:nth-child(3n)::before { animation-delay: -1.6s; }
+  .cc-star:nth-child(3n+1)::before { animation-delay: -2.8s; }
+  .cc-star:nth-child(3n+2)::before { animation-delay: -0.5s; }
+}
+@keyframes cc-star-breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.78; }
+}
+
+/* === Category filter chips (legend becomes clickable) === */
+.cc-legend span {
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 12px;
+  transition: background 0.2s, color 0.2s;
+  user-select: none;
+}
+.cc-legend span:hover {
+  background: rgba(212, 168, 67, 0.08);
+}
+.cc-legend span[data-legend-active] {
+  background: rgba(212, 168, 67, 0.18);
+  color: var(--chronicle-gold);
+}
+.cc-frame[data-filter] .cc-star:not([data-category-match]),
+.cc-frame[data-filter] .cc-entry:not([data-category-match]),
+.cc-frame[data-filter] .cc-atlas-pin:not([data-category-match]),
+.cc-frame[data-filter] .cc-atlas-place:not([data-category-match]) {
+  opacity: 0.18;
+  pointer-events: none;
+}
+
 .cc-ring[data-year-active] {
   border-color: var(--chronicle-gold);
   box-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
