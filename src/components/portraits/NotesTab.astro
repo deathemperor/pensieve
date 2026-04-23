@@ -1,61 +1,227 @@
 ---
 import type { D1Database } from "@cloudflare/workers-types";
 import { renderMarkdown } from "../../lib/portraits/markdown";
+import { getCurrentLang } from "../../utils/lang";
 
 interface Props { db: D1Database; contactId: string }
 const { db, contactId } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
 
-interface NoteRow { id: string; body: string; created_at: string; updated_at: string }
+interface NoteRow {
+  id: string;
+  body: string;
+  encrypted: number;
+  salt: string | null;
+  iv: string | null;
+  created_at: string;
+  updated_at: string;
+}
 const rs = await db
-  .prepare("SELECT id, body, created_at, updated_at FROM contact_notes WHERE contact_id=? ORDER BY created_at DESC")
+  .prepare("SELECT id, body, encrypted, salt, iv, created_at, updated_at FROM contact_notes WHERE contact_id=? ORDER BY created_at DESC")
   .bind(contactId)
   .all<NoteRow>();
 const rows = (rs.results ?? []) as NoteRow[];
 ---
 
 <section class="section notes">
-  <h2 class="section-title">Notes</h2>
-  {rows.length === 0 ? <p class="muted">No notes yet.</p> : (
+  <h2 class="section-title">{isVi ? "Ghi chú" : "Notes"}</h2>
+
+  <div id="passphrase-gate" class="passphrase-gate" hidden>
+    <p class="muted">
+      {isVi ? "Có ghi chú mã hoá. Nhập mật khẩu phiên để giải mã và để ghi ghi chú mới đã mã hoá." : "Encrypted notes present. Enter session passphrase to decrypt and to write new encrypted notes."}
+    </p>
+    <input id="passphrase-input" type="password" placeholder={isVi ? "Mật khẩu phiên" : "Session passphrase"} />
+    <button id="passphrase-unlock">{isVi ? "Mở khoá" : "Unlock"}</button>
+    <button id="passphrase-forget" class="btn-ghost" type="button">{isVi ? "Quên" : "Forget"}</button>
+  </div>
+
+  {rows.length === 0 ? <p class="muted">{isVi ? "Chưa có ghi chú nào." : "No notes yet."}</p> : (
     <ul class="notes-list">
       {rows.map((n) => (
-        <li class="note">
-          <div class="note-meta">{new Date(n.created_at).toLocaleDateString()}</div>
-          <div class="note-body" set:html={renderMarkdown(n.body)} />
+        <li class="note" data-encrypted={n.encrypted} data-note-id={n.id} data-salt={n.salt ?? ""} data-iv={n.iv ?? ""} data-ciphertext={n.encrypted === 1 ? n.body : ""}>
+          <div class="note-meta">
+            {new Date(n.created_at).toLocaleDateString()}
+            {n.encrypted === 1 && <span class="note-lock">🔒 {isVi ? "mã hoá" : "encrypted"}</span>}
+          </div>
+          {n.encrypted === 1 ? (
+            <div class="note-body encrypted-placeholder">{isVi ? "(mã hoá — cần mật khẩu)" : "(encrypted — passphrase required)"}</div>
+          ) : (
+            <div class="note-body" set:html={renderMarkdown(n.body)} />
+          )}
         </li>
       ))}
     </ul>
   )}
 
   <form id="note-form" class="note-form">
-    <textarea name="body" rows="3" placeholder="Markdown OK" required maxlength="4000"></textarea>
-    <button type="submit">＋ add note</button>
+    <textarea name="body" rows="3" placeholder={isVi ? "Markdown được hỗ trợ" : "Markdown OK"} required maxlength="4000"></textarea>
+    <label class="encrypt-toggle">
+      <input type="checkbox" name="encrypt" />
+      <span>🔒 {isVi ? "Mã hoá ghi chú này" : "Encrypt this note"}</span>
+    </label>
+    <button type="submit">＋ {isVi ? "Thêm ghi chú" : "add note"}</button>
+    <p id="note-error" class="error" hidden></p>
   </form>
 </section>
 
 <script define:vars={{ contactId }}>
+  const gate = document.getElementById("passphrase-gate");
+  const input = document.getElementById("passphrase-input");
+  const unlockBtn = document.getElementById("passphrase-unlock");
+  const forgetBtn = document.getElementById("passphrase-forget");
   const form = document.getElementById("note-form");
+  const errEl = document.getElementById("note-error");
+
+  const notes = Array.from(document.querySelectorAll("li.note"));
+  const hasEncrypted = notes.some((n) => n.getAttribute("data-encrypted") === "1");
+
+  // Show passphrase gate when there are encrypted notes and no cached passphrase.
+  function refreshGate() {
+    const p = sessionStorage.getItem("portraits.passphrase");
+    gate.hidden = !(hasEncrypted && !p);
+  }
+  refreshGate();
+
+  async function importKey(passphrase, salt) {
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey(
+      { name: "PBKDF2", salt, iterations: 200000, hash: "SHA-256" },
+      baseKey,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt", "decrypt"],
+    );
+  }
+  function fromHex(hex) {
+    const n = hex.length / 2;
+    const out = new Uint8Array(n);
+    for (let i = 0; i < n; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+    return out;
+  }
+  function toHex(buf) {
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function decrypt(passphrase, salt, iv, ct) {
+    const key = await importKey(passphrase, fromHex(salt));
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromHex(iv) }, key, fromHex(ct));
+    return new TextDecoder().decode(pt);
+  }
+  async function encrypt(passphrase, plaintext) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await importKey(passphrase, salt);
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
+    return { ciphertext: toHex(ct), salt: toHex(salt), iv: toHex(iv) };
+  }
+
+  async function revealAll() {
+    const p = sessionStorage.getItem("portraits.passphrase");
+    if (!p) return;
+    for (const el of notes) {
+      if (el.getAttribute("data-encrypted") !== "1") continue;
+      const salt = el.getAttribute("data-salt");
+      const iv = el.getAttribute("data-iv");
+      const ct = el.getAttribute("data-ciphertext");
+      const body = el.querySelector(".note-body");
+      if (!salt || !iv || !ct || !body) continue;
+      try {
+        const plaintext = await decrypt(p, salt, iv, ct);
+        body.classList.remove("encrypted-placeholder");
+        body.textContent = plaintext;
+      } catch (e) {
+        body.textContent = "⚠ decrypt failed — wrong passphrase?";
+      }
+    }
+  }
+
+  unlockBtn?.addEventListener("click", async () => {
+    const v = input.value.trim();
+    if (!v) return;
+    sessionStorage.setItem("portraits.passphrase", v);
+    input.value = "";
+    gate.hidden = true;
+    await revealAll();
+  });
+
+  forgetBtn?.addEventListener("click", () => {
+    sessionStorage.removeItem("portraits.passphrase");
+    // Re-render: reload to restore server-rendered placeholder for encrypted notes.
+    window.location.reload();
+  });
+
+  // Auto-reveal on page load if passphrase is cached
+  revealAll();
+
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    errEl.hidden = true;
     const fd = new FormData(form);
+    const bodyText = String(fd.get("body") ?? "").trim();
+    const encryptFlag = fd.get("encrypt") === "on";
+
+    if (!bodyText) return;
+
+    let payload;
+    if (encryptFlag) {
+      const p = sessionStorage.getItem("portraits.passphrase");
+      if (!p) {
+        errEl.textContent = "Enter a passphrase (unlock above) before writing encrypted notes.";
+        errEl.hidden = false;
+        return;
+      }
+      const { ciphertext, salt, iv } = await encrypt(p, bodyText);
+      payload = { body: ciphertext, encrypted: true, salt, iv };
+    } else {
+      payload = { body: bodyText };
+    }
+
     const res = await fetch(`/api/portraits/${contactId}/notes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: String(fd.get("body") ?? "").trim() }),
+      body: JSON.stringify(payload),
     });
-    if (res.ok) window.location.reload();
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      errEl.textContent = `Save failed: ${data.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    window.location.reload();
   });
 </script>
 
 <style>
+  .passphrase-gate {
+    display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
+    padding: 0.7rem 0.9rem;
+    background: rgba(212, 168, 154, 0.04);
+    border-left: 2px solid #d4a89a;
+    border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+  .passphrase-gate p { flex: 1 1 100%; color: #bdb8ac; font-size: 0.85rem; margin: 0 0 0.35rem; }
+  .passphrase-gate input { flex: 1 1 200px; background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.35rem 0.6rem; border-radius: 2px; font: inherit; }
+  .passphrase-gate button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.35rem 0.8rem; border-radius: 2px; cursor: pointer; font: inherit; }
+  .passphrase-gate button:hover { background: rgba(212, 168, 154, 0.08); }
+  .passphrase-gate button.btn-ghost { border-color: #2a2a2a; color: #6a665e; }
+  .passphrase-gate button.btn-ghost:hover { border-color: #3a3a3a; background: transparent; }
+
   .notes-list { list-style: none; padding: 0; margin: 0 0 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
   .note { padding: 0.75rem; border: 1px solid #2a2a2a; border-radius: 3px; }
-  .note-meta { color: #6a665e; font-size: 0.75rem; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
-  .note-body { color: #bdb8ac; line-height: 1.55; }
+  .note-meta { color: #6a665e; font-size: 0.75rem; letter-spacing: 0.04em; margin-bottom: 0.35rem; display: flex; gap: 0.5rem; align-items: baseline; }
+  .note-lock { color: #d4a89a; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .note-body { color: #bdb8ac; line-height: 1.55; white-space: pre-wrap; }
+  .note-body.encrypted-placeholder { color: #6a665e; font-style: italic; white-space: normal; }
   .note-body :global(p) { margin: 0.25rem 0; }
   .note-body :global(strong) { color: #e8e6e0; }
   .note-body :global(code) { background: #1a1a1a; padding: 0.1rem 0.3rem; border-radius: 2px; }
   .note-form { display: flex; flex-direction: column; gap: 0.5rem; }
   .note-form textarea { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.5rem 0.7rem; border-radius: 3px; font: inherit; resize: vertical; }
+  .encrypt-toggle { display: inline-flex; align-items: center; gap: 0.4rem; color: #8a877e; font-size: 0.875rem; }
   .note-form button { align-self: flex-start; background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
   .note-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .error { color: #e57373; font-size: 0.875rem; }
+  .muted { color: #6a665e; }
 </style>
