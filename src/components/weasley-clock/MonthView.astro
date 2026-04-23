@@ -1,5 +1,57 @@
 ---
-interface Props { anchor: Date; occurrences: any[]; }
+import DayCell from "./DayCell.astro";
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+
+interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
 const { anchor, occurrences } = Astro.props;
+
+const firstOfMonth = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+const lastOfMonth = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+
+const dowFirst = firstOfMonth.getDay() === 0 ? 6 : firstOfMonth.getDay() - 1;
+const gridStart = new Date(firstOfMonth);
+gridStart.setDate(firstOfMonth.getDate() - dowFirst);
+
+type Cell = { date: Date; occurrences: FamilyOccurrence[]; isToday: boolean; isDimmed: boolean };
+const cells: Cell[] = [];
+const today = new Date();
+const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+for (let i = 0; i < 42; i++) {
+	const d = new Date(gridStart);
+	d.setDate(gridStart.getDate() + i);
+	cells.push({
+		date: d,
+		occurrences: occurrences.filter((o) => sameDay(o.date, d)),
+		isToday: sameDay(d, today),
+		isDimmed: d.getMonth() !== anchor.getMonth(),
+	});
+	if (d > lastOfMonth && (i + 1) % 7 === 0) break;
+}
+
+const rows: Cell[][] = [];
+for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
+
+const headings = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 ---
-<div class="wc-view-stub">stub · {occurrences.length} occurrences · {anchor.toISOString().slice(0, 10)}</div>
+<div class="wc-month">
+	<div class="wc-month__headings">
+		{headings.map((h, i) => <div class={`wc-month__head ${i === 6 ? "wc-month__head--sun" : ""}`}>{h}</div>)}
+	</div>
+	{rows.map((row) => {
+		const hasToday = row.some((c) => c.isToday);
+		return (
+			<div class={`wc-month__row ${hasToday ? "wc-month__row--today" : ""}`}>
+				{row.map((c) => <DayCell date={c.date} occurrences={c.occurrences} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />)}
+			</div>
+		);
+	})}
+</div>
+
+<style>
+	.wc-month__headings { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 4px; }
+	.wc-month__head { padding: 4px; text-align: center; color: #8b6914; font-size: 9px; letter-spacing: 1px; }
+	.wc-month__head--sun { color: #c9a961; }
+	.wc-month__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
+	.wc-month__row--today :global(.wc-day--month) { min-height: 160px; padding: 8px; }
+	.wc-month__row--today :global(.wc-day--month .wc-chip) { padding: 3px 5px; font-size: 10px; }
+</style>
