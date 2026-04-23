@@ -1,5 +1,73 @@
 ---
-interface Props { anchor: Date; occurrences: any[]; }
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+
+interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
 const { anchor, occurrences } = Astro.props;
+
+const year = anchor.getFullYear();
+const MONTH_LABELS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+// Bucket occurrences by ISO date (YYYY-MM-DD in UTC) for O(1) lookup.
+const byDate = new Map<string, FamilyOccurrence[]>();
+for (const occ of occurrences) {
+	const key = occ.date.toISOString().slice(0, 10);
+	const bucket = byDate.get(key) ?? [];
+	bucket.push(occ);
+	byDate.set(key, bucket);
+}
+
+function categoryTint(occ: FamilyOccurrence): string {
+	switch (occ.event.event_type) {
+		case "death_anniv": return "rgba(201,169,97,VAR)";
+		case "birthday": return "rgba(85,107,47,VAR)";
+		case "wedding_anniv": return "rgba(160,82,79,VAR)";
+		case "cultural": return "rgba(182,122,60,VAR)";
+		default: return "rgba(166,122,62,VAR)";
+	}
+}
+
+function cellStyle(count: number, dominant: FamilyOccurrence | null): string {
+	if (!dominant) return "background:#2a1f15;";
+	const alpha = Math.min(0.3 + count * 0.2, 1);
+	return `background:${categoryTint(dominant).replace("VAR", String(alpha))};`;
+}
+
+function monthCells(month: number): { date: Date; occs: FamilyOccurrence[] }[] {
+	const days = new Date(year, month + 1, 0).getDate();
+	const out: { date: Date; occs: FamilyOccurrence[] }[] = [];
+	for (let d = 1; d <= days; d++) {
+		const date = new Date(year, month, d);
+		const key = date.toISOString().slice(0, 10);
+		out.push({ date, occs: byDate.get(key) ?? [] });
+	}
+	return out;
+}
 ---
-<div class="wc-view-stub">stub · {occurrences.length} occurrences · {anchor.toISOString().slice(0, 10)}</div>
+<div class="wc-year">
+	{MONTH_LABELS.map((label, i) => (
+		<div class="wc-year__month">
+			<div class="wc-year__month-label">{label}</div>
+			<div class="wc-year__grid">
+				{monthCells(i).map((c) => {
+					const dom = c.occs[0] ?? null;
+					return (
+						<a
+							class="wc-year__cell"
+							style={cellStyle(c.occs.length, dom)}
+							href={`/hogwarts/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}
+							title={c.occs.map((o) => o.event.title_vi || o.event.title_en).join("\n")}
+						></a>
+					);
+				})}
+			</div>
+		</div>
+	))}
+</div>
+
+<style>
+	.wc-year { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1100px; margin: 0 auto; }
+	.wc-year__month-label { font-size: 10px; color: #c9a961; letter-spacing: 1px; margin-bottom: 4px; }
+	.wc-year__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+	.wc-year__cell { aspect-ratio: 1; display: block; background: #2a1f15; }
+	.wc-year__cell:hover { outline: 1px solid #c9a961; }
+</style>
