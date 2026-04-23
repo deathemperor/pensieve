@@ -69,6 +69,47 @@ for (const e of entries) {
 	});
 }
 
+// Fan pins that share the same projected point (e.g. 4 pins at HCMC) so
+// they don't stack invisibly. Offset in a small circle around the center.
+const coordBuckets = new Map<string, PlacedEntry[]>();
+for (const p of placed) {
+	const key = `${Math.round(p.x)}_${Math.round(p.y)}`;
+	const bucket = coordBuckets.get(key) || [];
+	bucket.push(p);
+	coordBuckets.set(key, bucket);
+}
+for (const bucket of coordBuckets.values()) {
+	if (bucket.length <= 1) continue;
+	const radius = 14;
+	bucket.forEach((pin, i) => {
+		const angle = (i / bucket.length) * Math.PI * 2 - Math.PI / 2;
+		pin.x += Math.cos(angle) * radius;
+		pin.y += Math.sin(angle) * radius;
+	});
+}
+
+// Pick one representative pin per unique country to label on the canvas.
+const countryLabelPoints = new Map<string, { x: number; y: number }>();
+for (const p of placed) {
+	if (!p.country) continue;
+	if (!countryLabelPoints.has(p.country)) {
+		countryLabelPoints.set(p.country, { x: p.x, y: p.y });
+	}
+}
+
+const countryLongName: Record<string, string> = {
+	GB: "United Kingdom",
+	VN: "Việt Nam",
+	US: "United States",
+	JP: "Japan",
+	FR: "France",
+	DE: "Germany",
+	IT: "Italy",
+	SG: "Singapore",
+	KR: "South Korea",
+	TH: "Thailand",
+};
+
 const lngLines = graticuleLngs(bounds, 30);
 const latLines = graticuleLats(bounds, 30);
 
@@ -130,6 +171,14 @@ const helperText = isVi
 						/>
 					);
 				})}
+				{[...countryLabelPoints.entries()].map(([code, pt]) => (
+					<text
+						class="cc-atlas-country-label"
+						x={pt.x}
+						y={pt.y - 28}
+						text-anchor="middle"
+					>{countryLongName[code] ?? code}</text>
+				))}
 				{placed.map((p) => (
 					<g class="cc-atlas-pin" data-id={p.id} transform={`translate(${p.x} ${p.y})`}>
 						<circle r="10" fill={p.hex} opacity="0.15" />
