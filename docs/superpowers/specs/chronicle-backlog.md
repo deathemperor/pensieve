@@ -5,12 +5,12 @@ Items deferred / parked while we ship the current polish arc. Not spec'd to task
 ## Blocked on external input
 
 - **Atlas real map tiles**
-  Replace the graticule grid with Mapbox / Stadia / OSM dark tiles.
-  **Blocker:** tile provider choice (paid vs free, license terms, API key management).
+  Replace the graticule grid (now with simplified continent outlines) with Mapbox / Stadia / OSM dark tiles.
+  **Blocker:** tile provider choice (paid vs free, license terms, API key management). Continent outlines landed in PR #61 as a stopgap.
 
 - **Curated Timeline → Chronicle entries**
-  Walk through the 666 candidates from `ingest-gmaps.ts`, filter to "Searched Address" + "Aliased Location" + single-visit high-probability records, promote ~10 of them to real entries with admin-named titles.
-  **Blocker:** needs the author's judgment on what constitutes a meaningful life event vs routine travel.
+  `scripts/chronicle/promote-candidates.ts` already does the first pass — filters to single-visit ≥3h stays outside the top-5 home cities, keeps max 2 per year. Last run produced 14 draft candidates at `.session/chronicle-drafts.json`.
+  **Blocker:** needs the author to rename placeholder titles ("Visit to X") into real life-event titles, OR discard those that were just transient. Admin-review work, not code.
 
 ## New architecture arcs (dedicated sessions)
 
@@ -18,27 +18,21 @@ Items deferred / parked while we ship the current polish arc. Not spec'd to task
   Convert the post-scan CLI into a real EmDash plugin hook that fires on post save/publish, auto-proposing draft Chronicle candidates in the admin queue.
   **Effort:** ~1 day; needs familiarity with the EmDash plugin runtime + capability grants.
 
-- **Story threads / constellation lines**
-  Faint SVG lines connecting thematically related entries (proposal → marriage → Fawn born; dad → mourning arc). Opt-in toggle.
-  **Effort:** ~half day; needs a manual "thread" field on entries + UX design for the toggle.
-
 - **Per-year "Wrapped" recap**
   Auto-generated year summary card (count, categories, places visited). Links from the year heading in the ledger.
   **Prerequisite:** more seed entries; currently 8 is too few for a meaningful recap.
 
-- **Tags / themes beyond category**
-  Schema-level feature. A new `tags` array field. Enables cross-category threading ("UK 2018" or "medical 2021") that category alone can't express.
-  **Effort:** schema migration + admin UI + filter chips on the page.
-
-- **Featured image per entry**
-  New image field on the chronicle collection. Render in the modal and permalink page. Requires image uploads and R2 paths.
-
 ## Small wins not in the current arc
 
-- **Search widget** — drop the site's `LiveSearch` component on the Chronicle page; `chronicle` collection already supports search.
-- **Atlas continent outlines** — faint SVG silhouettes (Natural Earth 50m coastlines, stripped subset) so the map reads as a map, not a grid.
-- **Print stylesheet** — clean ledger-only view for printing.
-- **Keyboard shortcut overlay** — `?` shows key bindings (arrow keys, Escape, Tab).
+All the previously-listed "small wins" have shipped:
+
+- ✅ **Search widget** — `chronicle` added to LiveSearch collections (PR #60)
+- ✅ **Atlas continent outlines** — hand-simplified polygons under the pin layer (PR #61)
+- ✅ **Print stylesheet** — @media print strips everything but the ledger (PR #60)
+- ✅ **Keyboard shortcut overlay** — `?` key or chip (PR #60)
+- ✅ **Tags / themes** — comma-separated `tags` field + chip row (PR #60)
+- ✅ **Story threads** — `thread` field + opt-in SVG line overlay (PR #61)
+- ✅ **Featured image per entry** — `featured_image` field + permalink hero render (PR #61)
 
 ## Inbox
 

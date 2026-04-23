@@ -694,6 +694,51 @@
   font-size: 20px;
 }
 
+/* === Thread layer — hidden by default, toggled by the "threads" button === */
+.cc-thread-layer { opacity: 0; transition: opacity 0.25s; }
+.cc-frame[data-threads-on] .cc-thread-layer { opacity: 1; }
+
+.cc-thread-toggle {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(8, 9, 10, 0.7);
+  border: 1px solid rgba(212, 168, 67, 0.2);
+  color: rgba(212, 168, 67, 0.7);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s, color 0.2s;
+}
+.cc-thread-toggle:hover { background: rgba(212, 168, 67, 0.12); color: var(--chronicle-gold); }
+.cc-frame[data-threads-on] .cc-thread-toggle {
+  background: rgba(212, 168, 67, 0.18);
+  color: var(--chronicle-gold);
+}
+
+/* === Permalink featured image === */
+.cc-permalink-hero {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 20px;
+  border: 1px solid rgba(212, 168, 67, 0.12);
+}
+
+/* === Atlas continent outlines === */
+.cc-atlas-continents {
+  fill: rgba(212, 168, 67, 0.04);
+  stroke: rgba(212, 168, 67, 0.18);
+  stroke-width: 0.4;
+  pointer-events: none;
+}
+
 /* === Tags row === */
 .cc-tags {
   display: flex;

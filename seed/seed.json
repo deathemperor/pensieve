@@ -390,7 +390,9 @@
 				{ "slug": "source", "label": "Source", "type": "string", "required": true },
 				{ "slug": "source_id", "label": "Source ID", "type": "string" },
 				{ "slug": "visibility", "label": "Visibility", "type": "string" },
-				{ "slug": "tags", "label": "Tags (comma-separated)", "type": "string" }
+				{ "slug": "tags", "label": "Tags (comma-separated)", "type": "string" },
+				{ "slug": "featured_image", "label": "Featured Image", "type": "image" },
+				{ "slug": "thread", "label": "Thread (comma-separated)", "type": "string" }
 			]
 		},
 		{
@@ -32704,7 +32706,8 @@
 					"external_url_label": "match — MU 2–0 Swansea",
 					"source": "manual",
 					"visibility": "public",
-					"tags": "uk-2018, football, birthday"
+					"tags": "uk-2018, football, birthday",
+					"thread": "uk-trip-2018"
 				}
 			},
 			{
@@ -32723,7 +32726,8 @@
 					"location": "{\"name\":\"Buckingham Palace\",\"city\":\"London\",\"country\":\"GB\",\"lat\":51.50,\"lng\":-0.14}",
 					"source": "manual",
 					"visibility": "public",
-					"tags": "uk-2018, engagement"
+					"tags": "uk-2018, engagement",
+					"thread": "uk-trip-2018"
 				}
 			},
 			{
