@@ -9,6 +9,7 @@ import type { ContactWithChannels } from "../../../lib/portraits/types";
 import Timeline from "../../../components/portraits/Timeline.astro";
 import NotesTab from "../../../components/portraits/NotesTab.astro";
 import Relationships from "../../../components/portraits/Relationships.astro";
+import IntroPaths from "../../../components/portraits/IntroPaths.astro";
 import { tierName } from "../../../lib/portraits/tier-labels";
 import { getCurrentLang } from "../../../utils/lang";
 
@@ -132,6 +133,8 @@ Astro.response.headers.set(
     {auth.admin && <Timeline db={db} contactId={contact.id} />}
     {auth.admin && <NotesTab db={db} contactId={contact.id} />}
     {auth.admin && <Relationships db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <IntroPaths db={db} contactId={contact.id} />}
 
     {auth.admin && cards.length > 0 && (
       <section class="section">
