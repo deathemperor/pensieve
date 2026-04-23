@@ -19,20 +19,23 @@ export interface FamilyEventRecord {
 
 export interface FamilyOccurrence {
 	event: FamilyEventRecord;
-	date: Date; // UTC midnight on the solar calendar date of the occurrence
+	date: Date; // HCMC midnight of the occurrence
 	nth: number | null; // occurrence count (e.g. 34th birthday) if origin_year set
 }
+
+const HCMC_OFFSET_MS = 7 * 3600 * 1000;
 
 /**
  * Materialise every event instance falling within [start, end].
  *
- * Date comparison is UTC-calendar-day based:
- *   - Solar events get UTC midnight of (year, month, day).
- *   - Lunar events: lunarToSolar returns HCMC midnight (UTC-7h); we normalise
- *     to UTC midnight of that UTC calendar day so toISOString().slice(0,10)
- *     reads the same as the raw lunarToSolar UTC date string.
- *   - Range boundaries are compared as their UTC calendar dates (YYYY-MM-DD)
- *     so that HCMC-local range strings behave as expected for callers.
+ * `FamilyOccurrence.date` is HCMC midnight (UTC - 7h) of the actual HCMC
+ * calendar day the event falls on. Range comparison is a direct instant
+ * comparison — no UTC-day normalisation.
+ *
+ *   - Solar event on month M, day D, year Y →
+ *       new Date(Date.UTC(Y, M-1, D) - HCMC_OFFSET_MS)
+ *   - Lunar event → lunarToSolar() which already returns HCMC midnight; used
+ *       as-is with no further normalisation.
  *
  * Subsequent years always observe a leap-month origin on the regular month
  * (Vietnamese convention).
@@ -44,14 +47,8 @@ export function materialiseFamilyEvents(
 ): FamilyOccurrence[] {
 	const out: FamilyOccurrence[] = [];
 
-	// Normalise range bounds to UTC-day boundaries for comparison
-	const startDay = utcDayStart(start);
-	const endDay = utcDayEnd(end);
-
-	// Year range: derive from the UTC calendar years of the bounds
-	const startYear = start.getUTCFullYear();
-	// end can cross into an extra UTC year; add 1 to be safe and filter by date
-	const endYear = end.getUTCFullYear() + 1;
+	const startYear = hcmcYear(start);
+	const endYear = hcmcYear(end);
 
 	for (const evt of events) {
 		for (let year = startYear; year <= endYear; year++) {
@@ -63,29 +60,20 @@ export function materialiseFamilyEvents(
 				if (evt.month === 2 && evt.day === 29 && !isLeapYear(year)) {
 					day = 28;
 				}
-				// UTC midnight on the exact solar date — toISOString().slice(0,10) === YYYY-MM-DD
-				occurrenceDate = new Date(Date.UTC(year, evt.month - 1, day));
+				// HCMC midnight = UTC midnight of same calendar date minus 7 hours
+				occurrenceDate = new Date(Date.UTC(year, evt.month - 1, day) - HCMC_OFFSET_MS);
 			} else {
-				// Lunar: always observe on the regular (non-leap) month
-				const raw = lunarToSolar({
+				// Lunar: always observe on the regular (non-leap) month.
+				// lunarToSolar already returns HCMC midnight — use as-is.
+				occurrenceDate = lunarToSolar({
 					year,
 					month: evt.month,
 					day: evt.day,
 					isLeapMonth: false,
 				});
-				if (raw !== null) {
-					// lunarToSolar returns HCMC midnight (UTC - 7h).
-					// Normalise to UTC midnight of the same UTC calendar day so
-					// toISOString().slice(0,10) gives the correct solar date string.
-					occurrenceDate = utcMidnightOfUtcDay(raw);
-				}
 			}
 
-			if (
-				occurrenceDate !== null &&
-				occurrenceDate.getTime() >= startDay.getTime() &&
-				occurrenceDate.getTime() <= endDay.getTime()
-			) {
+			if (occurrenceDate !== null && occurrenceDate >= start && occurrenceDate <= end) {
 				const nth = evt.origin_year != null ? year - evt.origin_year : null;
 				out.push({ event: evt, date: occurrenceDate, nth });
 			}
@@ -100,20 +88,14 @@ export function materialiseFamilyEvents(
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** UTC midnight at the start of the UTC calendar day containing d. */
-function utcMidnightOfUtcDay(d: Date): Date {
-	return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-}
-
-/** UTC midnight at the start of the UTC calendar day of d (range lower bound). */
-function utcDayStart(d: Date): Date {
-	return utcMidnightOfUtcDay(d);
-}
-
-/** UTC 23:59:59.999 at the end of the UTC calendar day of d (range upper bound). */
-function utcDayEnd(d: Date): Date {
-	const s = utcMidnightOfUtcDay(d);
-	return new Date(s.getTime() + 86400_000 - 1);
+/** Return the HCMC calendar year of a given instant. */
+function hcmcYear(d: Date): number {
+	const parts = new Intl.DateTimeFormat("en-GB", {
+		year: "numeric",
+		timeZone: "Asia/Ho_Chi_Minh",
+	}).formatToParts(d);
+	const yearPart = parts.find((p) => p.type === "year");
+	return Number(yearPart?.value);
 }
 
 function isLeapYear(y: number): boolean {
