@@ -50,16 +50,16 @@ export function projectLatLng(
 }
 
 /**
- * Bounds used by the default Atlas panel. Covers North America, Europe,
- * Africa, and the western-to-south Asia arc — enough for the seeded
- * entries which sit in the UK and Vietnam, with generous margins on both
- * sides. Adjust if future entries land in the Americas or Oceania.
+ * Bounds for the default Atlas panel — a world-scale view covering the
+ * Americas (eastern half), Europe, Africa, and most of Asia + Oceania.
+ * Wide enough to catch travel outliers from Google Timeline aggregation
+ * (the author's data hits Michigan US through Vietnam / Japan).
  */
 export const DEFAULT_ATLAS_BOUNDS: AtlasBounds = {
 	latMin: -10,
 	latMax: 65,
-	lngMin: -15,
-	lngMax: 130,
+	lngMin: -130,
+	lngMax: 150,
 };
 
 /**
