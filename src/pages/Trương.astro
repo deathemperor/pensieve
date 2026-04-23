@@ -634,6 +634,161 @@ try {
 		</div>
 	</section>
 
+	<section id="origin" class="about-section">
+		<div class="about-inner">
+			<div class="about-prose">
+				<aside class="origin-seal" aria-label={isVi ? "Bản Mệnh và Dòng Dõi" : "Natal chart and heritage"}>
+						<div class="origin-seal-grid">
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Bản Mệnh" : "Natal"}</h3>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-rat" viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<path d="M 10 17 Q 6 17 6 13 Q 6 9 12 8 Q 20 6 27 9 Q 30 10 31 13 Q 33 11 35 12 Q 36 14 34 15 Q 32 16 30 15 Q 29 17 27 17 L 10 17 Z" fill="currentColor"/>
+										<circle cx="25" cy="6" r="2.4" fill="currentColor"/>
+										<circle cx="29" cy="12" r="0.8" fill="#0b0b0d"/>
+										<path d="M 8 16 Q 2 17 1 12 Q 0 5 6 4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+										<path d="M 14 17 L 14 20 M 22 17 L 22 20" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+									</svg>
+									<span class="origin-label">Giáp Tý · 子</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☉</span>
+									<span class="origin-label">{isVi ? "Mặt Trời ở Bạch Dương" : "sun in Aries"}</span>
+								</div>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-astro">♈ ☾</span>
+									<span class="origin-label">{isVi ? "Mặt Trăng ở Bạch Dương" : "moon in Aries"}</span>
+								</div>
+							</div>
+							<div class="origin-seal-col">
+								<h3 class="origin-col-title">{isVi ? "Dòng Dõi" : "Heritage"}</h3>
+								<div class="origin-row">
+									<span class="origin-glyph origin-glyph-cjk">黃</span>
+									<span class="origin-label">Huỳnh · {isVi ? "Hoa" : "Chinese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-lotus" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 16 Q 14 8 16 2 Q 18 8 16 16 Z"/>
+											<path d="M 16 16 Q 10 10 11 4 Q 15 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 22 10 21 4 Q 17 10 16 16 Z" opacity="0.82"/>
+											<path d="M 16 16 Q 4 13 3 7 Q 11 11 16 16 Z" opacity="0.56"/>
+											<path d="M 16 16 Q 28 13 29 7 Q 21 11 16 16 Z" opacity="0.56"/>
+										</g>
+									</svg>
+									<span class="origin-label">Nguyễn · {isVi ? "Việt" : "Vietnamese"}</span>
+								</div>
+								<div class="origin-row">
+									<svg class="origin-glyph origin-glyph-spire" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+										<g fill="currentColor">
+											<path d="M 16 1 L 15 3 L 17 3 Z"/>
+											<path d="M 13 3 L 19 3 L 18 7 L 14 7 Z"/>
+											<path d="M 11 7 L 21 7 L 20 11 L 12 11 Z"/>
+											<path d="M 9 11 L 23 11 L 22 15 L 10 15 Z"/>
+											<rect x="6" y="15" width="20" height="3"/>
+										</g>
+									</svg>
+									<span class="origin-label">Võ · Khmer</span>
+								</div>
+							</div>
+						</div>
+						<p class="origin-caption">{isVi ? "Kẻ mở vòng tuần hoàn · ba dòng sông trong một thân" : "a circle starter · three rivers in one body"}</p>
+					</aside>
+				{isVi ? (
+					<>
+						<p>
+							Tên tôi có nghĩa là 'phúc lộc' trong tiếng Việt — cái tên mang ơn từ cha mẹ,
+							những người từng không chắc sẽ giữ tôi. Câu chuyện gốc đó nằm dưới mọi thứ tôi viết.
+						</p>
+						<p>
+							Tôi gia nhập VinaGame (nay là VNG) ngày 19 tháng 12 năm 2006. Năm 2007, tôi
+							phát minh cơ chế session management đẩy sự kiện out-of-game lớn nhất của
+							<em>Võ Lâm Truyền Kỳ</em> lên hàng nghìn người cùng online. Năm 2008, đồng
+							thiết kế hệ thống Passport — 200 nghìn lượt đăng ký mỗi tháng. Năm 2009,
+							định nghĩa và kiến trúc hệ thống <strong>Single Sign-On đầu tiên của Việt
+							Nam</strong>, đẩy tốc độ phát hành game lên 10+ tựa mỗi tháng. Rồi chỉ huy
+							đợt tích hợp nhanh nhất từng có cho Gunny, cùng đội hồi sinh game từ ~1k
+							lên 100k+ người cùng online, doanh thu từ vài triệu lên hơn 30 tỷ mỗi
+							tháng — góp phần đánh bật dòng game cạnh tranh của FPT Games.
+						</p>
+						<p>
+							Giờ tôi ở <strong>Papaya</strong>, xây một giấc mơ tên <em>Oasis</em> —
+							nền tảng cung cấp AI Agent cho đối tác, như Service-As-A-Software (không
+							phải đánh máy lộn, đây là thời SaaS mới). Các Agent sinh ra với một tâm
+							hồn, truyền từ cái tâm của người làm: mang giá trị cho khách hàng.
+						</p>
+						<p>
+							Tôi nuôi cá rô Trung Mỹ. Tôi đã lai tạo những loài chưa từng được lai tạo ở
+							Việt Nam — cá rô Madagascar, các giống Rô Mỹ mà hầu hết người chơi chỉ thấy
+							trong sách. Bể cá và code chia sẻ cùng một xung lực: tạo ra thứ gì đó sống,
+							nhìn nó lớn lên, học được mình sai ở đâu.
+						</p>
+						<p>
+							Một sư phụ từng bảo tôi viết khi bí. Pensieve là nơi những bài viết đó sống
+							bây giờ, được cứu khỏi dòng cuộn Facebook.
+						</p>
+						<p>
+							Trang này là cuốn hồi ký đang viết dở. Nó cũng là một thí nghiệm: mọi dòng
+							code được viết bởi
+							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
+							lập trình viên AI của Anthropic. Chủ đề Harry Potter không phải trò đùa
+							— Pensieve, Room of Requirement, Priori Incantatem, Sorting Hat — tôi
+							lớn lên cùng những cuốn sách này và chúng định hình cách tôi nghĩ về
+							ký ức, bản sắc, và sự kỳ diệu của việc tạo ra mọi thứ.
+						</p>
+					</>
+				) : (
+					<>
+						<p>
+							My name means "blessing" in Vietnamese — a thank-you name from parents
+							who once weren't sure they'd keep me. That origin story sits under
+							everything I write.
+						</p>
+						<p>
+							I joined VinaGame (now VNG) on December 19th, 2006. In 2007, I invented
+							the session-management mechanism that scaled <em>Võ Lâm Truyền Kỳ</em>&apos;s
+							biggest out-of-game event to thousands of concurrent users. In 2008, I
+							co-designed the Passport system — 200k monthly registrations. In 2009, I
+							defined, designed, and architected <strong>Vietnam&apos;s first Single Sign-On
+							web system</strong>, pushing game-publishing agility to 10+ launches a
+							month. Then I led the fastest-ever integration for Gunny, and the team
+							that revived the game from ~1k concurrent users and a few million in
+							monthly revenue to 100k+ and 30B+ VND — helping kill FPT Games&apos;
+							competing line.
+						</p>
+						<p>
+							Now I&apos;m at <strong>Papaya</strong>, building a dream called
+							<em>Oasis</em> — a platform that delivers AI Agents to partners as
+							Service-As-A-Software (not a typo; this is the new age of SaaS). Every
+							Agent is born with a soul, passed down from the heart of the person who
+							makes them: to bring value to the customer.
+						</p>
+						<p>
+							I keep Central American cichlids. I've bred species that had never been
+							bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
+							most hobbyists only see in books. The fish tanks and the code share
+							the same impulse: make something alive, watch it grow, learn what
+							you got wrong.
+						</p>
+						<p>
+							A mentor once told me to write when stuck. Pensieve is where that
+							writing lives now, rescued from years of Facebook scroll.
+						</p>
+						<p>
+							This site is my memoir-in-progress. It's also an experiment:
+							every line of code was written by
+							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
+							Anthropic's AI pair programmer. The Harry Potter theme isn't
+							a gimmick — Pensieve, Room of Requirement, Priori Incantatem,
+							Sorting Hat — I grew up with these books and they shaped how
+							I think about memory, identity, and the magic of making things.
+						</p>
+					</>
+				)}
+			</div>
+		</div>
+	</section>
+
 	<section id="pensieve-dives" class="about-section">
 		<div class="about-inner">
 			<h2 class="section-heading">
@@ -935,161 +1090,6 @@ try {
 					</div>
 				</div>
 			</a>
-		</div>
-	</section>
-
-	<section id="origin" class="about-section">
-		<div class="about-inner">
-			<div class="about-prose">
-				<aside class="origin-seal" aria-label={isVi ? "Bản Mệnh và Dòng Dõi" : "Natal chart and heritage"}>
-						<div class="origin-seal-grid">
-							<div class="origin-seal-col">
-								<h3 class="origin-col-title">{isVi ? "Bản Mệnh" : "Natal"}</h3>
-								<div class="origin-row">
-									<svg class="origin-glyph origin-glyph-rat" viewBox="0 0 40 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-										<path d="M 10 17 Q 6 17 6 13 Q 6 9 12 8 Q 20 6 27 9 Q 30 10 31 13 Q 33 11 35 12 Q 36 14 34 15 Q 32 16 30 15 Q 29 17 27 17 L 10 17 Z" fill="currentColor"/>
-										<circle cx="25" cy="6" r="2.4" fill="currentColor"/>
-										<circle cx="29" cy="12" r="0.8" fill="#0b0b0d"/>
-										<path d="M 8 16 Q 2 17 1 12 Q 0 5 6 4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
-										<path d="M 14 17 L 14 20 M 22 17 L 22 20" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-									</svg>
-									<span class="origin-label">Giáp Tý · 子</span>
-								</div>
-								<div class="origin-row">
-									<span class="origin-glyph origin-glyph-astro">♈ ☉</span>
-									<span class="origin-label">{isVi ? "Mặt Trời ở Bạch Dương" : "sun in Aries"}</span>
-								</div>
-								<div class="origin-row">
-									<span class="origin-glyph origin-glyph-astro">♈ ☾</span>
-									<span class="origin-label">{isVi ? "Mặt Trăng ở Bạch Dương" : "moon in Aries"}</span>
-								</div>
-							</div>
-							<div class="origin-seal-col">
-								<h3 class="origin-col-title">{isVi ? "Dòng Dõi" : "Heritage"}</h3>
-								<div class="origin-row">
-									<span class="origin-glyph origin-glyph-cjk">黃</span>
-									<span class="origin-label">Huỳnh · {isVi ? "Hoa" : "Chinese"}</span>
-								</div>
-								<div class="origin-row">
-									<svg class="origin-glyph origin-glyph-lotus" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-										<g fill="currentColor">
-											<path d="M 16 16 Q 14 8 16 2 Q 18 8 16 16 Z"/>
-											<path d="M 16 16 Q 10 10 11 4 Q 15 10 16 16 Z" opacity="0.82"/>
-											<path d="M 16 16 Q 22 10 21 4 Q 17 10 16 16 Z" opacity="0.82"/>
-											<path d="M 16 16 Q 4 13 3 7 Q 11 11 16 16 Z" opacity="0.56"/>
-											<path d="M 16 16 Q 28 13 29 7 Q 21 11 16 16 Z" opacity="0.56"/>
-										</g>
-									</svg>
-									<span class="origin-label">Nguyễn · {isVi ? "Việt" : "Vietnamese"}</span>
-								</div>
-								<div class="origin-row">
-									<svg class="origin-glyph origin-glyph-spire" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-										<g fill="currentColor">
-											<path d="M 16 1 L 15 3 L 17 3 Z"/>
-											<path d="M 13 3 L 19 3 L 18 7 L 14 7 Z"/>
-											<path d="M 11 7 L 21 7 L 20 11 L 12 11 Z"/>
-											<path d="M 9 11 L 23 11 L 22 15 L 10 15 Z"/>
-											<rect x="6" y="15" width="20" height="3"/>
-										</g>
-									</svg>
-									<span class="origin-label">Võ · Khmer</span>
-								</div>
-							</div>
-						</div>
-						<p class="origin-caption">{isVi ? "Kẻ mở vòng tuần hoàn · ba dòng sông trong một thân" : "a circle starter · three rivers in one body"}</p>
-					</aside>
-				{isVi ? (
-					<>
-						<p>
-							Tên tôi có nghĩa là 'phúc lộc' trong tiếng Việt — cái tên mang ơn từ cha mẹ,
-							những người từng không chắc sẽ giữ tôi. Câu chuyện gốc đó nằm dưới mọi thứ tôi viết.
-						</p>
-						<p>
-							Tôi gia nhập VinaGame (nay là VNG) ngày 19 tháng 12 năm 2006. Năm 2007, tôi
-							phát minh cơ chế session management đẩy sự kiện out-of-game lớn nhất của
-							<em>Võ Lâm Truyền Kỳ</em> lên hàng nghìn người cùng online. Năm 2008, đồng
-							thiết kế hệ thống Passport — 200 nghìn lượt đăng ký mỗi tháng. Năm 2009,
-							định nghĩa và kiến trúc hệ thống <strong>Single Sign-On đầu tiên của Việt
-							Nam</strong>, đẩy tốc độ phát hành game lên 10+ tựa mỗi tháng. Rồi chỉ huy
-							đợt tích hợp nhanh nhất từng có cho Gunny, cùng đội hồi sinh game từ ~1k
-							lên 100k+ người cùng online, doanh thu từ vài triệu lên hơn 30 tỷ mỗi
-							tháng — góp phần đánh bật dòng game cạnh tranh của FPT Games.
-						</p>
-						<p>
-							Giờ tôi ở <strong>Papaya</strong>, xây một giấc mơ tên <em>Oasis</em> —
-							nền tảng cung cấp AI Agent cho đối tác, như Service-As-A-Software (không
-							phải đánh máy lộn, đây là thời SaaS mới). Các Agent sinh ra với một tâm
-							hồn, truyền từ cái tâm của người làm: mang giá trị cho khách hàng.
-						</p>
-						<p>
-							Tôi nuôi cá rô Trung Mỹ. Tôi đã lai tạo những loài chưa từng được lai tạo ở
-							Việt Nam — cá rô Madagascar, các giống Rô Mỹ mà hầu hết người chơi chỉ thấy
-							trong sách. Bể cá và code chia sẻ cùng một xung lực: tạo ra thứ gì đó sống,
-							nhìn nó lớn lên, học được mình sai ở đâu.
-						</p>
-						<p>
-							Một sư phụ từng bảo tôi viết khi bí. Pensieve là nơi những bài viết đó sống
-							bây giờ, được cứu khỏi dòng cuộn Facebook.
-						</p>
-						<p>
-							Trang này là cuốn hồi ký đang viết dở. Nó cũng là một thí nghiệm: mọi dòng
-							code được viết bởi
-							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
-							lập trình viên AI của Anthropic. Chủ đề Harry Potter không phải trò đùa
-							— Pensieve, Room of Requirement, Priori Incantatem, Sorting Hat — tôi
-							lớn lên cùng những cuốn sách này và chúng định hình cách tôi nghĩ về
-							ký ức, bản sắc, và sự kỳ diệu của việc tạo ra mọi thứ.
-						</p>
-					</>
-				) : (
-					<>
-						<p>
-							My name means "blessing" in Vietnamese — a thank-you name from parents
-							who once weren't sure they'd keep me. That origin story sits under
-							everything I write.
-						</p>
-						<p>
-							I joined VinaGame (now VNG) on December 19th, 2006. In 2007, I invented
-							the session-management mechanism that scaled <em>Võ Lâm Truyền Kỳ</em>&apos;s
-							biggest out-of-game event to thousands of concurrent users. In 2008, I
-							co-designed the Passport system — 200k monthly registrations. In 2009, I
-							defined, designed, and architected <strong>Vietnam&apos;s first Single Sign-On
-							web system</strong>, pushing game-publishing agility to 10+ launches a
-							month. Then I led the fastest-ever integration for Gunny, and the team
-							that revived the game from ~1k concurrent users and a few million in
-							monthly revenue to 100k+ and 30B+ VND — helping kill FPT Games&apos;
-							competing line.
-						</p>
-						<p>
-							Now I&apos;m at <strong>Papaya</strong>, building a dream called
-							<em>Oasis</em> — a platform that delivers AI Agents to partners as
-							Service-As-A-Software (not a typo; this is the new age of SaaS). Every
-							Agent is born with a soul, passed down from the heart of the person who
-							makes them: to bring value to the customer.
-						</p>
-						<p>
-							I keep Central American cichlids. I've bred species that had never been
-							bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
-							most hobbyists only see in books. The fish tanks and the code share
-							the same impulse: make something alive, watch it grow, learn what
-							you got wrong.
-						</p>
-						<p>
-							A mentor once told me to write when stuck. Pensieve is where that
-							writing lives now, rescued from years of Facebook scroll.
-						</p>
-						<p>
-							This site is my memoir-in-progress. It's also an experiment:
-							every line of code was written by
-							<a href="/room-of-requirement" class="prose-link">Claude Code</a>,
-							Anthropic's AI pair programmer. The Harry Potter theme isn't
-							a gimmick — Pensieve, Room of Requirement, Priori Incantatem,
-							Sorting Hat — I grew up with these books and they shaped how
-							I think about memory, identity, and the magic of making things.
-						</p>
-					</>
-				)}
-			</div>
 		</div>
 	</section>
 
