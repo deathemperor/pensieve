@@ -389,7 +389,8 @@
 				{ "slug": "external_url_label", "label": "External URL Label", "type": "string" },
 				{ "slug": "source", "label": "Source", "type": "string", "required": true },
 				{ "slug": "source_id", "label": "Source ID", "type": "string" },
-				{ "slug": "visibility", "label": "Visibility", "type": "string" }
+				{ "slug": "visibility", "label": "Visibility", "type": "string" },
+				{ "slug": "tags", "label": "Tags (comma-separated)", "type": "string" }
 			]
 		},
 		{
@@ -32702,7 +32703,8 @@
 					"external_url": "https://en.wikipedia.org/wiki/2017%E2%80%9318_Manchester_United_F.C._season",
 					"external_url_label": "match — MU 2–0 Swansea",
 					"source": "manual",
-					"visibility": "public"
+					"visibility": "public",
+					"tags": "uk-2018, football, birthday"
 				}
 			},
 			{
@@ -32720,7 +32722,8 @@
 					"category": "love",
 					"location": "{\"name\":\"Buckingham Palace\",\"city\":\"London\",\"country\":\"GB\",\"lat\":51.50,\"lng\":-0.14}",
 					"source": "manual",
-					"visibility": "public"
+					"visibility": "public",
+					"tags": "uk-2018, engagement"
 				}
 			},
 			{
