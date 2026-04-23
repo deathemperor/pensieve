@@ -168,32 +168,100 @@ Astro.response.headers.set(
       </dl>
     </section>
   </main>
+
+  <dialog id="compose-dialog" class="compose-dialog">
+    <form id="compose-form" method="dialog">
+      <header class="compose-head">
+        <h3>{isVi ? "Soạn email" : "Compose email"}</h3>
+        <span id="compose-to" class="compose-to muted"></span>
+      </header>
+      <label class="compose-field">
+        <span>{isVi ? "Chủ đề" : "Subject"}</span>
+        <input type="text" name="subject" required maxlength="200" />
+      </label>
+      <label class="compose-field">
+        <span>{isVi ? "Nội dung" : "Body"}</span>
+        <textarea name="body" rows="8" required maxlength="10000"></textarea>
+      </label>
+      <p id="compose-error" class="error" hidden></p>
+      <div class="compose-actions">
+        <button type="button" id="compose-cancel" class="btn-ghost">{isVi ? "Huỷ" : "Cancel"}</button>
+        <button type="submit" id="compose-send" class="btn-primary">{isVi ? "Gửi" : "Send"}</button>
+      </div>
+    </form>
+  </dialog>
 </Base>
 
 <script>
+  const dialog = document.getElementById("compose-dialog") as HTMLDialogElement | null;
+  const form = document.getElementById("compose-form") as HTMLFormElement | null;
+  const toEl = document.getElementById("compose-to") as HTMLSpanElement | null;
+  const errEl = document.getElementById("compose-error") as HTMLParagraphElement | null;
+  const cancelBtn = document.getElementById("compose-cancel") as HTMLButtonElement | null;
+  const sendBtn = document.getElementById("compose-send") as HTMLButtonElement | null;
+  let currentContact: { id: string; email: string } | null = null;
+
+  function reset() {
+    currentContact = null;
+    if (form) form.reset();
+    if (errEl) errEl.hidden = true;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = "Send"; }
+  }
+
+  cancelBtn?.addEventListener("click", () => {
+    dialog?.close();
+    reset();
+  });
+
+  dialog?.addEventListener("click", (e) => {
+    // Click on backdrop closes
+    if (e.target === dialog) { dialog.close(); reset(); }
+  });
+
   document.querySelectorAll<HTMLButtonElement>("button.compose-btn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
+    btn.addEventListener("click", () => {
       const email = btn.dataset.email;
       const cid = btn.dataset.contact;
-      if (!email || !cid) return;
-      const subject = window.prompt(`Subject for email to ${email}:`);
-      if (subject === null || !subject.trim()) return;
-      const body = window.prompt("Body (plain text):");
-      if (body === null || !body.trim()) return;
-
-      const res = await fetch("/api/portraits/outreach/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contact_id: cid, to: email, subject, body }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { resend_id?: string; error?: string; hint?: string };
-      if (res.ok) {
-        alert(`Sent. Resend ID: ${data.resend_id ?? "unknown"}`);
-        window.location.reload();
-      } else {
-        alert(`Send failed: ${data.error ?? res.statusText}${data.hint ? ` — ${data.hint}` : ""}`);
-      }
+      if (!email || !cid || !dialog || !toEl) return;
+      currentContact = { id: cid, email };
+      toEl.textContent = `→ ${email}`;
+      dialog.showModal();
+      (form?.querySelector("input[name=subject]") as HTMLInputElement | null)?.focus();
     });
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentContact || !sendBtn || !errEl) return;
+    const fd = new FormData(form);
+    const subject = String(fd.get("subject") ?? "").trim();
+    const body = String(fd.get("body") ?? "").trim();
+    if (!subject || !body) return;
+
+    errEl.hidden = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Sending…";
+
+    const res = await fetch("/api/portraits/outreach/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_id: currentContact.id, to: currentContact.email, subject, body }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { resend_id?: string; error?: string; hint?: string; retry_after?: number };
+
+    if (res.ok) {
+      dialog?.close();
+      reset();
+      window.location.reload();
+      return;
+    }
+
+    const hint = data.hint ? ` — ${data.hint}` : "";
+    const retry = data.retry_after ? ` (retry in ${data.retry_after}s)` : "";
+    errEl.textContent = `Send failed: ${data.error ?? res.statusText}${hint}${retry}`;
+    errEl.hidden = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send";
   });
 </script>
 
@@ -294,4 +362,38 @@ Astro.response.headers.set(
     border-bottom: 1px dashed #3a3a3a;
   }
   .edit-link:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+
+  /* Compose dialog */
+  .compose-dialog {
+    background: #0f0f0f;
+    color: #e8e6e0;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 0;
+    max-width: 560px;
+    width: calc(100% - 2rem);
+  }
+  .compose-dialog::backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+  .compose-dialog[open] > form { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .compose-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .compose-head h3 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.1rem; margin: 0; color: #e8e6e0; }
+  .compose-to { font-size: 0.85rem; font-family: "JetBrains Mono", monospace; }
+  .compose-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .compose-field span { font-size: 0.75rem; color: #8a877e; letter-spacing: 0.04em; text-transform: uppercase; }
+  .compose-field input, .compose-field textarea {
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0;
+    padding: 0.55rem 0.7rem; border-radius: 3px; font: inherit;
+  }
+  .compose-field input:focus, .compose-field textarea:focus { border-color: #d4a89a; outline: none; }
+  .compose-field textarea { resize: vertical; min-height: 8rem; }
+  .compose-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .compose-actions button {
+    padding: 0.5rem 1rem; border-radius: 3px; cursor: pointer; font: inherit; background: transparent;
+    border: 1px solid #3a3a3a; color: #e8e6e0;
+  }
+  .compose-actions .btn-ghost:hover { border-color: #6a665e; background: #161616; }
+  .compose-actions .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .compose-actions .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+  .compose-actions .btn-primary:disabled { opacity: 0.5; cursor: wait; }
+  .compose-dialog .error { color: #e57373; font-size: 0.875rem; margin: 0; }
 </style>
