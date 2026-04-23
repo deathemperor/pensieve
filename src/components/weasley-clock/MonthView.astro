@@ -41,7 +41,15 @@ const headings = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 		const hasToday = row.some((c) => c.isToday);
 		return (
 			<div class={`wc-month__row ${hasToday ? "wc-month__row--today" : ""}`}>
-				{row.map((c) => <DayCell date={c.date} occurrences={c.occurrences} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />)}
+				{row.map((c) => (
+					c.isToday
+						? <DayCell date={c.date} occurrences={c.occurrences} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />
+						: (
+							<a class="wc-month__cell-link" href={`/hogwarts/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}>
+								<DayCell date={c.date} occurrences={c.occurrences} isToday={false} isDimmed={c.isDimmed} variant="month" />
+							</a>
+						)
+				))}
 			</div>
 		);
 	})}
@@ -54,4 +62,6 @@ const headings = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 	.wc-month__row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
 	.wc-month__row--today :global(.wc-day--month) { min-height: 160px; padding: 8px; }
 	.wc-month__row--today :global(.wc-day--month .wc-chip) { padding: 3px 5px; font-size: 10px; }
+	.wc-month__cell-link { display: block; text-decoration: none; color: inherit; }
+	.wc-month__cell-link:hover :global(.wc-day--month) { background: #1f1710; }
 </style>
