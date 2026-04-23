@@ -245,6 +245,21 @@ declare global {
       if (nextId) setActive(nextId);
     });
   }
+  // ---------- Story threads toggle ----------
+  const threadBtn = document.querySelector<HTMLButtonElement>("[data-thread-toggle]");
+  if (threadBtn && frameEl) {
+    threadBtn.addEventListener("click", () => {
+      const on = frameEl.hasAttribute("data-threads-on");
+      if (on) {
+        frameEl.removeAttribute("data-threads-on");
+        threadBtn.setAttribute("aria-pressed", "false");
+      } else {
+        frameEl.setAttribute("data-threads-on", "");
+        threadBtn.setAttribute("aria-pressed", "true");
+      }
+    });
+  }
+
   // ---------- Keyboard shortcut overlay ----------
   const overlay = document.querySelector<HTMLElement>(".cc-shortcut-overlay");
   const openBtn = document.querySelector<HTMLButtonElement>("[data-shortcut-open]");

@@ -8,6 +8,7 @@ import {
 import { getChronicleCategory } from "../../themes/chronicleCategories";
 import { getCurrentLang } from "../../utils/lang";
 import visitedCitiesData from "../../data/visited-cities.json";
+import { worldOutlines } from "../../data/world-outlines";
 
 interface Props {
 	entries: any[];
@@ -159,6 +160,15 @@ const helperText = isVi
 				aria-label={heading}
 				preserveAspectRatio="xMidYMid meet"
 			>
+				{worldOutlines.map((outline) => {
+					const pts = outline.points
+						.map(([lng, lat]) => {
+							const p = projectLatLng({ lat, lng }, bounds, viewport);
+							return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+						})
+						.join(" ");
+					return <polygon class="cc-atlas-continents" points={pts} />;
+				})}
 				{lngLines.map((l) => {
 					const { x } = projectLatLng({ lat: 0, lng: l }, bounds, viewport);
 					return (

@@ -64,6 +64,14 @@ const ogImage = `/pensieve/chronicle/${permalinkSlug}/og.png`;
 		<a href="/pensieve/chronicle" class="cc-permalink-back">{siteBack}</a>
 
 		<article class="cc-permalink-card" style={`--star:${cat.hex};`}>
+			{entry.data.featured_image?.src && (
+				<img
+					class="cc-permalink-hero"
+					src={entry.data.featured_image.src}
+					alt={entry.data.featured_image.alt ?? title}
+					loading="eager"
+				/>
+			)}
 			<header class="cc-permalink-header">
 				<span class="cc-permalink-glyph">{cat.symbol}</span>
 				<p class="cc-permalink-date">{romanDate}</p>
