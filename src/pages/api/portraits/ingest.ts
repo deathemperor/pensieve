@@ -53,8 +53,10 @@ export const POST: APIRoute = async (ctx) => {
 
   const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
 
-  // Idempotency: if an idempotency_key is provided and the contact already exists
-  // with matching external_ids, return it instead of creating a new one.
+  // Idempotency: fast path — if a row already exists with this key, return it.
+  // Race safety: regardless of this check, a UNIQUE index on
+  // json_extract(external_ids, '$.ingest_idempotency_key') (migration 003)
+  // guarantees the INSERT below fails on concurrent dup requests.
   if (body.idempotency_key) {
     const existing = await db
       .prepare(
@@ -69,24 +71,41 @@ export const POST: APIRoute = async (ctx) => {
     ? JSON.stringify({ ingest_idempotency_key: body.idempotency_key })
     : undefined;
 
-  const created = await createContact(db, {
-    ...body.contact,
-    source: body.source ?? "openclaw",
-  });
+  let createdId: string;
+  try {
+    const created = await createContact(db, {
+      ...body.contact,
+      source: body.source ?? "openclaw",
+    });
+    createdId = created.id;
 
-  if (external_ids) {
-    await db.prepare("UPDATE contacts SET external_ids=? WHERE id=?").bind(external_ids, created.id).run();
+    if (external_ids) {
+      await db.prepare("UPDATE contacts SET external_ids=? WHERE id=?").bind(external_ids, created.id).run();
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    // Concurrent dup hit the UNIQUE index — re-read and return the winner.
+    if (body.idempotency_key && (msg.includes("UNIQUE") || msg.includes("constraint"))) {
+      const winner = await db
+        .prepare(
+          "SELECT id FROM contacts WHERE json_extract(external_ids, '$.ingest_idempotency_key')=? AND deleted_at IS NULL",
+        )
+        .bind(body.idempotency_key)
+        .first<{ id: string }>();
+      if (winner) return json({ ok: true, contact_id: winner.id, created: false });
+    }
+    return json({ error: `ingest_failed: ${msg}` }, 500);
   }
 
   // Optionally link a captured card
   if (body.card_r2_key) {
     await db
       .prepare("UPDATE contact_cards SET contact_id=? WHERE r2_key=?")
-      .bind(created.id, body.card_r2_key)
+      .bind(createdId, body.card_r2_key)
       .run();
   }
 
-  return json({ ok: true, contact_id: created.id, created: true }, 201);
+  return json({ ok: true, contact_id: createdId, created: true }, 201);
 };
 
 function json(body: unknown, status = 200) {

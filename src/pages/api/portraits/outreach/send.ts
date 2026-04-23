@@ -30,7 +30,11 @@ export const POST: APIRoute = async (ctx) => {
   const apiKey = (env as any).RESEND_API_KEY as string | undefined;
   if (!apiKey) return json({ error: "resend_unavailable", hint: "set RESEND_API_KEY via wrangler secret" }, 503);
 
-  const from = body.from ?? (env as any).PORTRAITS_OUTREACH_FROM ?? "loc@huuloc.com";
+  // Fail-closed on from address — no hardcoded personal email as last-resort.
+  const from = body.from ?? ((env as any).PORTRAITS_OUTREACH_FROM as string | undefined);
+  if (!from || !from.trim()) {
+    return json({ error: "outreach_from_unconfigured", hint: "pass body.from or set PORTRAITS_OUTREACH_FROM secret" }, 503);
+  }
 
   let resendResponse: { id?: string; error?: unknown };
   try {

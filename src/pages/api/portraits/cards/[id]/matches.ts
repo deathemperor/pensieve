@@ -32,22 +32,32 @@ export const GET: APIRoute = async (ctx) => {
 
   if (valueHits.size === 0) return json({ matches: [] });
 
-  const placeholders = Array.from(valueHits).map(() => "?").join(",");
+  const idList = Array.from(valueHits);
+  const placeholders = idList.map(() => "?").join(",");
   const contactsRs = await db
     .prepare(`SELECT id, full_name, company FROM contacts WHERE id IN (${placeholders}) AND is_placeholder=0 AND deleted_at IS NULL`)
-    .bind(...valueHits)
+    .bind(...idList)
     .all<{ id: string; full_name: string; company: string | null }>();
 
-  const candidates: Candidate[] = [];
-  for (const c of contactsRs.results ?? []) {
-    const chs = await db.prepare("SELECT kind, value FROM contact_channels WHERE contact_id=?").bind(c.id).all<{ kind: string; value: string }>();
-    candidates.push({
-      id: c.id,
-      name: c.full_name,
-      emails: (chs.results ?? []).filter((x) => x.kind === "email").map((x) => x.value),
-      phones: (chs.results ?? []).filter((x) => x.kind === "phone").map((x) => x.value),
-    });
+  // Single query for all channels across all candidate contacts (was N+1 before).
+  const channelsByContact = new Map<string, { emails: string[]; phones: string[] }>();
+  if (idList.length > 0) {
+    const chRs = await db
+      .prepare(`SELECT contact_id, kind, value FROM contact_channels WHERE contact_id IN (${placeholders}) AND kind IN ('email','phone')`)
+      .bind(...idList)
+      .all<{ contact_id: string; kind: string; value: string }>();
+    for (const r of (chRs.results ?? []) as Array<{ contact_id: string; kind: string; value: string }>) {
+      const bucket = channelsByContact.get(r.contact_id) ?? { emails: [], phones: [] };
+      if (r.kind === "email") bucket.emails.push(r.value);
+      else if (r.kind === "phone") bucket.phones.push(r.value);
+      channelsByContact.set(r.contact_id, bucket);
+    }
   }
+
+  const candidates: Candidate[] = ((contactsRs.results ?? []) as Array<{ id: string; full_name: string; company: string | null }>).map((c) => {
+    const ch = channelsByContact.get(c.id) ?? { emails: [], phones: [] };
+    return { id: c.id, name: c.full_name, emails: ch.emails, phones: ch.phones };
+  });
 
   const results = matchCandidates(candidates, {
     emails: email ? [email] : [],
