@@ -12,6 +12,7 @@ import Relationships from "../../../components/portraits/Relationships.astro";
 import IntroPaths from "../../../components/portraits/IntroPaths.astro";
 import Mentions from "../../../components/portraits/Mentions.astro";
 import Deals from "../../../components/portraits/Deals.astro";
+import Collaborators from "../../../components/portraits/Collaborators.astro";
 import { tierName } from "../../../lib/portraits/tier-labels";
 import { getCurrentLang } from "../../../utils/lang";
 
@@ -141,6 +142,8 @@ Astro.response.headers.set(
     {auth.admin && contact.is_placeholder !== 1 && <Mentions db={db} contactId={contact.id} />}
 
     {auth.admin && contact.is_placeholder !== 1 && <Deals db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <Collaborators db={db} contactId={contact.id} />}
 
     {auth.admin && cards.length > 0 && (
       <section class="section">

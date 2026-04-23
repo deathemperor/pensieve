@@ -1,0 +1,123 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface CollabRow { id: string; email: string; access: "view" | "edit"; granted_by: string; created_at: string }
+const rs = await db
+  .prepare("SELECT id, email, access, granted_by, created_at FROM contact_collaborators WHERE contact_id = ? ORDER BY created_at DESC")
+  .bind(contactId)
+  .all<CollabRow>();
+const rows = (rs.results ?? []) as CollabRow[];
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<section class="section collaborators">
+  <h2 class="section-title">{isVi ? "Người cộng tác" : "Collaborators"}</h2>
+  <p class="hint">
+    {isVi
+      ? "Cho một tài khoản EmDash khác quyền xem hoặc chỉnh sửa chỉ chân dung này (không ảnh hưởng các liên lạc khác)."
+      : "Grant another EmDash user view or edit access to this contact only — doesn't leak any other row."}
+  </p>
+
+  {rows.length === 0 ? (
+    <p class="muted">{isVi ? "Chưa chia sẻ cho ai." : "Not shared with anyone."}</p>
+  ) : (
+    <ul class="collab-list">
+      {rows.map((c) => (
+        <li class="collab" data-id={c.id}>
+          <span class="collab-email">{c.email}</span>
+          <span class={`collab-access access-${c.access}`}>{c.access === "edit" ? (isVi ? "chỉnh sửa" : "edit") : (isVi ? "xem" : "view")}</span>
+          <span class="collab-meta">{fmtDate(c.created_at)} · {isVi ? "bởi" : "by"} {c.granted_by}</span>
+          <button class="revoke-btn" data-id={c.id}>{isVi ? "thu hồi" : "revoke"}</button>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <form id="collab-form" class="collab-form" data-contact={contactId}>
+    <label>
+      <span>{isVi ? "Email" : "Email"} <em>*</em></span>
+      <input type="email" name="email" required placeholder="editor@example.com" />
+    </label>
+    <label>
+      <span>{isVi ? "Quyền" : "Access"}</span>
+      <select name="access">
+        <option value="view" selected>{isVi ? "Xem" : "View"}</option>
+        <option value="edit">{isVi ? "Chỉnh sửa" : "Edit"}</option>
+      </select>
+    </label>
+    <button type="submit">{isVi ? "Cấp quyền" : "Grant"}</button>
+    <p id="collab-error" class="error" hidden></p>
+  </form>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("collab-form");
+  const errEl = document.getElementById("collab-error");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errEl.hidden = true;
+    const fd = new FormData(form);
+    const res = await fetch(`/api/portraits/${contactId}/collaborators`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: String(fd.get("email") ?? "").trim(),
+        access: String(fd.get("access") ?? "view"),
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      errEl.textContent = `Grant failed: ${d.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    window.location.reload();
+  });
+
+  document.querySelectorAll("button.revoke-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+      if (!window.confirm("Revoke this collaborator's access?")) return;
+      const res = await fetch(`/api/portraits/${contactId}/collaborators/${id}`, { method: "DELETE" });
+      if (res.ok) window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .hint { color: #8a877e; font-size: 0.875rem; margin: 0 0 0.75rem; }
+  .collab-list { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .collab { display: grid; grid-template-columns: 1fr auto auto auto; gap: 0.5rem; align-items: center; padding: 0.4rem 0.55rem; border: 1px solid #1a1a1a; border-radius: 3px; }
+  .collab-email { color: #e8e6e0; font-family: "JetBrains Mono", monospace; font-size: 0.85rem; }
+  .collab-access { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.45rem; border-radius: 2px; border: 1px solid #2a2a2a; color: #9a968c; }
+  .access-edit { border-color: #d4a89a; color: #d4a89a; }
+  .collab-meta { color: #6a665e; font-size: 0.75rem; }
+  .revoke-btn { background: transparent; border: 1px solid #2a2a2a; color: #6a665e; padding: 0.15rem 0.5rem; border-radius: 2px; cursor: pointer; font: inherit; font-size: 0.75rem; }
+  .revoke-btn:hover { border-color: #e57373; color: #e57373; }
+  @media (max-width: 600px) {
+    .collab { grid-template-columns: 1fr auto; }
+    .collab-meta { display: none; }
+  }
+
+  .collab-form { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: flex-end; padding-top: 0.5rem; }
+  .collab-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8125rem; color: #8a877e; }
+  .collab-form label em { color: #d4a89a; font-style: normal; }
+  .collab-form input, .collab-form select { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.55rem; border-radius: 3px; font: inherit; }
+  .collab-form input { min-width: 16rem; }
+  .collab-form button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
+  .collab-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .muted { color: #6a665e; }
+  .error { color: #e57373; font-size: 0.875rem; flex: 1 1 100%; margin: 0.25rem 0 0; }
+</style>
