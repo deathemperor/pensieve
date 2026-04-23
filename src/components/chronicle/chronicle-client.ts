@@ -245,6 +245,45 @@ declare global {
       if (nextId) setActive(nextId);
     });
   }
+  // ---------- Atlas view toggle (stylized SVG vs real tiles) ----------
+  const svgAtlas = document.querySelector<HTMLElement>("[data-atlas-svg]");
+  const tileAtlas = document.querySelector<HTMLElement>("[data-atlas-tiles]");
+  const viewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-atlas-view]"));
+  let tilesInit = false;
+  async function setAtlasView(mode: "svg" | "tiles") {
+    viewButtons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", btn.dataset.atlasView === mode ? "true" : "false");
+    });
+    if (!svgAtlas || !tileAtlas) return;
+    if (mode === "tiles") {
+      svgAtlas.hidden = true;
+      tileAtlas.hidden = false;
+      tileAtlas.removeAttribute("aria-hidden");
+      if (!tilesInit) {
+        tilesInit = true;
+        try {
+          const mod = await import("./atlas-tiles-client");
+          mod.initAtlasTiles(tileAtlas);
+        } catch (err) {
+          console.error("Failed to init atlas tiles:", err);
+          // Fall back to SVG view on failure.
+          svgAtlas.hidden = false;
+          tileAtlas.hidden = true;
+        }
+      }
+    } else {
+      svgAtlas.hidden = false;
+      tileAtlas.hidden = true;
+      tileAtlas.setAttribute("aria-hidden", "true");
+    }
+  }
+  viewButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.atlasView as "svg" | "tiles" | undefined;
+      if (mode) setAtlasView(mode);
+    });
+  });
+
   // ---------- Story threads toggle ----------
   const threadBtn = document.querySelector<HTMLButtonElement>("[data-thread-toggle]");
   if (threadBtn && frameEl) {

@@ -149,9 +149,16 @@ const helperText = isVi
 	<header class="cc-atlas-header">
 		<h2 id="cc-atlas-heading">{heading}</h2>
 		<p class="cc-atlas-helper">{helperText}</p>
+		<div class="cc-atlas-view-toggle" role="radiogroup" aria-label={isVi ? "Chế độ bản đồ" : "Map mode"}>
+			<button type="button" data-atlas-view="svg" aria-pressed="true">{isVi ? "Stylized" : "Stylized"}</button>
+			<button type="button" data-atlas-view="tiles" aria-pressed="false">{isVi ? "Thật" : "Real tiles"}</button>
+		</div>
 	</header>
 
-	<div class="cc-atlas-body">
+	<script id="cc-atlas-cities-data" type="application/json" set:html={JSON.stringify(visitedCities)}></script>
+	<div class="cc-atlas-tiles-container" data-atlas-tiles hidden aria-hidden="true"></div>
+
+	<div class="cc-atlas-body" data-atlas-svg>
 		<div class="cc-atlas-canvas-wrap">
 			<svg
 				class="cc-atlas-canvas"

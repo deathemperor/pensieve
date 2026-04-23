@@ -32782,6 +32782,82 @@
 					"source": "manual",
 					"visibility": "public"
 				}
+			},
+			{
+				"id": "gmaps-hoi-an-2023-09-02",
+				"slug": "gmaps-hoi-an-2023-09-02",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hội An",
+					"title_en": "[draft] Visit to Hội An",
+					"title_vi": "[nháp] Ghé Hội An",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2023-09-02",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hội An\",\"city\":\"Hội An\",\"country\":\"VN\",\"lat\":15.88,\"lng\":108.33}",
+					"source": "google-maps",
+					"source_id": "gmaps-hoi-an-2023-09-02",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-bangkok-2024-03-30",
+				"slug": "gmaps-bangkok-2024-03-30",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Bangkok",
+					"title_en": "[draft] Visit to Bangkok",
+					"title_vi": "[nháp] Ghé Bangkok",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2024-03-30",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Bangkok\",\"city\":\"Bangkok\",\"country\":\"TH\",\"lat\":13.75,\"lng\":100.50}",
+					"source": "google-maps",
+					"source_id": "gmaps-bangkok-2024-03-30",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-hanoi-2026-03-11",
+				"slug": "gmaps-hanoi-2026-03-11",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hà Nội",
+					"title_en": "[draft] Visit to Hà Nội",
+					"title_vi": "[nháp] Ghé Hà Nội",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2026-03-11",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hà Nội\",\"city\":\"Hà Nội\",\"country\":\"VN\",\"lat\":21.02,\"lng\":105.85}",
+					"source": "google-maps",
+					"source_id": "gmaps-hanoi-2026-03-11",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-hongkong-2026-03-25",
+				"slug": "gmaps-hongkong-2026-03-25",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hong Kong",
+					"title_en": "[draft] Visit to Hong Kong",
+					"title_vi": "[nháp] Ghé Hong Kong",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2026-03-25",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hong Kong\",\"city\":\"Hong Kong\",\"country\":\"HK\",\"lat\":22.30,\"lng\":114.17}",
+					"source": "google-maps",
+					"source_id": "gmaps-hongkong-2026-03-25",
+					"visibility": "public"
+				}
 			}
 		]
 	}
