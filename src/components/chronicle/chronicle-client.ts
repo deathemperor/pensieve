@@ -245,4 +245,29 @@ declare global {
       if (nextId) setActive(nextId);
     });
   }
+  // ---------- Keyboard shortcut overlay ----------
+  const overlay = document.querySelector<HTMLElement>(".cc-shortcut-overlay");
+  const openBtn = document.querySelector<HTMLButtonElement>("[data-shortcut-open]");
+  const closeShortcutBtn = overlay?.querySelector<HTMLButtonElement>("[data-shortcut-close]");
+  function toggleShortcuts(force?: boolean) {
+    if (!overlay) return;
+    const shouldOpen = force ?? !overlay.hasAttribute("data-open");
+    if (shouldOpen) overlay.setAttribute("data-open", "");
+    else overlay.removeAttribute("data-open");
+  }
+  openBtn?.addEventListener("click", () => toggleShortcuts(true));
+  closeShortcutBtn?.addEventListener("click", () => toggleShortcuts(false));
+  overlay?.addEventListener("click", (e) => { if (e.target === overlay) toggleShortcuts(false); });
+  document.addEventListener("keydown", (e) => {
+    const target = e.target as HTMLElement | null;
+    const tag = target?.tagName?.toLowerCase();
+    if (tag === "input" || tag === "textarea" || target?.isContentEditable) return;
+    if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+      e.preventDefault();
+      toggleShortcuts();
+    }
+    if (e.key === "Escape" && overlay?.hasAttribute("data-open")) {
+      toggleShortcuts(false);
+    }
+  });
 })();

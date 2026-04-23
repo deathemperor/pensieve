@@ -1,0 +1,39 @@
+---
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+---
+
+<button
+  class="cc-shortcut-hint"
+  aria-label={isVi ? "Phím tắt (?)" : "Keyboard shortcuts (?)"}
+  title={isVi ? "Phím tắt (?)" : "Keyboard shortcuts (?)"}
+  data-shortcut-open
+>?</button>
+
+<div class="cc-shortcut-overlay" role="dialog" aria-modal="true" aria-labelledby="cc-shortcut-title">
+  <div class="cc-shortcut-panel">
+    <button class="cc-shortcut-close" data-shortcut-close aria-label={isVi ? "Đóng" : "Close"}>×</button>
+    <h3 id="cc-shortcut-title">{isVi ? "Phím tắt" : "Keyboard shortcuts"}</h3>
+    <dl>
+      <dt><kbd>Tab</kbd></dt>
+      <dd>{isVi ? "Di chuyển qua các sao / mục" : "Move through stars / entries"}</dd>
+      <dt><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></dt>
+      <dd>{isVi ? "Khi một sao đang được chọn: chuyển sang sao kế tiếp" : "Move to adjacent star when focused"}</dd>
+      <dt><kbd>Enter</kbd></dt>
+      <dd>{isVi ? "Mở mục chi tiết" : "Open entry detail modal"}</dd>
+      <dt><kbd>←</kbd> <kbd>→</kbd></dt>
+      <dd>{isVi ? "Trong modal: mục kế tiếp / trước đó" : "Inside modal: newer / older entry"}</dd>
+      <dt><kbd>Esc</kbd></dt>
+      <dd>{isVi ? "Đóng modal hoặc bảng phím tắt này" : "Close modal or this panel"}</dd>
+      <dt><kbd>?</kbd></dt>
+      <dd>{isVi ? "Mở / đóng bảng này" : "Open / close this panel"}</dd>
+    </dl>
+    <p style="color:#62676c;font-size:12px;margin:0;">
+      {isVi
+        ? "Mẹo: bấm vào chấm màu ở chân trang để lọc theo danh mục."
+        : "Tip: click a legend dot at the bottom of the chart to filter by category."}
+    </p>
+  </div>
+</div>

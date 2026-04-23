@@ -61,6 +61,13 @@ const groups = groupByYear(entries.map((e) => ({
                 )}
               </h4>
               {subtitle && <em>{subtitle}</em>}
+              {e.data.tags && (
+                <ul class="cc-tags">
+                  {(e.data.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean).map((t: string) => (
+                    <li class="cc-tag">{t}</li>
+                  ))}
+                </ul>
+              )}
               {(e.data.linked_post_ids || e.data.external_url) && (
                 <span class="cc-entry-source">
                   {e.data.linked_post_ids && (
