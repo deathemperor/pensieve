@@ -739,6 +739,106 @@
   pointer-events: none;
 }
 
+/* === Per-year Wrapped recap (collapsible above each year section) === */
+.cc-wrapped {
+  margin: 14px 0 8px;
+  border: 1px solid rgba(212, 168, 67, 0.12);
+  border-radius: 8px;
+  background: rgba(212, 168, 67, 0.03);
+}
+.cc-wrapped[open] {
+  background: rgba(212, 168, 67, 0.06);
+}
+.cc-wrapped-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 11px;
+}
+.cc-wrapped-summary::-webkit-details-marker { display: none; }
+.cc-wrapped-summary::before {
+  content: "▸";
+  color: rgba(212, 168, 67, 0.6);
+  font-size: 9px;
+  transition: transform 0.15s;
+}
+.cc-wrapped[open] .cc-wrapped-summary::before {
+  transform: rotate(90deg);
+}
+.cc-wrapped-year {
+  font-family: "Inter Tight", serif;
+  color: rgba(212, 168, 67, 0.85);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+.cc-wrapped-count {
+  color: #8a8f98;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+.cc-wrapped-tilt {
+  margin-left: auto;
+  font-size: 10px;
+  color: #62676c;
+  font-style: italic;
+}
+.cc-wrapped-tilt[data-tilt="up"] { color: rgba(63, 185, 80, 0.75); }
+.cc-wrapped-tilt[data-tilt="down"] { color: rgba(181, 75, 60, 0.75); }
+
+.cc-wrapped-body {
+  padding: 0 12px 12px;
+}
+.cc-wrapped-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cc-wrapped-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(8, 9, 10, 0.5);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 10px;
+}
+.cc-wrapped-cat i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--star);
+}
+.cc-wrapped-cat-label {
+  color: #c5c8cc;
+}
+.cc-wrapped-cat-count {
+  color: var(--star);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+}
+.cc-wrapped-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 10.5px;
+  color: #8a8f98;
+  font-family: "Inter", sans-serif;
+}
+.cc-wrapped-stats strong {
+  color: #f7f8f8;
+  font-weight: 600;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+}
+
 /* === Tags row === */
 .cc-tags {
   display: flex;
