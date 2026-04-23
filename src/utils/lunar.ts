@@ -12,7 +12,7 @@
  * Supported range: Gregorian 1900-01-01 through 2100-12-31 (HCMC local).
  */
 
-import { TABLE_1900, TABLE_2000, YEAR_2100 } from "./lunar-table";
+import { YEAR_INFO, TABLE_START_YEAR, TABLE_END_YEAR } from "./lunar-table";
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -136,10 +136,10 @@ interface DecodedMonth {
 
 /** Look up the packed year code for a given lunar year (1900–2100). */
 function getYearCode(year: number): number {
-  if (year >= 1900 && year <= 1999) return TABLE_1900[year - 1900];
-  if (year >= 2000 && year <= 2099) return TABLE_2000[year - 2000];
-  if (year === 2100) return YEAR_2100;
-  throw new RangeError(`Lunar year ${year} is outside supported range 1900–2100`);
+  if (year < TABLE_START_YEAR || year > TABLE_END_YEAR) {
+    throw new RangeError(`Lunar year ${year} is outside supported range ${TABLE_START_YEAR}–${TABLE_END_YEAR}`);
+  }
+  return YEAR_INFO[year - TABLE_START_YEAR];
 }
 
 /**

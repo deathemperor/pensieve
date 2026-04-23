@@ -2,15 +2,14 @@
  * Hồ Ngọc Đức's packed-year encoding for Vietnamese âm lịch, years 1900–2100.
  *
  * Each 32-bit value encodes a lunar year:
- *   bits 28–17  (12 bits)  month-length mask, one bit per month 1–12, MSB = month 1;
+ *   bits 23–17  (7 bits)  → Tết offset (days from Jan 1 of the solar year to Lunar New Year)
+ *   bit  16               → leap-month length: 1 = 30 days, 0 = 29 days
+ *   bits 15–4  (12 bits)  → month-length mask (bit 11 = month 1, bit 0 = month 12);
  *                           1 = 30 days, 0 = 29 days.
- *   bit  16                leap-month length: 1 = 30 days, 0 = 29 days.
- *   bits 13–4  (actually bits 16–4 in the original encoding — see decode comments
- *               in lunar.ts for the exact shift/mask used)
- *   bits 3–0                leap-month number (0 = no leap month, 1–12 = which month
+ *   bits  3–0  (4 bits)   → leap-month number (0 = no leap month, 1–12 = which month
  *                           is followed by a leap month).
- *   bits 28–17 are reached via >> 4 and & 0xfff; the offset-of-Tết (days from Jan 1
- *   of the solar year to Lunar New Year) is at >> 17.
+ *
+ * See decodeLunarYear in lunar.ts for the exact bit layout (shift/mask usage).
  *
  * Provenance: algorithm and table by Hồ Ngọc Đức.
  * Source reproduced with attribution from NghiaCaNgao/LunarDate (ISC licence),
@@ -20,8 +19,16 @@
  * lunarToSolar). The upstream library covers 1200–2199.
  */
 
-/** Years 1900–1999 (index 0 = 1900, index 99 = 1999). */
-export const TABLE_1900: readonly number[] = [
+export const TABLE_START_YEAR = 1900;
+export const TABLE_END_YEAR = 2100;
+
+/**
+ * Packed lunar year data for years 1900–2100 inclusive.
+ * Index 0 = year 1900, index 200 = year 2100.
+ * Use YEAR_INFO[year - TABLE_START_YEAR] to look up a year.
+ */
+export const YEAR_INFO: readonly number[] = [
+  // 1900–1999
   0x3c4bd8, 0x624ae0, 0x4ca570, 0x3854d5, 0x5cd260, 0x44d950, 0x315554, 0x5656a0, 0x409ad0, 0x2a55d2,
   0x504ae0, 0x3aa5b6, 0x60a4d0, 0x48d250, 0x33d255, 0x58b540, 0x42d6a0, 0x2cada2, 0x5295b0, 0x3f4977,
   0x644970, 0x4ca4b0, 0x36b4b5, 0x5c6a50, 0x466d50, 0x312b54, 0x562b60, 0x409570, 0x2c52f2, 0x504970,
@@ -32,10 +39,7 @@ export const TABLE_1900: readonly number[] = [
   0x4896d0, 0x344dd5, 0x5a4ad0, 0x42a4d0, 0x2cd4b4, 0x52b250, 0x3cd558, 0x60b540, 0x4ab5a0, 0x3755a6,
   0x5c95b0, 0x4649b0, 0x30a974, 0x56a4b0, 0x40aa50, 0x29aa52, 0x4e6d20, 0x39ad47, 0x5eab60, 0x489370,
   0x344af5, 0x5a4970, 0x4464b0, 0x2c74a3, 0x50ea50, 0x3d6a58, 0x6256a0, 0x4aaad0, 0x3696d5, 0x5c92e0,
-];
-
-/** Years 2000–2099 (index 0 = 2000, index 99 = 2099). */
-export const TABLE_2000: readonly number[] = [
+  // 2000–2099
   0x46c960, 0x2ed954, 0x54d4a0, 0x3eda50, 0x2a7552, 0x4e56a0, 0x38a7a7, 0x5ea5d0, 0x4a92b0, 0x32aab5,
   0x58a950, 0x42b4a0, 0x2cbaa4, 0x50ad50, 0x3c55d9, 0x624ba0, 0x4ca5b0, 0x375176, 0x5c5270, 0x466930,
   0x307934, 0x546aa0, 0x3ead50, 0x2a5b52, 0x504b60, 0x38a6e6, 0x5ea4e0, 0x48d260, 0x32ea65, 0x56d520,
@@ -46,10 +50,6 @@ export const TABLE_2000: readonly number[] = [
   0x5252b0, 0x3ca9b8, 0x62a930, 0x4ab490, 0x34b6a6, 0x5aad50, 0x4655a0, 0x2eab64, 0x54a570, 0x4052b0,
   0x2ab173, 0x4e6930, 0x386b37, 0x5e6aa0, 0x48ad50, 0x332ad5, 0x582b60, 0x42a570, 0x2e52e4, 0x50d160,
   0x3ae958, 0x60d520, 0x4ada90, 0x355aa6, 0x5a56d0, 0x462ae0, 0x30a9d4, 0x54a2d0, 0x3ed150, 0x28e952,
+  // 2100
+  0x4eb520,
 ];
-
-/**
- * Year 2100 only — first entry of the 2100–2199 table.
- * Stored separately to keep the 2000-table exactly 100 entries.
- */
-export const YEAR_2100: number = 0x4eb520;
