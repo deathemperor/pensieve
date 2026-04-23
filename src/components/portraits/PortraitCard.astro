@@ -4,6 +4,8 @@ import FrameSilver from "./frames/FrameSilver.astro";
 import FrameBronze from "./frames/FrameBronze.astro";
 import FrameEtched from "./frames/FrameEtched.astro";
 import type { Contact } from "../../lib/portraits/types";
+import { tierName } from "../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../utils/lang";
 
 interface Props {
   contact: Contact;
@@ -11,17 +13,11 @@ interface Props {
 }
 
 const { contact, isAdminView } = Astro.props;
+const lang = getCurrentLang(Astro);
 
 const tierSizes = { S: 320, A: 240, B: 180, C: 140, D: 120 } as const;
 const size = tierSizes[contact.prestige_tier];
-
-const tierNames = {
-  S: "Founder",
-  A: "Headmaster",
-  B: "Professor",
-  C: "Scholar",
-  D: "Visitor",
-} as const;
+const tierLabel = tierName(contact.prestige_tier, lang);
 
 const detailHref = `/room-of-requirement/portraits/${contact.id}`;
 
@@ -60,9 +56,9 @@ const initials = contact.full_name
       </div>
     ) : null}
     <div class="portrait-tier-row">
-      <span class="tier-badge">{tierNames[contact.prestige_tier]}</span>
+      <span class="tier-badge">{tierLabel}</span>
       {contact.is_placeholder === 1 && !isAdminView ? (
-        <span class="demo-ribbon">★ demo</span>
+        <span class="demo-ribbon">★ {lang === "vi" ? "trưng bày" : "demo"}</span>
       ) : null}
     </div>
   </div>

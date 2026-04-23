@@ -1,6 +1,8 @@
 ---
 import PortraitCard from "./PortraitCard.astro";
 import type { Contact, TierCode } from "../../lib/portraits/types";
+import { tierSectionTitle } from "../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../utils/lang";
 
 interface Props {
   tier: TierCode;
@@ -9,16 +11,7 @@ interface Props {
 }
 
 const { tier, contacts, isAdminView } = Astro.props;
-
-const headings: Record<TierCode, { title: string; subtitle: string }> = {
-  S: { title: "Main Hall",    subtitle: "Founders" },
-  A: { title: "Headmasters",  subtitle: "" },
-  B: { title: "Professors",   subtitle: "" },
-  C: { title: "Scholars",     subtitle: "" },
-  D: { title: "Corridor",     subtitle: "Visitors" },
-};
-
-const h = headings[tier];
+const h = tierSectionTitle(tier, getCurrentLang(Astro));
 ---
 
 {contacts.length > 0 && (

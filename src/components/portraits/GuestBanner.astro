@@ -1,11 +1,22 @@
 ---
-// No props — simple ribbon explaining the demo state.
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const copy = lang === "vi"
+  ? {
+      title: "Bộ sưu tập riêng tư.",
+      body: "Đây là phòng tranh demo với những nhân vật công chúng. Đăng nhập quản trị để xem rolodex thật.",
+    }
+  : {
+      title: "Private collection.",
+      body: "Showing a demo gallery of public-figure portraits. Sign in as admin for the real rolodex.",
+    };
 ---
 
 <div class="guest-banner" role="note">
   <span class="lock">🔒</span>
-  <strong>Private collection.</strong>
-  <span>Showing a demo gallery of public-figure portraits. Sign in as admin for the real rolodex.</span>
+  <strong>{copy.title}</strong>
+  <span>{copy.body}</span>
 </div>
 
 <style>

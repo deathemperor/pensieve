@@ -1,14 +1,26 @@
 ---
 import type { Contact } from "../../lib/portraits/types";
+import { tierSectionTitle } from "../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../utils/lang";
 
 interface Props { contacts: Contact[] }
 
 const { contacts } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const h = tierSectionTitle("D", lang);
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
   const days = Math.floor((now - then) / (1000 * 60 * 60 * 24));
+  if (isVi) {
+    if (days < 1) return "hôm nay";
+    if (days < 7) return `${days} ngày trước`;
+    if (days < 60) return `${Math.floor(days / 7)} tuần trước`;
+    if (days < 365) return `${Math.floor(days / 30)} tháng trước`;
+    return `${Math.floor(days / 365)} năm trước`;
+  }
   if (days < 1) return "today";
   if (days < 7) return `${days}d ago`;
   if (days < 60) return `${Math.floor(days / 7)}w ago`;
@@ -20,16 +32,16 @@ function timeAgo(iso: string): string {
 {contacts.length > 0 && (
   <section class="tier-section tier-D">
     <header class="tier-header">
-      <h2 class="tier-title">Corridor</h2>
-      <span class="tier-subtitle">— Visitors</span>
+      <h2 class="tier-title">{h.title}</h2>
+      <span class="tier-subtitle">— {h.subtitle}</span>
       <span class="tier-count">({contacts.length})</span>
     </header>
     <table class="corridor-table">
       <thead>
         <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Company</th>
-          <th scope="col" class="last-seen">Updated</th>
+          <th scope="col">{isVi ? "Tên" : "Name"}</th>
+          <th scope="col">{isVi ? "Công ty" : "Company"}</th>
+          <th scope="col" class="last-seen">{isVi ? "Cập nhật" : "Updated"}</th>
         </tr>
       </thead>
       <tbody>

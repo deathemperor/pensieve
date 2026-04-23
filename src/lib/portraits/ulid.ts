@@ -4,7 +4,7 @@
 
 const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 let lastMs = 0;
-let lastRand = new Uint8Array(10);
+let lastRand: Uint8Array = new Uint8Array(10);
 
 export function ulid(): string {
   const now = Date.now();
@@ -19,7 +19,7 @@ export function ulid(): string {
     rand = crypto.getRandomValues(new Uint8Array(10));
     lastMs = now;
   }
-  lastRand = rand;
+  lastRand = rand as Uint8Array;
 
   let time = "";
   let t = now;

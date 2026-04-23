@@ -10,7 +10,10 @@ import RemindersPill from "../../../components/portraits/RemindersPill.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
 import { listContacts } from "../../../lib/portraits/db";
 import type { Contact, TierCode } from "../../../lib/portraits/types";
+import { getCurrentLang } from "../../../utils/lang";
 
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
 const auth = await requireAdmin(Astro);
 const db = (env as any).DB;
 
@@ -34,12 +37,17 @@ Astro.response.headers.set(
 );
 ---
 
-<Base title="Portraits — Room of Requirement" description="A private rolodex of notable figures.">
+<Base
+  title={isVi ? "Phòng Tranh — Room of Requirement" : "Portraits — Room of Requirement"}
+  description={isVi ? "Bộ sưu tập riêng các nhân vật quan trọng." : "A private rolodex of notable figures."}
+>
   <main class="portraits-page">
     <header class="portraits-hero">
-      <h1>Portraits</h1>
+      <h1>{isVi ? "Phòng Tranh" : "Portraits"}</h1>
       <p class="hero-sub">
-        A gallery of the people who shape the work. {total} {total === 1 ? "portrait" : "portraits"}.
+        {isVi
+          ? <>Phòng tranh những người định hình công việc. {total} {total === 1 ? "chân dung" : "chân dung"}.</>
+          : <>A gallery of the people who shape the work. {total} {total === 1 ? "portrait" : "portraits"}.</>}
       </p>
       {auth.admin && (
         <div class="admin-actions">
@@ -63,7 +71,13 @@ Astro.response.headers.set(
 
     {total === 0 && (
       <div class="empty">
-        <p>No portraits yet. {auth.admin ? "Add your first contact to start the gallery." : ""}</p>
+        <p>
+          {isVi ? "Chưa có chân dung nào." : "No portraits yet."}
+          {" "}
+          {auth.admin
+            ? (isVi ? "Thêm liên lạc đầu tiên để khai trương phòng tranh." : "Add your first contact to start the gallery.")
+            : ""}
+        </p>
       </div>
     )}
   </main>
