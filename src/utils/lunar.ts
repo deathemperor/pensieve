@@ -31,6 +31,7 @@ export interface LunarDate {
  * Returns null if the date is outside the 1900–2100 table range.
  */
 export function solarToLunar(date: Date): LunarDate | null {
+  if (isNaN(date.getTime())) return null;
   // Shift to HCMC local by adding 7 hours, then read UTC fields as if local.
   const hcmc = new Date(date.getTime() + 7 * 3600 * 1000);
   const sYear  = hcmc.getUTCFullYear();
@@ -184,7 +185,7 @@ function decodeLunarYear(year: number): DecodedMonth[] {
   return months;
 }
 
-/** Binary-search the month list to find which month a Julian day falls in. */
+/** Walk backwards from the last month to find which month contains this Julian day. */
 function findLunarDate(jd: number, months: DecodedMonth[], lunarYear: number): LunarDate {
   let idx = months.length - 1;
   while (idx > 0 && jd < months[idx].jd) idx--;

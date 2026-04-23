@@ -75,6 +75,11 @@ describe("out-of-range returns null", () => {
   test("lunarToSolar: year 2101 → null", () => {
     assert.equal(lunarToSolar({ year: 2101, month: 1, day: 1 }), null);
   });
+
+  test("solarToLunar: invalid Date returns null", () => {
+    assert.equal(solarToLunar(new Date("invalid")), null);
+    assert.equal(solarToLunar(new Date(NaN)), null);
+  });
 });
 
 describe("2025 has leap month 6", () => {
@@ -132,12 +137,10 @@ describe("formatDualDate", () => {
 
 describe("edge cases", () => {
   test("day 30 in a 29-day month returns null", () => {
-    // Lunar 2026/1/1 is Tết. Month 1 of 2026 has 29 days (bit in year code).
-    // We check that lunarToSolar returns null for day:30 in a 29-day month.
-    // Month 1 of 2026: we know it's 29 days because the next Tết (2027-02-06)
-    // is 372 days after 2026-02-17, meaning 2026 has 13 months.
-    // Rather than hard-coding the month length, test an obviously invalid day.
-    assert.equal(lunarToSolar({ year: 2025, month: 1, day: 31 }), null);
+    // Month 2 of 2025 is 29 days (confirmed by decoding the YEAR_INFO mask for 2025).
+    // day:30 passes the blanket guard (day <= 30) but should be rejected by the
+    // per-month-length check (day > targetMonth.length) inside lunarToSolar.
+    assert.equal(lunarToSolar({ year: 2025, month: 2, day: 30 }), null);
   });
 
   test("solarToLunar on day before Tết gives month 12 of prior year", () => {
