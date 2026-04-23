@@ -127,7 +127,55 @@ declare global {
 
   closeBtn?.addEventListener("click", closeModal);
   modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  // Modal arrow-nav — when modal is open, ←/→ jump to adjacent ledger entries.
+  const ledgerIds = Array.from(document.querySelectorAll<HTMLElement>(".cc-entry"))
+    .map((el) => el.dataset.id)
+    .filter((id): id is string => typeof id === "string");
+  function modalNav(dir: -1 | 1) {
+    if (!modal?.hasAttribute("data-open")) return;
+    const currentTitle = modal.querySelector<HTMLElement>('[data-slot="title"]')?.textContent;
+    if (!currentTitle) return;
+    const currentId = Object.entries(window.__CHRONICLE_ENTRIES__ ?? {})
+      .find(([, v]) => v.title === currentTitle)?.[0];
+    if (!currentId) return;
+    const idx = ledgerIds.indexOf(currentId);
+    if (idx < 0) return;
+    const nextIdx = (idx + dir + ledgerIds.length) % ledgerIds.length;
+    openModal(ledgerIds[nextIdx]);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeModal(); return; }
+    if (!modal?.hasAttribute("data-open")) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); modalNav(-1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); modalNav(1); }
+  });
+
+  // ---------- Category filter chips ----------
+  const frameEl = document.getElementById("cc-frame");
+  let activeFilter: string | null = null;
+  function applyFilter(slug: string | null) {
+    activeFilter = slug;
+    if (!frameEl) return;
+    if (slug) frameEl.setAttribute("data-filter", slug);
+    else frameEl.removeAttribute("data-filter");
+    document.querySelectorAll<HTMLElement>("[data-legend-category]").forEach((el) => {
+      if (slug && el.dataset.legendCategory === slug) el.setAttribute("data-legend-active", "");
+      else el.removeAttribute("data-legend-active");
+    });
+    document.querySelectorAll<HTMLElement>("[data-category]").forEach((el) => {
+      if (!slug || el.dataset.category === slug) el.setAttribute("data-category-match", "");
+      else el.removeAttribute("data-category-match");
+    });
+  }
+  document.querySelectorAll<HTMLElement>("[data-legend-category]").forEach((chip) => {
+    const slug = chip.dataset.legendCategory;
+    const toggle = () => applyFilter(activeFilter === slug ? null : (slug ?? null));
+    chip.addEventListener("click", toggle);
+    chip.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
 
   // ---------- Zoom ----------
   const frameRoot = document.documentElement;

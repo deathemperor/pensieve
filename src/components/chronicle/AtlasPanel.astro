@@ -228,7 +228,7 @@ const helperText = isVi
 					<h3>{country}</h3>
 					<ul>
 						{list.map((p) => (
-							<li class="cc-atlas-place" data-id={p.id}>
+							<li class="cc-atlas-place" data-id={p.id} data-category={p.category}>
 								<span class="cc-atlas-place-dot" style={`background:${p.hex};`}></span>
 								<span class="cc-atlas-place-name">{p.locationName}</span>
 								<span class="cc-atlas-place-title">{p.title}</span>
