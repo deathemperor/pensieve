@@ -4,115 +4,76 @@ export const prerender = false;
 import { env } from "cloudflare:workers";
 import Base from "../../../layouts/Base.astro";
 import { requireAdmin } from "../../../lib/portraits/auth";
+import GraphView from "../../../components/portraits/GraphView.tsx";
+import { getCurrentLang } from "../../../utils/lang";
 
 const auth = await requireAdmin(Astro);
 if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
 
 Astro.response.headers.set("Cache-Control", "private, no-store");
 
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
 const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
 
-interface EdgeRow {
-  id: string;
-  src_id: string;
-  src_name: string;
-  src_tier: string;
-  dst_id: string;
-  dst_name: string;
-  dst_tier: string;
-  kind: string;
-}
+interface GraphContact { id: string; full_name: string; company: string | null; prestige_tier: "S"|"A"|"B"|"C"|"D" }
+interface GraphEdge { id: string; src_id: string; dst_id: string; kind: string }
 
-const rs = await db
-  .prepare(`
-    SELECT
-      e.id, e.kind,
-      e.src_id, cs.full_name AS src_name, cs.prestige_tier AS src_tier,
-      e.dst_id, cd.full_name AS dst_name, cd.prestige_tier AS dst_tier
-    FROM contact_edges e
-    JOIN contacts cs ON cs.id = e.src_id AND cs.deleted_at IS NULL
-    JOIN contacts cd ON cd.id = e.dst_id AND cd.deleted_at IS NULL
-    ORDER BY cs.full_name ASC, cd.full_name ASC
-    LIMIT 500
-  `)
-  .all<EdgeRow>();
+const contactsRs = await db
+  .prepare("SELECT id, full_name, company, prestige_tier FROM contacts WHERE deleted_at IS NULL AND is_placeholder = 0 ORDER BY CASE prestige_tier WHEN 'S' THEN 0 WHEN 'A' THEN 1 WHEN 'B' THEN 2 WHEN 'C' THEN 3 WHEN 'D' THEN 4 END")
+  .all<GraphContact>();
+const contacts = (contactsRs.results ?? []) as GraphContact[];
 
-const edges = (rs.results ?? []) as EdgeRow[];
+const edgesRs = await db
+  .prepare("SELECT id, src_id, dst_id, kind FROM contact_edges LIMIT 2000")
+  .all<GraphEdge>();
+const edges = (edgesRs.results ?? []) as GraphEdge[];
 
-// Group by source
-const bySrc = new Map<string, { name: string; tier: string; edges: EdgeRow[] }>();
-for (const e of edges) {
-  const g = bySrc.get(e.src_id) ?? { name: e.src_name, tier: e.src_tier, edges: [] };
-  g.edges.push(e);
-  bySrc.set(e.src_id, g);
-}
-
-const kindLabel: Record<string, string> = {
-  introduced_by: "introduced by",
-  works_with: "works with",
-  mentor_of: "mentor of",
-  invested_in: "invested in",
-  spouse: "spouse of",
-  same_company: "also at",
-};
-
-// Totals
-const nodeIds = new Set<string>();
-for (const e of edges) { nodeIds.add(e.src_id); nodeIds.add(e.dst_id); }
+// Filter out edges pointing to any placeholder/deleted contact, via set membership.
+const validIds = new Set(contacts.map((c) => c.id));
+const visibleEdges = edges.filter((e) => validIds.has(e.src_id) && validIds.has(e.dst_id));
 ---
 
-<Base title="Portraits graph — Room of Requirement" description="All relationships in the private rolodex.">
+<Base title={isVi ? "Sơ đồ quan hệ" : "Relationship graph"} description={isVi ? "Mạng lưới riêng." : "Private network map."}>
   <main class="graph-page">
     <header>
-      <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
-      <h1>Relationship graph</h1>
-      <p class="hint">{nodeIds.size} nodes · {edges.length} edges</p>
+      <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
+      <h1>{isVi ? "Sơ đồ quan hệ" : "Relationship graph"}</h1>
+      <p class="hint">{contacts.length} {isVi ? "người" : "people"} · {visibleEdges.length} {isVi ? "mối liên hệ" : "edges"}</p>
     </header>
 
-    {edges.length === 0 ? (
-      <p class="muted">No edges yet. Link contacts from the Relationships section on any detail page.</p>
+    {contacts.length === 0 ? (
+      <p class="muted">{isVi ? "Chưa có liên lạc thật nào. Thêm vài người và liên kết họ bằng phần Relationships ở trang chi tiết." : "No real contacts yet. Add some and link them via the Relationships section on any detail page."}</p>
     ) : (
-      <div class="groups">
-        {Array.from(bySrc.entries()).map(([srcId, g]) => (
-          <section class="group">
-            <h2 class={`group-title tier-${g.tier}`}>
-              <a href={`/room-of-requirement/portraits/${srcId}`}>{g.name}</a>
-              <span class="group-count">{g.edges.length}</span>
-            </h2>
-            <ul class="group-edges">
-              {g.edges.map((e) => (
-                <li>
-                  <span class="kind">{kindLabel[e.kind] ?? e.kind}</span>
-                  <a href={`/room-of-requirement/portraits/${e.dst_id}`}>{e.dst_name}</a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+      <GraphView client:only="react" contacts={contacts} edges={visibleEdges} />
     )}
   </main>
 </Base>
 
 <style>
-  .graph-page { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .graph-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
   .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
-  .back-link:hover { color: #d4a89a; }
   h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
-  .hint { color: #8a877e; margin: 0 0 2rem; }
+  .hint { color: #8a877e; margin: 0 0 1rem; }
   .muted { color: #6a665e; }
-  .groups { display: flex; flex-direction: column; gap: 1.5rem; }
-  .group { padding: 1rem; border: 1px solid #1f1f1f; border-radius: 3px; }
-  .group-title { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.125rem; margin: 0 0 0.5rem; display: flex; align-items: baseline; gap: 0.5rem; }
-  .group-title a { color: #e8e6e0; text-decoration: none; }
-  .group-title a:hover { color: #d4a89a; }
-  .group-title.tier-S a { color: #f8e08c; }
-  .group-title.tier-A a { color: #e6e8ea; }
-  .group-title.tier-B a { color: #cd8a4e; }
-  .group-count { color: #6a665e; font-size: 0.75rem; font-weight: 400; }
-  .group-edges { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
-  .group-edges li { display: flex; gap: 0.75rem; font-size: 0.9rem; }
-  .kind { color: #6a665e; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; min-width: 8rem; }
-  .group-edges a { color: #bdb8ac; text-decoration: none; }
-  .group-edges a:hover { color: #d4a89a; }
+</style>
+
+<style is:global>
+  .graph-root { display: flex; flex-direction: column; gap: 1rem; }
+  .graph-controls { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.75rem; background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .graph-controls label { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.8125rem; color: #8a877e; }
+  .graph-controls select { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.3rem 0.5rem; border-radius: 2px; font: inherit; min-width: 12rem; }
+  .graph-controls button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.3rem 0.8rem; border-radius: 2px; font: inherit; cursor: pointer; }
+  .graph-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .graph-controls button:not(:disabled):hover { background: rgba(212, 168, 154, 0.08); }
+  .graph-result { color: #bdb8ac; font-size: 0.8125rem; }
+  .graph-hint { color: #6a665e; font-size: 0.75rem; margin-left: auto; }
+  .graph-canvas { height: 70vh; min-height: 500px; border: 1px solid #1f1f1f; border-radius: 3px; overflow: hidden; }
+  .graph-paths { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .path-row { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: baseline; font-size: 0.9rem; }
+  .path-rank { color: #6a665e; font-family: "JetBrains Mono", monospace; font-size: 0.75rem; min-width: 2rem; }
+  .path-chain a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .path-chain a:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .path-step { color: #6a665e; font-size: 0.75rem; font-family: "JetBrains Mono", monospace; margin: 0 0.1rem; }
 </style>
