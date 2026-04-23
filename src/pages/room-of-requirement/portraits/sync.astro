@@ -43,12 +43,22 @@ const integrations = [
   {
     name: "Google Contacts OAuth sync",
     status: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET ? "ready" : "not-configured",
-    hint: "Register an OAuth app at console.cloud.google.com with redirect URI https://huuloc.com/api/portraits/integrations/google/callback, then set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET via wrangler secret. Live sync endpoint is deferred to a follow-up phase.",
+    hint: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "Click Connect to authorize; the People API sync runs on demand and imports your connections as D-tier contacts (dedup on Google resourceName)."
+      : "Register an OAuth app at console.cloud.google.com with redirect URI /api/portraits/integrations/google/callback, then set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET via wrangler secret.",
+    href: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "/api/portraits/integrations/google/start"
+      : undefined,
+    action: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "Connect Google Contacts"
+      : undefined,
   },
   {
     name: "iOS Shortcut",
-    status: "docs-only",
-    hint: "Download a .shortcut that posts to /api/portraits/ingest. Bearer token required. File distribution pending.",
+    status: e.PORTRAITS_INGEST_TOKEN ? "ready" : "needs-secret",
+    hint: "Walkthrough: build a share-sheet Shortcut on your iPhone that POSTs to /api/portraits/ingest with your bearer token.",
+    href: "/room-of-requirement/portraits/sync/ios",
+    action: "Open walkthrough",
   },
   {
     name: "Facebook / LinkedIn",
@@ -64,6 +74,10 @@ const integrations = [
     <h1>Sync & integrations</h1>
     <p class="hint">How data flows into your rolodex.</p>
 
+    {Astro.url.searchParams.get("google") === "connected" && (
+      <div class="notice">✓ Google Contacts connected. Hit "Sync now" below to pull your connections.</div>
+    )}
+
     <ul class="integrations">
       {integrations.map((ig) => (
         <li class={`integration status-${ig.status}`}>
@@ -76,8 +90,40 @@ const integrations = [
         </li>
       ))}
     </ul>
+
+    {e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET && (
+      <section class="sync-actions">
+        <h2 class="section-subtitle">Manual sync</h2>
+        <button id="google-sync-btn" class="btn">Pull Google Contacts now</button>
+        <p id="google-sync-status" class="muted hint"></p>
+      </section>
+    )}
   </main>
 </Base>
+
+<script>
+  const btn = document.getElementById("google-sync-btn") as HTMLButtonElement | null;
+  const status = document.getElementById("google-sync-status") as HTMLParagraphElement | null;
+  btn?.addEventListener("click", async () => {
+    if (!status) return;
+    btn.disabled = true;
+    status.textContent = "Syncing… this can take a minute for large address books.";
+    try {
+      const res = await fetch("/api/portraits/integrations/google/sync", { method: "POST" });
+      const data = await res.json() as { counts?: { fetched: number; created: number; skipped: number; updated: number }; error?: string };
+      if (!res.ok) {
+        status.textContent = `Sync failed: ${data.error ?? res.statusText}`;
+        return;
+      }
+      const c = data.counts;
+      status.textContent = c
+        ? `✓ Fetched ${c.fetched} · created ${c.created} · skipped ${c.skipped} · already-imported ${c.updated}.`
+        : "✓ Done.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
 
 <style>
   .sync-page { max-width: 780px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
@@ -93,6 +139,18 @@ const integrations = [
   .pill-needs-secret, .pill-not-configured { border-color: #d4a89a; color: #d4a89a; background: rgba(212, 168, 154, 0.08); }
   .pill-docs-only, .pill-csv-only { border-color: #2a2a2a; color: #6a665e; }
   .integration .hint { margin: 0.5rem 0 0; font-size: 0.875rem; color: #bdb8ac; }
-  .btn { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.9rem; border: 1px solid #d4a89a; border-radius: 3px; color: #d4a89a; text-decoration: none; font-size: 0.875rem; }
+  .btn { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.9rem; border: 1px solid #d4a89a; border-radius: 3px; color: #d4a89a; text-decoration: none; font-size: 0.875rem; background: none; font-family: inherit; cursor: pointer; }
   .btn:hover { background: rgba(212, 168, 154, 0.08); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .notice {
+    padding: 0.7rem 0.9rem;
+    background: rgba(120, 170, 110, 0.08);
+    border-left: 2px solid #a9cfa0;
+    border-radius: 2px;
+    color: #bdb8ac;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .sync-actions { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #1f1f1f; }
+  .section-subtitle { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.875rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0 0 0.75rem; }
 </style>
