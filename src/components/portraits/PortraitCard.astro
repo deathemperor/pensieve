@@ -30,6 +30,17 @@ const initials = contact.full_name
   .toUpperCase();
 ---
 
+<div class={`portrait-card-wrapper tier-wrapper-${contact.prestige_tier}`}>
+  {isAdminView && contact.is_placeholder !== 1 && (
+    <details class="tier-menu" data-id={contact.id}>
+      <summary title="Change tier">↕</summary>
+      <div class="tier-menu-options">
+        {(["S","A","B","C","D"] as const).map((t) => (
+          <button type="button" class={`tier-opt ${t === contact.prestige_tier ? "current" : ""}`} data-tier={t} data-id={contact.id}>{t}</button>
+        ))}
+      </div>
+    </details>
+  )}
 <a
   href={detailHref}
   class={`portrait-card tier-${contact.prestige_tier}`}
@@ -63,6 +74,7 @@ const initials = contact.full_name
     </div>
   </div>
 </a>
+</div>
 
 <style>
   .portrait-card {
@@ -151,4 +163,53 @@ const initials = contact.full_name
   @media (prefers-reduced-motion: reduce) {
     .tier-S .portrait-frame { animation: none; }
   }
+
+  .portrait-card-wrapper { position: relative; }
+  .tier-menu { position: absolute; top: 6px; left: 6px; z-index: 2; }
+  .tier-menu summary {
+    list-style: none; cursor: pointer;
+    width: 1.5rem; height: 1.5rem; border-radius: 50%;
+    background: #0a0a0acc; border: 1px solid #2a2a2a;
+    color: #8a877e; display: grid; place-items: center;
+    font-size: 0.85rem;
+    opacity: 0; transition: opacity 120ms ease;
+  }
+  .tier-menu summary::-webkit-details-marker { display: none; }
+  .portrait-card-wrapper:hover .tier-menu summary { opacity: 1; }
+  .tier-menu[open] summary { opacity: 1; color: #d4a89a; border-color: #d4a89a; }
+  .tier-menu-options {
+    display: flex; gap: 0.2rem; margin-top: 0.2rem;
+    padding: 0.25rem; background: #0a0a0aee;
+    border: 1px solid #2a2a2a; border-radius: 3px;
+  }
+  .tier-opt {
+    width: 1.5rem; height: 1.5rem;
+    background: transparent; border: 1px solid #2a2a2a;
+    color: #8a877e; cursor: pointer; border-radius: 2px;
+    font: inherit; font-size: 0.8125rem;
+    display: grid; place-items: center;
+  }
+  .tier-opt:hover { border-color: #d4a89a; color: #d4a89a; }
+  .tier-opt.current { background: rgba(212, 168, 154, 0.2); color: #d4a89a; cursor: default; }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("button.tier-opt").forEach((btn) => {
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.getAttribute("data-id");
+      const tier = btn.getAttribute("data-tier");
+      if (!id || !tier) return;
+      if (btn.classList.contains("current")) return;
+      btn.disabled = true;
+      const res = await fetch(`/api/portraits/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prestige_tier: tier }),
+      });
+      if (res.ok) window.location.reload();
+      else btn.disabled = false;
+    });
+  });
+</script>
