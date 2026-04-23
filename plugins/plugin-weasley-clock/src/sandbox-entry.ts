@@ -38,6 +38,35 @@ async function findAccountIdByEmail(ctx: PluginContext, email: string): Promise<
 	return existing ? existing.id : null;
 }
 
+async function discoverCalendars(ctx: PluginContext, accountRow: { id: string; access_token: string }): Promise<void> {
+	const res = await fetch(GOOGLE_CALENDARLIST_URL, {
+		headers: { Authorization: `Bearer ${accountRow.access_token}` },
+	});
+	if (!res.ok) {
+		const text = await res.text();
+		ctx.log.info(`discoverCalendars failed: ${res.status} ${text}`);
+		return;  // non-fatal; user can retry via admin UI
+	}
+	const data = (await res.json()) as { items: any[] };
+	for (const cal of data.items ?? []) {
+		const id = `cal_${accountRow.id}_${btoa(cal.id).replace(/[^a-zA-Z0-9]/g, "").slice(0, 32)}`;
+		await (ctx.storage as any).oauth_calendars.put(id, {
+			id,
+			account_id: accountRow.id,
+			calendar_id: cal.id,
+			summary: cal.summary ?? cal.summaryOverride ?? cal.id,
+			time_zone: cal.timeZone ?? null,
+			background_color: cal.backgroundColor ?? null,
+			access_role: cal.accessRole ?? null,
+			synced: 0,
+			sync_token: null,
+			last_resynced_at: null,
+			expose_titles: 1,
+		});
+	}
+	ctx.log.info(`discoverCalendars: ${(data.items ?? []).length} calendars enumerated for ${accountRow.id}`);
+}
+
 export default definePlugin({
 	hooks: {
 		"plugin:install": {
@@ -160,9 +189,12 @@ export default definePlugin({
 					last_synced_at: existingRow?.data?.last_synced_at ?? null,
 					revoked_at: null,
 				};
-				await (ctx.storage as any).oauth_accounts.put(row.id, row);
+			await (ctx.storage as any).oauth_accounts.put(row.id, row);
 
-				return { redirect: stateRow.return_url || "/_emdash/admin/weasley-clock/feeds" };
+			// Enumerate calendars for this account (non-fatal on failure — user can re-auth)
+			await discoverCalendars(ctx, { id: row.id, access_token: tokens.access_token });
+
+			return { redirect: stateRow.return_url || "/_emdash/admin/weasley-clock/feeds" };
 			},
 		},
 	},
