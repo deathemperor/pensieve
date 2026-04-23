@@ -68,7 +68,7 @@ try {
 				<dl class="about-meta">
 					<div class="about-meta-row">
 						<dt>{isVi ? "Vai trò" : "Role"}</dt>
-						<dd>{isVi ? "CTO / COO · Kỹ sư full-stack" : "CTO / COO · Full-Stack Engineer"}</dd>
+						<dd>{isVi ? "Giám đốc Công nghệ / Giám đốc Vận hành · Kỹ sư phần mềm" : "Chief Technology Officer / Chief Operating Officer · Software Engineer"}</dd>
 					</div>
 					<div class="about-meta-row">
 						<dt>{isVi ? "Nơi ở" : "Based"}</dt>
@@ -691,7 +691,7 @@ try {
 											<rect x="6" y="15" width="20" height="3"/>
 										</g>
 									</svg>
-									<span class="origin-label">Võ · Khmer</span>
+									<span class="origin-label">Phạm · Khmer</span>
 								</div>
 							</div>
 						</div>
@@ -753,12 +753,9 @@ try {
 						{ year: "2010", co: "VNG", rune: "ᛗ",
 						  title: { en: "Gunny — fastest integration ever", vi: "Gunny — tích hợp nhanh nhất" },
 						  note: { en: "Revived from ~1k to 100k+ concurrent · from millions to 30B+ VND/month. Helped kill FPT Games' line.", vi: "Hồi sinh từ ~1k lên 100k+ concurrent · từ vài triệu lên hơn 30 tỷ VND/tháng. Góp phần đánh bật FPT Games." } },
-						{ year: "2013", co: "VNG · TalkTV", rune: "ᛟ", major: true,
-						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV", vi: "Chief of product / tech / ops / marketing / content — TalkTV" },
-						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
-						{ year: "2014", co: "VNG · TalkTV", rune: "ᚱ", major: true,
-						  title: { en: "Twitch of Vietnam", vi: "Twitch của Việt Nam" },
-						  note: { en: "3M MAU · 150k peak concurrent — zero marketing budget. 12 months to market leadership.", vi: "3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không. 12 tháng để dẫn đầu thị trường." } },
+						{ year: "2013–2014", co: "VNG · TalkTV", rune: "ᛟ", major: true,
+						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV, the Twitch of Vietnam", vi: "Chief of product / tech / ops / marketing / content — TalkTV, Twitch của Việt Nam" },
+						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. 3M MAU · 150k peak concurrent — zero marketing budget, 12 months to market leadership. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. 3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không, 12 tháng để dẫn đầu thị trường. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
 						{ year: "2015", co: "GVN Studio", rune: "ᚲ",
 						  title: { en: "Co-founder & CTO", vi: "Đồng sáng lập & CTO" },
 						  note: { en: "5 titles shipped · 2 countries.", vi: "Phát hành 5 tựa · 2 quốc gia." } },
@@ -772,7 +769,7 @@ try {
 						  title: { en: "+ COO (Chief Technology & Operating Officer)", vi: "+ COO (Chief Technology & Operating Officer)" },
 						  note: { en: "-12% opex · 2× claims/assessor/day.", vi: "-12% chi phí vận hành · gấp đôi số claims mỗi assessor xử lý mỗi ngày." } },
 						{ year: "2025", co: "Papaya", rune: "ᛜ", major: true,
-						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
+						  title: { en: "Classical AI → Agentic AI", vi: "AI cổ điển → Agentic AI" },
 						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
 						{ year: "2025", co: "Papaya · Oasis", rune: "ᛖ",
 						  title: { en: "Architect of Oasis", vi: "Kiến trúc Oasis" },
@@ -1157,43 +1154,6 @@ try {
 			</a>
 		</div>
 	</section>
-
-	<section id="elsewhere" class="about-section">
-		<div class="about-inner">
-			<h2 class="section-heading">
-				{isVi ? "Liên Kết" : "Elsewhere"}
-				<a href="#elsewhere" class="anchor-link" aria-label="Link to Elsewhere">#</a>
-			</h2>
-			<div class="links-row">
-				<a href="https://github.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
-					<svg class="profile-icon" width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
-						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-					</svg>
-					GitHub
-				</a>
-				<a href="https://linkedin.com/in/deathemperor" class="profile-link" target="_blank" rel="noopener">
-					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-					</svg>
-					LinkedIn
-				</a>
-				<a href="https://facebook.com/deathemperor" class="profile-link" target="_blank" rel="noopener">
-					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-					</svg>
-					Facebook
-				</a>
-				<a href="mailto:me@huuloc.com" class="profile-link">
-					<svg class="profile-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<rect x="2" y="4" width="20" height="16" rx="2" />
-						<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-					</svg>
-					me@huuloc.com
-				</a>
-			</div>
-		</div>
-	</section>
-
 
 	<section id="community" class="about-section">
 		<div class="about-inner">
