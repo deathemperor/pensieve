@@ -34,6 +34,13 @@ const integrations = [
       : "Set ANTHROPIC_API_KEY via wrangler secret. Card uploads work but OCR stays pending until the key is set.",
   },
   {
+    name: "Google Custom Search (press mentions)",
+    status: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID ? "ready" : "needs-secret",
+    hint: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID
+      ? "Each contact's detail page gets a Press section that runs a Google CSE search for newspaper mentions (100 queries/day free tier)."
+      : "Create a Custom Search Engine at programmablesearchengine.google.com (either whole-web or restricted to news-site allowlist), then set GOOGLE_CSE_API_KEY (from console.cloud.google.com → Credentials) and GOOGLE_CSE_ID via wrangler secret.",
+  },
+  {
     name: "Resend outreach",
     status: e.RESEND_API_KEY ? "ready" : "needs-secret",
     hint: e.RESEND_API_KEY
