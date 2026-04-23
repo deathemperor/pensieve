@@ -1,5 +1,32 @@
 ---
-interface Props { anchor: Date; occurrences: any[]; }
+import DayCell from "./DayCell.astro";
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+
+interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
 const { anchor, occurrences } = Astro.props;
+
+const dow = anchor.getDay() === 0 ? 6 : anchor.getDay() - 1;
+const monday = new Date(anchor);
+monday.setDate(anchor.getDate() - dow);
+monday.setHours(0, 0, 0, 0);
+
+const days: { date: Date; occurrences: FamilyOccurrence[]; isToday: boolean }[] = [];
+const today = new Date();
+for (let i = 0; i < 7; i++) {
+	const d = new Date(monday);
+	d.setDate(monday.getDate() + i);
+	const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+	days.push({
+		date: d,
+		occurrences: occurrences.filter((o) => sameDay(o.date, d)),
+		isToday: sameDay(d, today),
+	});
+}
 ---
-<div class="wc-view-stub">stub · {occurrences.length} occurrences · {anchor.toISOString().slice(0, 10)}</div>
+<div class="wc-week">
+	{days.map((d) => <DayCell date={d.date} occurrences={d.occurrences} isToday={d.isToday} variant="week" />)}
+</div>
+
+<style>
+	.wc-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+</style>

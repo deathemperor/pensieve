@@ -1,0 +1,51 @@
+---
+import DualDate from "./DualDate.astro";
+import EventChip from "./EventChip.astro";
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+
+interface Props {
+	date: Date;
+	occurrences: FamilyOccurrence[];
+	isToday?: boolean;
+	isDimmed?: boolean;
+	variant?: "week" | "month";
+}
+const { date, occurrences, isToday, isDimmed, variant = "week" } = Astro.props;
+
+function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "anniversary" | "cultural" | "milestone" | "other" {
+	switch (ev.event.event_type) {
+		case "death_anniv": return "giỗ";
+		case "birthday": return "birthday";
+		case "wedding_anniv": return "anniversary";
+		case "cultural": return "cultural";
+		case "milestone": return "milestone";
+		default: return "other";
+	}
+}
+---
+<div class={`wc-day ${isToday ? "wc-day--today" : ""} ${isDimmed ? "wc-day--dim" : ""} wc-day--${variant}`}>
+	<header class="wc-day__head">
+		<DualDate date={date} size={variant === "week" ? "lg" : "md"} />
+	</header>
+	<ul class="wc-day__events">
+		{occurrences.map((occ) => (
+			<li>
+				<EventChip
+					title={occ.event.title_vi || occ.event.title_en}
+					subtitle={occ.nth ? `${occ.nth}th · ${occ.event.relationship ?? ""}` : occ.event.relationship ?? ""}
+					category={chipCategoryFor(occ)}
+					size={variant === "week" ? "full" : "chip"}
+				/>
+			</li>
+		))}
+	</ul>
+</div>
+
+<style>
+	.wc-day { border: 1px solid #2a1f15; padding: 8px; min-height: 160px; }
+	.wc-day--month { min-height: 70px; padding: 4px; }
+	.wc-day--today { border: 2px solid #c9a961; background: #201810; }
+	.wc-day--dim { color: #6b5638; }
+	.wc-day__head { margin-bottom: 6px; }
+	.wc-day__events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+</style>
