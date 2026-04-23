@@ -5,7 +5,7 @@ interface ChronicleEntryData {
   title: string;
   subtitle?: string;
   roman_date: string;
-  location?: { name?: string; city?: string; country?: string };
+  location?: { name?: string; city?: string; country?: string; lat?: number; lng?: number };
   external_url?: string;
   external_url_label?: string;
   linked_post_slugs?: string[];
@@ -98,6 +98,25 @@ declare global {
       a.style.color = "var(--chronicle-gold)";
       links.appendChild(a);
     }
+    if (data.location && typeof data.location.lat === "number" && typeof data.location.lng === "number") {
+      const mapLink = document.createElement("a");
+      mapLink.href = `https://www.openstreetmap.org/?mlat=${data.location.lat}&mlon=${data.location.lng}&zoom=14`;
+      mapLink.target = "_blank";
+      mapLink.rel = "noopener noreferrer";
+      mapLink.textContent = `▸ ${isVi ? "xem trên bản đồ" : "open in map"}`;
+      mapLink.style.color = "var(--chronicle-gold)";
+      links.appendChild(mapLink);
+    }
+    // Permalink — keep last so it's a subtle footer action
+    {
+      const p = document.createElement("a");
+      p.href = `/pensieve/chronicle/${data.id}`;
+      p.textContent = `▸ ${isVi ? "liên kết cố định" : "permalink"}`;
+      p.style.color = "rgba(212, 168, 67, 0.6)";
+      p.style.fontSize = "11px";
+      p.style.marginTop = "6px";
+      links.appendChild(p);
+    }
 
     modal.setAttribute("data-open", "");
   }
@@ -148,10 +167,34 @@ declare global {
     updateBackVisibility();
   }
 
-  // ---------- Year jump ----------
+  // ---------- Year jump (scrolls ledger + pulses matching Sky ring) ----------
   (document.querySelector(".cc-year-jump") as unknown as HTMLSelectElement | null)?.addEventListener("change", (e) => {
     const target = (e.currentTarget as unknown as HTMLSelectElement).value;
     if (!target) return;
     document.getElementById(`cc-year-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelectorAll("[data-year]").forEach((el) => el.removeAttribute("data-year-active"));
+    document
+      .querySelectorAll(`[data-year="${CSS.escape(target)}"]`)
+      .forEach((el) => el.setAttribute("data-year-active", ""));
   });
+
+  // ---------- Arrow-key navigation between stars ----------
+  const stars = Array.from(document.querySelectorAll<HTMLElement>(".cc-star"));
+  if (stars.length > 0) {
+    document.addEventListener("keydown", (e) => {
+      const target = e.target as HTMLElement | null;
+      // Only handle when a star is already focused — don't hijack other inputs.
+      if (!target || !target.classList.contains("cc-star")) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      const idx = stars.indexOf(target);
+      if (idx < 0) return;
+      const next = e.key === "ArrowLeft" || e.key === "ArrowUp"
+        ? (idx - 1 + stars.length) % stars.length
+        : (idx + 1) % stars.length;
+      stars[next].focus();
+      const nextId = stars[next].dataset.id;
+      if (nextId) setActive(nextId);
+    });
+  }
 })();
