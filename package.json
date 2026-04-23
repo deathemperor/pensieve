@@ -26,6 +26,7 @@
 		"hono": "^4.12.14",
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
+		"plugin-weasley-clock": "file:./plugins/plugin-weasley-clock",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
 		"sanitize-html": "^2.17.3"
