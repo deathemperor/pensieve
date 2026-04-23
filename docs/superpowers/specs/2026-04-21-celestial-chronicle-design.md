@@ -89,8 +89,8 @@ Added to `seed/seed.json`. Fields:
 | `linked_post_ids` | `string` | N | Comma-separated EmDash post ULIDs. A future migration to EmDash's relation field type can replace this. |
 | `external_url` | `string` | N | E.g., match detail page for Old Trafford. |
 | `external_url_label` | `string` | N | Display label for the external URL (default: domain). |
-| `source` | `string` | Y | One of `manual`, `post-scan`, `google-maps`, `google-photos`. Shown only in admin. |
-| `source_id` | `string` | N | Dedupe key for ingestion pipelines (post ULID, Google place_id, Google photo id). |
+| `source` | `string` | Y | One of `manual`, `post-scan`, `google-maps`. Shown only in admin. |
+| `source_id` | `string` | N | Dedupe key for ingestion pipelines (post ULID, Google place_id). |
 | `visibility` | `string` | N | `public` (default) or `sealed`. All v1 entries default to `public` and render fully. Field exists for future gating — reduces migration cost. |
 
 All entries use EmDash's standard `status` (`draft` | `published`) and `publishedAt` from the collection `supports: ["drafts", "revisions", "search"]`. Ingestion produces drafts; only `published` entries render on the Chronicle.
@@ -165,13 +165,12 @@ All three pipelines land candidates in the `chronicle` collection with `status: 
 
 CLI scripts in `scripts/chronicle/`:
 
-- `ingest-gmaps.ts` — reads `Semantic Location History/YYYY/YYYY_MONTH.json` from a Google Takeout Maps export. Extracts `placeVisit` entries with duration > 2 hours. Writes draft Chronicle entries via the EmDash admin API (see `emdash-cli` skill for the write pattern).
-- `ingest-gphotos.ts` — reads `*.json` sidecars from a Google Photos Takeout export. Groups photos by `(date, approximate-location)` into sessions. Each session becomes one draft entry. The first photo of the session is suggested as the `featured_image` (once we add that field in a later iteration).
+- `ingest-gmaps.ts` — reads a phone-exported `location-history.json` from Google Maps "Export Timeline data" (2024+ format). Filters to qualifying visits, dedupes by `place_id` keeping the earliest date, drops regular haunts. Emits draft Chronicle candidates as NDJSON on stdout for admin review. (Google Photos ingestion was considered but is not part of this scope — photos don't carry the "was here for N hours" signal that makes Maps candidates meaningful.)
 
-Both scripts:
-- **Dedupe** by `source_id` before inserting.
-- **Require review** — everything lands as `draft`. Admin then decides which to publish, which to dismiss, which to merge with an existing entry.
-- **Are one-shot** — run locally against a Takeout zip. No live sync. Re-runnable safely due to dedupe.
+The script:
+- **Dedupes** by `source_id` before emitting.
+- **Requires review** — NDJSON to stdout; nothing writes to the DB. Admin copies meaningful lines into `seed/seed.json` and fills in a title.
+- **Is one-shot** — run locally against the exported JSON. No live sync. Re-runnable safely due to dedupe.
 
 ## 5. Rendering architecture
 

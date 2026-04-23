@@ -4,10 +4,6 @@ Items deferred / parked while we ship the current polish arc. Not spec'd to task
 
 ## Blocked on external input
 
-- **Google Photos ingestion (Phase C part 2)**
-  Pair to `ingest-gmaps.ts`. User to drop a Photos Takeout zip; parse `*.json` sidecars to extract photo clusters (date + approximate location), emit draft Chronicle candidates alongside the Maps ones.
-  **Blocker:** needs the Photos Takeout export; Maps-only export was done in April 2026.
-
 - **Atlas real map tiles**
   Replace the graticule grid with Mapbox / Stadia / OSM dark tiles.
   **Blocker:** tile provider choice (paid vs free, license terms, API key management).
