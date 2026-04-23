@@ -5,7 +5,11 @@ import { formsPlugin } from "@emdash-cms/plugin-forms";
 import { webhookNotifierPlugin } from "@emdash-cms/plugin-webhook-notifier";
 import { resendPlugin } from "plugin-resend";
 import { pensieveEngagePlugin } from "plugin-pensieve-engage";
-import { weasleyClockPlugin } from "plugin-weasley-clock";
+// plugin-weasley-clock is scaffolded (see plugins/plugin-weasley-clock/) but
+// not registered yet. EmDash's sandbox validator rejects "standard" plugins
+// with no real hooks or routes at load time. Phase 2 adds the cron + ICS
+// parser hooks and re-enables this import + registration below.
+// import { weasleyClockPlugin } from "plugin-weasley-clock";
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
 
@@ -23,7 +27,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto" }),
 			storage: r2({ binding: "MEDIA" }),
-			plugins: [formsPlugin(), resendPlugin(), pensieveEngagePlugin(), weasleyClockPlugin()],
+			plugins: [formsPlugin(), resendPlugin(), pensieveEngagePlugin()],
 			sandboxed: [webhookNotifierPlugin()],
 			sandboxRunner: sandbox(),
 			marketplace: "https://marketplace.emdashcms.com",
