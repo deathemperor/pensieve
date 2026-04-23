@@ -88,15 +88,19 @@
   top: 24px;
   transform: translateX(-50%);
   white-space: nowrap;
-  font-size: 9px;
-  font-family: 'Inter Tight', sans-serif;
-  letter-spacing: 0.04em;
-  color: rgba(232, 233, 234, 0.4);
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Inter Tight', sans-serif;
+  letter-spacing: 0.06em;
+  color: rgba(232, 233, 234, 0.62);
+  text-shadow: 0 0 4px rgba(8, 9, 10, 0.9);
   pointer-events: none;
-  transition: color 0.2s;
+  transition: color 0.2s, text-shadow 0.2s;
 }
 .cc-star:hover .cc-star-label,
-.cc-star[data-active] .cc-star-label { color: #e8e9ea; }
+.cc-star[data-active] .cc-star-label {
+  color: #f7f8f8;
+  text-shadow: 0 0 6px rgba(8, 9, 10, 1);
+}
 
 .cc-compass {
   position: absolute; left: 50%; top: 50%;
@@ -334,6 +338,16 @@
 .cc-atlas-pin:hover circle:last-of-type,
 .cc-atlas-pin[data-active] circle:last-of-type {
   r: 7;
+}
+.cc-atlas-country-label {
+  font-family: 'Inter Tight', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  fill: rgba(212, 168, 67, 0.55);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
 }
 .cc-atlas-list {
   overflow-y: auto;
