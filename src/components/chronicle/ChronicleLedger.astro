@@ -3,6 +3,8 @@ import { getChronicleCategory } from "../../themes/chronicleCategories";
 import { formatRomanDate } from "../../utils/romanDate";
 import { groupByYear } from "../../utils/chronicleDate";
 import { getCurrentLang } from "../../utils/lang";
+import { buildWrapped } from "../../utils/chronicleWrapped";
+import ChronicleWrapped from "./ChronicleWrapped.astro";
 
 interface Props {
   entries: any[]; // narrowed to the EmDash chronicle type once stable
@@ -19,6 +21,14 @@ const groups = groupByYear(entries.map((e) => ({
   date_precision: e.data.date_precision,
   __entry: e,
 })));
+
+const wrappedByYear = new Map(
+  buildWrapped(entries.map((e) => ({
+    event_date: e.data.event_date,
+    category: e.data.category,
+    location: e.data.location,
+  }))).map((w) => [w.year, w]),
+);
 ---
 
 <div class="cc-ledger" id="cc-ledger">
@@ -36,6 +46,7 @@ const groups = groupByYear(entries.map((e) => ({
   {groups.map((g) => (
     <Fragment>
       <div class="cc-year" id={`cc-year-${g.year}`}>{g.year}</div>
+      {wrappedByYear.has(g.year) && <ChronicleWrapped recap={wrappedByYear.get(g.year)!} />}
       {g.entries.map((row) => {
         const e = (row as any).__entry;
         const cat = getChronicleCategory(e.data.category);
