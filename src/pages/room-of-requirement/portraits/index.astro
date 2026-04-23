@@ -18,15 +18,22 @@ const isVi = lang === "vi";
 const auth = await requireAdmin(Astro);
 const db = (env as any).DB;
 
+const url = new URL(Astro.request.url);
+const q = auth.admin ? (url.searchParams.get("q") ?? "").trim() : "";
+const tiersParam = auth.admin ? (url.searchParams.get("tiers") ?? "").trim() : "";
+const selectedTiers = tiersParam
+  ? (tiersParam.split(",").map((t) => t.trim().toUpperCase()).filter((t): t is TierCode => ["S","A","B","C","D"].includes(t as TierCode)))
+  : undefined;
+
 const contacts: Contact[] = await listContacts(db, {
   includePlaceholders: !auth.admin,
   onlyPlaceholders: !auth.admin,
+  search: q || undefined,
+  tiers: selectedTiers,
 });
 
-// Bucket by tier
 const buckets: Record<TierCode, Contact[]> = { S: [], A: [], B: [], C: [], D: [] };
 for (const c of contacts) buckets[c.prestige_tier].push(c);
-
 const total = contacts.length;
 
 // Cache: guest cached 1h at the edge; admin never cached anywhere.
@@ -65,6 +72,38 @@ Astro.response.headers.set(
           <RemindersPill db={db} />
           <PipelinePill db={db} />
         </div>
+      )}
+      {auth.admin && (
+        <form class="gallery-filter" method="get" data-current-q={q}>
+          <input
+            type="search"
+            name="q"
+            value={q}
+            placeholder={isVi ? "Tìm theo tên, công ty, thẻ…" : "Search name, company, tag…"}
+            autocomplete="off"
+          />
+          <div class="tier-chips">
+            {(["S","A","B","C","D"] as const).map((tier) => {
+              const active = (selectedTiers ?? []).includes(tier);
+              const next = active
+                ? (selectedTiers ?? []).filter((t) => t !== tier)
+                : [...(selectedTiers ?? []), tier];
+              const params = new URLSearchParams();
+              if (q) params.set("q", q);
+              if (next.length > 0) params.set("tiers", next.join(","));
+              const href = `?${params.toString()}`;
+              return (
+                <a class={`tier-chip chip-${tier} ${active ? "active" : ""}`} href={href}>
+                  {tier}
+                </a>
+              );
+            })}
+            {(q || (selectedTiers && selectedTiers.length > 0)) && (
+              <a class="tier-chip clear" href="?">{isVi ? "xoá" : "clear"}</a>
+            )}
+          </div>
+          <button type="submit" class="filter-apply">{isVi ? "Tìm" : "Search"}</button>
+        </form>
       )}
     </header>
 
@@ -135,4 +174,37 @@ Astro.response.headers.set(
   }
 
   .header-pills { margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+
+  .gallery-filter {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center;
+    margin-top: 1rem;
+    padding: 0.75rem; background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 3px;
+  }
+  .gallery-filter input[type="search"] {
+    flex: 1 1 16rem; min-width: 12rem;
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0;
+    padding: 0.4rem 0.6rem; border-radius: 3px; font: inherit;
+  }
+  .gallery-filter input[type="search"]:focus { border-color: #d4a89a; outline: none; }
+  .tier-chips { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .tier-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.8rem; height: 1.8rem;
+    padding: 0 0.55rem;
+    border: 1px solid #2a2a2a; border-radius: 3px;
+    color: #8a877e; text-decoration: none; font-size: 0.8125rem; letter-spacing: 0.04em;
+    transition: border-color 120ms ease, background 120ms ease;
+  }
+  .tier-chip:hover { border-color: #6a665e; background: #161616; }
+  .tier-chip.active { border-color: #d4a89a; color: #d4a89a; background: rgba(212, 168, 154, 0.08); }
+  .tier-chip.chip-S.active { border-color: #f8e08c; color: #f8e08c; background: rgba(248, 224, 140, 0.08); }
+  .tier-chip.chip-A.active { border-color: #e6e8ea; color: #e6e8ea; background: rgba(230, 232, 234, 0.06); }
+  .tier-chip.chip-B.active { border-color: #cd8a4e; color: #cd8a4e; background: rgba(205, 138, 78, 0.08); }
+  .tier-chip.clear { color: #6a665e; border-color: transparent; padding: 0 0.8rem; }
+  .tier-chip.clear:hover { color: #e57373; }
+  .filter-apply {
+    background: transparent; border: 1px solid #d4a89a; color: #d4a89a;
+    padding: 0.35rem 0.8rem; border-radius: 3px; cursor: pointer; font: inherit;
+  }
+  .filter-apply:hover { background: rgba(212, 168, 154, 0.08); }
 </style>
