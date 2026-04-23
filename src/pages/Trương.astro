@@ -697,6 +697,7 @@ try {
 						</div>
 						<p class="origin-caption">{isVi ? "Kẻ mở vòng tuần hoàn · ba dòng sông trong một thân" : "a circle starter · three rivers in one body"}</p>
 					</aside>
+				{/* Name stories — prose */}
 				{isVi ? (
 					<>
 						<p>
@@ -711,30 +712,100 @@ try {
 							một lần rồi dặn: phải nhớ, phải truyền lại cho đời sau, dẫu trên giấy vẫn
 							là Trương. Tôi viết lại đây để cái tên không đánh mất chính nó.
 						</p>
+					</>
+				) : (
+					<>
 						<p>
-							Tôi gia nhập VinaGame (nay là VNG) ngày 19 tháng 12 năm 2006. Năm 2007, tôi
-							phát minh cơ chế session management đẩy sự kiện out-of-game lớn nhất của
-							<em>Võ Lâm Truyền Kỳ</em> lên hàng nghìn người cùng online. Năm 2008, đồng
-							thiết kế hệ thống Passport — 200 nghìn lượt đăng ký mỗi tháng. Năm 2009,
-							định nghĩa và kiến trúc hệ thống <strong>Single Sign-On đầu tiên của Việt
-							Nam</strong>, đẩy tốc độ phát hành game lên 10+ tựa mỗi tháng. Rồi chỉ huy
-							đợt tích hợp nhanh nhất từng có cho Gunny, cùng đội hồi sinh game từ ~1k
-							lên 100k+ người cùng online, doanh thu từ vài triệu lên hơn 30 tỷ mỗi
-							tháng — góp phần đánh bật dòng game cạnh tranh của FPT Games.
+							My name means "blessing" in Vietnamese — a thank-you name from parents
+							who once weren't sure they'd keep me. That origin story sits under
+							everything I write.
 						</p>
-						<p>
-							Sau giai đoạn phát hành game, tôi làm <strong>TalkTV</strong> — nền tảng
-							livestream và chat của VNG. Một chuyện tôi vẫn kể: tôi hối thằng đệ ship
-							tính năng paste ảnh trực tiếp vào chat, ship lẹ trước khi Facebook
-							Messenger làm kịp. Chúng tôi còn ra trước cả Twitch. TalkTV dạy tôi rằng
-							đi trước cũng là một tính năng của sản phẩm.
+						<p id="huynh-note">
+							<span class="huynh-marker" aria-hidden="true">†</span>
+							Trương is my legal surname — but it isn&apos;t the real one. During the war,
+							my grandmother took another family&apos;s paperwork to survive, and Trương
+							came with it. Our actual surname is <strong>Huỳnh</strong>. My father
+							told me the story once and asked me to remember it, and to carry it
+							down the bloodline even as the papers stay Trương. I&apos;m writing it here
+							so the name doesn&apos;t lose itself.
 						</p>
-						<p>
-							Giờ tôi ở <strong>Papaya</strong>, xây một giấc mơ tên <em>Oasis</em> —
-							nền tảng cung cấp AI Agent cho đối tác, như Service-As-A-Software (không
-							phải đánh máy lộn, đây là thời SaaS mới). Các Agent sinh ra với một tâm
-							hồn, truyền từ cái tâm của người làm: mang giá trị cho khách hàng.
-						</p>
+					</>
+				)}
+
+				{/* Career chronology — "Spellwork" — replaces the career-arc prose.
+				    Rendered as a gold filigree spine with runestone nodes. Major
+				    milestones get a portrait-style sigil glow; the current "now"
+				    entry pulses like a snitch. */}
+				<ol class="chronology" role="list" aria-label={isVi ? "Sổ bùa — trình tự công việc" : "Spellwork — career chronology"}>
+					{[
+						{ year: "2006", date: { en: "Dec 19", vi: "19/12" }, co: "VNG · VinaGame", rune: "ᚠ",
+						  title: { en: "Day one. Senior Engineer.", vi: "Ngày đầu. Senior Engineer." },
+						  note: { en: "", vi: "" } },
+						{ year: "2007", co: "VNG", rune: "ᚨ",
+						  title: { en: "Session management — thousands concurrent", vi: "Session management — hàng nghìn concurrent" },
+						  note: { en: "Scaled Võ Lâm Truyền Kỳ's biggest out-of-game event.", vi: "Đẩy sự kiện out-of-game lớn nhất của Võ Lâm Truyền Kỳ." } },
+						{ year: "2008", co: "VNG", rune: "ᛃ",
+						  title: { en: "Passport system co-designed", vi: "Đồng thiết kế hệ thống Passport" },
+						  note: { en: "200k monthly registrations.", vi: "200 nghìn lượt đăng ký / tháng." } },
+						{ year: "2009", co: "VNG", rune: "ᛉ", major: true,
+						  title: { en: "Vietnam's first enterprise SSO", vi: "SSO đầu tiên của Việt Nam" },
+						  note: { en: "Defined · designed · architected. Game-publishing agility: 10+ launches/month.", vi: "Định nghĩa · thiết kế · kiến trúc. 10+ tựa game phát hành mỗi tháng." } },
+						{ year: "2010", co: "VNG", rune: "ᛗ",
+						  title: { en: "Gunny — fastest integration ever", vi: "Gunny — tích hợp nhanh nhất" },
+						  note: { en: "Revived from ~1k to 100k+ concurrent · from millions to 30B+ VND/month. Helped kill FPT Games' line.", vi: "Hồi sinh từ ~1k lên 100k+ concurrent · từ vài triệu lên hơn 30 tỷ VND/tháng. Góp phần đánh bật FPT Games." } },
+						{ year: "2013", co: "VNG · TalkTV", rune: "ᛟ", major: true,
+						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV", vi: "Chief of product / tech / ops / marketing / content — TalkTV" },
+						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
+						{ year: "2014", co: "VNG · TalkTV", rune: "ᚱ", major: true,
+						  title: { en: "Twitch of Vietnam", vi: "Twitch của Việt Nam" },
+						  note: { en: "3M MAU · 150k peak concurrent — zero marketing budget. 12 months to market leadership.", vi: "3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không. 12 tháng để dẫn đầu thị trường." } },
+						{ year: "2015", co: "GVN Studio", rune: "ᚲ",
+						  title: { en: "Co-founder & CTO", vi: "Đồng sáng lập & CTO" },
+						  note: { en: "5 titles shipped · 2 countries.", vi: "Phát hành 5 tựa · 2 quốc gia." } },
+						{ year: "2021", co: "Papaya", rune: "ᛞ",
+						  title: { en: "Director of Engineering → CTSPO", vi: "Director of Engineering → CTSPO" },
+						  note: { en: "Stepped into insurance. Papaya Pro designed in 1 month. 10+ insurers integrated.", vi: "Bước vào ngành bảo hiểm. Papaya Pro trong 1 tháng. Tích hợp 10+ hãng bảo hiểm." } },
+						{ year: "2022", co: "Papaya", rune: "ᛊ",
+						  title: { en: "Hoàn Mỹ onboarded · Non-life TPA launched", vi: "Onboard Hoàn Mỹ · ra mắt TPA phi-nhân-thọ" },
+						  note: { en: "Modern insurance stack (policy · claim · hospital · payment) built in 3 months for 10k insured. eClaim on iOS, Android, Web, macOS.", vi: "Hệ thống bảo hiểm hiện đại (policy · claim · hospital · payment) trong 3 tháng cho 10.000 bệnh nhân đầu tiên. eClaim trên iOS, Android, Web, macOS." } },
+						{ year: "2024", date: { en: "Nov", vi: "Tháng 11" }, co: "Papaya", rune: "ᛏ",
+						  title: { en: "+ COO (Chief Technology & Operating Officer)", vi: "+ COO (Chief Technology & Operating Officer)" },
+						  note: { en: "-12% opex · 2× claims/assessor/day.", vi: "-12% chi phí vận hành · gấp đôi số claims mỗi assessor xử lý mỗi ngày." } },
+						{ year: "2025", co: "Papaya", rune: "ᛜ", major: true,
+						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
+						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
+						{ year: "2025", co: "Papaya · Oasis", rune: "ᛖ",
+						  title: { en: "Architect of Oasis", vi: "Kiến trúc Oasis" },
+						  note: { en: "Regional agentic insurance platform. Claim automation · fraud prevention · agentic OCR · agentic data + privacy · multi-cloud + on-prem.", vi: "Nền tảng agentic bảo hiểm khu vực. Tự động hoá claim · chống gian lận · OCR agentic · dữ liệu + quyền riêng tư agentic · đa-cloud + on-prem." } },
+						{ year: "2026", date: { en: "Jan", vi: "Tháng 1" }, co: "Papaya", rune: "ᛒ", major: true,
+						  title: { en: "Board seat · Papaya One launched", vi: "HĐQT · ra mắt Papaya One" },
+						  note: { en: "Agentic claim submission — one interaction. 95% 5-star rating.", vi: "Submit claim một lần chạm. Đạt 95% 5-sao." } },
+						{ year: "2026", co: "Papaya", rune: "ᛝ", major: true, now: true,
+						  title: { en: "700B+ VND — zero humans", vi: "700 tỷ VND — không có con người" },
+						  note: { en: "Accumulated claim payout · automated. 400k+ insured served · 30% YoY.", vi: "Chi trả tích luỹ · tự động hoàn toàn. Phục vụ 400k+ người được bảo hiểm · tăng 30%/năm." } },
+					].map((entry) => (
+						<li class={`chron-node ${entry.major ? 'chron-major' : ''} ${entry.now ? 'chron-now' : ''}`}>
+							<span class="chron-rune" aria-hidden="true">{entry.rune}</span>
+							<div class="chron-body">
+								<div class="chron-meta">
+									<span class="chron-year">
+										{entry.date ? (isVi ? `${entry.date.vi} ` : `${entry.date.en} `) : ""}
+										{entry.year}
+									</span>
+									<span class="chron-co">{entry.co}</span>
+								</div>
+								<h3 class="chron-title">{isVi ? entry.title.vi : entry.title.en}</h3>
+								{(isVi ? entry.note.vi : entry.note.en) && (
+									<p class="chron-note">{isVi ? entry.note.vi : entry.note.en}</p>
+								)}
+							</div>
+						</li>
+					))}
+				</ol>
+
+				{/* Closing prose — life, writing, the Pensieve itself */}
+				{isVi ? (
+					<>
 						<p>
 							Tôi nuôi cá rô Trung Mỹ. Tôi đã lai tạo những loài chưa từng được lai tạo ở
 							Việt Nam — cá rô Madagascar, các giống Rô Mỹ mà hầu hết người chơi chỉ thấy
@@ -757,46 +828,6 @@ try {
 					</>
 				) : (
 					<>
-						<p>
-							My name means "blessing" in Vietnamese — a thank-you name from parents
-							who once weren't sure they'd keep me. That origin story sits under
-							everything I write.
-						</p>
-						<p id="huynh-note">
-							<span class="huynh-marker" aria-hidden="true">†</span>
-							Trương is my legal surname — but it isn&apos;t the real one. During the war,
-							my grandmother took another family&apos;s paperwork to survive, and Trương
-							came with it. Our actual surname is <strong>Huỳnh</strong>. My father
-							told me the story once and asked me to remember it, and to carry it
-							down the bloodline even as the papers stay Trương. I&apos;m writing it here
-							so the name doesn&apos;t lose itself.
-						</p>
-						<p>
-							I joined VinaGame (now VNG) on December 19th, 2006. In 2007, I invented
-							the session-management mechanism that scaled <em>Võ Lâm Truyền Kỳ</em>&apos;s
-							biggest out-of-game event to thousands of concurrent users. In 2008, I
-							co-designed the Passport system — 200k monthly registrations. In 2009, I
-							defined, designed, and architected <strong>Vietnam&apos;s first Single Sign-On
-							web system</strong>, pushing game-publishing agility to 10+ launches a
-							month. Then I led the fastest-ever integration for Gunny, and the team
-							that revived the game from ~1k concurrent users and a few million in
-							monthly revenue to 100k+ and 30B+ VND — helping kill FPT Games&apos;
-							competing line.
-						</p>
-						<p>
-							After the game-publishing years I worked on <strong>TalkTV</strong> — VNG&apos;s
-							livestream-and-chat platform. One feature I still tell the story of: I
-							pushed my junior to ship paste-image-in-chat fast, before Facebook
-							Messenger got there. We shipped before Twitch too. TalkTV is where I
-							learned that being first is itself a product feature.
-						</p>
-						<p>
-							Now I&apos;m at <strong>Papaya</strong>, building a dream called
-							<em>Oasis</em> — a platform that delivers AI Agents to partners as
-							Service-As-A-Software (not a typo; this is the new age of SaaS). Every
-							Agent is born with a soul, passed down from the heart of the person who
-							makes them: to bring value to the customer.
-						</p>
 						<p>
 							I keep Central American cichlids. I've bred species that had never been
 							bred in Vietnam before — Madagascar cichlids, Rô Mỹ varieties that
@@ -2800,28 +2831,57 @@ try {
 		margin-top: var(--spacing-6, 1.5rem);
 	}
 	.hero-profile-link {
+		position: relative;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.25rem;
-		height: 2.25rem;
-		border-radius: 0.45rem;
-		border: 1px solid rgba(240, 199, 94, 0.2);
-		background: rgba(240, 199, 94, 0.04);
+		width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 50%;
+		border: 1px solid rgba(240, 199, 94, 0.25);
+		background: radial-gradient(circle at 32% 28%,
+			rgba(240, 199, 94, 0.12) 0%,
+			rgba(240, 199, 94, 0.04) 65%,
+			rgba(240, 199, 94, 0.02) 100%);
 		color: var(--color-muted);
 		text-decoration: none;
-		transition: color 180ms, border-color 180ms, background 180ms, transform 180ms;
+		transition: color 220ms, border-color 220ms, background 220ms, transform 220ms, box-shadow 260ms;
+	}
+	/* Dashed sigil ring — hidden by default, orbits on hover/focus.
+	   Matches the chronology's major-milestone sigil but tighter. */
+	.hero-profile-link::before {
+		content: "";
+		position: absolute;
+		inset: -0.32rem;
+		border-radius: 50%;
+		border: 1px dashed rgba(240, 199, 94, 0);
+		pointer-events: none;
+		transition: border-color 240ms;
 	}
 	.hero-profile-link:hover,
 	.hero-profile-link:focus-visible {
 		color: var(--color-accent, #f0c75e);
-		border-color: rgba(240, 199, 94, 0.55);
-		background: rgba(240, 199, 94, 0.09);
+		border-color: rgba(240, 199, 94, 0.65);
+		background: radial-gradient(circle at 32% 28%,
+			rgba(240, 199, 94, 0.22) 0%,
+			rgba(240, 199, 94, 0.08) 65%,
+			rgba(240, 199, 94, 0.03) 100%);
 		transform: translateY(-1px);
+		box-shadow:
+			0 0 14px rgba(240, 199, 94, 0.22),
+			0 0 28px rgba(240, 199, 94, 0.1);
+	}
+	.hero-profile-link:hover::before,
+	.hero-profile-link:focus-visible::before {
+		border-color: rgba(240, 199, 94, 0.5);
+		animation: hero-link-sigil 9s linear infinite;
+	}
+	@keyframes hero-link-sigil {
+		to { transform: rotate(360deg); }
 	}
 	.hero-profile-more {
-		margin-left: 0.25rem;
-		opacity: 0.7;
+		margin-left: 0.35rem;
+		opacity: 0.75;
 	}
 	.hero-profile-more:hover,
 	.hero-profile-more:focus-visible {
@@ -3152,17 +3212,65 @@ try {
 
 	/* Hero — full-width headline card */
 	.wrap-hero {
+		position: relative;
 		grid-column: span 6;
 		flex-direction: row;
 		align-items: center;
 		gap: 1.5rem;
 		padding: 1.4rem 1.6rem;
 		min-height: unset;
+		overflow: hidden; /* clip the memory-swirl to the card */
 	}
+	/* Silvery filigree rim — top + bottom double-line with center gem.
+	   Vertical echo of the portrait's baroque frame, scaled to card size. */
+	.wrap-hero::before,
+	.wrap-hero::after {
+		content: "";
+		position: absolute;
+		left: 50%;
+		width: 70%;
+		max-width: 360px;
+		height: 1px;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(200, 210, 225, 0.0) 6%,
+			rgba(200, 210, 225, 0.4) 50%,
+			rgba(200, 210, 225, 0.0) 94%,
+			transparent 100%);
+		transform: translateX(-50%);
+		pointer-events: none;
+	}
+	.wrap-hero::before { top: 6px; }
+	.wrap-hero::after  { bottom: 6px; }
+
 	.wrap-hero .wrap-stat {
+		position: relative;
 		font-size: 4.5rem;
 		line-height: 1;
 		flex-shrink: 0;
+		isolation: isolate; /* so the swirl sits behind the number cleanly */
+	}
+	/* Slow silvery memory-swirl behind the "1,064" — mimics Dumbledore's
+	   silver substance drifting inside the Pensieve. 32s rotation is slow
+	   enough to be ambient, never distracting. Conic gradient + blur. */
+	.wrap-hero .wrap-stat::before {
+		content: "";
+		position: absolute;
+		inset: -30% -25%;
+		background: conic-gradient(from 0deg,
+			rgba(200, 210, 225, 0) 0%,
+			rgba(200, 210, 225, 0.16) 18%,
+			rgba(200, 210, 225, 0) 40%,
+			rgba(200, 210, 225, 0.10) 62%,
+			rgba(200, 210, 225, 0) 82%,
+			rgba(200, 210, 225, 0.14) 100%);
+		filter: blur(22px);
+		animation: pensieve-swirl 32s linear infinite;
+		z-index: -1;
+		pointer-events: none;
+	}
+	@keyframes pensieve-swirl {
+		to { transform: rotate(360deg); }
 	}
 	.wrap-hero .wrap-label {
 		font-size: 0.75rem;
@@ -3336,6 +3444,7 @@ try {
 		overflow: hidden;
 	}
 	.fp-fill {
+		position: relative;
 		display: block;
 		height: 100%;
 		width: calc(var(--fp) * 5);
@@ -3344,6 +3453,28 @@ try {
 			rgba(200, 210, 225, 0.55) 0%,
 			rgba(200, 210, 225, 0.35) 100%);
 		border-radius: 3px;
+		overflow: hidden;
+	}
+	/* Slow silver shimmer pass — echoes the Pensieve's moving memory
+	   substance. ~9s cycle with a long "rest" so it reads as ambient,
+	   not a loading bar. Staggered per-bar via CSS variable --fp (the
+	   theme percent) so the shimmer waves don't lock-step. */
+	.fp-fill::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.45) 50%,
+			transparent 100%);
+		transform: translateX(-100%);
+		animation: fp-shimmer 9s ease-in-out infinite;
+		animation-delay: calc(var(--fp, 10) * -0.12s);
+		pointer-events: none;
+	}
+	@keyframes fp-shimmer {
+		0%        { transform: translateX(-120%); }
+		55%, 100% { transform: translateX(220%); }
 	}
 	.fp-pct {
 		font-family: var(--font-mono, "JetBrains Mono", monospace);
@@ -3718,6 +3849,213 @@ try {
 		margin: 10px 0 0;
 		padding-top: 10px;
 		border-top: 1px dashed var(--color-border, rgba(233, 230, 220, 0.14));
+	}
+
+	/* ──────────────────────────────────────────────────────────────
+	   Spellwork Chronology — career arc as a vertical gold-filigree
+	   spine with runestone nodes. Major milestones get a portrait-style
+	   sigil glow; the current "now" node pulses like a snitch.
+	   Inspired by the summoning-circle + grimoire motifs on the hero
+	   portrait, scaled down into a readable reading-rhythm timeline.
+	   ────────────────────────────────────────────────────────────── */
+	.chronology {
+		position: relative;
+		list-style: none;
+		padding: 1.5rem 0 2rem;
+		margin: 2rem 0 2rem 0.75rem;
+		counter-reset: chron;
+	}
+	/* The gold filigree spine runs top→bottom at the left edge. */
+	.chronology::before {
+		content: "";
+		position: absolute;
+		left: 1.1rem;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		background: linear-gradient(
+			180deg,
+			rgba(240, 199, 94, 0) 0%,
+			rgba(240, 199, 94, 0.35) 6%,
+			rgba(240, 199, 94, 0.45) 50%,
+			rgba(240, 199, 94, 0.28) 94%,
+			rgba(240, 199, 94, 0) 100%
+		);
+		box-shadow: 0 0 8px rgba(240, 199, 94, 0.18);
+	}
+	/* Twin filigree dots — top and bottom finials of the spine. */
+	.chronology::after {
+		content: "";
+		position: absolute;
+		left: calc(1.1rem - 2.5px);
+		bottom: -2px;
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: rgba(240, 199, 94, 0.55);
+		box-shadow: 0 0 12px rgba(240, 199, 94, 0.5);
+	}
+
+	.chron-node {
+		position: relative;
+		display: grid;
+		grid-template-columns: 2.2rem 1fr;
+		gap: 0.9rem;
+		padding: 0.75rem 0 0.75rem 0;
+		min-height: 3.2rem;
+	}
+
+	/* The runestone node — sits on the spine. Pure CSS: circle + rune. */
+	.chron-rune {
+		position: relative;
+		width: 1.85rem;
+		height: 1.85rem;
+		border-radius: 50%;
+		background: radial-gradient(circle at 30% 30%,
+			rgba(240, 199, 94, 0.22) 0%,
+			rgba(240, 199, 94, 0.08) 60%,
+			rgba(240, 199, 94, 0.03) 100%);
+		border: 1px solid rgba(240, 199, 94, 0.4);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-family: "Inter Tight", serif;
+		font-size: 0.95rem;
+		color: rgba(255, 240, 200, 0.92);
+		flex-shrink: 0;
+		transform: translateX(0.07rem);
+		box-shadow:
+			0 0 0 3px rgba(12, 12, 15, 0.92),  /* dark halo cuts the spine behind */
+			0 0 10px rgba(240, 199, 94, 0.15);
+		transition: box-shadow 260ms, transform 260ms, border-color 260ms;
+	}
+
+	/* Major milestones — larger + a rotating sigil ring, echoing the
+	   portrait's pentagram. Pure CSS pseudo-element rotation. */
+	.chron-node.chron-major .chron-rune {
+		width: 2.35rem;
+		height: 2.35rem;
+		font-size: 1.15rem;
+		border-color: rgba(240, 199, 94, 0.75);
+		transform: translateX(-0.18rem);
+		box-shadow:
+			0 0 0 3px rgba(12, 12, 15, 0.92),
+			0 0 18px rgba(240, 199, 94, 0.4),
+			0 0 32px rgba(240, 199, 94, 0.18);
+	}
+	.chron-node.chron-major .chron-rune::before {
+		content: "";
+		position: absolute;
+		inset: -0.6rem;
+		border-radius: 50%;
+		border: 1px dashed rgba(240, 199, 94, 0.35);
+		animation: chron-sigil 22s linear infinite;
+		pointer-events: none;
+	}
+	@keyframes chron-sigil {
+		to { transform: rotate(360deg); }
+	}
+
+	/* Current "now" milestone — snitch-like radial pulse. */
+	.chron-node.chron-now .chron-rune {
+		background: radial-gradient(circle at 35% 30%,
+			rgba(255, 240, 200, 0.75) 0%,
+			rgba(240, 199, 94, 0.5) 40%,
+			rgba(180, 140, 60, 0.15) 100%);
+		color: rgba(48, 30, 6, 0.9);
+		border-color: rgba(255, 240, 200, 0.85);
+		animation: chron-pulse 3.4s ease-in-out infinite;
+	}
+	@keyframes chron-pulse {
+		0%, 100% {
+			box-shadow:
+				0 0 0 3px rgba(12, 12, 15, 0.92),
+				0 0 14px rgba(240, 199, 94, 0.4),
+				0 0 28px rgba(240, 199, 94, 0.18);
+		}
+		50% {
+			box-shadow:
+				0 0 0 3px rgba(12, 12, 15, 0.92),
+				0 0 28px rgba(255, 240, 200, 0.7),
+				0 0 52px rgba(240, 199, 94, 0.42);
+		}
+	}
+
+	.chron-body {
+		padding-top: 0.1rem;
+		min-width: 0;
+	}
+	.chron-meta {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		font-family: var(--font-mono, "JetBrains Mono", monospace);
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		margin-bottom: 0.25rem;
+	}
+	.chron-year {
+		color: rgba(240, 199, 94, 0.9);
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+	.chron-co {
+		color: var(--color-muted, rgba(255, 255, 255, 0.55));
+	}
+	.chron-title {
+		font-family: var(--font-display, "Inter Tight", -apple-system, sans-serif);
+		font-size: 1rem;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+		line-height: 1.35;
+		color: rgba(230, 235, 245, 0.96);
+		margin: 0 0 0.25rem 0;
+	}
+	.chron-node.chron-major .chron-title {
+		font-size: 1.08rem;
+		color: rgb(255, 240, 200);
+	}
+	.chron-note {
+		font-family: var(--font-sans, "Inter Tight", -apple-system, sans-serif);
+		font-size: 0.88rem;
+		line-height: 1.55;
+		color: var(--color-text-dim, rgba(255, 255, 255, 0.72));
+		margin: 0;
+	}
+
+	/* Hover — subtle lift + brighten, matching the portrait's reactive style. */
+	.chron-node:hover .chron-rune {
+		border-color: rgba(240, 199, 94, 0.75);
+		transform: translateX(0.07rem) scale(1.06);
+	}
+	.chron-node.chron-major:hover .chron-rune {
+		transform: translateX(-0.18rem) scale(1.05);
+	}
+
+	/* Mobile — tighter spine, smaller runestones. */
+	@media (max-width: 520px) {
+		.chronology {
+			margin-left: 0.25rem;
+			padding: 1rem 0 1.5rem;
+		}
+		.chronology::before { left: 0.85rem; }
+		.chronology::after { left: calc(0.85rem - 2.5px); }
+		.chron-node { grid-template-columns: 1.85rem 1fr; gap: 0.7rem; }
+		.chron-rune { width: 1.55rem; height: 1.55rem; font-size: 0.85rem; }
+		.chron-node.chron-major .chron-rune { width: 1.9rem; height: 1.9rem; font-size: 1rem; transform: translateX(-0.1rem); }
+		.chron-title { font-size: 0.95rem; }
+		.chron-note { font-size: 0.82rem; }
+	}
+
+	/* Respect reduced-motion — no sigil spin or pulse. */
+	@media (prefers-reduced-motion: reduce) {
+		.chron-node.chron-major .chron-rune::before { animation: none; }
+		.chron-node.chron-now .chron-rune { animation: none; }
+		.hero-profile-link:hover::before,
+		.hero-profile-link:focus-visible::before { animation: none; }
+		.wrap-hero .wrap-stat::before { animation: none; }
+		.fp-fill::after { animation: none; }
 	}
 	/* Clearfix so the prose section sits below the float cleanly. */
 	.about-prose::after {
