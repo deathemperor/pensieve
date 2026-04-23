@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
-import { requireAdmin } from "../../../lib/portraits/auth";
+import { requireAdmin, resolveContactAccess } from "../../../lib/portraits/auth";
 import { getContact, updateContact, softDeleteContact, type UpdateContactInput } from "../../../lib/portraits/db";
 import type { TierCode } from "../../../lib/portraits/types";
 
@@ -17,7 +17,6 @@ export const GET: APIRoute = async (ctx) => {
     });
   }
 
-  const auth = await requireAdmin(ctx as any);
   const db = (env as any).DB;
   const contact = await getContact(db, id);
 
@@ -28,7 +27,11 @@ export const GET: APIRoute = async (ctx) => {
     });
   }
 
-  if (!auth.admin && contact.is_placeholder !== 1) {
+  const access = await resolveContactAccess(ctx as any, db, id);
+  const isPublic = contact.is_placeholder === 1;
+  const allowed = access.admin || access.access !== "none" || isPublic;
+
+  if (!allowed) {
     return new Response(JSON.stringify({ error: "not_found" }), {
       status: 404,
       headers: { "Content-Type": "application/json" },
@@ -36,11 +39,11 @@ export const GET: APIRoute = async (ctx) => {
   }
 
   const cacheHeader =
-    !auth.admin && contact.is_placeholder === 1
+    isPublic && !access.admin
       ? "public, max-age=3600, s-maxage=3600"
       : "private, no-store";
 
-  return new Response(JSON.stringify({ contact }), {
+  return new Response(JSON.stringify({ contact, access: access.admin ? "admin" : access.access }), {
     status: 200,
     headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
   });
