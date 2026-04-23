@@ -31,6 +31,7 @@ export function weasleyClockPlugin(): PluginDescriptor {
 				],
 			},
 		},
+		adminEntry: "plugin-weasley-clock/admin",
 		adminPages: [
 			{ path: "/feeds", label: "Calendar Feeds", icon: "calendar" },
 		],

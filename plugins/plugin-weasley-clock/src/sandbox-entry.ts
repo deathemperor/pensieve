@@ -197,5 +197,47 @@ export default definePlugin({
 			return { redirect: stateRow.return_url || "/_emdash/admin/weasley-clock/feeds" };
 			},
 		},
+
+		"calendars/toggle": {
+			public: false,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const { calendar_id, synced } = (routeCtx.input ?? {}) as { calendar_id?: string; synced?: boolean };
+				if (!calendar_id || typeof synced !== "boolean") {
+					return { error: "Expected { calendar_id, synced }" };
+				}
+				const row = await (ctx.storage as any).oauth_calendars.get(calendar_id);
+				if (!row) return { error: "Calendar not found" };
+				await (ctx.storage as any).oauth_calendars.put(calendar_id, { ...row.data, synced: synced ? 1 : 0 });
+				return { ok: true };
+			},
+		},
+
+		"accounts/list": {
+			public: false,
+			handler: async (_routeCtx: any, ctx: PluginContext) => {
+				const accs = await (ctx.storage as any).oauth_accounts.query({});
+				const cals = await (ctx.storage as any).oauth_calendars.query({});
+				const accountsList = ((accs.items ?? accs ?? []) as any[]).map((r: any) => ({
+					id: r.id,
+					account_email: r.data.account_email,
+					display_name: r.data.display_name,
+					status: r.data.status,
+					connected_at: r.data.connected_at,
+				}));
+				const calendarsByAccount: Record<string, any[]> = {};
+				for (const r of (cals.items ?? cals ?? []) as any[]) {
+					const list = calendarsByAccount[r.data.account_id] ?? (calendarsByAccount[r.data.account_id] = []);
+					list.push({
+						id: r.id,
+						calendar_id: r.data.calendar_id,
+						summary: r.data.summary,
+						time_zone: r.data.time_zone,
+						background_color: r.data.background_color,
+						synced: !!r.data.synced,
+					});
+				}
+				return { accounts: accountsList, calendarsByAccount };
+			},
+		},
 	},
 });
