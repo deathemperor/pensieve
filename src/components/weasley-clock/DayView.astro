@@ -1,5 +1,60 @@
 ---
-interface Props { anchor: Date; occurrences: any[]; }
+import DualDate from "./DualDate.astro";
+import EventChip from "./EventChip.astro";
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+
+interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
 const { anchor, occurrences } = Astro.props;
+
+// Phase 1: no timed events (sync comes in Phase 2). All-day family events
+// pinned to the top, empty hourly column 06:00-23:00 as placeholder.
+const hours = Array.from({ length: 18 }, (_, i) => i + 6);
+
+function chipCategoryFor(
+	ev: FamilyOccurrence,
+): "giỗ" | "birthday" | "anniversary" | "cultural" | "milestone" | "other" {
+	switch (ev.event.event_type) {
+		case "death_anniv": return "giỗ";
+		case "birthday": return "birthday";
+		case "wedding_anniv": return "anniversary";
+		case "cultural": return "cultural";
+		case "milestone": return "milestone";
+		default: return "other";
+	}
+}
 ---
-<div class="wc-view-stub">stub · {occurrences.length} occurrences · {anchor.toISOString().slice(0, 10)}</div>
+<div class="wc-day-view">
+	<header class="wc-day-view__head">
+		<DualDate date={anchor} size="lg" />
+	</header>
+	<section class="wc-day-view__allday">
+		<div class="wc-day-view__label">ALL DAY</div>
+		{occurrences.length === 0 && <div class="wc-day-view__empty">— quiet today —</div>}
+		{occurrences.map((occ) => (
+			<EventChip
+				title={occ.event.title_vi || occ.event.title_en}
+				subtitle={occ.event.relationship ?? undefined}
+				category={chipCategoryFor(occ)}
+			/>
+		))}
+	</section>
+	<section class="wc-day-view__hours">
+		{hours.map((h) => (
+			<div class="wc-day-view__hour">
+				<div class="wc-day-view__hour-label">{String(h).padStart(2, "0")}:00</div>
+				<div class="wc-day-view__hour-body">{/* Phase 2: timed synced events render here */}</div>
+			</div>
+		))}
+	</section>
+</div>
+
+<style>
+	.wc-day-view { max-width: 720px; margin: 0 auto; }
+	.wc-day-view__head { margin-bottom: 16px; }
+	.wc-day-view__allday { padding: 12px; background: #1f1710; border: 1px solid #2a1f15; margin-bottom: 12px; }
+	.wc-day-view__label { font-size: 9px; color: #8b6914; letter-spacing: 2px; margin-bottom: 8px; }
+	.wc-day-view__empty { font-size: 11px; color: #6b5638; font-style: italic; }
+	.wc-day-view__hour { display: grid; grid-template-columns: 60px 1fr; border-bottom: 1px solid #2a1f15; min-height: 40px; align-items: center; }
+	.wc-day-view__hour-label { font-size: 10px; color: #8b6914; padding-left: 8px; }
+	.wc-day-view__hour-body { padding: 4px; }
+</style>
