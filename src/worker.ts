@@ -95,7 +95,7 @@ export default {
 		const db = env.DB;
 		if (!db) return;
 
-		// Hourly: scan enabled Drive folders for new card images.
+		// Hourly: scan enabled Drive folders for new card images + sweep stale rate-limit rows.
 		if (event.cron === "0 * * * *") {
 			try {
 				const { scanFolder } = await import("./pages/api/portraits/integrations/drive/scan");
@@ -105,6 +105,13 @@ export default {
 				}
 			} catch (err) {
 				console.error("drive scan cron failed:", err);
+			}
+			// Rate-limit sweep: delete windows > 24h old (longest window spec is 1h, 24h is safe).
+			try {
+				const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+				await db.prepare("DELETE FROM rate_limit_buckets WHERE window_start < ?").bind(cutoff).run();
+			} catch (err) {
+				console.error("rate limit sweep failed:", err);
 			}
 			return;
 		}

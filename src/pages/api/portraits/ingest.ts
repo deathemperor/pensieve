@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { createContact } from "../../../lib/portraits/db";
 import type { CreateContactInput, TierCode } from "../../../lib/portraits/types";
+import { rateLimit, rateLimitResponse, hashBearer } from "../../../lib/portraits/rate-limit";
 
 export const prerender = false;
 
@@ -39,6 +40,12 @@ export const POST: APIRoute = async (ctx) => {
     return json({ error: "unauthorized" }, 401);
   }
 
+  // Rate-limit by bearer-token hash — one token = one bucket.
+  const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+  const identity = await hashBearer(secret);
+  const rl = await rateLimit(db, "ingest", identity);
+  if (!rl.ok) return rateLimitResponse(rl);
+
   let body: IngestBody;
   try { body = await ctx.request.json() as IngestBody; }
   catch { return json({ error: "invalid_json" }, 400); }
@@ -50,8 +57,6 @@ export const POST: APIRoute = async (ctx) => {
   if (!TIERS.includes(body.contact.prestige_tier)) {
     return json({ error: "contact.prestige_tier_invalid" }, 400);
   }
-
-  const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
 
   // Idempotency: fast path — if a row already exists with this key, return it.
   // Race safety: regardless of this check, a UNIQUE index on

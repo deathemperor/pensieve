@@ -4,6 +4,7 @@ import { requireAdmin } from "../../../../lib/portraits/auth";
 import { getContact } from "../../../../lib/portraits/db";
 import { ulid } from "../../../../lib/portraits/ulid";
 import { buildQuery, searchGoogleCse } from "../../../../lib/portraits/enrich";
+import { rateLimit, rateLimitResponse } from "../../../../lib/portraits/rate-limit";
 
 export const prerender = false;
 
@@ -15,13 +16,17 @@ export const POST: APIRoute = async (ctx) => {
   if (typeof id !== "string" || !id) return json({ error: "missing_id" }, 400);
 
   const e = env as any;
+
+  // Rate-limit by admin email — CSE free tier is 100/day, 30/hour gives headroom.
+  const db = e.DB as import("@cloudflare/workers-types").D1Database;
+  const rl = await rateLimit(db, "enrich", auth.user?.email ?? "unknown");
+  if (!rl.ok) return rateLimitResponse(rl);
   const apiKey = e.GOOGLE_CSE_API_KEY as string | undefined;
   const cseId = e.GOOGLE_CSE_ID as string | undefined;
   if (!apiKey || !cseId) {
     return json({ error: "cse_unavailable", hint: "set GOOGLE_CSE_API_KEY and GOOGLE_CSE_ID via wrangler secret" }, 503);
   }
 
-  const db = e.DB as import("@cloudflare/workers-types").D1Database;
   const contact = await getContact(db, id);
   if (!contact) return json({ error: "not_found" }, 404);
   if (contact.is_placeholder === 1) return json({ error: "cannot_enrich_placeholder" }, 403);

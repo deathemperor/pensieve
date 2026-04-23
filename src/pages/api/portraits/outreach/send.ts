@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { requireAdmin } from "../../../../lib/portraits/auth";
 import { ulid } from "../../../../lib/portraits/ulid";
+import { rateLimit, rateLimitResponse } from "../../../../lib/portraits/rate-limit";
 
 export const prerender = false;
 
@@ -16,6 +17,11 @@ interface SendBody {
 export const POST: APIRoute = async (ctx) => {
   const auth = await requireAdmin(ctx as any);
   if (!auth.admin) return json({ error: "forbidden" }, 403);
+
+  // Rate-limit by admin email — outreach is real-money + anti-spam posture.
+  const rlDb = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+  const rl = await rateLimit(rlDb, "outreach", auth.user?.email ?? "unknown");
+  if (!rl.ok) return rateLimitResponse(rl);
 
   let body: SendBody;
   try { body = await ctx.request.json() as SendBody; }
