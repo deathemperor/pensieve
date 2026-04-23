@@ -128,7 +128,163 @@ Astro.response.headers.set(
       </div>
     )}
   </main>
+
+  {auth.admin && (
+    <aside id="slideover" class="slideover" aria-hidden="true" aria-labelledby="slideover-title">
+      <div class="slideover-head">
+        <h2 id="slideover-title" class="slideover-title">—</h2>
+        <div class="slideover-actions">
+          <a id="slideover-fullpage" class="slideover-link" href="#">{isVi ? "Mở rộng" : "Full page"} ↗</a>
+          <button id="slideover-close" class="slideover-close" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div id="slideover-body" class="slideover-body">
+        <p class="slideover-placeholder muted">{isVi ? "Đang tải…" : "Loading…"}</p>
+      </div>
+    </aside>
+  )}
 </Base>
+
+<script>
+  // Slide-over: intercept admin gallery clicks, fetch JSON, render a preview.
+  // Desktop only (≥ 900px). On narrow viewports, the click falls through to
+  // the full-page route — the slide-over is hidden by CSS.
+  const slideover = document.getElementById("slideover") as HTMLElement | null;
+  const titleEl = document.getElementById("slideover-title") as HTMLElement | null;
+  const bodyEl = document.getElementById("slideover-body") as HTMLElement | null;
+  const fullLink = document.getElementById("slideover-fullpage") as HTMLAnchorElement | null;
+  const closeBtn = document.getElementById("slideover-close") as HTMLButtonElement | null;
+
+  function isWideViewport(): boolean { return window.matchMedia("(min-width: 900px)").matches; }
+  function closeSlide() {
+    if (!slideover) return;
+    slideover.setAttribute("aria-hidden", "true");
+    slideover.classList.remove("open");
+  }
+  function escape(s: string | null | undefined): string {
+    if (s == null) return "";
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  }
+
+  async function openSlide(contactId: string) {
+    if (!slideover || !bodyEl || !titleEl || !fullLink) return;
+    slideover.setAttribute("aria-hidden", "false");
+    slideover.classList.add("open");
+    titleEl.textContent = "…";
+    bodyEl.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "slideover-placeholder muted";
+    loading.textContent = "Loading…";
+    bodyEl.appendChild(loading);
+    fullLink.href = `/room-of-requirement/portraits/${contactId}`;
+
+    const res = await fetch(`/api/portraits/${contactId}`);
+    if (!res.ok) {
+      bodyEl.replaceChildren();
+      const err = document.createElement("p");
+      err.className = "slideover-placeholder muted";
+      err.textContent = `Failed to load: ${res.statusText}`;
+      bodyEl.appendChild(err);
+      return;
+    }
+    const data = await res.json() as { contact: { id: string; full_name: string; display_name: string | null; title: string | null; company: string | null; prestige_tier: string; tier_score: number; bio: string | null; channels: Array<{ kind: string; value: string; is_primary: number }>; tags: string | null } };
+    const c = data.contact;
+
+    titleEl.textContent = c.display_name ?? c.full_name;
+
+    // Build body safely with DOM APIs (no innerHTML).
+    bodyEl.replaceChildren();
+
+    if (c.title || c.company) {
+      const role = document.createElement("p");
+      role.className = "slideover-role";
+      role.textContent = [c.title, c.company].filter(Boolean).join(" · ");
+      bodyEl.appendChild(role);
+    }
+
+    const badges = document.createElement("div");
+    badges.className = "slideover-badges";
+    const tb = document.createElement("span");
+    tb.className = "slideover-tier-badge";
+    tb.textContent = `Tier ${c.prestige_tier}`;
+    badges.appendChild(tb);
+    const sc = document.createElement("span");
+    sc.className = "muted";
+    sc.textContent = `score ${c.tier_score}`;
+    badges.appendChild(sc);
+    bodyEl.appendChild(badges);
+
+    if (c.bio) {
+      const bio = document.createElement("p");
+      bio.className = "slideover-bio";
+      bio.textContent = c.bio;
+      bodyEl.appendChild(bio);
+    }
+
+    if (Array.isArray(c.channels) && c.channels.length > 0) {
+      const h = document.createElement("h3");
+      h.className = "slideover-h3";
+      h.textContent = "Channels";
+      bodyEl.appendChild(h);
+      const ul = document.createElement("ul");
+      ul.className = "slideover-channels";
+      for (const ch of c.channels) {
+        const li = document.createElement("li");
+        const kind = document.createElement("span");
+        kind.className = "slideover-kind";
+        kind.textContent = ch.kind;
+        li.appendChild(kind);
+        if (ch.kind === "email") {
+          const a = document.createElement("a");
+          a.href = `mailto:${ch.value}`;
+          a.textContent = ch.value;
+          li.appendChild(a);
+        } else if (ch.kind === "phone") {
+          const a = document.createElement("a");
+          a.href = `tel:${ch.value.replace(/[^+\d]/g, "")}`;
+          a.textContent = ch.value;
+          li.appendChild(a);
+        } else {
+          const sp = document.createElement("span");
+          sp.textContent = ch.value;
+          li.appendChild(sp);
+        }
+        ul.appendChild(li);
+      }
+      bodyEl.appendChild(ul);
+    }
+
+    const tags: string[] = c.tags ? (() => { try { return JSON.parse(c.tags) as string[]; } catch { return []; } })() : [];
+    if (tags.length > 0) {
+      const tagBox = document.createElement("div");
+      tagBox.className = "slideover-tags";
+      for (const t of tags) {
+        const tag = document.createElement("span");
+        tag.className = "slideover-tag";
+        tag.textContent = t;
+        tagBox.appendChild(tag);
+      }
+      bodyEl.appendChild(tagBox);
+    }
+  }
+
+  // Intercept gallery card clicks (only on wide viewports).
+  document.querySelectorAll<HTMLAnchorElement>(".portrait-card, .corridor-table a").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      if (!isWideViewport()) return;
+      const href = link.getAttribute("href") ?? "";
+      const m = href.match(/\/portraits\/([^\/?#]+)/);
+      if (!m) return;
+      e.preventDefault();
+      openSlide(m[1]);
+    });
+  });
+
+  closeBtn?.addEventListener("click", closeSlide);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSlide();
+  });
+</script>
 
 <style>
   .portraits-page {
@@ -208,4 +364,53 @@ Astro.response.headers.set(
     padding: 0.35rem 0.8rem; border-radius: 3px; cursor: pointer; font: inherit;
   }
   .filter-apply:hover { background: rgba(212, 168, 154, 0.08); }
+
+  /* Slide-over (desktop ≥ 900px only) */
+  .slideover {
+    position: fixed;
+    top: 0; right: 0;
+    width: min(480px, 45vw);
+    height: 100vh;
+    background: #0a0a0a;
+    border-left: 1px solid #1f1f1f;
+    box-shadow: -8px 0 24px rgba(0,0,0,0.6);
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 220ms ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .slideover.open { transform: translateX(0); }
+  .slideover[aria-hidden="true"] { pointer-events: none; }
+  @media (max-width: 899px) { .slideover { display: none; } }
+
+  .slideover-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; border-bottom: 1px solid #1a1a1a; padding-bottom: 0.75rem; }
+  .slideover-title { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.35rem; margin: 0; color: #e8e6e0; }
+  .slideover-actions { display: flex; gap: 0.5rem; align-items: center; }
+  .slideover-link { color: #8a877e; text-decoration: none; font-size: 0.8125rem; }
+  .slideover-link:hover { color: #d4a89a; }
+  .slideover-close {
+    background: transparent; border: 1px solid #2a2a2a; color: #8a877e;
+    width: 1.8rem; height: 1.8rem; border-radius: 3px; cursor: pointer;
+    display: grid; place-items: center; font-size: 0.95rem;
+  }
+  .slideover-close:hover { border-color: #e57373; color: #e57373; }
+
+  .slideover-body { display: flex; flex-direction: column; gap: 0.75rem; }
+  .slideover-placeholder { text-align: center; padding: 2rem 0; font-style: italic; }
+  .slideover-role { color: #9a968c; margin: 0; }
+  .slideover-badges { display: flex; gap: 0.5rem; align-items: center; }
+  .slideover-tier-badge { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: #d4a89a; border: 1px solid #d4a89a; padding: 0.1rem 0.4rem; border-radius: 2px; }
+  .slideover-bio { color: #bdb8ac; line-height: 1.55; margin: 0.5rem 0 0; }
+  .slideover-h3 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0.75rem 0 0.35rem; }
+  .slideover-channels { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }
+  .slideover-channels li { display: flex; gap: 0.75rem; align-items: baseline; }
+  .slideover-kind { color: #6a665e; font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; width: 4rem; }
+  .slideover-channels a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .slideover-channels a:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .slideover-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .slideover-tag { font-size: 0.7rem; padding: 0.1rem 0.4rem; border: 1px solid #2a2a2a; border-radius: 2px; color: #9a968c; }
 </style>
