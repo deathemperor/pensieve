@@ -23,10 +23,14 @@ export const GET: APIRoute = async (ctx) => {
     for (const r of (rs.results ?? [])) valueHits.add(r.contact_id);
   }
   if (phone) {
-    const normalized = normalizePhone(phone);
-    const rs = await db.prepare("SELECT contact_id, value FROM contact_channels WHERE kind='phone'").all<{ contact_id: string; value: string }>();
-    for (const r of (rs.results ?? [])) {
-      if (normalizePhone(r.value) === normalized) valueHits.add(r.contact_id);
+    // Use the indexed normalized_value column (Phase 14 migration).
+    const tail10 = phone.replace(/[^\d]/g, "").slice(-10);
+    if (tail10) {
+      const rs = await db
+        .prepare("SELECT DISTINCT contact_id FROM contact_channels WHERE kind='phone' AND normalized_value = ?")
+        .bind(tail10)
+        .all<{ contact_id: string }>();
+      for (const r of (rs.results ?? [])) valueHits.add(r.contact_id);
     }
   }
 
