@@ -1,8 +1,13 @@
 ---
 import ClockWidget from "./ClockWidget.astro";
 
-interface Props { view: "day" | "week" | "month" | "year"; anchor: Date; }
-const { view, anchor } = Astro.props;
+interface Props { view: "day" | "week" | "month" | "year"; anchor: Date; lang?: "vi" | "en"; }
+const { view, anchor, lang = "vi" } = Astro.props;
+const isVi = lang === "vi";
+const t = {
+	today: isVi ? "HÔM NAY" : "TODAY",
+	weekOf: isVi ? "Tuần của" : "Week of",
+};
 
 function shiftAnchor(direction: -1 | 1): string {
 	const d = new Date(anchor);
@@ -19,8 +24,8 @@ function viewUrl(v: "day" | "week" | "month" | "year"): string {
 
 function rangeLabel(): string {
 	if (view === "year") return String(anchor.getFullYear());
-	if (view === "month") return new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric" }).format(anchor);
-	if (view === "week") return `Week of ${anchor.toISOString().slice(0, 10)}`;
+	if (view === "month") return new Intl.DateTimeFormat(isVi ? "vi-VN" : "en-GB", { month: "short", year: "numeric" }).format(anchor);
+	if (view === "week") return `${t.weekOf} ${anchor.toISOString().slice(0, 10)}`;
 	return anchor.toISOString().slice(0, 10);
 }
 ---
@@ -30,7 +35,7 @@ function rangeLabel(): string {
 		<a class="wc-header__btn" href={`/hogwarts/weasley-clock?view=${view}&anchor=${shiftAnchor(-1)}`}>←</a>
 		<span class="wc-header__range">{rangeLabel()}</span>
 		<a class="wc-header__btn" href={`/hogwarts/weasley-clock?view=${view}&anchor=${shiftAnchor(1)}`}>→</a>
-		<a class="wc-header__btn wc-header__btn--today" href={`/hogwarts/weasley-clock?view=${view}`}>TODAY</a>
+		<a class="wc-header__btn wc-header__btn--today" href={`/hogwarts/weasley-clock?view=${view}`}>{t.today}</a>
 	</nav>
 	<div class="wc-header__switch" role="tablist">
 		<a role="tab" aria-selected={view === "day"} href={viewUrl("day")}>D</a>

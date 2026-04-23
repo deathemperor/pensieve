@@ -3,8 +3,13 @@ import DualDate from "./DualDate.astro";
 import EventChip from "./EventChip.astro";
 import type { FamilyOccurrence } from "../../utils/familyEvents";
 
-interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
-const { anchor, occurrences } = Astro.props;
+interface Props { anchor: Date; occurrences: FamilyOccurrence[]; lang?: "vi" | "en"; }
+const { anchor, occurrences, lang = "vi" } = Astro.props;
+const isVi = lang === "vi";
+const t = {
+	allDay: isVi ? "CẢ NGÀY" : "ALL DAY",
+	quiet: isVi ? "— yên tĩnh hôm nay —" : "— quiet today —",
+};
 
 // Phase 1: no timed events (sync comes in Phase 2). All-day family events
 // pinned to the top, empty hourly column 06:00-23:00 as placeholder.
@@ -28,8 +33,8 @@ function chipCategoryFor(
 		<DualDate date={anchor} size="lg" />
 	</header>
 	<section class="wc-day-view__allday">
-		<div class="wc-day-view__label">ALL DAY</div>
-		{occurrences.length === 0 && <div class="wc-day-view__empty">— quiet today —</div>}
+		<div class="wc-day-view__label">{t.allDay}</div>
+		{occurrences.length === 0 && <div class="wc-day-view__empty">{t.quiet}</div>}
 		{occurrences.map((occ) => (
 			<EventChip
 				title={occ.event.title_vi || occ.event.title_en}

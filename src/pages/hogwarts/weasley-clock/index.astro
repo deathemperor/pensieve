@@ -9,8 +9,16 @@ import MonthView from "../../../components/weasley-clock/MonthView.astro";
 import DayView from "../../../components/weasley-clock/DayView.astro";
 import YearView from "../../../components/weasley-clock/YearView.astro";
 import { materialiseFamilyEvents, type FamilyEventRecord } from "../../../utils/familyEvents";
+import { getCurrentLang } from "../../../utils/lang";
 
 type View = "day" | "week" | "month" | "year";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const pageTitle = isVi ? "Đồng Hồ Weasley" : "The Weasley Clock";
+const pageDescription = isVi
+	? "Lịch gia đình · dương và âm lịch"
+	: "Family calendar · dương & âm lịch";
 
 const url = new URL(Astro.request.url);
 const viewParam = (url.searchParams.get("view") as View) ?? "week";
@@ -76,10 +84,10 @@ function computeWindow(v: View, a: Date): { windowStart: Date; windowEnd: Date }
 const { windowStart, windowEnd } = computeWindow(view, anchor);
 occurrences = materialiseFamilyEvents(events, windowStart, windowEnd);
 ---
-<Base title="The Weasley Clock" description="Family calendar · dương & âm lịch">
-	<Header view={view} anchor={anchor} />
+<Base title={pageTitle} description={pageDescription}>
+	<Header view={view} anchor={anchor} lang={lang} />
 	<main class="wc-main">
-		{view === "day" && <DayView anchor={anchor} occurrences={occurrences} />}
+		{view === "day" && <DayView anchor={anchor} occurrences={occurrences} lang={lang} />}
 		{view === "week" && <WeekView anchor={anchor} occurrences={occurrences} />}
 		{view === "month" && <MonthView anchor={anchor} occurrences={occurrences} />}
 		{view === "year" && <YearView anchor={anchor} occurrences={occurrences} />}
