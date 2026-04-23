@@ -369,6 +369,62 @@
   pointer-events: none;
   user-select: none;
 }
+.cc-atlas-city {
+  pointer-events: all;
+  transition: opacity 0.2s;
+  opacity: 0.85;
+}
+.cc-atlas-city:hover { opacity: 1; }
+
+.cc-atlas-cities {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(212, 168, 67, 0.15);
+}
+.cc-atlas-cities h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(42, 161, 152, 0.85);
+  letter-spacing: 0.2em;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+.cc-atlas-cities ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.cc-atlas-city-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  padding: 4px 4px;
+  font-size: 11px;
+  align-items: baseline;
+}
+.cc-atlas-city-row:nth-child(even) { background: rgba(42, 161, 152, 0.04); }
+.cc-atlas-city-name {
+  color: #f7f8f8;
+  font-family: 'Inter Tight', sans-serif;
+}
+.cc-atlas-city-country {
+  color: rgba(232, 233, 234, 0.4);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+.cc-atlas-city-count {
+  color: rgba(42, 161, 152, 0.9);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.cc-atlas-cities-more {
+  color: rgba(232, 233, 234, 0.35);
+  font-size: 10px;
+  margin: 8px 4px 0;
+  font-style: italic;
+}
 .cc-atlas-list {
   overflow-y: auto;
   max-height: 450px;

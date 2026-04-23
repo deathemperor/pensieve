@@ -7,6 +7,7 @@ import {
 } from "../../utils/atlasGeometry";
 import { getChronicleCategory } from "../../themes/chronicleCategories";
 import { getCurrentLang } from "../../utils/lang";
+import visitedCitiesData from "../../data/visited-cities.json";
 
 interface Props {
 	entries: any[];
@@ -15,6 +16,21 @@ interface Props {
 const { entries } = Astro.props as Props;
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";
+
+interface VisitedCell {
+	id: string;
+	lat: number;
+	lng: number;
+	places: number;
+	visits: number;
+	firstDate: string;
+	lastDate: string;
+	city: string | null;
+	country: string | null;
+	display: string | null;
+}
+
+const visitedCities: VisitedCell[] = (visitedCitiesData as { cells?: VisitedCell[] }).cells ?? [];
 
 interface PlacedEntry {
 	id: string;
@@ -171,6 +187,20 @@ const helperText = isVi
 						/>
 					);
 				})}
+				{visitedCities.map((vc) => {
+					const pt = projectLatLng({ lat: vc.lat, lng: vc.lng }, bounds, viewport);
+					// Radius scales with visits — log-ish so one mega-city doesn't drown small ones.
+					const r = Math.max(4, Math.min(28, Math.sqrt(vc.visits) * 1.6));
+					const title = vc.city
+						? `${vc.city}${vc.country ? ", " + vc.country : ""} — ${vc.visits} visit${vc.visits === 1 ? "" : "s"} across ${vc.places} place${vc.places === 1 ? "" : "s"}`
+						: `${vc.lat},${vc.lng} — ${vc.visits} visit${vc.visits === 1 ? "" : "s"}`;
+					return (
+						<g class="cc-atlas-city" data-city-id={vc.id} transform={`translate(${pt.x} ${pt.y})`}>
+							<circle r={r} fill="rgba(42, 161, 152, 0.14)" stroke="rgba(42, 161, 152, 0.35)" stroke-width="0.5" />
+							<title>{title}</title>
+						</g>
+					);
+				})}
 				{[...countryLabelPoints.entries()].map(([code, pt]) => (
 					<text
 						class="cc-atlas-country-label"
@@ -207,6 +237,27 @@ const helperText = isVi
 					</ul>
 				</div>
 			))}
+			{visitedCities.length > 0 && (
+				<div class="cc-atlas-cities">
+					<h3>{isVi ? "Thành phố ghé qua" : "Cities visited"}</h3>
+					<ul>
+						{visitedCities.slice(0, 20).map((vc) => (
+							<li class="cc-atlas-city-row">
+								<span class="cc-atlas-city-name">{vc.city ?? `${vc.lat}, ${vc.lng}`}</span>
+								<span class="cc-atlas-city-country">{vc.country ?? ""}</span>
+								<span class="cc-atlas-city-count">{vc.visits}×</span>
+							</li>
+						))}
+					</ul>
+					{visitedCities.length > 20 && (
+						<p class="cc-atlas-cities-more">
+							{isVi
+								? `… và ${visitedCities.length - 20} thành phố khác`
+								: `… and ${visitedCities.length - 20} more`}
+						</p>
+					)}
+				</div>
+			)}
 		</aside>
 	</div>
 
