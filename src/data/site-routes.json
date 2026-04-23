@@ -29,6 +29,7 @@
 	"collections": {
 		"posts": { "basePath": "/pensieve/memories", "priority": "0.7" },
 		"pages": { "basePath": "/pensieve/pages", "priority": "0.5" },
-		"animations": { "basePath": "/hogwarts/quidditch", "priority": "0.7" }
+		"animations": { "basePath": "/hogwarts/quidditch", "priority": "0.7" },
+		"chronicle": { "basePath": "/pensieve/chronicle", "priority": "0.6" }
 	}
 }

@@ -1,0 +1,294 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import Base from "../../../layouts/Base.astro";
+import { getCurrentLang } from "../../../utils/lang";
+import { getChronicleCategory } from "../../../themes/chronicleCategories";
+import { formatRomanDate } from "../../../utils/romanDate";
+import "../../../styles/chronicle.css";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const { slug } = Astro.params;
+
+const { entries: raw, cacheHint } = await (getEmDashCollection as any)("chronicle");
+Astro.cache.set(cacheHint);
+
+const published = (raw as any[])
+	.filter((e) => e.data.status !== "draft")
+	.sort((a, b) => b.data.event_date.localeCompare(a.data.event_date));
+
+const idx = published.findIndex((e) => e.id === slug || e.slug === slug);
+if (idx < 0) {
+	return Astro.redirect("/pensieve/chronicle", 302);
+}
+const entry = published[idx];
+const prevEntry = idx > 0 ? published[idx - 1] : null; // newer
+const nextEntry = idx < published.length - 1 ? published[idx + 1] : null; // older
+
+function pickTitle(e: any): string {
+	return (isVi ? e.data.title_vi : e.data.title_en) ?? e.data.title ?? "";
+}
+
+const cat = getChronicleCategory(entry.data.category);
+const title = (isVi ? entry.data.title_vi : entry.data.title_en) ?? entry.data.title;
+const subtitle = (isVi ? entry.data.subtitle_vi : entry.data.subtitle_en) ?? undefined;
+const romanDate = formatRomanDate(entry.data.event_date, entry.data.date_precision);
+
+let location: { name?: string; city?: string; country?: string; lat?: number; lng?: number } | null = null;
+if (entry.data.location) {
+	try { location = JSON.parse(entry.data.location); } catch { /* ignore */ }
+}
+
+const postSlugs = (entry.data.linked_post_ids ?? "")
+	.split(",")
+	.map((s: string) => s.trim())
+	.filter(Boolean);
+
+const siteBack = isVi ? "← Trở lại Biên Niên Sử" : "← Back to the Chronicle";
+const metaDescription = subtitle ?? `${title} — ${entry.data.event_date}`;
+const permalinkSlug = entry.slug ?? entry.id;
+const ogImage = `/pensieve/chronicle/${permalinkSlug}/og.png`;
+---
+
+<Base
+	title={`${title} — ${isVi ? "Biên Niên Sử Tinh Tú" : "The Celestial Chronicle"}`}
+	description={metaDescription}
+	image={ogImage}
+	type="article"
+	publishedTime={entry.data.event_date ? new Date(`${entry.data.event_date}T00:00:00Z`).toISOString() : null}
+>
+	<main class="cc-permalink-page">
+		<a href="/pensieve/chronicle" class="cc-permalink-back">{siteBack}</a>
+
+		<article class="cc-permalink-card" style={`--star:${cat.hex};`}>
+			{entry.data.featured_image?.src && (
+				<img
+					class="cc-permalink-hero"
+					src={entry.data.featured_image.src}
+					alt={entry.data.featured_image.alt ?? title}
+					loading="eager"
+				/>
+			)}
+			<header class="cc-permalink-header">
+				<span class="cc-permalink-glyph">{cat.symbol}</span>
+				<p class="cc-permalink-date">{romanDate}</p>
+				<h1 class="cc-permalink-title">{title}</h1>
+				{subtitle && <p class="cc-permalink-subtitle">{subtitle}</p>}
+			</header>
+
+			<dl class="cc-permalink-meta">
+				<div>
+					<dt>{isVi ? "Ngày" : "Date"}</dt>
+					<dd><time datetime={entry.data.event_date}>{entry.data.event_date}</time></dd>
+				</div>
+				<div>
+					<dt>{isVi ? "Danh mục" : "Category"}</dt>
+					<dd>{isVi ? cat.label_vi : cat.label_en}</dd>
+				</div>
+				{location?.name && (
+					<div>
+						<dt>{isVi ? "Địa điểm" : "Location"}</dt>
+						<dd>
+							{[location.name, location.city, location.country].filter(Boolean).join(" · ")}
+							{typeof location.lat === "number" && typeof location.lng === "number" && (
+								<>
+									{" "}
+									<a
+										href={`https://www.openstreetmap.org/?mlat=${location.lat}&mlon=${location.lng}&zoom=14`}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="cc-permalink-link"
+									>{isVi ? "xem bản đồ" : "open map"}</a>
+								</>
+							)}
+						</dd>
+					</div>
+				)}
+			</dl>
+
+			{(postSlugs.length > 0 || entry.data.external_url) && (
+				<footer class="cc-permalink-refs">
+					{postSlugs.length > 0 && (
+						<p>
+							<span class="cc-permalink-refs-label">{isVi ? "Ký ức liên quan" : "Linked memories"}</span>
+							{postSlugs.map((s: string) => (
+								<a href={`/pensieve/memories/${s}`} class="cc-permalink-link">/{s}</a>
+							))}
+						</p>
+					)}
+					{entry.data.external_url && (
+						<p>
+							<span class="cc-permalink-refs-label">{isVi ? "Liên kết bên ngoài" : "External"}</span>
+							<a
+								href={entry.data.external_url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="cc-permalink-link"
+							>{entry.data.external_url_label ?? entry.data.external_url}</a>
+						</p>
+					)}
+				</footer>
+			)}
+		</article>
+
+		{(prevEntry || nextEntry) && (
+			<nav class="cc-permalink-nav" aria-label={isVi ? "Điều hướng" : "Navigation"}>
+				{prevEntry ? (
+					<a href={`/pensieve/chronicle/${prevEntry.slug ?? prevEntry.id}`} class="cc-permalink-nav-link cc-permalink-nav-prev">
+						<span class="cc-permalink-nav-dir">{isVi ? "↞ Mới hơn" : "↞ Newer"}</span>
+						<span class="cc-permalink-nav-title">{pickTitle(prevEntry)}</span>
+					</a>
+				) : <span />}
+				{nextEntry ? (
+					<a href={`/pensieve/chronicle/${nextEntry.slug ?? nextEntry.id}`} class="cc-permalink-nav-link cc-permalink-nav-next">
+						<span class="cc-permalink-nav-dir">{isVi ? "Cũ hơn ↠" : "Older ↠"}</span>
+						<span class="cc-permalink-nav-title">{pickTitle(nextEntry)}</span>
+					</a>
+				) : <span />}
+			</nav>
+		)}
+	</main>
+</Base>
+
+<style>
+	.cc-permalink-page {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 48px 24px 80px;
+		color: #f7f8f8;
+	}
+	.cc-permalink-back {
+		display: inline-block;
+		color: #8a8f98;
+		font-size: 12px;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-decoration: none;
+		margin-bottom: 28px;
+	}
+	.cc-permalink-back:hover { color: var(--chronicle-gold); }
+
+	.cc-permalink-card {
+		border: 1px solid rgba(212, 168, 67, 0.18);
+		background:
+			radial-gradient(ellipse at 20% 20%, color-mix(in srgb, var(--star) 14%, transparent) 0%, transparent 60%),
+			linear-gradient(180deg, #0a0b10 0%, #050608 100%);
+		border-radius: 14px;
+		padding: 36px 40px;
+	}
+	.cc-permalink-header {
+		text-align: center;
+		padding-bottom: 24px;
+		border-bottom: 1px solid rgba(212, 168, 67, 0.08);
+		margin-bottom: 24px;
+	}
+	.cc-permalink-glyph {
+		display: inline-block;
+		font-size: 28px;
+		color: var(--star);
+		text-shadow: 0 0 16px var(--star), 0 0 32px color-mix(in srgb, var(--star) 30%, transparent);
+		margin-bottom: 12px;
+	}
+	.cc-permalink-date {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 11px;
+		color: var(--chronicle-gold);
+		letter-spacing: 0.18em;
+		margin: 0 0 12px;
+	}
+	.cc-permalink-title {
+		font-family: "Inter Tight", sans-serif;
+		font-size: clamp(24px, 3vw, 34px);
+		font-weight: 600;
+		margin: 0 0 12px;
+	}
+	.cc-permalink-subtitle {
+		color: #8a8f98;
+		font-style: italic;
+		margin: 0;
+	}
+
+	.cc-permalink-meta {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 20px;
+		margin: 0 0 24px;
+	}
+	.cc-permalink-meta dt {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 10px;
+		color: var(--chronicle-gold);
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		margin: 0 0 4px;
+	}
+	.cc-permalink-meta dd {
+		margin: 0;
+		color: #f7f8f8;
+		font-size: 14px;
+	}
+
+	.cc-permalink-refs {
+		padding-top: 18px;
+		border-top: 1px solid rgba(212, 168, 67, 0.08);
+	}
+	.cc-permalink-refs p {
+		margin: 6px 0;
+		font-size: 13px;
+		display: flex;
+		gap: 10px;
+		flex-wrap: wrap;
+		align-items: baseline;
+	}
+	.cc-permalink-refs-label {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 10px;
+		color: rgba(212, 168, 67, 0.5);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	.cc-permalink-link {
+		color: var(--chronicle-gold);
+		text-decoration: none;
+	}
+	.cc-permalink-link:hover { text-decoration: underline; }
+
+	.cc-permalink-nav {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 14px;
+		margin-top: 28px;
+	}
+	.cc-permalink-nav-link {
+		display: block;
+		padding: 14px 16px;
+		border: 1px solid rgba(212, 168, 67, 0.12);
+		border-radius: 10px;
+		text-decoration: none;
+		color: #f7f8f8;
+		background: rgba(8, 9, 10, 0.4);
+		transition: border-color 0.2s, background 0.2s;
+	}
+	.cc-permalink-nav-link:hover {
+		border-color: rgba(212, 168, 67, 0.35);
+		background: rgba(212, 168, 67, 0.05);
+	}
+	.cc-permalink-nav-next { text-align: right; }
+	.cc-permalink-nav-dir {
+		display: block;
+		font-family: "JetBrains Mono", monospace;
+		font-size: 10px;
+		color: var(--chronicle-gold);
+		letter-spacing: 0.15em;
+		text-transform: uppercase;
+		margin-bottom: 4px;
+	}
+	.cc-permalink-nav-title {
+		font-family: "Inter Tight", sans-serif;
+		font-size: 13px;
+		color: #c5c8cc;
+	}
+</style>

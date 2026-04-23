@@ -169,6 +169,19 @@ const isLoggedIn = !!Astro.locals.user;
 						</svg>
 						huuloc.com
 					</a>
+					<details class="nav-lang breadcrumb-lang">
+						<summary>
+							{currentLang === "vi" ? "VI" : "EN"} <span class="nav-arrow">▾</span>
+						</summary>
+						<div class="nav-dropdown">
+							<a href="#" class="nav-dropdown-item" data-switch-lang="vi" data-active={currentLang === "vi"}>
+								Tiếng Việt
+							</a>
+							<a href="#" class="nav-dropdown-item" data-switch-lang="en" data-active={currentLang === "en"}>
+								English
+							</a>
+						</div>
+					</details>
 					{breadcrumbs.map((crumb, i) => {
 						const svg = breadcrumbIcons[crumb.label];
 						const isFirst = i === 0;
@@ -255,7 +268,7 @@ const isLoggedIn = !!Astro.locals.user;
 							inputClass="site-search-input"
 							resultsClass="site-search-results"
 							resultClass="site-search-result"
-							collections={["posts", "pages"]}
+							collections={["posts", "pages", "chronicle"]}
 						/>
 						<div class="nav-links">
 							{
@@ -606,7 +619,11 @@ const isLoggedIn = !!Astro.locals.user;
 				font-size: var(--font-size-xs);
 				height: var(--nav-height);
 				flex-wrap: nowrap;
-				overflow: hidden;
+				overflow: visible;
+			}
+			.breadcrumb-lang {
+				margin-left: auto;
+				flex-shrink: 0;
 			}
 
 			/* Shrink order: home and separators stay full-width (they're

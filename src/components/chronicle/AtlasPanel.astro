@@ -7,6 +7,8 @@ import {
 } from "../../utils/atlasGeometry";
 import { getChronicleCategory } from "../../themes/chronicleCategories";
 import { getCurrentLang } from "../../utils/lang";
+import visitedCitiesData from "../../data/visited-cities.json";
+import { worldOutlines } from "../../data/world-outlines";
 
 interface Props {
 	entries: any[];
@@ -15,6 +17,21 @@ interface Props {
 const { entries } = Astro.props as Props;
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";
+
+interface VisitedCell {
+	id: string;
+	lat: number;
+	lng: number;
+	places: number;
+	visits: number;
+	firstDate: string;
+	lastDate: string;
+	city: string | null;
+	country: string | null;
+	display: string | null;
+}
+
+const visitedCities: VisitedCell[] = (visitedCitiesData as { cells?: VisitedCell[] }).cells ?? [];
 
 interface PlacedEntry {
 	id: string;
@@ -69,6 +86,47 @@ for (const e of entries) {
 	});
 }
 
+// Fan pins that share the same projected point (e.g. 4 pins at HCMC) so
+// they don't stack invisibly. Offset in a small circle around the center.
+const coordBuckets = new Map<string, PlacedEntry[]>();
+for (const p of placed) {
+	const key = `${Math.round(p.x)}_${Math.round(p.y)}`;
+	const bucket = coordBuckets.get(key) || [];
+	bucket.push(p);
+	coordBuckets.set(key, bucket);
+}
+for (const bucket of coordBuckets.values()) {
+	if (bucket.length <= 1) continue;
+	const radius = 14;
+	bucket.forEach((pin, i) => {
+		const angle = (i / bucket.length) * Math.PI * 2 - Math.PI / 2;
+		pin.x += Math.cos(angle) * radius;
+		pin.y += Math.sin(angle) * radius;
+	});
+}
+
+// Pick one representative pin per unique country to label on the canvas.
+const countryLabelPoints = new Map<string, { x: number; y: number }>();
+for (const p of placed) {
+	if (!p.country) continue;
+	if (!countryLabelPoints.has(p.country)) {
+		countryLabelPoints.set(p.country, { x: p.x, y: p.y });
+	}
+}
+
+const countryLongName: Record<string, string> = {
+	GB: "United Kingdom",
+	VN: "Việt Nam",
+	US: "United States",
+	JP: "Japan",
+	FR: "France",
+	DE: "Germany",
+	IT: "Italy",
+	SG: "Singapore",
+	KR: "South Korea",
+	TH: "Thailand",
+};
+
 const lngLines = graticuleLngs(bounds, 30);
 const latLines = graticuleLats(bounds, 30);
 
@@ -91,9 +149,16 @@ const helperText = isVi
 	<header class="cc-atlas-header">
 		<h2 id="cc-atlas-heading">{heading}</h2>
 		<p class="cc-atlas-helper">{helperText}</p>
+		<div class="cc-atlas-view-toggle" role="radiogroup" aria-label={isVi ? "Chế độ bản đồ" : "Map mode"}>
+			<button type="button" data-atlas-view="svg" aria-pressed="true">{isVi ? "Stylized" : "Stylized"}</button>
+			<button type="button" data-atlas-view="tiles" aria-pressed="false">{isVi ? "Thật" : "Real tiles"}</button>
+		</div>
 	</header>
 
-	<div class="cc-atlas-body">
+	<script id="cc-atlas-cities-data" type="application/json" set:html={JSON.stringify(visitedCities)}></script>
+	<div class="cc-atlas-tiles-container" data-atlas-tiles hidden aria-hidden="true"></div>
+
+	<div class="cc-atlas-body" data-atlas-svg>
 		<div class="cc-atlas-canvas-wrap">
 			<svg
 				class="cc-atlas-canvas"
@@ -102,6 +167,15 @@ const helperText = isVi
 				aria-label={heading}
 				preserveAspectRatio="xMidYMid meet"
 			>
+				{worldOutlines.map((outline) => {
+					const pts = outline.points
+						.map(([lng, lat]) => {
+							const p = projectLatLng({ lat, lng }, bounds, viewport);
+							return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+						})
+						.join(" ");
+					return <polygon class="cc-atlas-continents" points={pts} />;
+				})}
 				{lngLines.map((l) => {
 					const { x } = projectLatLng({ lat: 0, lng: l }, bounds, viewport);
 					return (
@@ -130,6 +204,28 @@ const helperText = isVi
 						/>
 					);
 				})}
+				{visitedCities.map((vc) => {
+					const pt = projectLatLng({ lat: vc.lat, lng: vc.lng }, bounds, viewport);
+					// Radius scales with visits — log-ish so one mega-city doesn't drown small ones.
+					const r = Math.max(4, Math.min(28, Math.sqrt(vc.visits) * 1.6));
+					const title = vc.city
+						? `${vc.city}${vc.country ? ", " + vc.country : ""} — ${vc.visits} visit${vc.visits === 1 ? "" : "s"} across ${vc.places} place${vc.places === 1 ? "" : "s"}`
+						: `${vc.lat},${vc.lng} — ${vc.visits} visit${vc.visits === 1 ? "" : "s"}`;
+					return (
+						<g class="cc-atlas-city" data-city-id={vc.id} transform={`translate(${pt.x} ${pt.y})`}>
+							<circle r={r} fill="rgba(42, 161, 152, 0.14)" stroke="rgba(42, 161, 152, 0.35)" stroke-width="0.5" />
+							<title>{title}</title>
+						</g>
+					);
+				})}
+				{[...countryLabelPoints.entries()].map(([code, pt]) => (
+					<text
+						class="cc-atlas-country-label"
+						x={pt.x}
+						y={pt.y - 28}
+						text-anchor="middle"
+					>{countryLongName[code] ?? code}</text>
+				))}
 				{placed.map((p) => (
 					<g class="cc-atlas-pin" data-id={p.id} transform={`translate(${p.x} ${p.y})`}>
 						<circle r="10" fill={p.hex} opacity="0.15" />
@@ -149,7 +245,7 @@ const helperText = isVi
 					<h3>{country}</h3>
 					<ul>
 						{list.map((p) => (
-							<li class="cc-atlas-place" data-id={p.id}>
+							<li class="cc-atlas-place" data-id={p.id} data-category={p.category}>
 								<span class="cc-atlas-place-dot" style={`background:${p.hex};`}></span>
 								<span class="cc-atlas-place-name">{p.locationName}</span>
 								<span class="cc-atlas-place-title">{p.title}</span>
@@ -158,6 +254,27 @@ const helperText = isVi
 					</ul>
 				</div>
 			))}
+			{visitedCities.length > 0 && (
+				<div class="cc-atlas-cities">
+					<h3>{isVi ? "Thành phố ghé qua" : "Cities visited"}</h3>
+					<ul>
+						{visitedCities.slice(0, 20).map((vc) => (
+							<li class="cc-atlas-city-row">
+								<span class="cc-atlas-city-name">{vc.city ?? `${vc.lat}, ${vc.lng}`}</span>
+								<span class="cc-atlas-city-country">{vc.country ?? ""}</span>
+								<span class="cc-atlas-city-count">{vc.visits}×</span>
+							</li>
+						))}
+					</ul>
+					{visitedCities.length > 20 && (
+						<p class="cc-atlas-cities-more">
+							{isVi
+								? `… và ${visitedCities.length - 20} thành phố khác`
+								: `… and ${visitedCities.length - 20} more`}
+						</p>
+					)}
+				</div>
+			)}
 		</aside>
 	</div>
 

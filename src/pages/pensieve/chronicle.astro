@@ -8,6 +8,7 @@ import ChronicleLedger from "../../components/chronicle/ChronicleLedger.astro";
 import ChronicleLegend from "../../components/chronicle/ChronicleLegend.astro";
 import ChronicleZoomControls from "../../components/chronicle/ChronicleZoomControls.astro";
 import ChronicleEntryDetail from "../../components/chronicle/ChronicleEntryDetail.astro";
+import ChronicleShortcuts from "../../components/chronicle/ChronicleShortcuts.astro";
 import AtlasPanel from "../../components/chronicle/AtlasPanel.astro";
 import { getCurrentLang } from "../../utils/lang";
 import { parseChronicleDate, compareChronicleDate } from "../../utils/chronicleDate";
@@ -77,6 +78,16 @@ const pageSubtitle = isVi
         <ChronicleLegend />
       </div>
       <ChronicleZoomControls years={populatedYears} />
+      <ChronicleShortcuts />
+      <button
+        type="button"
+        class="cc-thread-toggle"
+        data-thread-toggle
+        aria-pressed="false"
+        title={isVi ? "Hiện các đường nối theo chủ đề" : "Show story threads"}
+      >
+        {isVi ? "Chủ đề" : "Threads"}
+      </button>
     </div>
 
     <AtlasPanel entries={published} />
@@ -88,5 +99,7 @@ const pageSubtitle = isVi
     window.__CHRONICLE_ENTRIES__ = clientData;
     window.__CHRONICLE_LANG__ = lang;
   </script>
-  <script type="module" src="/src/components/chronicle/chronicle-client.ts"></script>
+  <script>
+    import "../../components/chronicle/chronicle-client.ts";
+  </script>
 </Base>

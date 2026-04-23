@@ -51,4 +51,14 @@
 			"binding": "LOADER",
 		},
 	],
+	"migrations": [
+		{
+			"tag": "v1-openclaw",
+			"new_sqlite_classes": ["OpenClawContainer"],
+		},
+		{
+			"tag": "v2-remove-openclaw",
+			"deleted_classes": ["OpenClawContainer"],
+		},
+	],
 }

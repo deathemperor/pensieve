@@ -2,7 +2,6 @@
 import { parseChronicleDate } from "../../utils/chronicleDate";
 import { monthToAngleDeg, ringRadiusForYear, fanCluster } from "../../utils/chronicleGeometry";
 import { getChronicleCategory } from "../../themes/chronicleCategories";
-import { toRoman } from "../../utils/romanDate";
 import { getCurrentLang } from "../../utils/lang";
 
 interface Props {
@@ -59,15 +58,64 @@ function polar(radius: number, angleDeg: number) {
       <Fragment>
         <div
           class="cc-ring"
+          data-year={year}
           style={`width:${r * 2}px;height:${r * 2}px;`}
         ></div>
         <div
           class="year-tick"
+          data-year={year}
           style={`left:50%;top:calc(50% - ${r}px);transform:translate(-50%,-50%);`}
-        >{toRoman(year)}</div>
+        >{year}</div>
       </Fragment>
     );
   })}
+
+  {(() => {
+    // Thread lines — SVG overlay that draws segments between stars sharing
+    // a thread name. Rendered inside cc-sky (positioned relative), so SVG
+    // coordinates use the same center-relative space. Container is hidden
+    // by default; chronicle-client toggles visibility on the "threads" button.
+    const threadSegments: { ax: number; ay: number; bx: number; by: number; thread: string; hex: string }[] = [];
+    const byThread = new Map<string, { x: number; y: number; hex: string }[]>();
+    for (const p of final) {
+      const { x, y } = polar(p.radius, p.angle);
+      const threadsRaw = p.entry.data.thread;
+      if (!threadsRaw) continue;
+      const cat = getChronicleCategory(p.entry.data.category);
+      const list = String(threadsRaw).split(",").map((s: string) => s.trim()).filter(Boolean);
+      for (const t of list) {
+        if (!byThread.has(t)) byThread.set(t, []);
+        byThread.get(t)!.push({ x, y, hex: cat.hex });
+      }
+    }
+    for (const [thread, pts] of byThread) {
+      pts.sort((a, b) => a.x - b.x);
+      for (let i = 0; i < pts.length - 1; i++) {
+        threadSegments.push({
+          ax: pts[i].x, ay: pts[i].y,
+          bx: pts[i + 1].x, by: pts[i + 1].y,
+          thread, hex: pts[i].hex,
+        });
+      }
+    }
+    return threadSegments.length > 0 ? (
+      <svg class="cc-thread-layer" aria-hidden="true" style={`position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;`}>
+        {threadSegments.map((s) => (
+          <line
+            x1={`calc(50% + ${s.ax}px)`}
+            y1={`calc(50% + ${s.ay}px)`}
+            x2={`calc(50% + ${s.bx}px)`}
+            y2={`calc(50% + ${s.by}px)`}
+            stroke={s.hex}
+            stroke-width="1"
+            stroke-dasharray="3 4"
+            opacity="0.6"
+            data-thread={s.thread}
+          />
+        ))}
+      </svg>
+    ) : null;
+  })()}
 
   {final.map((p) => {
     const { x, y } = polar(p.radius, p.angle);
@@ -78,10 +126,11 @@ function polar(radius: number, angleDeg: number) {
         class="cc-star"
         data-id={p.entry.id}
         data-category={cat.slug}
+        data-thread={p.entry.data.thread ?? ""}
         style={`left:calc(50% + ${x}px);top:calc(50% + ${y}px);--star:${cat.hex};`}
         aria-label={isVi ? `Mở sự kiện: ${title}` : `Open event: ${title}`}
       >
-        <span class="cc-star-label">{toRoman(p.year)}</span>
+        <span class="cc-star-label">{p.year}</span>
       </button>
     );
   })}
