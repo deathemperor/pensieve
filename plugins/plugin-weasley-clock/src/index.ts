@@ -1,11 +1,20 @@
 import type { PluginDescriptor } from "emdash";
+import pluginRuntime from "./sandbox-entry";
+
+// Native-format plugins must export createPlugin — EmDash imports it from
+// the package root (see `virtual:emdash/plugins`). The runtime lives in
+// sandbox-entry.ts so the file structure matches the "standard" plugin
+// shape for easier future migration; this re-export is the glue.
+export function createPlugin() {
+	return pluginRuntime;
+}
 
 export function weasleyClockPlugin(): PluginDescriptor {
 	return {
 		id: "weasley-clock",
 		version: "0.2.0",
-		format: "standard",
-		entrypoint: "plugin-weasley-clock/sandbox",
+		format: "native",
+		entrypoint: "plugin-weasley-clock",
 		options: {},
 		capabilities: [
 			"network:fetch",
