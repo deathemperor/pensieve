@@ -19,8 +19,6 @@ declare namespace Cloudflare {
 		// Shared secret for the weasley-clock cron dispatcher. The worker's
 		// scheduled() handler sends it as X-Sync-Secret; the plugin route
 		// rejects if missing/mismatched.
-		// Registered via: wrangler secret put SYNC_SECRET
-		SYNC_SECRET: string;
 	}
 }
 

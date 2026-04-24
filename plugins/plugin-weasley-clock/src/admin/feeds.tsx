@@ -19,7 +19,7 @@ interface Calendar {
 	synced: boolean;
 }
 
-const API_BASE = "/_emdash/api/plugins/weasley-clock";
+const API_BASE = "/api/weasley-clock";
 
 export default function FeedsPage() {
 	const [accounts, setAccounts] = useState<Account[]>([]);

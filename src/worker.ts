@@ -84,28 +84,25 @@ export default {
 		const db = env.DB;
 		if (!db) return;
 
-		// Every 5 min: fan out to the weasley-clock plugin's sync route.
-		// Internal auth via X-Sync-Secret header since scheduled() carries
-		// no admin session.
+		// Every 5 min: incrementally sync every opted-in Google calendar
+		// across all weasley-clock oauth_accounts. Runs inline here — no
+		// HTTP hop / shared-secret dance needed because this handler has
+		// full env access.
 		if (event.cron === "*/5 * * * *") {
 			try {
-				const res = await fetch(
-					new Request(
-						"https://huuloc.com/_emdash/api/plugins/weasley-clock/cron/sync-all",
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								"X-Sync-Secret": env.SYNC_SECRET ?? "",
-							},
-							body: "{}",
-						},
-					),
-				);
-				const body = await res.text();
-				console.log(`[cron] weasley-clock sync-all: ${res.status} ${body.slice(0, 500)}`);
+				const { syncAll } = await import("./lib/weasley-clock/sync-all");
+				if (!env.OAUTH_ENC_KEY || !env.GOOGLE_OAUTH_CLIENT_ID || !env.GOOGLE_OAUTH_CLIENT_SECRET) {
+					console.log("[cron] weasley-clock: OAuth env not configured, skipping");
+					return;
+				}
+				const { summary } = await syncAll(db, {
+					encKey: env.OAUTH_ENC_KEY,
+					clientId: env.GOOGLE_OAUTH_CLIENT_ID,
+					clientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+				});
+				console.log(`[cron] weasley-clock synced ${summary.length} calendars`);
 			} catch (err) {
-				console.error("weasley-clock cron failed:", err);
+				console.error("[cron] weasley-clock failed:", err);
 			}
 			return;
 		}
