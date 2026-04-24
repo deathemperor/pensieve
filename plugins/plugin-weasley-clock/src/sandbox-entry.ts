@@ -80,6 +80,32 @@ async function discoverCalendars(ctx: RouteCtx, accountRow: { id: string; access
 export default definePlugin({
 	id: "weasley-clock",
 	version: "0.2.0",
+	// Native plugins: defineNativePlugin destructures these from the runtime
+	// definition (not the descriptor). Missing them means storage namespaces
+	// aren't registered with the runtime and every ctx.storage.* throws.
+	// Keep in sync with the descriptor in src/index.ts.
+	capabilities: ["network:fetch"],
+	allowedHosts: [
+		"accounts.google.com",
+		"oauth2.googleapis.com",
+		"www.googleapis.com",
+	],
+	storage: {
+		oauth_accounts: { indexes: ["provider", "account_email", "status"] },
+		oauth_calendars: { indexes: ["account_id", "calendar_id", "synced"] },
+		oauth_state: { indexes: ["expires_at"] },
+		synced_events: {
+			indexes: [
+				"source_type",
+				"gcal_account_id",
+				"gcal_calendar_id",
+				"starts_at",
+				"ends_at",
+				"external_uid",
+				"deleted",
+			],
+		},
+	},
 	hooks: {
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
