@@ -15,7 +15,27 @@ function redirect(url: string): Response {
 	return new Response(null, { status: 302, headers: { Location: url } });
 }
 
+function errorJson(message: string, status = 400): Response {
+	return new Response(JSON.stringify({ error: message }), {
+		status,
+		headers: { "Content-Type": "application/json" },
+	});
+}
+
 export const GET: APIRoute = async ({ request }) => {
+	// Wrap everything in a try/catch so the handler *always* returns a Response.
+	// If we let an exception bubble, Astro's Cloudflare adapter re-invokes the
+	// handler — the second run can't find the just-consumed state and returns
+	// "Invalid or expired state", which is what the user saw.
+	try {
+		return await handleCallback(request);
+	} catch (err: any) {
+		console.error(`[wc-oauth/callback] UNCAUGHT:`, err?.message ?? err, err?.stack ?? "");
+		return errorJson(`callback threw: ${err?.message ?? String(err)}`, 500);
+	}
+};
+
+async function handleCallback(request: Request): Promise<Response> {
 	const url = new URL(request.url);
 	const code = url.searchParams.get("code");
 	const state = url.searchParams.get("state");
@@ -25,17 +45,13 @@ export const GET: APIRoute = async ({ request }) => {
 		return redirect(`/_emdash/admin/plugins/weasley-clock?error=${encodeURIComponent(errorParam)}`);
 	}
 	if (!code || !state) {
-		return new Response(
-			JSON.stringify({ error: "Missing code or state" }),
-			{ status: 400, headers: { "Content-Type": "application/json" } },
-		);
+		return errorJson("Missing code or state");
 	}
 
 	const db = (env as any).DB;
 	console.log(`[wc-oauth/callback] state=${state} code=${code ? "present" : "missing"} db=${db ? "present" : "MISSING"}`);
 	const c = collections(db);
 
-	// Pre-check: is the state actually in D1?
 	try {
 		const probe = await c.oauth_state.get(state);
 		console.log(`[wc-oauth/callback] probe: ${probe ? `FOUND expires_at=${probe.data.expires_at}` : "NOT IN D1"}`);
@@ -46,22 +62,18 @@ export const GET: APIRoute = async ({ request }) => {
 	const stateRow = await consumeState(c.oauth_state, state);
 	console.log(`[wc-oauth/callback] consumeState → ${stateRow ? "ok" : "null (not-found-or-expired)"}`);
 	if (!stateRow) {
-		return new Response(
-			JSON.stringify({ error: "Invalid or expired state — please retry" }),
-			{ status: 400, headers: { "Content-Type": "application/json" } },
-		);
+		return errorJson("Invalid or expired state — please retry");
 	}
 
 	const clientId = (env as any).GOOGLE_OAUTH_CLIENT_ID;
 	const clientSecret = (env as any).GOOGLE_OAUTH_CLIENT_SECRET;
 	const encKey = (env as any).OAUTH_ENC_KEY;
+	console.log(`[wc-oauth/callback] env check: clientId=${!!clientId} clientSecret=${!!clientSecret} encKey=${!!encKey}`);
 	if (!clientId || !clientSecret || !encKey) {
-		return new Response(
-			JSON.stringify({ error: "OAuth not fully configured" }),
-			{ status: 500, headers: { "Content-Type": "application/json" } },
-		);
+		return errorJson("OAuth not fully configured", 500);
 	}
 
+	console.log(`[wc-oauth/callback] exchanging code for tokens`);
 	const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
 		method: "POST",
 		headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -73,13 +85,11 @@ export const GET: APIRoute = async ({ request }) => {
 			redirect_uri: `${url.origin}/api/weasley-clock/oauth/google/callback`,
 		}),
 	});
+	console.log(`[wc-oauth/callback] token exchange status=${tokenRes.status}`);
 	if (!tokenRes.ok) {
 		const text = await tokenRes.text();
-		console.error(`[weasley-clock] token exchange failed ${tokenRes.status}: ${text}`);
-		return new Response(
-			JSON.stringify({ error: "Token exchange failed" }),
-			{ status: 502, headers: { "Content-Type": "application/json" } },
-		);
+		console.error(`[wc-oauth/callback] token exchange failed ${tokenRes.status}: ${text}`);
+		return errorJson("Token exchange failed", 502);
 	}
 	const tokens = (await tokenRes.json()) as {
 		access_token: string;
@@ -88,32 +98,32 @@ export const GET: APIRoute = async ({ request }) => {
 		id_token: string;
 		scope: string;
 	};
+	console.log(`[wc-oauth/callback] tokens: scope=${tokens.scope} hasRefresh=${!!tokens.refresh_token} expiresIn=${tokens.expires_in}`);
 
 	if (!tokens.scope.split(/\s+/).includes(SCOPE)) {
-		return new Response(
-			JSON.stringify({ error: "Required calendar read access was not granted. Please accept all requested scopes." }),
-			{ status: 400, headers: { "Content-Type": "application/json" } },
-		);
+		return errorJson("Required calendar read access was not granted. Please accept all requested scopes.");
 	}
 	if (!tokens.refresh_token) {
-		return new Response(
-			JSON.stringify({ error: "Google did not return a refresh_token — please revoke access in your Google account settings and try again" }),
-			{ status: 400, headers: { "Content-Type": "application/json" } },
-		);
+		return errorJson("Google did not return a refresh_token — please revoke access in your Google account settings and try again");
 	}
 
+	console.log(`[wc-oauth/callback] verifying id_token`);
 	const idPayload = await verifyGoogleIdToken(tokens.id_token, clientId);
+	console.log(`[wc-oauth/callback] id_token ok — email=${idPayload.email}`);
 
+	console.log(`[wc-oauth/callback] encrypting tokens`);
 	const accessEnc = await encryptToken(tokens.access_token, encKey);
 	const refreshEnc = await encryptToken(tokens.refresh_token, encKey);
+	console.log(`[wc-oauth/callback] tokens encrypted`);
 
-	// Upsert keyed by email: find existing row if any.
+	console.log(`[wc-oauth/callback] listing existing oauth_accounts`);
 	const existing = (await c.oauth_accounts.list())
 		.find((r) => r.data.provider === "google" && r.data.account_email === idPayload.email);
 
 	const now = new Date().toISOString();
 	const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 	const accountId = existing?.id ?? "acc_" + state.slice(0, 16).toLowerCase();
+	console.log(`[wc-oauth/callback] upserting account ${accountId} (existing=${!!existing})`);
 
 	await c.oauth_accounts.put(accountId, {
 		provider: "google",
@@ -131,12 +141,13 @@ export const GET: APIRoute = async ({ request }) => {
 		last_synced_at: existing?.data.last_synced_at ?? null,
 		revoked_at: null,
 	});
+	console.log(`[wc-oauth/callback] account upserted`);
 
-	// Enumerate calendars
 	try {
 		const res = await fetch(GOOGLE_CALENDARLIST_URL, {
 			headers: { Authorization: `Bearer ${tokens.access_token}` },
 		});
+		console.log(`[wc-oauth/callback] calendarList status=${res.status}`);
 		if (res.ok) {
 			const data = (await res.json()) as { items: any[] };
 			for (const cal of data.items ?? []) {
@@ -154,12 +165,14 @@ export const GET: APIRoute = async ({ request }) => {
 					expose_titles: 1,
 				});
 			}
+			console.log(`[wc-oauth/callback] calendars upserted count=${data.items?.length ?? 0}`);
 		} else {
 			console.error(`[weasley-clock] discoverCalendars failed: ${res.status}`);
 		}
 	} catch (err: any) {
-		console.error(`[weasley-clock] discoverCalendars exception:`, err);
+		console.error(`[weasley-clock] discoverCalendars exception:`, err?.message ?? err);
 	}
 
+	console.log(`[wc-oauth/callback] redirecting to ${stateRow.return_url || "/_emdash/admin/plugins/weasley-clock"}`);
 	return redirect(stateRow.return_url || "/_emdash/admin/plugins/weasley-clock");
-};
+}
