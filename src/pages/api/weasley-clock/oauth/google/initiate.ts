@@ -26,8 +26,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		? body.return_url
 		: "/_emdash/admin/plugins/weasley-clock";
 
-	const c = collections((env as any).DB);
-	const state = await generateState(c.oauth_state, { returnUrl });
+	const db = (env as any).DB;
+	console.log(`[wc-oauth/initiate] db binding:`, typeof db, db ? "present" : "MISSING");
+	const c = collections(db);
+	let state: string;
+	try {
+		state = await generateState(c.oauth_state, { returnUrl });
+		console.log(`[wc-oauth/initiate] state=${state} returnUrl=${returnUrl}`);
+	} catch (err: any) {
+		console.error(`[wc-oauth/initiate] generateState THREW:`, err?.message ?? err, err?.stack ?? "");
+		return new Response(
+			JSON.stringify({ error: "generateState failed", detail: err?.message ?? String(err) }),
+			{ status: 500, headers: { "Content-Type": "application/json" } },
+		);
+	}
+
+	// Verify the write actually landed by reading it back.
+	try {
+		const verify = await c.oauth_state.get(state);
+		console.log(`[wc-oauth/initiate] readback after put: ${verify ? "FOUND" : "MISSING"}`);
+	} catch (err: any) {
+		console.error(`[wc-oauth/initiate] readback threw:`, err?.message ?? err);
+	}
 
 	const origin = new URL(request.url).origin;
 	const params = new URLSearchParams({

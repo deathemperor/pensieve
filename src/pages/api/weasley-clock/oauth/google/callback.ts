@@ -32,8 +32,19 @@ export const GET: APIRoute = async ({ request }) => {
 	}
 
 	const db = (env as any).DB;
+	console.log(`[wc-oauth/callback] state=${state} code=${code ? "present" : "missing"} db=${db ? "present" : "MISSING"}`);
 	const c = collections(db);
+
+	// Pre-check: is the state actually in D1?
+	try {
+		const probe = await c.oauth_state.get(state);
+		console.log(`[wc-oauth/callback] probe: ${probe ? `FOUND expires_at=${probe.data.expires_at}` : "NOT IN D1"}`);
+	} catch (err: any) {
+		console.error(`[wc-oauth/callback] probe threw:`, err?.message ?? err);
+	}
+
 	const stateRow = await consumeState(c.oauth_state, state);
+	console.log(`[wc-oauth/callback] consumeState → ${stateRow ? "ok" : "null (not-found-or-expired)"}`);
 	if (!stateRow) {
 		return new Response(
 			JSON.stringify({ error: "Invalid or expired state — please retry" }),
