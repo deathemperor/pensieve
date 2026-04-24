@@ -1,23 +1,16 @@
 // Auth gate for Weasley Clock admin API routes.
-// Mirrors the pattern from src/lib/portraits/auth.ts — forwards the request's
-// cookie to EmDash's /_emdash/api/auth/me and checks role >= admin threshold.
+// Uses Astro.locals.user (populated server-side by EmDash's auth middleware)
+// rather than forwarding the session cookie. The EmDash session cookie is
+// Path-scoped to /_emdash/*, so a browser fetch from the admin SPA to
+// /api/weasley-clock/* doesn't include it — reading locals.user bypasses
+// the scope mismatch since middleware has already run before our handler.
 
 const ADMIN_ROLE_THRESHOLD = 50;
 
-export async function requireAdminFromRequest(request: Request): Promise<boolean> {
-	const cookie = request.headers.get("cookie") ?? "";
-	if (!cookie) return false;
-	const url = new URL(request.url);
-	const meUrl = new URL("/_emdash/api/auth/me", url.origin);
-	try {
-		const res = await fetch(meUrl, { headers: { cookie } });
-		if (!res.ok) return false;
-		const body = (await res.json()) as { user?: { role?: unknown } };
-		const role = body.user?.role;
-		return typeof role === "number" && role >= ADMIN_ROLE_THRESHOLD;
-	} catch {
-		return false;
-	}
+export function isAdmin(locals: any): boolean {
+	const user = locals?.user;
+	if (!user || typeof user.role !== "number") return false;
+	return user.role >= ADMIN_ROLE_THRESHOLD;
 }
 
 export function forbidden(): Response {
