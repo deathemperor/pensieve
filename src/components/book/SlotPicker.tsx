@@ -56,7 +56,7 @@ export default function SlotPicker({ meetingTypeId, durationMin, lang, title, qu
 				if (d.error) setError(String(d.error));
 				else setSlots(d.slots ?? []);
 			})
-			.catch((e) => setError(e?.message ?? "Failed to load slots"))
+			.catch((e) => setError(e?.message ?? (isVi ? "Không thể tải khung giờ trống." : "Failed to load slots.")))
 			.finally(() => setLoading(false));
 	}, [anchor, meetingTypeId, guestTz]);
 
@@ -103,11 +103,15 @@ export default function SlotPicker({ meetingTypeId, durationMin, lang, title, qu
 		submit: isVi ? "Xác nhận đặt lịch" : "Confirm booking",
 		submitting: isVi ? "Đang xử lý…" : "Booking…",
 		errorPrefix: isVi ? "Lỗi: " : "Error: ",
+		networkError: isVi ? "Không thể kết nối. Vui lòng thử lại." : "Network error. Please try again.",
 		bookingFor: (s: Slot) =>
 			`${formatLocal(s.start_iso, guestTz, lang)} – ${formatLocalTimeOnly(s.end_iso, guestTz, lang)}`,
 		back: isVi ? "← Chọn khung giờ khác" : "← Pick another time",
 		monthLabel: new Intl.DateTimeFormat(isVi ? "vi-VN" : "en-GB", { month: "long", year: "numeric" }).format(anchor),
 		dow: isVi ? ["T2", "T3", "T4", "T5", "T6", "T7", "CN"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+		prevMonth: isVi ? "Tháng trước" : "Previous month",
+		nextMonth: isVi ? "Tháng sau" : "Next month",
+		dayLabel: (ymd: string) => isVi ? `Ngày ${ymd}` : `Day ${ymd}`,
 	};
 
 	async function submit(e: React.FormEvent) {
@@ -137,7 +141,7 @@ export default function SlotPicker({ meetingTypeId, durationMin, lang, title, qu
 			}
 			window.location.href = data.confirmed_url ?? "/book";
 		} catch (err: any) {
-			setError(err?.message ?? "Network error");
+			setError(err?.message ?? t.networkError);
 			setSubmitting(false);
 		}
 	}
@@ -148,11 +152,11 @@ export default function SlotPicker({ meetingTypeId, durationMin, lang, title, qu
 		<div className="slot-picker">
 			<div className="slot-picker__calendar">
 				<div className="slot-picker__monthnav">
-					<button type="button" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+					<button type="button" onClick={() => shiftMonth(-1)} aria-label={t.prevMonth}>
 						←
 					</button>
 					<span>{t.monthLabel}</span>
-					<button type="button" onClick={() => shiftMonth(1)} aria-label="Next month">
+					<button type="button" onClick={() => shiftMonth(1)} aria-label={t.nextMonth}>
 						→
 					</button>
 				</div>
@@ -180,7 +184,7 @@ export default function SlotPicker({ meetingTypeId, durationMin, lang, title, qu
 									setSelectedSlot(null);
 								}}
 								style={{ fontWeight: hasSlots ? 600 : 400 }}
-								aria-label={cell.ymd}
+								aria-label={t.dayLabel(cell.ymd)}
 							>
 								{cell.day}
 								{hasSlots && <span className="slot-picker__dot" />}
