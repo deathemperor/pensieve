@@ -33,11 +33,58 @@ export default definePlugin({
 				"deleted",
 			],
 		},
+		availability_rules: { indexes: ["timezone"] },
+		bookings: {
+			indexes: [
+				"meeting_type_id",
+				"host_account_id",
+				"slot_start_iso",
+				"status",
+				"cancel_token",
+				"reschedule_token",
+			],
+		},
 	},
 	hooks: {
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
 				ctx.log.info("weasley-clock: plugin installed (shell only; logic in /api/weasley-clock/*)");
+
+				// Idempotently seed the default availability rule.
+				const existing = await ctx.storage.availability_rules.get("default");
+				if (existing) {
+					ctx.log.info("weasley-clock: default availability rule already exists — skipping seed");
+					return;
+				}
+
+				const defaultRule: {
+					label: string;
+					timezone: string;
+					weekly_hours: {
+						mon: { start: string; end: string }[];
+						tue: { start: string; end: string }[];
+						wed: { start: string; end: string }[];
+						thu: { start: string; end: string }[];
+						fri: { start: string; end: string }[];
+						sat: { start: string; end: string }[];
+						sun: { start: string; end: string }[];
+					};
+				} = {
+					label: "Default — daily 09:00-17:30 ICT",
+					timezone: "Asia/Ho_Chi_Minh",
+					weekly_hours: {
+						mon: [{ start: "09:00", end: "17:30" }],
+						tue: [{ start: "09:00", end: "17:30" }],
+						wed: [{ start: "09:00", end: "17:30" }],
+						thu: [{ start: "09:00", end: "17:30" }],
+						fri: [{ start: "09:00", end: "17:30" }],
+						sat: [{ start: "09:00", end: "17:30" }],
+						sun: [{ start: "09:00", end: "17:30" }],
+					},
+				};
+
+				await ctx.storage.availability_rules.put("default", defaultRule);
+				ctx.log.info("weasley-clock: seeded default availability rule (09:00-17:30 ICT, daily)");
 			},
 		},
 	},

@@ -1,0 +1,76 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { collections } from "../../../lib/weasley-clock/storage";
+import { getCurrentLang } from "../../../utils/lang";
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect("/book");
+
+const db = (env as any).DB;
+const c = collections(db);
+const bookingRow = await c.bookings.get(id);
+if (!bookingRow || bookingRow.data.status !== "confirmed") {
+	return Astro.redirect("/book");
+}
+const booking = bookingRow.data;
+
+// Load meeting type for title.
+const { entries: meetingTypes } = await getEmDashCollection("meeting_types");
+function field(e: any, key: string): any { return e.data?.[key] ?? e[key]; }
+const mt = (meetingTypes ?? []).find((e: any) => e.id === booking.meeting_type_id);
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const title = mt ? (isVi ? field(mt, "title_vi") : field(mt, "title_en")) : "";
+
+// Format slot in booking.timezone (the guest's zone at booking time).
+const locale = isVi ? "vi-VN" : "en-GB";
+const slotFmt = new Intl.DateTimeFormat(locale, {
+	weekday: "long", year: "numeric", month: "long", day: "numeric",
+	hour: "2-digit", minute: "2-digit", hour12: false, timeZone: booking.timezone,
+	timeZoneName: "short",
+}).format(new Date(booking.slot_start_iso));
+
+const t = {
+	pageTitle: isVi ? "Đã đặt lịch — Loc" : "Booked — Loc",
+	heading: isVi ? "Đã đặt lịch ✓" : "You're booked ✓",
+	whenLabel: isVi ? "Thời gian:" : "When:",
+	emailLabel: isVi ? "Xác nhận đã gửi tới:" : "Confirmation sent to:",
+	note: isVi
+		? "Email xác nhận từ bookings@huuloc.com đang trên đường tới. Trả lời về me@huuloc.com nếu cần dời lịch hoặc có câu hỏi."
+		: "A confirmation email from bookings@huuloc.com is on its way. Reply to me@huuloc.com if you need to reschedule or have questions.",
+	bookAnother: isVi ? "Đặt lịch hẹn khác" : "Book another meeting",
+};
+---
+<Base title={t.pageTitle}>
+	<main class="book-ok">
+		<h1>{t.heading}</h1>
+		{title && <p class="book-ok__title">{title}</p>}
+		<dl class="book-ok__details">
+			<dt>{t.whenLabel}</dt>
+			<dd>{slotFmt}</dd>
+			<dt>{t.emailLabel}</dt>
+			<dd>{booking.guest_email}</dd>
+		</dl>
+		<p class="book-ok__note">{t.note}</p>
+		<p class="book-ok__back">
+			<a href="/book">← {t.bookAnother}</a>
+		</p>
+	</main>
+</Base>
+
+<style>
+	.book-ok { max-width: 620px; margin: 60px auto; padding: 0 20px; color: #e8dcc4; font-family: "Inter Tight", sans-serif; }
+	.book-ok h1 { font-size: 32px; color: #c9a961; margin: 0 0 16px; }
+	.book-ok__title { font-size: 18px; color: #e8dcc4; margin: 0 0 24px; }
+	.book-ok__details { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0 0 24px; }
+	.book-ok__details dt { color: #8b6914; font-size: 13px; }
+	.book-ok__details dd { margin: 0; color: #e8dcc4; font-size: 13px; }
+	.book-ok__note { color: #8b6914; font-size: 13px; line-height: 1.6; padding: 14px; background: #110c08; border: 1px solid #2a1f15; margin: 24px 0; }
+	.book-ok__back { margin-top: 28px; }
+	.book-ok__back a { color: #c9a961; text-decoration: none; font-size: 13px; }
+	.book-ok__back a:hover { text-decoration: underline; }
+</style>

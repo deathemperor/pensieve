@@ -93,10 +93,50 @@ export interface OAuthStateData {
 	return_url?: string;
 }
 
+export interface AvailabilityRuleData {
+	label: string;
+	// Host's timezone — weekly_hours + date_overrides are interpreted in this zone.
+	timezone: string;
+	// Weekly pattern: mon..sun keyed days, each a list of HH:MM intervals.
+	weekly_hours: {
+		mon: { start: string; end: string }[];
+		tue: { start: string; end: string }[];
+		wed: { start: string; end: string }[];
+		thu: { start: string; end: string }[];
+		fri: { start: string; end: string }[];
+		sat: { start: string; end: string }[];
+		sun: { start: string; end: string }[];
+	};
+	// YYYY-MM-DD → replacement intervals (or [] to mean "blocked that day")
+	date_overrides?: Record<string, { start: string; end: string }[]>;
+}
+
+export interface BookingData {
+	meeting_type_id: string;
+	host_account_id: string;
+	slot_start_iso: string;
+	slot_end_iso: string;
+	// Guest's timezone captured at booking time (for email formatting + display).
+	timezone: string;
+	guest_name: string;
+	guest_email: string;
+	// Keyed by meeting_type.questions[].id (NOT label — labels can change over time).
+	guest_answers: Record<string, string>;
+	gcal_event_id: string | null;
+	status: "confirmed" | "cancelled";
+	cancel_token: string;
+	reschedule_token: string;
+	created_at: string;
+	cancelled_at: string | null;
+	reminded_at: string | null;
+}
+
 export function collections(db: D1Database) {
 	return {
 		oauth_accounts: new Collection<OAuthAccountData>(db, "oauth_accounts"),
 		oauth_calendars: new Collection<OAuthCalendarData>(db, "oauth_calendars"),
 		oauth_state: new Collection<OAuthStateData>(db, "oauth_state"),
+		availability_rules: new Collection<AvailabilityRuleData>(db, "availability_rules"),
+		bookings: new Collection<BookingData>(db, "bookings"),
 	};
 }

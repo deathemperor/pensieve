@@ -20,6 +20,7 @@
 		{ "path": "/hogwarts/quidditch/", "title": "Quidditch Pitch — Animation Academy", "priority": "0.7" },
 		{ "path": "/hogwarts/quidditch/techniques", "title": "Animation Techniques", "priority": "0.6" },
 		{ "path": "/nydus/weasley-clock", "title": "The Weasley Clock", "priority": "0.7" },
+		{ "path": "/book", "title": "Book time with Loc", "priority": "0.6" },
 		{ "path": "/Trương", "title": "Trương Hữu Lộc — About", "priority": "0.8" }
 	],
 	"feeds": [

@@ -436,50 +436,7 @@
 				{ "slug": "min_notice_hrs", "label": "Min Notice (hours)", "type": "number" },
 				{ "slug": "max_advance_days", "label": "Max Advance (days)", "type": "number" },
 				{ "slug": "questions", "label": "Custom Questions (JSON)", "type": "string" },
-				{ "slug": "color", "label": "Color (hex)", "type": "string" }
-			]
-		},
-		{
-			"slug": "family_events",
-			"label": "Family Events",
-			"labelSingular": "Family Event",
-			"supports": ["search"],
-			"fields": [
-				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true, "searchable": true },
-				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true, "searchable": true },
-				{ "slug": "event_type", "label": "Type", "type": "string", "required": true, "options": ["birthday", "death_anniv", "wedding_anniv", "cultural", "milestone"] },
-				{ "slug": "date_calendar", "label": "Calendar", "type": "string", "required": true, "options": ["solar", "lunar"] },
-				{ "slug": "month", "label": "Month (1-12)", "type": "number", "required": true },
-				{ "slug": "day", "label": "Day (1-31)", "type": "number", "required": true },
-				{ "slug": "is_leap_month", "label": "Is Leap Month (lunar origin year only)", "type": "boolean" },
-				{ "slug": "origin_year", "label": "Origin Year (birth / death / wedding)", "type": "number" },
-				{ "slug": "person_name", "label": "Person Name", "type": "string" },
-				{ "slug": "relationship", "label": "Relationship", "type": "string" },
-				{ "slug": "notes", "label": "Notes", "type": "portableText" },
-				{ "slug": "visibility", "label": "Visibility", "type": "string", "required": true, "options": ["household", "public"] },
-				{ "slug": "reminder_days_before", "label": "Reminder Days Before (JSON array)", "type": "string" },
-				{ "slug": "photo", "label": "Photo", "type": "image" }
-			]
-		},
-		{
-			"slug": "meeting_types",
-			"label": "Meeting Types",
-			"labelSingular": "Meeting Type",
-			"supports": ["search"],
-			"fields": [
-				{ "slug": "meeting_slug", "label": "Slug", "type": "string", "required": true, "searchable": true },
-				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true },
-				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true },
-				{ "slug": "description_en", "label": "Description (EN)", "type": "portableText" },
-				{ "slug": "description_vi", "label": "Description (VI)", "type": "portableText" },
-				{ "slug": "duration_min", "label": "Duration (min)", "type": "number", "required": true },
-				{ "slug": "audience_tags", "label": "Audience Tags (JSON array)", "type": "string", "required": true },
-				{ "slug": "availability_id", "label": "Availability Rule ID", "type": "string" },
-				{ "slug": "buffer_before", "label": "Buffer Before (min)", "type": "number" },
-				{ "slug": "buffer_after", "label": "Buffer After (min)", "type": "number" },
-				{ "slug": "min_notice_hrs", "label": "Min Notice (hours)", "type": "number" },
-				{ "slug": "max_advance_days", "label": "Max Advance (days)", "type": "number" },
-				{ "slug": "questions", "label": "Custom Questions (JSON)", "type": "string" },
+				{ "slug": "host_account_ids", "label": "Host Account IDs (JSON array)", "type": "string" },
 				{ "slug": "color", "label": "Color (hex)", "type": "string" }
 			]
 		}
