@@ -1,0 +1,124 @@
+---
+export const prerender = false;
+
+import { getEmDashCollection } from "emdash";
+import Base from "../../../layouts/Base.astro";
+import Header from "../../../components/weasley-clock/Header.astro";
+import WeekView from "../../../components/weasley-clock/WeekView.astro";
+import MonthView from "../../../components/weasley-clock/MonthView.astro";
+import DayView from "../../../components/weasley-clock/DayView.astro";
+import YearView from "../../../components/weasley-clock/YearView.astro";
+import { materialiseFamilyEvents, type FamilyEventRecord } from "../../../utils/familyEvents";
+import { type SyncedEventRecord } from "../../../utils/weasleyClockEvents";
+import { getCurrentLang } from "../../../utils/lang";
+
+type View = "day" | "week" | "month" | "year";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const pageTitle = isVi ? "Đồng Hồ Weasley" : "The Weasley Clock";
+const pageDescription = isVi
+	? "Lịch gia đình · dương và âm lịch"
+	: "Family calendar · dương & âm lịch";
+
+const url = new URL(Astro.request.url);
+const viewParam = (url.searchParams.get("view") as View) ?? "week";
+const view: View = ["day", "week", "month", "year"].includes(viewParam) ? viewParam : "week";
+
+const anchorParam = url.searchParams.get("anchor");
+const anchor = anchorParam ? new Date(anchorParam + "T00:00:00+07:00") : new Date();
+
+// Temporarily stub out the EmDash call for testing
+let events: FamilyEventRecord[] = [];
+let occurrences: any[] = [];
+
+try {
+	const { entries: rawEvents, cacheHint } = await getEmDashCollection("family_events");
+	Astro.cache.set(cacheHint);
+
+	events = rawEvents.map((e: any) => ({
+		id: e.id,
+		title_en: e.title_en,
+		title_vi: e.title_vi,
+		event_type: e.event_type,
+		date_calendar: e.date_calendar,
+		month: e.month,
+		day: e.day,
+		is_leap_month: !!e.is_leap_month,
+		origin_year: e.origin_year,
+		person_name: e.person_name,
+		relationship: e.relationship,
+		visibility: e.visibility,
+		reminder_days_before: e.reminder_days_before,
+		photo: e.photo,
+	}));
+} catch (e) {
+	// Fall through with empty events
+	console.error("Failed to fetch family events:", e);
+}
+
+function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
+function endOfDay(d: Date) { const x = new Date(d); x.setHours(23, 59, 59, 999); return x; }
+
+function computeWindow(v: View, a: Date): { windowStart: Date; windowEnd: Date } {
+	const d = new Date(a);
+	if (v === "day") {
+		return { windowStart: startOfDay(d), windowEnd: endOfDay(d) };
+	}
+	if (v === "week") {
+		const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
+		const mon = new Date(d); mon.setDate(d.getDate() - dow);
+		const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+		return { windowStart: startOfDay(mon), windowEnd: endOfDay(sun) };
+	}
+	if (v === "month") {
+		const first = new Date(d.getFullYear(), d.getMonth(), 1);
+		const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+		return { windowStart: startOfDay(first), windowEnd: endOfDay(last) };
+	}
+	return {
+		windowStart: new Date(d.getFullYear(), 0, 1),
+		windowEnd: new Date(d.getFullYear(), 11, 31, 23, 59, 59),
+	};
+}
+
+const { windowStart, windowEnd } = computeWindow(view, anchor);
+occurrences = materialiseFamilyEvents(events, windowStart, windowEnd);
+
+// Fetch synced events from plugin-weasley-clock storage. Plugin namespaces
+// are exposed at Astro.locals.emdash.plugins.<id>.storage.<namespace> — if
+// the shape differs in this EmDash version, the catch below keeps the page
+// rendering (synced view just stays empty until wiring is verified).
+let syncedEvents: SyncedEventRecord[] = [];
+try {
+	const storage = (Astro.locals as any).emdash?.plugins?.["weasley-clock"]?.storage;
+	if (storage?.synced_events) {
+		const all = await storage.synced_events.query({});
+		const items = (all.items ?? all ?? []) as Array<{ id: string; data: any }>;
+		const windowStartMs = windowStart.getTime();
+		const windowEndMs = windowEnd.getTime();
+		syncedEvents = items
+			.map((r) => ({ ...r.data, id: r.id } as SyncedEventRecord))
+			.filter((e) =>
+				e.source_type && !e.deleted &&
+				new Date(e.starts_at).getTime() <= windowEndMs &&
+				new Date(e.ends_at).getTime() >= windowStartMs,
+			);
+	}
+} catch (err) {
+	console.error("Failed to fetch synced events:", err);
+}
+---
+<Base title={pageTitle} description={pageDescription}>
+	<Header view={view} anchor={anchor} lang={lang} />
+	<main class="wc-main">
+		{view === "day" && <DayView anchor={anchor} occurrences={occurrences} synced={syncedEvents} lang={lang} />}
+		{view === "week" && <WeekView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
+		{view === "month" && <MonthView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
+		{view === "year" && <YearView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
+	</main>
+</Base>
+
+<style is:global>
+	.wc-main { max-width: 1280px; margin: 0 auto; padding: 16px; }
+</style>

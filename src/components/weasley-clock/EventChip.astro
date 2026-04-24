@@ -1,0 +1,45 @@
+---
+import { detectFlight } from "../../utils/flightDetect";
+
+interface Props {
+	title: string;
+	subtitle?: string;
+	category: "giỗ" | "birthday" | "anniversary" | "cultural" | "milestone" | "flight" | "other";
+	size?: "full" | "chip";
+}
+
+const { title, subtitle, category, size = "full" } = Astro.props;
+const flight = detectFlight(title);
+const icon: Record<string, string> = {
+	"giỗ": "✦",
+	"birthday": "🎂",
+	"anniversary": "❖",
+	"cultural": "✶",
+	"milestone": "◈",
+	"flight": "✈",
+	"other": "•",
+};
+const effectiveCategory = flight ? "flight" : category;
+---
+<div class={`wc-chip wc-chip--${effectiveCategory} wc-chip--${size}`}>
+	<div class="wc-chip__title">
+		<span class="wc-chip__icon">{icon[effectiveCategory]}</span>
+		<span>{title}</span>
+	</div>
+	{size === "full" && subtitle && <div class="wc-chip__sub">{subtitle}</div>}
+</div>
+
+<style>
+	.wc-chip { padding: 3px 5px; border-radius: 1px; border-left: 2px solid var(--chip-tint); background: color-mix(in srgb, var(--chip-tint) 20%, transparent); }
+	.wc-chip__title { font-size: 10px; color: var(--wc-ink, #e8dcc4); }
+	.wc-chip__sub { font-size: 8px; color: var(--wc-ink-dim, #8b6914); margin-top: 2px; }
+	.wc-chip__icon { margin-right: 4px; }
+	.wc-chip--giỗ { --chip-tint: #c9a961; }
+	.wc-chip--birthday { --chip-tint: #556b2f; }
+	.wc-chip--anniversary { --chip-tint: #a0524f; }
+	.wc-chip--cultural { --chip-tint: #b67a3c; }
+	.wc-chip--milestone { --chip-tint: #6f8ba3; }
+	.wc-chip--flight { --chip-tint: #a67a3e; }
+	.wc-chip--other { --chip-tint: #6b5638; }
+	.wc-chip--chip { padding: 1px 3px; font-size: 8px; }
+</style>

@@ -1,0 +1,25 @@
+---
+import { formatDualDate } from "../../utils/lunar";
+
+interface Props {
+	date: Date;
+	size?: "lg" | "md" | "sm";
+	lang?: "vi" | "en";
+}
+
+const { date, size = "md", lang = "vi" } = Astro.props;
+const { gregorian, lunar } = formatDualDate(date, { lang });
+---
+<span class={`dual-date dual-date--${size}`}>
+	<span class="dual-date__greg">{gregorian}</span>
+	<span class="dual-date__lunar">{lunar}</span>
+</span>
+
+<style>
+	.dual-date { display: inline-flex; gap: 6px; align-items: baseline; }
+	.dual-date__greg { color: var(--wc-ink, #e8dcc4); }
+	.dual-date__lunar { color: var(--wc-ink-dim, #8b6914); font-size: 0.7em; }
+	.dual-date--lg .dual-date__greg { font-size: 18px; font-weight: 600; }
+	.dual-date--md .dual-date__greg { font-size: 13px; }
+	.dual-date--sm .dual-date__greg { font-size: 11px; }
+</style>

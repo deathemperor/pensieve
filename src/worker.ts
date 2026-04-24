@@ -81,6 +81,32 @@ export default {
 		const db = env.DB;
 		if (!db) return;
 
+		// Every 5 min: fan out to the weasley-clock plugin's sync route.
+		// Internal auth via X-Sync-Secret header since scheduled() carries
+		// no admin session.
+		if (event.cron === "*/5 * * * *") {
+			try {
+				const res = await fetch(
+					new Request(
+						"https://huuloc.com/_emdash/api/plugins/weasley-clock/cron/sync-all",
+						{
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+								"X-Sync-Secret": env.SYNC_SECRET ?? "",
+							},
+							body: "{}",
+						},
+					),
+				);
+				const body = await res.text();
+				console.log(`[cron] weasley-clock sync-all: ${res.status} ${body.slice(0, 500)}`);
+			} catch (err) {
+				console.error("weasley-clock cron failed:", err);
+			}
+			return;
+		}
+
 		// Hourly: scan enabled Drive folders for new card images + sweep stale rate-limit rows.
 		if (event.cron === "0 * * * *") {
 			try {

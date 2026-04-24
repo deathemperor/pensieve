@@ -1,30 +1,50 @@
 ---
 import DayCell from "./DayCell.astro";
 import type { FamilyOccurrence } from "../../utils/familyEvents";
+import type { SyncedEventRecord } from "../../utils/weasleyClockEvents";
 
-interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
-const { anchor, occurrences } = Astro.props;
+interface Props {
+	anchor: Date;
+	occurrences: FamilyOccurrence[];
+	synced?: SyncedEventRecord[];
+}
+const { anchor, occurrences, synced = [] } = Astro.props;
 
 const dow = anchor.getDay() === 0 ? 6 : anchor.getDay() - 1;
 const monday = new Date(anchor);
 monday.setDate(anchor.getDate() - dow);
 monday.setHours(0, 0, 0, 0);
 
-const days: { date: Date; occurrences: FamilyOccurrence[]; isToday: boolean }[] = [];
+const days: {
+	date: Date;
+	occurrences: FamilyOccurrence[];
+	synced: SyncedEventRecord[];
+	isToday: boolean;
+}[] = [];
 const today = new Date();
 for (let i = 0; i < 7; i++) {
 	const d = new Date(monday);
 	d.setDate(monday.getDate() + i);
+	const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0);
+	const dayEnd = new Date(d); dayEnd.setHours(23, 59, 59, 999);
 	const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+	const syncedToday = synced.filter((e) => {
+		if (e.deleted) return false;
+		const s = new Date(e.starts_at);
+		return s >= dayStart && s <= dayEnd;
+	});
 	days.push({
 		date: d,
 		occurrences: occurrences.filter((o) => sameDay(o.date, d)),
+		synced: syncedToday,
 		isToday: sameDay(d, today),
 	});
 }
 ---
 <div class="wc-week">
-	{days.map((d) => <DayCell date={d.date} occurrences={d.occurrences} isToday={d.isToday} variant="week" />)}
+	{days.map((d) => (
+		<DayCell date={d.date} occurrences={d.occurrences} synced={d.synced} isToday={d.isToday} variant="week" />
+	))}
 </div>
 
 <style>

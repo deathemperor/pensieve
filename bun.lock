@@ -24,6 +24,7 @@
         "plugin-chronicle-scanner": "file:./plugins/plugin-chronicle-scanner",
         "plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
         "plugin-resend": "file:./plugins/plugin-resend",
+        "plugin-weasley-clock": "file:./plugins/plugin-weasley-clock",
         "react": "^19.2.4",
         "react-dom": "^19.2.4",
         "reactflow": "^11.11.4",
@@ -1471,6 +1472,8 @@
     "plugin-pensieve-engage": ["plugin-pensieve-engage@file:plugins/plugin-pensieve-engage", { "peerDependencies": { "emdash": "^0.1.0" } }],
 
     "plugin-resend": ["plugin-resend@file:plugins/plugin-resend", { "peerDependencies": { "emdash": "^0.1.0" } }],
+
+    "plugin-weasley-clock": ["plugin-weasley-clock@file:plugins/plugin-weasley-clock", { "peerDependencies": { "emdash": "^0.1.0 || ^0.5.0" } }],
 
     "postcss": ["postcss@8.5.9", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw=="],
 

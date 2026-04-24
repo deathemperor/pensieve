@@ -5,6 +5,7 @@ import { formsPlugin } from "@emdash-cms/plugin-forms";
 import { webhookNotifierPlugin } from "@emdash-cms/plugin-webhook-notifier";
 import { resendPlugin } from "plugin-resend";
 import { pensieveEngagePlugin } from "plugin-pensieve-engage";
+import { weasleyClockPlugin } from "plugin-weasley-clock";
 import { chronicleScannerPlugin } from "plugin-chronicle-scanner";
 import { defineConfig } from "astro/config";
 import emdash from "emdash/astro";
@@ -23,7 +24,7 @@ export default defineConfig({
 		emdash({
 			database: d1({ binding: "DB", session: "auto" }),
 			storage: r2({ binding: "MEDIA" }),
-			plugins: [formsPlugin(), resendPlugin(), pensieveEngagePlugin(), chronicleScannerPlugin()],
+			plugins: [formsPlugin(), resendPlugin(), pensieveEngagePlugin(), weasleyClockPlugin(), chronicleScannerPlugin()],
 			sandboxed: [webhookNotifierPlugin()],
 			sandboxRunner: sandbox(),
 			marketplace: "https://marketplace.emdashcms.com",
@@ -41,6 +42,7 @@ export default defineConfig({
 				"@emdash-cms/plugin-webhook-notifier",
 				"plugin-resend",
 				"plugin-pensieve-engage",
+				"plugin-weasley-clock",
 				"plugin-chronicle-scanner",
 				"@emdash-cms/cloudflare/sandbox",
 				"@emdash-cms/cloudflare/storage/r2",
@@ -52,6 +54,7 @@ export default defineConfig({
 				"@emdash-cms/plugin-webhook-notifier",
 				"plugin-resend",
 				"plugin-pensieve-engage",
+				"plugin-weasley-clock",
 				"plugin-chronicle-scanner",
 			],
 		},

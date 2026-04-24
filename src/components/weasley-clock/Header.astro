@@ -1,0 +1,70 @@
+---
+import ClockWidget from "./ClockWidget.astro";
+
+interface Props { view: "day" | "week" | "month" | "year"; anchor: Date; lang?: "vi" | "en"; }
+const { view, anchor, lang = "vi" } = Astro.props;
+const isVi = lang === "vi";
+const t = {
+	today: isVi ? "HÔM NAY" : "TODAY",
+	weekOf: isVi ? "Tuần của" : "Week of",
+};
+
+function shiftAnchor(direction: -1 | 1): string {
+	const d = new Date(anchor);
+	if (view === "day") d.setDate(d.getDate() + direction);
+	if (view === "week") d.setDate(d.getDate() + direction * 7);
+	if (view === "month") d.setMonth(d.getMonth() + direction);
+	if (view === "year") d.setFullYear(d.getFullYear() + direction);
+	return d.toISOString().slice(0, 10);
+}
+
+function viewUrl(v: "day" | "week" | "month" | "year"): string {
+	return `/nydus/weasley-clock?view=${v}&anchor=${anchor.toISOString().slice(0, 10)}`;
+}
+
+function rangeLabel(): string {
+	if (view === "year") return String(anchor.getFullYear());
+	if (view === "month") return new Intl.DateTimeFormat(isVi ? "vi-VN" : "en-GB", { month: "short", year: "numeric" }).format(anchor);
+	if (view === "week") return `${t.weekOf} ${anchor.toISOString().slice(0, 10)}`;
+	return anchor.toISOString().slice(0, 10);
+}
+---
+<header class="wc-header">
+	<ClockWidget />
+	<nav class="wc-header__nav">
+		<a class="wc-header__btn" href={`/nydus/weasley-clock?view=${view}&anchor=${shiftAnchor(-1)}`}>←</a>
+		<span class="wc-header__range">{rangeLabel()}</span>
+		<a class="wc-header__btn" href={`/nydus/weasley-clock?view=${view}&anchor=${shiftAnchor(1)}`}>→</a>
+		<a class="wc-header__btn wc-header__btn--today" href={`/nydus/weasley-clock?view=${view}`}>{t.today}</a>
+	</nav>
+	<div class="wc-header__switch" role="tablist">
+		<a role="tab" aria-selected={view === "day"} href={viewUrl("day")}>D</a>
+		<a role="tab" aria-selected={view === "week"} href={viewUrl("week")}>W</a>
+		<a role="tab" aria-selected={view === "month"} href={viewUrl("month")}>M</a>
+		<a role="tab" aria-selected={view === "year"} href={viewUrl("year")}>Y</a>
+	</div>
+</header>
+
+<script is:inline define:vars={{ viewData: { view, anchor: anchor.toISOString().slice(0, 10) } }}>
+	document.addEventListener("keydown", (e) => {
+		if (e.target && (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) return;
+		const base = `/nydus/weasley-clock`;
+		const map = { "1": "day", "d": "day", "2": "week", "w": "week", "3": "month", "m": "month", "4": "year", "y": "year" };
+		if (map[e.key]) {
+			location.href = `${base}?view=${map[e.key]}&anchor=${viewData.anchor}`;
+		} else if (e.key === "t") {
+			location.href = `${base}?view=${viewData.view}`;
+		}
+	});
+</script>
+
+<style>
+	.wc-header { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #1a1410; border-bottom: 1px solid #2a1f15; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+	.wc-header__nav { display: flex; align-items: center; gap: 8px; flex: 1; }
+	.wc-header__btn { background: #2a1f15; color: #c9a961; border: 1px solid #8b6914; padding: 6px 10px; font-size: 10px; letter-spacing: 1px; text-decoration: none; border-radius: 2px; }
+	.wc-header__btn--today { border-color: #3a2a1f; color: #6b5638; }
+	.wc-header__range { font-size: 11px; color: #c9a961; letter-spacing: 1px; min-width: 120px; text-align: center; }
+	.wc-header__switch { display: flex; border: 1px solid #8b6914; border-radius: 2px; overflow: hidden; }
+	.wc-header__switch a { padding: 6px 10px; font-size: 10px; letter-spacing: 1px; background: #2a1f15; color: #6b5638; text-decoration: none; }
+	.wc-header__switch a[aria-selected="true"] { background: #c9a961; color: #1a1410; font-weight: bold; }
+</style>

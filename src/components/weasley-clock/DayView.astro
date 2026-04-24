@@ -1,0 +1,120 @@
+---
+import DualDate from "./DualDate.astro";
+import EventChip from "./EventChip.astro";
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+import type { SyncedEventRecord } from "../../utils/weasleyClockEvents";
+
+interface Props {
+	anchor: Date;
+	occurrences: FamilyOccurrence[];
+	synced?: SyncedEventRecord[];
+	lang?: "vi" | "en";
+}
+const { anchor, occurrences, synced = [], lang = "vi" } = Astro.props;
+const isVi = lang === "vi";
+const t = {
+	allDay: isVi ? "CẢ NGÀY" : "ALL DAY",
+	quiet: isVi ? "— yên tĩnh hôm nay —" : "— quiet today —",
+};
+
+const hours = Array.from({ length: 18 }, (_, i) => i + 6);
+
+function chipCategoryFor(
+	ev: FamilyOccurrence,
+): "giỗ" | "birthday" | "anniversary" | "cultural" | "milestone" | "other" {
+	switch (ev.event.event_type) {
+		case "death_anniv": return "giỗ";
+		case "birthday": return "birthday";
+		case "wedding_anniv": return "anniversary";
+		case "cultural": return "cultural";
+		case "milestone": return "milestone";
+		default: return "other";
+	}
+}
+
+const syncedAllDay = synced.filter((e) => {
+	if (!e.all_day || e.deleted) return false;
+	const s = new Date(e.starts_at);
+	return s.toDateString() === anchor.toDateString();
+});
+
+const allDayEmpty = occurrences.length === 0 && syncedAllDay.length === 0;
+---
+<div class="wc-day-view">
+	<header class="wc-day-view__head">
+		<DualDate date={anchor} size="lg" />
+	</header>
+	<section class="wc-day-view__allday">
+		<div class="wc-day-view__label">{t.allDay}</div>
+		{allDayEmpty && <div class="wc-day-view__empty">{t.quiet}</div>}
+		{occurrences.map((occ) => (
+			<EventChip
+				title={occ.event.title_vi || occ.event.title_en}
+				subtitle={occ.event.relationship ?? undefined}
+				category={chipCategoryFor(occ)}
+			/>
+		))}
+		{syncedAllDay.map((e) => (
+			<EventChip
+				title={e.title ?? "(untitled)"}
+				subtitle={e.location ?? undefined}
+				category="other"
+			/>
+		))}
+	</section>
+	<section class="wc-day-view__hours">
+		{hours.map((h) => {
+			const blockStart = new Date(anchor);
+			blockStart.setHours(h, 0, 0, 0);
+			const blockEnd = new Date(blockStart);
+			blockEnd.setHours(h + 1);
+			const eventsInHour = synced.filter((e) => {
+				if (e.all_day || e.deleted) return false;
+				const s = new Date(e.starts_at).getTime();
+				return s >= blockStart.getTime() && s < blockEnd.getTime();
+			});
+			return (
+				<div class="wc-day-view__hour">
+					<div class="wc-day-view__hour-label">{String(h).padStart(2, "0")}:00</div>
+					<div class="wc-day-view__hour-body">
+						{eventsInHour.map((e) => {
+							const startStr = new Date(e.starts_at).toLocaleTimeString("vi-VN", {
+								hour: "2-digit",
+								minute: "2-digit",
+								timeZone: "Asia/Ho_Chi_Minh",
+							});
+							return (
+								<div class="wc-day-view__event">
+									<div class="wc-day-view__event-title">{e.title ?? "(untitled)"}</div>
+									<div class="wc-day-view__event-meta">
+										{startStr}{e.location ? ` · ${e.location}` : ""}
+									</div>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			);
+		})}
+	</section>
+</div>
+
+<style>
+	.wc-day-view { max-width: 720px; margin: 0 auto; }
+	.wc-day-view__head { margin-bottom: 16px; }
+	.wc-day-view__allday { padding: 12px; background: #1f1710; border: 1px solid #2a1f15; margin-bottom: 12px; }
+	.wc-day-view__label { font-size: 9px; color: #8b6914; letter-spacing: 2px; margin-bottom: 8px; }
+	.wc-day-view__empty { font-size: 11px; color: #6b5638; font-style: italic; }
+	.wc-day-view__hour { display: grid; grid-template-columns: 60px 1fr; border-bottom: 1px solid #2a1f15; min-height: 40px; align-items: center; }
+	.wc-day-view__hour-label { font-size: 10px; color: #8b6914; padding-left: 8px; }
+	.wc-day-view__hour-body { padding: 4px; }
+	.wc-day-view__event {
+		padding: 4px 6px;
+		background: rgba(74, 108, 143, 0.25);
+		border-left: 2px solid #4a6c8f;
+		margin: 2px 0;
+		border-radius: 1px;
+	}
+	.wc-day-view__event-title { font-size: 11px; color: #e8dcc4; }
+	.wc-day-view__event-meta { font-size: 9px; color: #8b6914; margin-top: 1px; }
+</style>

@@ -1,0 +1,100 @@
+---
+import type { FamilyOccurrence } from "../../utils/familyEvents";
+import type { SyncedEventRecord } from "../../utils/weasleyClockEvents";
+
+interface Props {
+	anchor: Date;
+	occurrences: FamilyOccurrence[];
+	synced?: SyncedEventRecord[];
+}
+const { anchor, occurrences, synced = [] } = Astro.props;
+
+const year = anchor.getFullYear();
+const MONTH_LABELS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+type CellEntry = {
+	count: number;
+	dominant: "family" | "synced";
+	category: string;
+	titles: string[];
+};
+
+const byDate = new Map<string, CellEntry>();
+
+// Family events first — they win category tiebreaks because anniversaries
+// should read louder than ordinary work blocks on the heatmap.
+for (const occ of occurrences) {
+	const key = occ.date.toISOString().slice(0, 10);
+	const cur = byDate.get(key);
+	const title = occ.event.title_vi || occ.event.title_en;
+	byDate.set(key, {
+		count: (cur?.count ?? 0) + 1,
+		dominant: "family",
+		category: occ.event.event_type,
+		titles: [...(cur?.titles ?? []), title],
+	});
+}
+
+for (const evt of synced) {
+	if (evt.deleted) continue;
+	const key = new Date(evt.starts_at).toISOString().slice(0, 10);
+	const cur = byDate.get(key);
+	byDate.set(key, {
+		count: (cur?.count ?? 0) + 1,
+		dominant: cur?.dominant ?? "synced",
+		category: cur?.category ?? "work",
+		titles: [...(cur?.titles ?? []), evt.title ?? "(untitled)"],
+	});
+}
+
+function cellStyle(entry: CellEntry | undefined): string {
+	if (!entry) return "background:#2a1f15;";
+	const alpha = Math.min(0.3 + entry.count * 0.15, 1);
+	if (entry.dominant === "synced") {
+		return `background:rgba(74,108,143,${alpha});`;
+	}
+	switch (entry.category) {
+		case "death_anniv": return `background:rgba(201,169,97,${alpha});`;
+		case "birthday": return `background:rgba(85,107,47,${alpha});`;
+		case "wedding_anniv": return `background:rgba(160,82,79,${alpha});`;
+		case "cultural": return `background:rgba(182,122,60,${alpha});`;
+		default: return `background:rgba(166,122,62,${alpha});`;
+	}
+}
+
+function monthCells(month: number): { date: Date; entry: CellEntry | undefined }[] {
+	const days = new Date(year, month + 1, 0).getDate();
+	const out: { date: Date; entry: CellEntry | undefined }[] = [];
+	for (let d = 1; d <= days; d++) {
+		const date = new Date(year, month, d);
+		const key = date.toISOString().slice(0, 10);
+		out.push({ date, entry: byDate.get(key) });
+	}
+	return out;
+}
+---
+<div class="wc-year">
+	{MONTH_LABELS.map((label, i) => (
+		<div class="wc-year__month">
+			<div class="wc-year__month-label">{label}</div>
+			<div class="wc-year__grid">
+				{monthCells(i).map((c) => (
+					<a
+						class="wc-year__cell"
+						style={cellStyle(c.entry)}
+						href={`/nydus/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}
+						title={c.entry ? c.entry.titles.join("\n") : ""}
+					></a>
+				))}
+			</div>
+		</div>
+	))}
+</div>
+
+<style>
+	.wc-year { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1100px; margin: 0 auto; }
+	.wc-year__month-label { font-size: 10px; color: #c9a961; letter-spacing: 1px; margin-bottom: 4px; }
+	.wc-year__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+	.wc-year__cell { aspect-ratio: 1; display: block; background: #2a1f15; }
+	.wc-year__cell:hover { outline: 1px solid #c9a961; }
+</style>

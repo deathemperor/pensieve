@@ -31,6 +31,7 @@
 		"plugin-chronicle-scanner": "file:./plugins/plugin-chronicle-scanner",
 		"plugin-pensieve-engage": "file:./plugins/plugin-pensieve-engage",
 		"plugin-resend": "file:./plugins/plugin-resend",
+		"plugin-weasley-clock": "file:./plugins/plugin-weasley-clock",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
 		"reactflow": "^11.11.4",

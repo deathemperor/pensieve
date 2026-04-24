@@ -1,0 +1,25 @@
+---
+interface Props {
+	locStatus?: string;
+	tamStatus?: string;
+}
+const { locStatus = "work", tamStatus = "home" } = Astro.props;
+---
+<div class="wc-clock">
+	<svg viewBox="0 0 100 100" width="44" height="44">
+		<circle cx="50" cy="50" r="46" fill="radial-gradient(#2a1f15,#0f0a06)" stroke="#8b6914" stroke-width="3"/>
+		<line x1="50" y1="50" x2="80" y2="40" stroke="#c9a961" stroke-width="2"/>
+		<line x1="50" y1="50" x2="35" y2="75" stroke="#a67a3e" stroke-width="2"/>
+		<circle cx="50" cy="50" r="3" fill="#c9a961"/>
+	</svg>
+	<div class="wc-clock__label">
+		<div class="wc-clock__name">THE WEASLEY CLOCK</div>
+		<div class="wc-clock__status">LOC · {locStatus.toUpperCase()} · TAM · {tamStatus.toUpperCase()}</div>
+	</div>
+</div>
+
+<style>
+	.wc-clock { display: flex; align-items: center; gap: 10px; }
+	.wc-clock__name { font-size: 9px; color: #6b5638; letter-spacing: 2px; }
+	.wc-clock__status { font-size: 11px; color: #c9a961; margin-top: 2px; }
+</style>
