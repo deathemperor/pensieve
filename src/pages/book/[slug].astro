@@ -1,0 +1,305 @@
+---
+export const prerender = false;
+import Base from "../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { getCurrentLang } from "../../utils/lang";
+import SlotPicker from "../../components/book/SlotPicker";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/book");
+
+const { entries, cacheHint } = await getEmDashCollection("meeting_types");
+Astro.cache.set(cacheHint);
+
+function field(e: any, key: string): any {
+	return e.data?.[key] ?? e[key];
+}
+
+const mt = (entries ?? []).find((e: any) => field(e, "meeting_slug") === slug);
+if (!mt) return Astro.redirect("/book");
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const title = isVi ? field(mt, "title_vi") : field(mt, "title_en");
+const durationMin = Number(field(mt, "duration_min") ?? 30);
+
+// Meeting-type id — used by the React island to call /api/weasley-clock/bookings/slots.
+// EmDash entries expose an `id` at the top level (not in data).
+const meetingTypeId: string = mt.id;
+
+// Custom questions stored as JSON string. Shape: [{ id, label_en, label_vi, required, type }].
+let questions: Array<{
+	id: string;
+	label_en: string;
+	label_vi: string;
+	required?: boolean;
+	type?: "text" | "textarea";
+}> = [];
+const questionsRaw = field(mt, "questions");
+if (questionsRaw) {
+	try {
+		questions = typeof questionsRaw === "string" ? JSON.parse(questionsRaw) : questionsRaw;
+	} catch {
+		questions = [];
+	}
+}
+
+// Portable-text description — extract plain text for simple rendering.
+function ptToPlain(raw: any): string {
+	if (!raw) return "";
+	if (typeof raw === "string") return raw;
+	if (!Array.isArray(raw)) return "";
+	return raw
+		.map((block: any) => (block?.children ?? []).map((c: any) => c?.text ?? "").join(""))
+		.join("\n\n");
+}
+const descRaw = isVi ? field(mt, "description_vi") : field(mt, "description_en");
+const description = ptToPlain(descRaw);
+
+const t = {
+	minutes: isVi ? "phút" : "min",
+	back: isVi ? "← Tất cả loại hẹn" : "← All meeting types",
+};
+---
+
+<Base title={title}>
+	<main class="book-pick">
+		<nav class="book-pick__back"><a href="/book">{t.back}</a></nav>
+		<header class="book-pick__header">
+			<h1>{title}</h1>
+			<div class="book-pick__meta">{durationMin} {t.minutes}</div>
+			{description && <p class="book-pick__desc">{description}</p>}
+		</header>
+		<SlotPicker
+			client:only="react"
+			meetingTypeId={meetingTypeId}
+			durationMin={durationMin}
+			lang={lang}
+			title={title}
+			questions={questions}
+		/>
+	</main>
+</Base>
+
+<style>
+	.book-pick {
+		max-width: 960px;
+		margin: 40px auto;
+		padding: 0 20px;
+		color: #e8dcc4;
+		font-family: "Inter Tight", sans-serif;
+	}
+	.book-pick__back {
+		margin-bottom: 20px;
+	}
+	.book-pick__back a {
+		color: #8b6914;
+		text-decoration: none;
+		font-size: 12px;
+	}
+	.book-pick__back a:hover {
+		color: #c9a961;
+	}
+	.book-pick__header {
+		margin-bottom: 30px;
+		padding-bottom: 20px;
+		border-bottom: 1px solid #2a1f15;
+	}
+	.book-pick__header h1 {
+		font-size: 28px;
+		margin: 0 0 8px;
+		color: #c9a961;
+	}
+	.book-pick__meta {
+		color: #8b6914;
+		font-size: 12px;
+		letter-spacing: 1px;
+	}
+	.book-pick__desc {
+		color: #e8dcc4;
+		font-size: 14px;
+		margin-top: 16px;
+		white-space: pre-wrap;
+	}
+</style>
+
+<style is:global>
+	.slot-picker {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 30px;
+	}
+	@media (max-width: 720px) {
+		.slot-picker {
+			grid-template-columns: 1fr;
+		}
+	}
+	.slot-picker__monthnav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+		color: #c9a961;
+		font-size: 14px;
+	}
+	.slot-picker__monthnav button {
+		background: #2a1f15;
+		color: #c9a961;
+		border: 1px solid #8b6914;
+		padding: 4px 10px;
+		cursor: pointer;
+		font-family: inherit;
+	}
+	.slot-picker__monthnav button:hover {
+		background: #3a2a1f;
+	}
+	.slot-picker__headings,
+	.slot-picker__grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 2px;
+	}
+	.slot-picker__dow {
+		text-align: center;
+		font-size: 10px;
+		color: #8b6914;
+		letter-spacing: 1px;
+		padding: 6px 0;
+	}
+	.slot-picker__day {
+		aspect-ratio: 1;
+		background: #110c08;
+		border: 1px solid #2a1f15;
+		color: #e8dcc4;
+		cursor: pointer;
+		position: relative;
+		font-size: 12px;
+		font-family: inherit;
+	}
+	.slot-picker__day:hover:not(:disabled) {
+		border-color: #c9a961;
+	}
+	.slot-picker__day:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+	.slot-picker__day--dim {
+		opacity: 0.4;
+	}
+	.slot-picker__day--sel {
+		background: #201810;
+		border-color: #c9a961;
+	}
+	.slot-picker__dot {
+		position: absolute;
+		bottom: 6px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: #c9a961;
+	}
+	.slot-picker__nomonth {
+		margin-top: 12px;
+		color: #8b6914;
+		font-size: 12px;
+	}
+	.slot-picker__right h3 {
+		color: #c9a961;
+		font-size: 14px;
+		margin: 0 0 12px;
+		letter-spacing: 0.5px;
+	}
+	.slot-picker__times {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.slot-picker__times button {
+		background: #2a1f15;
+		color: #c9a961;
+		border: 1px solid #8b6914;
+		padding: 8px 14px;
+		cursor: pointer;
+		font-family: inherit;
+		font-size: 13px;
+	}
+	.slot-picker__times button:hover {
+		background: #3a2a1f;
+		border-color: #c9a961;
+	}
+	.slot-picker__form {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.slot-picker__form label {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		font-size: 12px;
+		color: #8b6914;
+		letter-spacing: 0.3px;
+	}
+	.slot-picker__form input,
+	.slot-picker__form textarea {
+		background: #0a0604;
+		color: #e8dcc4;
+		border: 1px solid #2a1f15;
+		padding: 8px 10px;
+		font-family: inherit;
+		font-size: 14px;
+	}
+	.slot-picker__form textarea {
+		min-height: 80px;
+		resize: vertical;
+	}
+	.slot-picker__form input:focus,
+	.slot-picker__form textarea:focus {
+		border-color: #c9a961;
+		outline: none;
+	}
+	.slot-picker__form button[type="submit"] {
+		background: #c9a961;
+		color: #1a1410;
+		border: none;
+		padding: 12px;
+		cursor: pointer;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+		margin-top: 8px;
+		font-family: inherit;
+	}
+	.slot-picker__form button[type="submit"]:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+	.slot-picker__summary {
+		padding: 12px;
+		background: #201810;
+		border: 1px solid #3a2a1f;
+		font-size: 13px;
+		color: #e8dcc4;
+	}
+	.slot-picker__summary div + div {
+		margin-top: 4px;
+	}
+	.slot-picker__back {
+		background: none;
+		border: none;
+		color: #8b6914;
+		cursor: pointer;
+		text-align: left;
+		padding: 0;
+		font-family: inherit;
+		font-size: 12px;
+	}
+	.slot-picker__back:hover {
+		color: #c9a961;
+	}
+</style>
