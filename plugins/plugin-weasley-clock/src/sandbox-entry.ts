@@ -9,20 +9,30 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_CALENDARLIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList";
 const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 
+// Native-format plugins get a single merged RouteContext argument (see
+// node_modules/emdash/src/plugins/routes.ts — createContext() returns a
+// PluginContext, then dispatcher spreads {...baseContext, input, request,
+// requestMeta} and invokes handler(routeContext)). The previous two-arg
+// signature left `ctx` undefined and every `ctx.storage` / `ctx.env` /
+// `ctx.log` call crashed with a 500 in prod.
+type RouteCtx = PluginContext & {
+	input?: any;
+	request?: Request;
+	url?: string;
+	requestMeta?: any;
+};
+
 function redirectUri(origin: string): string {
 	return `${origin}/_emdash/api/plugins/weasley-clock/oauth/google/callback`;
 }
 
-function getOrigin(routeCtx: any): string {
-	const raw = routeCtx.url ?? routeCtx.request?.url;
+function getOrigin(ctx: RouteCtx): string {
+	const raw = ctx.url ?? ctx.request?.url;
 	if (!raw) throw new Error("Route context missing url");
 	return new URL(raw).origin;
 }
 
-// Wrap ctx.storage.oauth_state in the narrow OAuthStateStore interface.
-// EmDash's ctx.storage.<namespace> exposes put/get/delete with rows shaped
-// { id, data: {...} } — our helper expects exactly that shape.
-function stateStoreFor(ctx: PluginContext): OAuthStateStore {
+function stateStoreFor(ctx: RouteCtx): OAuthStateStore {
 	const ns = (ctx.storage as any).oauth_state;
 	return {
 		async put(id, data) { await ns.put(id, data); },
@@ -31,21 +41,21 @@ function stateStoreFor(ctx: PluginContext): OAuthStateStore {
 	};
 }
 
-async function findAccountIdByEmail(ctx: PluginContext, email: string): Promise<string | null> {
+async function findAccountIdByEmail(ctx: RouteCtx, email: string): Promise<string | null> {
 	const all = await (ctx.storage as any).oauth_accounts.query({});
 	const items = all.items ?? all ?? [];
 	const existing = items.find((r: any) => r.data?.provider === "google" && r.data?.account_email === email);
 	return existing ? existing.id : null;
 }
 
-async function discoverCalendars(ctx: PluginContext, accountRow: { id: string; access_token: string }): Promise<void> {
+async function discoverCalendars(ctx: RouteCtx, accountRow: { id: string; access_token: string }): Promise<void> {
 	const res = await fetch(GOOGLE_CALENDARLIST_URL, {
 		headers: { Authorization: `Bearer ${accountRow.access_token}` },
 	});
 	if (!res.ok) {
 		const text = await res.text();
 		ctx.log.info(`discoverCalendars failed: ${res.status} ${text}`);
-		return;  // non-fatal; user can retry via admin UI
+		return;
 	}
 	const data = (await res.json()) as { items: any[] };
 	for (const cal of data.items ?? []) {
@@ -68,10 +78,6 @@ async function discoverCalendars(ctx: PluginContext, accountRow: { id: string; a
 }
 
 export default definePlugin({
-	// id + version flip definePlugin into its native-format path, where
-	// hook records get normalised (priority, dependencies, etc.). Without
-	// them, HookPipeline.sortHooks crashes on undefined.every(). Keep in
-	// sync with the descriptor in src/index.ts.
 	id: "weasley-clock",
 	version: "0.2.0",
 	hooks: {
@@ -85,14 +91,14 @@ export default definePlugin({
 	routes: {
 		"oauth/google/initiate": {
 			public: false,
-			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const origin = getOrigin(routeCtx);
+			handler: async (ctx: RouteCtx) => {
+				const origin = getOrigin(ctx);
 				const clientId = (ctx.env as any).GOOGLE_OAUTH_CLIENT_ID;
 				if (!clientId) return { error: "GOOGLE_OAUTH_CLIENT_ID not configured" };
 
-				const returnUrl = typeof routeCtx.input?.return_url === "string"
-					? routeCtx.input.return_url
-					: "/_emdash/admin/weasley-clock/feeds";
+				const returnUrl = typeof ctx.input?.return_url === "string"
+					? ctx.input.return_url
+					: "/_emdash/admin/plugins/weasley-clock";
 				const state = await generateState(stateStoreFor(ctx), { returnUrl });
 
 				const params = new URLSearchParams({
@@ -111,15 +117,15 @@ export default definePlugin({
 
 		"oauth/google/callback": {
 			public: true,
-			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const url = new URL(routeCtx.url ?? routeCtx.request?.url);
+			handler: async (ctx: RouteCtx) => {
+				const url = new URL(ctx.url ?? ctx.request!.url);
 				const code = url.searchParams.get("code");
 				const state = url.searchParams.get("state");
 				const errorParam = url.searchParams.get("error");
 
 				if (errorParam) {
 					ctx.log.info(`oauth/callback: user denied consent (${errorParam})`);
-					return { redirect: `/_emdash/admin/weasley-clock/feeds?error=${encodeURIComponent(errorParam)}` };
+					return { redirect: `/_emdash/admin/plugins/weasley-clock?error=${encodeURIComponent(errorParam)}` };
 				}
 				if (!code || !state) return { error: "Missing code or state" };
 
@@ -131,7 +137,7 @@ export default definePlugin({
 				const encKey = (ctx.env as any).OAUTH_ENC_KEY;
 				if (!clientId || !clientSecret || !encKey) return { error: "OAuth not fully configured" };
 
-				const origin = getOrigin(routeCtx);
+				const origin = getOrigin(ctx);
 				const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
 					method: "POST",
 					headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -156,9 +162,6 @@ export default definePlugin({
 					scope: string;
 				};
 
-				// User can unselect scopes on Google's consent screen. If they did,
-				// tokens.scope would not contain calendar.readonly. Reject with a
-				// clear error rather than silently storing a useless token.
 				if (!tokens.scope.split(/\s+/).includes(SCOPE)) {
 					return { error: "Required calendar read access was not granted. Please accept all requested scopes." };
 				}
@@ -190,24 +193,22 @@ export default definePlugin({
 					scope: tokens.scope,
 					status: "active" as const,
 					last_sync_error: null,
-					// Preserve original connected_at when re-authorising; set now on new rows
 					connected_at: existingRow?.data?.connected_at ?? now,
 					last_synced_at: existingRow?.data?.last_synced_at ?? null,
 					revoked_at: null,
 				};
-			await (ctx.storage as any).oauth_accounts.put(row.id, row);
+				await (ctx.storage as any).oauth_accounts.put(row.id, row);
 
-			// Enumerate calendars for this account (non-fatal on failure — user can re-auth)
-			await discoverCalendars(ctx, { id: row.id, access_token: tokens.access_token });
+				await discoverCalendars(ctx, { id: row.id, access_token: tokens.access_token });
 
-			return { redirect: stateRow.return_url || "/_emdash/admin/weasley-clock/feeds" };
+				return { redirect: stateRow.return_url || "/_emdash/admin/plugins/weasley-clock" };
 			},
 		},
 
 		"calendars/toggle": {
 			public: false,
-			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const { calendar_id, synced } = (routeCtx.input ?? {}) as { calendar_id?: string; synced?: boolean };
+			handler: async (ctx: RouteCtx) => {
+				const { calendar_id, synced } = (ctx.input ?? {}) as { calendar_id?: string; synced?: boolean };
 				if (!calendar_id || typeof synced !== "boolean") {
 					return { error: "Expected { calendar_id, synced }" };
 				}
@@ -220,7 +221,7 @@ export default definePlugin({
 
 		"accounts/list": {
 			public: false,
-			handler: async (_routeCtx: any, ctx: PluginContext) => {
+			handler: async (ctx: RouteCtx) => {
 				const accs = await (ctx.storage as any).oauth_accounts.query({});
 				const cals = await (ctx.storage as any).oauth_calendars.query({});
 				const accountsList = ((accs.items ?? accs ?? []) as any[]).map((r: any) => ({
@@ -249,12 +250,9 @@ export default definePlugin({
 		},
 
 		"cron/sync-all": {
-			// Called by src/worker.ts scheduled() with an X-Sync-Secret header.
-			// public: true because the scheduled dispatcher carries no admin
-			// session; the shared secret is the auth.
 			public: true,
-			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const provided = routeCtx.request?.headers?.get?.("X-Sync-Secret");
+			handler: async (ctx: RouteCtx) => {
+				const provided = ctx.request?.headers?.get?.("X-Sync-Secret");
 				const expected = (ctx.env as any).SYNC_SECRET;
 				if (!expected || provided !== expected) return { error: "Forbidden" };
 
@@ -319,8 +317,8 @@ export default definePlugin({
 
 		"sync-now": {
 			public: false,
-			handler: async (routeCtx: any, ctx: PluginContext) => {
-				const { account_id } = (routeCtx.input ?? {}) as { account_id?: string };
+			handler: async (ctx: RouteCtx) => {
+				const { account_id } = (ctx.input ?? {}) as { account_id?: string };
 				if (!account_id) return { error: "Expected { account_id }" };
 				const { syncCalendar } = await import("./lib/sync-calendar");
 				const { ensureFreshAccessToken } = await import("./lib/token-refresh");
