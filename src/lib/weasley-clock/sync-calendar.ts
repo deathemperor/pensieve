@@ -1,23 +1,9 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { mapGoogleEvent, type GoogleEvent } from "./events-map";
+import { collections, type OAuthCalendarData } from "./storage";
 
-export interface CalendarRow {
+export interface CalendarRow extends OAuthCalendarData {
 	id: string;
-	account_id: string;
-	calendar_id: string;
-	summary: string;
-	synced: 0 | 1;
-	sync_token: string | null;
-	last_resynced_at: string | null;
-	expose_titles: 0 | 1;
-}
-
-export interface SyncContext {
-	storage: {
-		synced_events: { put(id: string, data: any): Promise<void>; get(id: string): Promise<{ id: string; data: any } | null>; query(f: any): Promise<any> };
-		oauth_calendars: { put(id: string, data: any): Promise<void>; get(id: string): Promise<{ id: string; data: any } | null> };
-	};
-	getAccessToken: () => Promise<string>;
-	fetchImpl?: typeof fetch;
 }
 
 export interface SyncResult {
@@ -26,15 +12,22 @@ export interface SyncResult {
 	nextSyncToken: string | null;
 }
 
-export async function syncCalendar(cal: CalendarRow, ctx: SyncContext): Promise<SyncResult> {
-	const fetchImpl = ctx.fetchImpl ?? fetch;
-	const accessToken = await ctx.getAccessToken();
+export async function syncCalendar(
+	db: D1Database,
+	cal: CalendarRow,
+	getAccessToken: () => Promise<string>,
+	fetchImpl: typeof fetch = fetch,
+): Promise<SyncResult> {
+	const c = collections(db);
+	const accessToken = await getAccessToken();
 
 	const base = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.calendar_id)}/events`;
 	let pageToken: string | null = null;
 	let nextSyncToken: string | null = null;
 	let processed = 0;
 
+	// One of these is used as a cursor: syncToken (incremental) or timeMin (first run).
+	// Google rejects combining them.
 	for (;;) {
 		const params = new URLSearchParams({ showDeleted: "true", singleEvents: "true", maxResults: "250" });
 		if (cal.sync_token && !pageToken) params.set("syncToken", cal.sync_token);
@@ -49,7 +42,7 @@ export async function syncCalendar(cal: CalendarRow, ctx: SyncContext): Promise<
 		});
 
 		if (res.status === 410) {
-			await ctx.storage.oauth_calendars.put(cal.id, { ...cal, sync_token: null });
+			await c.oauth_calendars.put(cal.id, { ...cal, sync_token: null });
 			return { status: "sync_token_invalidated", eventsProcessed: processed, nextSyncToken: null };
 		}
 		if (!res.ok) {
@@ -59,7 +52,19 @@ export async function syncCalendar(cal: CalendarRow, ctx: SyncContext): Promise<
 		const body = (await res.json()) as { items?: GoogleEvent[]; nextPageToken?: string; nextSyncToken?: string };
 		for (const evt of body.items ?? []) {
 			const row = mapGoogleEvent(evt, { accountId: cal.account_id, calendarId: cal.calendar_id });
-			await ctx.storage.synced_events.put(row.id, row);
+			// synced_events is also a plugin-storage collection — write via raw D1
+			const now = new Date().toISOString();
+			const json = JSON.stringify(row);
+			await db
+				.prepare(
+					`INSERT INTO _plugin_storage (plugin_id, collection, id, data, created_at, updated_at)
+					 VALUES ('weasley-clock', 'synced_events', ?, ?, ?, ?)
+					 ON CONFLICT (plugin_id, collection, id) DO UPDATE SET
+						data = excluded.data,
+						updated_at = excluded.updated_at`,
+				)
+				.bind(row.id, json, now, now)
+				.run();
 			processed++;
 		}
 		if (body.nextPageToken) {
@@ -70,7 +75,7 @@ export async function syncCalendar(cal: CalendarRow, ctx: SyncContext): Promise<
 		break;
 	}
 
-	await ctx.storage.oauth_calendars.put(cal.id, {
+	await c.oauth_calendars.put(cal.id, {
 		...cal,
 		sync_token: nextSyncToken ?? cal.sync_token,
 		last_resynced_at: new Date().toISOString(),
