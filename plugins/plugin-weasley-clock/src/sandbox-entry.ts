@@ -229,6 +229,8 @@ export default definePlugin({
 					display_name: r.data.display_name,
 					status: r.data.status,
 					connected_at: r.data.connected_at,
+					last_synced_at: r.data.last_synced_at ?? null,
+					last_sync_error: r.data.last_sync_error ?? null,
 				}));
 				const calendarsByAccount: Record<string, any[]> = {};
 				for (const r of (cals.items ?? cals ?? []) as any[]) {

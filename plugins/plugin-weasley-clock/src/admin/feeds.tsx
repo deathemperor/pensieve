@@ -6,6 +6,8 @@ interface Account {
 	display_name: string | null;
 	status: string;
 	connected_at: string | null;
+	last_synced_at: string | null;
+	last_sync_error: string | null;
 }
 
 interface Calendar {
@@ -23,6 +25,7 @@ export default function FeedsPage() {
 	const [accounts, setAccounts] = useState<Account[]>([]);
 	const [calByAccount, setCalByAccount] = useState<Record<string, Calendar[]>>({});
 	const [loading, setLoading] = useState(true);
+	const [syncing, setSyncing] = useState<Set<string>>(new Set());
 
 	async function refresh() {
 		setLoading(true);
@@ -69,11 +72,46 @@ export default function FeedsPage() {
 		}
 	}
 
+	async function syncAccount(accountId: string) {
+		setSyncing((s) => new Set([...s, accountId]));
+		try {
+			const res = await fetch(`${API_BASE}/sync-now`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ account_id: accountId }),
+			});
+			const data = await res.json();
+			if (data.error) alert(`Sync failed: ${data.error}`);
+		} finally {
+			setSyncing((s) => {
+				const n = new Set(s);
+				n.delete(accountId);
+				return n;
+			});
+			refresh();
+		}
+	}
+
 	if (loading) return <div style={{ padding: 20 }}>Loading…</div>;
+
+	const revokedAccounts = accounts.filter((a) => a.status === "revoked");
+	const erroredAccounts = accounts.filter((a) => a.status !== "revoked" && a.last_sync_error);
 
 	return (
 		<div style={{ padding: 20, maxWidth: 820 }}>
 			<h1>Calendar Feeds</h1>
+			{revokedAccounts.length > 0 && (
+				<div style={{ padding: 12, background: "#40191b", border: "1px solid #a04040", borderRadius: 4, marginBottom: 12, color: "#ffb6a0" }}>
+					<strong>Reauth required:</strong>{" "}
+					{revokedAccounts.map((a) => a.account_email).join(", ")}. Revoke access in Google settings, then click Connect again to re-grant.
+				</div>
+			)}
+			{erroredAccounts.length > 0 && (
+				<div style={{ padding: 12, background: "#3a2a1f", border: "1px solid #a67a3e", borderRadius: 4, marginBottom: 12, color: "#e8dcc4" }}>
+					<strong>Sync errors on:</strong>{" "}
+					{erroredAccounts.map((a) => a.account_email).join(", ")}. Try clicking <em>Sync now</em> per account; persistent errors may need reauth.
+				</div>
+			)}
 			<section>
 				<h2>Google accounts</h2>
 				{accounts.length === 0 && (
@@ -84,21 +122,30 @@ export default function FeedsPage() {
 						key={acc.id}
 						style={{ border: "1px solid #333", padding: 12, marginBottom: 12, borderRadius: 4 }}
 					>
-						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
 							<div>
 								<strong>{acc.account_email}</strong>
 								{acc.display_name && (
 									<span style={{ color: "#888", marginLeft: 8 }}>· {acc.display_name}</span>
 								)}
+								{acc.last_synced_at && (
+									<div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>
+										Last synced: {new Date(acc.last_synced_at).toLocaleString()}
+									</div>
+								)}
 							</div>
-							<span
-								style={{
-									fontSize: 11,
-									color: acc.status === "active" ? "#6a6" : "#c66",
-								}}
-							>
-								{acc.status}
-							</span>
+							<div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+								<button
+									onClick={() => syncAccount(acc.id)}
+									disabled={syncing.has(acc.id) || acc.status === "revoked"}
+									style={{ fontSize: 11, padding: "4px 8px" }}
+								>
+									{syncing.has(acc.id) ? "Syncing…" : "Sync now"}
+								</button>
+								<span style={{ fontSize: 11, color: acc.status === "active" ? "#6a6" : "#c66" }}>
+									{acc.status}
+								</span>
+							</div>
 						</div>
 						<div style={{ marginTop: 10 }}>
 							{(calByAccount[acc.id] ?? []).map((cal) => (
