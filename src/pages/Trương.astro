@@ -6,11 +6,15 @@ import { Image } from "astro:assets";
 import profilePhoto from "../assets/truong-profile.jpg";
 import { link } from "../utils/link";
 import { getCurrentLang } from "../utils/lang";
+import { env } from "cloudflare:workers";
 const isVi = getCurrentLang(Astro) === "vi";
 
 // GitHub API — authenticated when GITHUB_TOKEN is set (5000 req/hr),
 // falls back to unauthenticated (60 req/hr) otherwise.
-const ghToken = import.meta.env.GITHUB_TOKEN;
+// Secret lives in Cloudflare (`wrangler secret`); `import.meta.env` only
+// sees build-time vars, so it never sees this. Must read from the runtime
+// `env` binding exposed by the Cloudflare adapter.
+const ghToken = (env as { GITHUB_TOKEN?: string }).GITHUB_TOKEN;
 
 interface GitHubUser {
 	public_repos: number;
@@ -180,7 +184,7 @@ function formatGHDate(iso: string) {
 				<dl class="about-meta">
 					<div class="about-meta-row">
 						<dt>{isVi ? "Vai trò" : "Role"}</dt>
-						<dd>{isVi ? "CTO / COO · Kỹ sư full-stack" : "CTO / COO · Full-Stack Engineer"}</dd>
+						<dd>{isVi ? "Giám đốc Công nghệ / Giám đốc Vận hành · Kỹ sư phần mềm" : "Chief Technology Officer / Chief Operating Officer · Software Engineer"}</dd>
 					</div>
 					<div class="about-meta-row">
 						<dt>{isVi ? "Nơi ở" : "Based"}</dt>
@@ -803,7 +807,7 @@ function formatGHDate(iso: string) {
 											<rect x="6" y="15" width="20" height="3"/>
 										</g>
 									</svg>
-									<span class="origin-label">Võ · Khmer</span>
+									<span class="origin-label">Phạm · Khmer</span>
 								</div>
 							</div>
 						</div>
@@ -865,12 +869,9 @@ function formatGHDate(iso: string) {
 						{ year: "2010", co: "VNG", rune: "ᛗ",
 						  title: { en: "Gunny — fastest integration ever", vi: "Gunny — tích hợp nhanh nhất" },
 						  note: { en: "Revived from ~1k to 100k+ concurrent · from millions to 30B+ VND/month. Helped kill FPT Games' line.", vi: "Hồi sinh từ ~1k lên 100k+ concurrent · từ vài triệu lên hơn 30 tỷ VND/tháng. Góp phần đánh bật FPT Games." } },
-						{ year: "2013", co: "VNG · TalkTV", rune: "ᛟ", major: true,
-						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV", vi: "Chief of product / tech / ops / marketing / content — TalkTV" },
-						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
-						{ year: "2014", co: "VNG · TalkTV", rune: "ᚱ", major: true,
-						  title: { en: "Twitch of Vietnam", vi: "Twitch của Việt Nam" },
-						  note: { en: "3M MAU · 150k peak concurrent — zero marketing budget. 12 months to market leadership.", vi: "3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không. 12 tháng để dẫn đầu thị trường." } },
+						{ year: "2013–2014", co: "VNG · TalkTV", rune: "ᛟ", major: true,
+						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV, the Twitch of Vietnam", vi: "Chief of product / tech / ops / marketing / content — TalkTV, Twitch của Việt Nam" },
+						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. 3M MAU · 150k peak concurrent — zero marketing budget, 12 months to market leadership. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. 3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không, 12 tháng để dẫn đầu thị trường. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
 						{ year: "2015", co: "GVN Studio", rune: "ᚲ",
 						  title: { en: "Co-founder & CTO", vi: "Đồng sáng lập & CTO" },
 						  note: { en: "5 titles shipped · 2 countries.", vi: "Phát hành 5 tựa · 2 quốc gia." } },
@@ -884,7 +885,7 @@ function formatGHDate(iso: string) {
 						  title: { en: "+ COO (Chief Technology & Operating Officer)", vi: "+ COO (Chief Technology & Operating Officer)" },
 						  note: { en: "-12% opex · 2× claims/assessor/day.", vi: "-12% chi phí vận hành · gấp đôi số claims mỗi assessor xử lý mỗi ngày." } },
 						{ year: "2025", co: "Papaya", rune: "ᛜ", major: true,
-						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
+						  title: { en: "Classical AI → Agentic AI", vi: "AI cổ điển → Agentic AI" },
 						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
 						{ year: "2025", co: "Papaya · Oasis", rune: "ᛖ",
 						  title: { en: "Architect of Oasis", vi: "Kiến trúc Oasis" },
