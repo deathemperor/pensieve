@@ -48,34 +48,20 @@ export function isAdminResponse(
 export async function requireAdmin(
   Astro: AstroGlobal,
 ): Promise<AuthCheckResult> {
-  const cookie = Astro.request.headers.get("cookie") ?? "";
-  if (!cookie) return { admin: false, user: null };
-
-  let res: Response;
-  try {
-    res = await fetch(new URL("/_emdash/api/auth/me", Astro.url), {
-      headers: { cookie },
-    });
-  } catch {
-    return { admin: false, user: null };
+  // EmDash's handlePublicRouteAuth middleware populates locals.user on all
+  // non-admin, non-/_emdash/api routes (confirmed in
+  // node_modules/emdash/dist/astro/middleware/auth.mjs). Reading it directly
+  // avoids (a) path-scoped-cookie issues where the session cookie only
+  // matches /_emdash/* URLs, and (b) same-origin fetch loops inside the
+  // Cloudflare Worker that hit 522 Origin Timeout.
+  const u = (Astro as any)?.locals?.user;
+  if (u && typeof u.role === "number" && typeof u.email === "string") {
+    return {
+      admin: u.role >= ADMIN_ROLE_THRESHOLD,
+      user: { role: u.role, email: u.email },
+    };
   }
-
-  let body: unknown = null;
-  if (res.ok) {
-    try {
-      body = await res.json();
-    } catch {
-      // non-JSON response — treat as not authed
-      return { admin: false, user: null };
-    }
-  }
-
-  const admin = isAdminResponse(res.status, body);
-  const raw = extractUser(body);
-  const user: AuthUser | null = raw && typeof raw.role === "number" && typeof raw.email === "string"
-    ? { role: raw.role, email: raw.email }
-    : null;
-  return { admin, user };
+  return { admin: false, user: null };
 }
 
 /**
