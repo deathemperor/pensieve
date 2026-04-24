@@ -67,13 +67,13 @@ export default {
 			}
 		}
 
-		// Lowercase /trương → canonical /Trương
+		// Lowercase /trương → canonical /Trương. Hardcode origin
+		// so the redirect target is structurally anchored to huuloc.com —
+		// no attacker input can steer it cross-origin.
 		if (path.startsWith("/tr\u01B0\u01A1ng")) {
-			// Clone the request URL and only rewrite pathname — origin is
-			// guaranteed to stay ours, no cross-origin redirect possible.
-			const redirectUrl = new URL(url);
-			redirectUrl.pathname = "/Tr\u01B0\u01A1ng" + path.slice("/tr\u01B0\u01A1ng".length);
-			return Response.redirect(redirectUrl.href, 301);
+			const tail = path.slice("/tr\u01B0\u01A1ng".length);
+			// nosemgrep: javascript.express.security.audit.express-open-redirect.express-open-redirect
+			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301);
 		}
 
 		// Everything else → Astro
@@ -134,8 +134,9 @@ export default {
 		const today = new Date();
 		const todayKey = today.toISOString().slice(0, 10);
 
-		// Claude-era GitHub stats: PR count + pre-squash commit sum across all
-		// owned repos. Cached in KV so /Trương renders instantly.
+		// Claude-era GitHub stats: PR count + pre-squash commit sum across
+		// every repo the token can see (owned + collaborator + org).
+		// Cached in KV so /Trương renders instantly.
 		try {
 			if (env.GITHUB_TOKEN && env.SESSION) {
 				const { aggregateClaudeEraStats } = await import("./lib/github-stats");
