@@ -2,15 +2,15 @@ import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { collections } from "../../../../../lib/weasley-clock/storage";
 import { generateState } from "../../../../../lib/weasley-clock/oauth-state";
-import { requireAdminFromRequest, forbidden } from "../../../../../lib/weasley-clock/auth";
+import { isAdmin, forbidden } from "../../../../../lib/weasley-clock/auth";
 
 export const prerender = false;
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 
-export const POST: APIRoute = async ({ request }) => {
-	if (!(await requireAdminFromRequest(request))) return forbidden();
+export const POST: APIRoute = async ({ request, locals }) => {
+	if (!isAdmin(locals)) return forbidden();
 
 	const clientId = (env as any).GOOGLE_OAUTH_CLIENT_ID as string | undefined;
 	if (!clientId) {

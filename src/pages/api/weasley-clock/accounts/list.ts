@@ -1,12 +1,12 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { collections } from "../../../../lib/weasley-clock/storage";
-import { requireAdminFromRequest, forbidden } from "../../../../lib/weasley-clock/auth";
+import { isAdmin, forbidden } from "../../../../lib/weasley-clock/auth";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
-	if (!(await requireAdminFromRequest(request))) return forbidden();
+export const POST: APIRoute = async ({ locals }) => {
+	if (!isAdmin(locals)) return forbidden();
 
 	const c = collections((env as any).DB);
 	const accounts = await c.oauth_accounts.list();
