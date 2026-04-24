@@ -1,0 +1,70 @@
+---
+export const prerender = false;
+import Base from "../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const url = new URL(Astro.request.url);
+const audience = url.searchParams.get("audience") ?? "public";
+
+const { entries, cacheHint } = await getEmDashCollection("meeting_types");
+Astro.cache.set(cacheHint);
+
+function field(e: any, key: string): any {
+	return e.data?.[key] ?? e[key];
+}
+
+function parseAudienceTags(raw: any): string[] {
+	if (!raw) return [];
+	if (Array.isArray(raw)) return raw;
+	try { return JSON.parse(raw); } catch { return []; }
+}
+
+const visible = (entries ?? []).filter((e: any) =>
+	parseAudienceTags(field(e, "audience_tags")).includes(audience),
+);
+
+const t = {
+	pageTitle: isVi ? "Đặt lịch với Loc" : "Book time with Loc",
+	intro: isVi
+		? "Chọn loại cuộc hẹn bên dưới. Tất cả giờ hiển thị theo múi giờ của bạn."
+		: "Pick a meeting type below. All times shown in your local timezone.",
+	minutes: isVi ? "phút" : "min",
+	empty: isVi ? "Không có cuộc hẹn nào dành cho bạn." : "No meeting types available for this audience.",
+};
+---
+<Base title={t.pageTitle} description={t.intro}>
+	<main class="book-index">
+		<h1>{t.pageTitle}</h1>
+		<p class="book-index__intro">{t.intro}</p>
+		{visible.length === 0 ? (
+			<p class="book-index__empty">{t.empty}</p>
+		) : (
+			<ul class="book-index__list">
+				{visible.map((mt: any) => (
+					<li>
+						<a href={`/book/${field(mt, "meeting_slug")}`} class="book-card">
+							<div class="book-card__title">{isVi ? field(mt, "title_vi") : field(mt, "title_en")}</div>
+							<div class="book-card__meta">{field(mt, "duration_min")} {t.minutes}</div>
+						</a>
+					</li>
+				))}
+			</ul>
+		)}
+	</main>
+</Base>
+
+<style>
+	.book-index { max-width: 720px; margin: 40px auto; padding: 0 20px; color: #e8dcc4; font-family: "Inter Tight", sans-serif; }
+	.book-index h1 { font-size: 32px; margin-bottom: 10px; color: #c9a961; }
+	.book-index__intro { color: #8b6914; margin-bottom: 28px; font-size: 14px; }
+	.book-index__empty { color: #6b5638; padding: 40px 0; text-align: center; }
+	.book-index__list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+	.book-card { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border: 1px solid #2a1f15; background: #110c08; text-decoration: none; color: inherit; transition: border-color 0.15s, background 0.15s; }
+	.book-card:hover { border-color: #c9a961; background: #1a1410; }
+	.book-card__title { font-size: 16px; font-weight: 600; color: #e8dcc4; }
+	.book-card__meta { font-size: 12px; color: #8b6914; letter-spacing: 0.5px; }
+</style>
