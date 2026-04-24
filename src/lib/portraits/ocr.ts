@@ -1,5 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
-
 export interface ExtractedCard {
   name: string | null;
   title: string | null;
@@ -78,20 +76,19 @@ function stringRecord(v: unknown): Record<string, string> {
 }
 
 /**
- * Create an Anthropic SDK client using either:
- *   - `sk-ant-api*` API key  → x-api-key header
- *   - `sk-ant-oat*` OAuth token (from `claude setup-token`) → Bearer header
- * Auto-detected by prefix. Caller passes whichever secret is configured.
+ * Resolve auth mode from the secret. Uses raw fetch rather than the Anthropic
+ * SDK's {authToken} option, which in practice still emits x-api-key and gets
+ * rejected by Anthropic for OAuth tokens.
  */
-function buildClient(keyOrToken: string): Anthropic {
+function authHeaders(keyOrToken: string): Record<string, string> {
   const isOAuth = keyOrToken.startsWith("sk-ant-oat");
   if (isOAuth) {
-    return new Anthropic({
-      authToken: keyOrToken,
-      defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" },
-    });
+    return {
+      "Authorization": `Bearer ${keyOrToken}`,
+      "anthropic-beta": "oauth-2025-04-20",
+    };
   }
-  return new Anthropic({ apiKey: keyOrToken });
+  return { "x-api-key": keyOrToken };
 }
 
 export async function extractContactFromCard(
@@ -99,7 +96,6 @@ export async function extractContactFromCard(
   imageBytes: Uint8Array,
   mimeType: "image/jpeg" | "image/png" | "image/webp",
 ): Promise<OcrResult<ExtractedCard>> {
-  const client = buildClient(apiKey);
   // Chunked base64 encode — spreading a Uint8Array with >~64K elements
   // into String.fromCharCode hits V8's argument-count limit (RangeError).
   let binary = "";
@@ -111,7 +107,7 @@ export async function extractContactFromCard(
 
   let text: string;
   try {
-    const res = await client.messages.create({
+    const body = {
       model: "claude-sonnet-4-6",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
@@ -124,9 +120,23 @@ export async function extractContactFromCard(
           ],
         },
       ],
+    };
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
+        ...authHeaders(apiKey),
+      },
+      body: JSON.stringify(body),
     });
-    const first = res.content.find((c) => c.type === "text");
-    if (!first || first.type !== "text") {
+    if (!r.ok) {
+      const errText = await r.text();
+      return { ok: false, error: `api_error: ${r.status} ${errText.slice(0, 400)}` };
+    }
+    const res = await r.json() as { content?: Array<{ type: string; text?: string }> };
+    const first = res.content?.find((c) => c.type === "text");
+    if (!first || first.type !== "text" || !first.text) {
       return { ok: false, error: "no_text_response" };
     }
     text = first.text;
