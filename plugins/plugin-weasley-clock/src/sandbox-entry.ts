@@ -68,6 +68,12 @@ async function discoverCalendars(ctx: PluginContext, accountRow: { id: string; a
 }
 
 export default definePlugin({
+	// id + version flip definePlugin into its native-format path, where
+	// hook records get normalised (priority, dependencies, etc.). Without
+	// them, HookPipeline.sortHooks crashes on undefined.every(). Keep in
+	// sync with the descriptor in src/index.ts.
+	id: "weasley-clock",
+	version: "0.2.0",
 	hooks: {
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
