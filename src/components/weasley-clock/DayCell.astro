@@ -54,10 +54,12 @@ function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "annivers
 </div>
 
 <style>
-	.wc-day { border: 1px solid #2a1f15; padding: 8px; min-height: 160px; }
+	.wc-day { border: 1px solid #2a1f15; padding: 8px; min-height: 160px; background: #110c08; }
 	.wc-day--month { min-height: 70px; padding: 4px; }
 	.wc-day--today { border: 2px solid #c9a961; background: #201810; }
-	.wc-day--dim { color: #6b5638; }
+	/* Dim prev/next-month cells in month view: opacity wins over the
+	   --wc-ink CSS var inside DualDate, desaturates everything uniformly. */
+	.wc-day--dim { opacity: 0.32; background: #0a0604; }
 	.wc-day__head { margin-bottom: 6px; }
 	.wc-day__events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
 </style>
