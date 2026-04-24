@@ -20,7 +20,11 @@ export async function suggestTier(
   apiKey: string,
   input: { full_name: string; title?: string; company?: string; bio?: string },
 ): Promise<TierSuggestion> {
-  const client = new Anthropic({ apiKey });
+  // Accept either an API key (x-api-key) or a Claude Code OAuth token (Bearer).
+  const isOAuth = apiKey.startsWith("sk-ant-oat");
+  const client = isOAuth
+    ? new Anthropic({ authToken: apiKey, defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" } })
+    : new Anthropic({ apiKey });
   const profile = [
     `Name: ${input.full_name}`,
     input.title ? `Title: ${input.title}` : null,

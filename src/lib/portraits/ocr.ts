@@ -77,12 +77,29 @@ function stringRecord(v: unknown): Record<string, string> {
   return out;
 }
 
+/**
+ * Create an Anthropic SDK client using either:
+ *   - `sk-ant-api*` API key  → x-api-key header
+ *   - `sk-ant-oat*` OAuth token (from `claude setup-token`) → Bearer header
+ * Auto-detected by prefix. Caller passes whichever secret is configured.
+ */
+function buildClient(keyOrToken: string): Anthropic {
+  const isOAuth = keyOrToken.startsWith("sk-ant-oat");
+  if (isOAuth) {
+    return new Anthropic({
+      authToken: keyOrToken,
+      defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" },
+    });
+  }
+  return new Anthropic({ apiKey: keyOrToken });
+}
+
 export async function extractContactFromCard(
   apiKey: string,
   imageBytes: Uint8Array,
   mimeType: "image/jpeg" | "image/png" | "image/webp",
 ): Promise<OcrResult<ExtractedCard>> {
-  const client = new Anthropic({ apiKey });
+  const client = buildClient(apiKey);
   // Chunked base64 encode — spreading a Uint8Array with >~64K elements
   // into String.fromCharCode hits V8's argument-count limit (RangeError).
   let binary = "";
