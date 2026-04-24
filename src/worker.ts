@@ -69,8 +69,11 @@ export default {
 
 		// Lowercase /trương → canonical /Trương
 		if (path.startsWith("/tr\u01B0\u01A1ng")) {
-			const canonical = path.replace("/tr\u01B0\u01A1ng", "/Tr\u01B0\u01A1ng");
-			return Response.redirect(new URL(canonical, url.origin).href, 301);
+			// Clone the request URL and only rewrite pathname — origin is
+			// guaranteed to stay ours, no cross-origin redirect possible.
+			const redirectUrl = new URL(url);
+			redirectUrl.pathname = "/Tr\u01B0\u01A1ng" + path.slice("/tr\u01B0\u01A1ng".length);
+			return Response.redirect(redirectUrl.href, 301);
 		}
 
 		// Everything else → Astro
@@ -130,6 +133,18 @@ export default {
 
 		const today = new Date();
 		const todayKey = today.toISOString().slice(0, 10);
+
+		// Claude-era GitHub stats: PR count + pre-squash commit sum across all
+		// owned repos. Cached in KV so /Trương renders instantly.
+		try {
+			if (env.GITHUB_TOKEN && env.SESSION) {
+				const { aggregateClaudeEraStats } = await import("./lib/github-stats");
+				const stats = await aggregateClaudeEraStats(env.GITHUB_TOKEN);
+				await env.SESSION.put("stats:claude-era", JSON.stringify(stats));
+			}
+		} catch (err) {
+			console.error("claude-era stats cron failed:", err);
+		}
 
 		const contactsWithBirthday = await db
 			.prepare("SELECT id, birthday FROM contacts WHERE birthday IS NOT NULL AND deleted_at IS NULL AND is_placeholder=0")
