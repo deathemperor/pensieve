@@ -95,6 +95,7 @@ export interface OAuthStateData {
 
 export interface AvailabilityRuleData {
 	label: string;
+	// Host's timezone — weekly_hours + date_overrides are interpreted in this zone.
 	timezone: string;
 	// Weekly pattern: mon..sun keyed days, each a list of HH:MM intervals.
 	weekly_hours: {
@@ -115,9 +116,11 @@ export interface BookingData {
 	host_account_id: string;
 	slot_start_iso: string;
 	slot_end_iso: string;
+	// Guest's timezone captured at booking time (for email formatting + display).
 	timezone: string;
 	guest_name: string;
 	guest_email: string;
+	// Keyed by meeting_type.questions[].id (NOT label — labels can change over time).
 	guest_answers: Record<string, string>;
 	gcal_event_id: string | null;
 	status: "confirmed" | "cancelled";
