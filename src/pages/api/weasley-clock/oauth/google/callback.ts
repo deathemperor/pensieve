@@ -9,7 +9,7 @@ export const prerender = false;
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_CALENDARLIST_URL = "https://www.googleapis.com/calendar/v3/users/me/calendarList";
-const SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
+const CALENDAR_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 
 function redirect(url: string): Response {
 	return new Response(null, { status: 302, headers: { Location: url } });
@@ -23,15 +23,14 @@ function errorJson(message: string, status = 400): Response {
 }
 
 export const GET: APIRoute = async ({ request }) => {
-	// Wrap everything in a try/catch so the handler *always* returns a Response.
-	// If we let an exception bubble, Astro's Cloudflare adapter re-invokes the
-	// handler — the second run can't find the just-consumed state and returns
-	// "Invalid or expired state", which is what the user saw.
+	// Always return a Response — if we let an error bubble, Astro's Cloudflare
+	// adapter re-invokes the handler, and the second run sees the consumed
+	// state missing and returns "Invalid or expired state".
 	try {
 		return await handleCallback(request);
 	} catch (err: any) {
-		console.error(`[wc-oauth/callback] UNCAUGHT:`, err?.message ?? err, err?.stack ?? "");
-		return errorJson(`callback threw: ${err?.message ?? String(err)}`, 500);
+		console.error(`[weasley-clock/callback] uncaught:`, err?.message ?? err, err?.stack ?? "");
+		return errorJson(`callback failed: ${err?.message ?? String(err)}`, 500);
 	}
 };
 
@@ -48,19 +47,8 @@ async function handleCallback(request: Request): Promise<Response> {
 		return errorJson("Missing code or state");
 	}
 
-	const db = (env as any).DB;
-	console.log(`[wc-oauth/callback] state=${state} code=${code ? "present" : "missing"} db=${db ? "present" : "MISSING"}`);
-	const c = collections(db);
-
-	try {
-		const probe = await c.oauth_state.get(state);
-		console.log(`[wc-oauth/callback] probe: ${probe ? `FOUND expires_at=${probe.data.expires_at}` : "NOT IN D1"}`);
-	} catch (err: any) {
-		console.error(`[wc-oauth/callback] probe threw:`, err?.message ?? err);
-	}
-
+	const c = collections((env as any).DB);
 	const stateRow = await consumeState(c.oauth_state, state);
-	console.log(`[wc-oauth/callback] consumeState → ${stateRow ? "ok" : "null (not-found-or-expired)"}`);
 	if (!stateRow) {
 		return errorJson("Invalid or expired state — please retry");
 	}
@@ -68,12 +56,10 @@ async function handleCallback(request: Request): Promise<Response> {
 	const clientId = (env as any).GOOGLE_OAUTH_CLIENT_ID;
 	const clientSecret = (env as any).GOOGLE_OAUTH_CLIENT_SECRET;
 	const encKey = (env as any).OAUTH_ENC_KEY;
-	console.log(`[wc-oauth/callback] env check: clientId=${!!clientId} clientSecret=${!!clientSecret} encKey=${!!encKey}`);
 	if (!clientId || !clientSecret || !encKey) {
 		return errorJson("OAuth not fully configured", 500);
 	}
 
-	console.log(`[wc-oauth/callback] exchanging code for tokens`);
 	const tokenRes = await fetch(GOOGLE_TOKEN_URL, {
 		method: "POST",
 		headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -85,45 +71,41 @@ async function handleCallback(request: Request): Promise<Response> {
 			redirect_uri: `${url.origin}/api/weasley-clock/oauth/google/callback`,
 		}),
 	});
-	console.log(`[wc-oauth/callback] token exchange status=${tokenRes.status}`);
 	if (!tokenRes.ok) {
 		const text = await tokenRes.text();
-		console.error(`[wc-oauth/callback] token exchange failed ${tokenRes.status}: ${text}`);
+		console.error(`[weasley-clock] token exchange failed ${tokenRes.status}: ${text}`);
 		return errorJson("Token exchange failed", 502);
 	}
 	const tokens = (await tokenRes.json()) as {
 		access_token: string;
 		refresh_token?: string;
 		expires_in: number;
-		id_token: string;
+		id_token?: string;
 		scope: string;
 	};
-	console.log(`[wc-oauth/callback] tokens: scope=${tokens.scope} hasRefresh=${!!tokens.refresh_token} expiresIn=${tokens.expires_in}`);
 
-	if (!tokens.scope.split(/\s+/).includes(SCOPE)) {
+	const grantedScopes = (tokens.scope ?? "").split(/\s+/);
+	if (!grantedScopes.includes(CALENDAR_SCOPE)) {
 		return errorJson("Required calendar read access was not granted. Please accept all requested scopes.");
 	}
 	if (!tokens.refresh_token) {
 		return errorJson("Google did not return a refresh_token — please revoke access in your Google account settings and try again");
 	}
+	if (!tokens.id_token) {
+		return errorJson("Google did not return an id_token — required to identify the account", 500);
+	}
 
-	console.log(`[wc-oauth/callback] verifying id_token`);
 	const idPayload = await verifyGoogleIdToken(tokens.id_token, clientId);
-	console.log(`[wc-oauth/callback] id_token ok — email=${idPayload.email}`);
 
-	console.log(`[wc-oauth/callback] encrypting tokens`);
 	const accessEnc = await encryptToken(tokens.access_token, encKey);
 	const refreshEnc = await encryptToken(tokens.refresh_token, encKey);
-	console.log(`[wc-oauth/callback] tokens encrypted`);
 
-	console.log(`[wc-oauth/callback] listing existing oauth_accounts`);
 	const existing = (await c.oauth_accounts.list())
 		.find((r) => r.data.provider === "google" && r.data.account_email === idPayload.email);
 
 	const now = new Date().toISOString();
 	const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 	const accountId = existing?.id ?? "acc_" + state.slice(0, 16).toLowerCase();
-	console.log(`[wc-oauth/callback] upserting account ${accountId} (existing=${!!existing})`);
 
 	await c.oauth_accounts.put(accountId, {
 		provider: "google",
@@ -141,13 +123,11 @@ async function handleCallback(request: Request): Promise<Response> {
 		last_synced_at: existing?.data.last_synced_at ?? null,
 		revoked_at: null,
 	});
-	console.log(`[wc-oauth/callback] account upserted`);
 
 	try {
 		const res = await fetch(GOOGLE_CALENDARLIST_URL, {
 			headers: { Authorization: `Bearer ${tokens.access_token}` },
 		});
-		console.log(`[wc-oauth/callback] calendarList status=${res.status}`);
 		if (res.ok) {
 			const data = (await res.json()) as { items: any[] };
 			for (const cal of data.items ?? []) {
@@ -165,7 +145,6 @@ async function handleCallback(request: Request): Promise<Response> {
 					expose_titles: 1,
 				});
 			}
-			console.log(`[wc-oauth/callback] calendars upserted count=${data.items?.length ?? 0}`);
 		} else {
 			console.error(`[weasley-clock] discoverCalendars failed: ${res.status}`);
 		}
@@ -173,6 +152,5 @@ async function handleCallback(request: Request): Promise<Response> {
 		console.error(`[weasley-clock] discoverCalendars exception:`, err?.message ?? err);
 	}
 
-	console.log(`[wc-oauth/callback] redirecting to ${stateRow.return_url || "/_emdash/admin/plugins/weasley-clock"}`);
 	return redirect(stateRow.return_url || "/_emdash/admin/plugins/weasley-clock");
 }
