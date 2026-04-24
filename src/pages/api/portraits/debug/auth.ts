@@ -21,29 +21,21 @@ export const GET: APIRoute = async (ctx) => {
   out.localsHasRuntime = !!locals?.runtime;
   out.localsRuntimeEnvKeys = locals?.runtime?.env ? Object.keys(locals.runtime.env).slice(0, 40) : [];
 
-  // 2. Astro.session — Astro's native session API
-  let sessionUser: unknown = null;
-  let sessionError: string | null = null;
+  // 2. Astro.session — may not exist if not configured
   try {
     const session = (ctx as any).session;
+    out.sessionExists = !!session;
     if (session) {
-      const keys = ["user", "auth", "emdash_user", "emdash:user", "authUser"];
-      const results: Record<string, unknown> = {};
-      for (const k of keys) {
-        try {
-          const v = await session.get(k);
-          if (v) results[k] = typeof v === "object" ? { keys: Object.keys(v), role: (v as any).role } : typeof v;
-        } catch { /* skip */ }
+      try {
+        const u = await session.get("user");
+        out.sessionUser = u ? { keys: Object.keys(u), role: (u as any).role } : null;
+      } catch (e) {
+        out.sessionGetError = e instanceof Error ? e.message : String(e);
       }
-      sessionUser = Object.keys(results).length > 0 ? results : null;
-    } else {
-      sessionUser = "ctx.session undefined";
     }
   } catch (e) {
-    sessionError = e instanceof Error ? e.message : String(e);
+    out.sessionOuterError = e instanceof Error ? e.message : String(e);
   }
-  out.sessionProbe = sessionUser;
-  out.sessionError = sessionError;
 
   // 3. Proxy fetch — already known to 522 but confirm status
   let proxyStatus: number | null = null;
