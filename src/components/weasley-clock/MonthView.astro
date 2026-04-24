@@ -1,9 +1,14 @@
 ---
 import DayCell from "./DayCell.astro";
 import type { FamilyOccurrence } from "../../utils/familyEvents";
+import type { SyncedEventRecord } from "../../utils/weasleyClockEvents";
 
-interface Props { anchor: Date; occurrences: FamilyOccurrence[]; }
-const { anchor, occurrences } = Astro.props;
+interface Props {
+	anchor: Date;
+	occurrences: FamilyOccurrence[];
+	synced?: SyncedEventRecord[];
+}
+const { anchor, occurrences, synced = [] } = Astro.props;
 
 const firstOfMonth = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
 const lastOfMonth = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
@@ -12,16 +17,28 @@ const dowFirst = firstOfMonth.getDay() === 0 ? 6 : firstOfMonth.getDay() - 1;
 const gridStart = new Date(firstOfMonth);
 gridStart.setDate(firstOfMonth.getDate() - dowFirst);
 
-type Cell = { date: Date; occurrences: FamilyOccurrence[]; isToday: boolean; isDimmed: boolean };
+type Cell = {
+	date: Date;
+	occurrences: FamilyOccurrence[];
+	synced: SyncedEventRecord[];
+	isToday: boolean;
+	isDimmed: boolean;
+};
 const cells: Cell[] = [];
 const today = new Date();
 const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
 for (let i = 0; i < 42; i++) {
 	const d = new Date(gridStart);
 	d.setDate(gridStart.getDate() + i);
+	const syncedToday = synced.filter((e) => {
+		if (e.deleted) return false;
+		const s = new Date(e.starts_at);
+		return s.toDateString() === d.toDateString();
+	});
 	cells.push({
 		date: d,
 		occurrences: occurrences.filter((o) => sameDay(o.date, d)),
+		synced: syncedToday,
 		isToday: sameDay(d, today),
 		isDimmed: d.getMonth() !== anchor.getMonth(),
 	});
@@ -43,10 +60,10 @@ const headings = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 			<div class={`wc-month__row ${hasToday ? "wc-month__row--today" : ""}`}>
 				{row.map((c) => (
 					c.isToday
-						? <DayCell date={c.date} occurrences={c.occurrences} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />
+						? <DayCell date={c.date} occurrences={c.occurrences} synced={c.synced} isToday={c.isToday} isDimmed={c.isDimmed} variant="month" />
 						: (
 							<a class="wc-month__cell-link" href={`/nydus/weasley-clock?view=day&anchor=${c.date.toISOString().slice(0, 10)}`}>
-								<DayCell date={c.date} occurrences={c.occurrences} isToday={false} isDimmed={c.isDimmed} variant="month" />
+								<DayCell date={c.date} occurrences={c.occurrences} synced={c.synced} isToday={false} isDimmed={c.isDimmed} variant="month" />
 							</a>
 						)
 				))}

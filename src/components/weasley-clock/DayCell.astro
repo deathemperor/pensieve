@@ -2,15 +2,17 @@
 import DualDate from "./DualDate.astro";
 import EventChip from "./EventChip.astro";
 import type { FamilyOccurrence } from "../../utils/familyEvents";
+import type { SyncedEventRecord } from "../../utils/weasleyClockEvents";
 
 interface Props {
 	date: Date;
 	occurrences: FamilyOccurrence[];
+	synced?: SyncedEventRecord[];
 	isToday?: boolean;
 	isDimmed?: boolean;
 	variant?: "week" | "month";
 }
-const { date, occurrences, isToday, isDimmed, variant = "week" } = Astro.props;
+const { date, occurrences, synced = [], isToday, isDimmed, variant = "week" } = Astro.props;
 
 function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "anniversary" | "cultural" | "milestone" | "other" {
 	switch (ev.event.event_type) {
@@ -34,6 +36,16 @@ function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "annivers
 					title={occ.event.title_vi || occ.event.title_en}
 					subtitle={occ.nth ? `${occ.nth}th · ${occ.event.relationship ?? ""}` : occ.event.relationship ?? ""}
 					category={chipCategoryFor(occ)}
+					size={variant === "week" ? "full" : "chip"}
+				/>
+			</li>
+		))}
+		{synced.filter((e) => !e.deleted).map((evt) => (
+			<li>
+				<EventChip
+					title={evt.title ?? "(untitled)"}
+					subtitle={evt.location ?? undefined}
+					category="other"
 					size={variant === "week" ? "full" : "chip"}
 				/>
 			</li>
