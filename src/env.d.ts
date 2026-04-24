@@ -15,6 +15,12 @@ declare namespace Cloudflare {
 		// Google OAuth 2.0 Client Secret.
 		// Registered via: wrangler secret put GOOGLE_OAUTH_CLIENT_SECRET
 		GOOGLE_OAUTH_CLIENT_SECRET: string;
+
+		// Shared secret for the weasley-clock cron dispatcher. The worker's
+		// scheduled() handler sends it as X-Sync-Secret; the plugin route
+		// rejects if missing/mismatched.
+		// Registered via: wrangler secret put SYNC_SECRET
+		SYNC_SECRET: string;
 	}
 }
 

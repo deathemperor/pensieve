@@ -245,5 +245,117 @@ export default definePlugin({
 				return { accounts: accountsList, calendarsByAccount };
 			},
 		},
+
+		"cron/sync-all": {
+			// Called by src/worker.ts scheduled() with an X-Sync-Secret header.
+			// public: true because the scheduled dispatcher carries no admin
+			// session; the shared secret is the auth.
+			public: true,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const provided = routeCtx.request?.headers?.get?.("X-Sync-Secret");
+				const expected = (ctx.env as any).SYNC_SECRET;
+				if (!expected || provided !== expected) return { error: "Forbidden" };
+
+				const { syncCalendar } = await import("./lib/sync-calendar");
+				const { ensureFreshAccessToken } = await import("./lib/token-refresh");
+
+				const encKey = (ctx.env as any).OAUTH_ENC_KEY;
+				const clientId = (ctx.env as any).GOOGLE_OAUTH_CLIENT_ID;
+				const clientSecret = (ctx.env as any).GOOGLE_OAUTH_CLIENT_SECRET;
+				if (!encKey || !clientId || !clientSecret) return { error: "OAuth env not configured" };
+
+				const accs = await (ctx.storage as any).oauth_accounts.query({});
+				const cals = await (ctx.storage as any).oauth_calendars.query({});
+				const accountsById = new Map<string, any>();
+				for (const r of (accs.items ?? accs ?? [])) accountsById.set(r.id, r.data);
+
+				const summary: Array<{ calendarId: string; status: string; events: number }> = [];
+
+				for (const cr of (cals.items ?? cals ?? [])) {
+					const cal = cr.data;
+					if (!cal.synced) continue;
+					const acc = accountsById.get(cal.account_id);
+					if (!acc || acc.status !== "active") {
+						summary.push({ calendarId: cal.id, status: "skipped_inactive_account", events: 0 });
+						continue;
+					}
+					try {
+						const { access_token, refreshed, updatedRow } = await ensureFreshAccessToken(acc, {
+							encKey, clientId, clientSecret,
+						});
+						if (refreshed && updatedRow) {
+							await (ctx.storage as any).oauth_accounts.put(updatedRow.id, updatedRow);
+						}
+						const result = await syncCalendar(cal, {
+							storage: ctx.storage as any,
+							getAccessToken: async () => access_token,
+						});
+						summary.push({ calendarId: cal.id, status: result.status, events: result.eventsProcessed });
+					} catch (err: any) {
+						const msg = String(err?.message ?? err);
+						if (/invalid_grant/i.test(msg)) {
+							await (ctx.storage as any).oauth_accounts.put(acc.id, {
+								...acc,
+								status: "revoked",
+								last_sync_error: msg,
+								revoked_at: new Date().toISOString(),
+							});
+							summary.push({ calendarId: cal.id, status: "account_revoked", events: 0 });
+						} else {
+							await (ctx.storage as any).oauth_accounts.put(acc.id, {
+								...acc,
+								last_sync_error: msg,
+							});
+							summary.push({ calendarId: cal.id, status: "error", events: 0 });
+						}
+						ctx.log.info(`sync-all: ${cal.id} failed: ${msg}`);
+					}
+				}
+				return { ok: true, summary };
+			},
+		},
+
+		"sync-now": {
+			public: false,
+			handler: async (routeCtx: any, ctx: PluginContext) => {
+				const { account_id } = (routeCtx.input ?? {}) as { account_id?: string };
+				if (!account_id) return { error: "Expected { account_id }" };
+				const { syncCalendar } = await import("./lib/sync-calendar");
+				const { ensureFreshAccessToken } = await import("./lib/token-refresh");
+				const encKey = (ctx.env as any).OAUTH_ENC_KEY;
+				const clientId = (ctx.env as any).GOOGLE_OAUTH_CLIENT_ID;
+				const clientSecret = (ctx.env as any).GOOGLE_OAUTH_CLIENT_SECRET;
+				const accRow = await (ctx.storage as any).oauth_accounts.get(account_id);
+				if (!accRow) return { error: "Account not found" };
+				const acc = accRow.data;
+				const cals = await (ctx.storage as any).oauth_calendars.query({});
+				const matching = ((cals.items ?? cals ?? []) as any[]).filter(
+					(r: any) => r.data.account_id === account_id && r.data.synced,
+				);
+				let total = 0;
+				try {
+					const { access_token, refreshed, updatedRow } = await ensureFreshAccessToken(acc, {
+						encKey, clientId, clientSecret,
+					});
+					if (refreshed && updatedRow) await (ctx.storage as any).oauth_accounts.put(updatedRow.id, updatedRow);
+					for (const cr of matching) {
+						const result = await syncCalendar(cr.data, {
+							storage: ctx.storage as any,
+							getAccessToken: async () => access_token,
+						});
+						total += result.eventsProcessed;
+					}
+					return { ok: true, events: total };
+				} catch (err: any) {
+					const msg = String(err?.message ?? err);
+					if (/invalid_grant/i.test(msg)) {
+						await (ctx.storage as any).oauth_accounts.put(acc.id, {
+							...acc, status: "revoked", last_sync_error: msg, revoked_at: new Date().toISOString(),
+						});
+					}
+					return { error: msg };
+				}
+			},
+		},
 	},
 });
