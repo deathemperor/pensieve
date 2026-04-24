@@ -26,10 +26,21 @@ function redirectUri(origin: string): string {
 	return `${origin}/_emdash/api/plugins/weasley-clock/oauth/google/callback`;
 }
 
+function getRequestUrl(ctx: RouteCtx): URL {
+	// RouteContext doesn't guarantee ctx.url; always prefer ctx.request.url.
+	// Some runtimes (or sandbox marshalling) can deliver a request object
+	// whose url is relative or missing — fall back to Host header + path.
+	const raw = ctx.request?.url;
+	if (raw && /^https?:\/\//.test(raw)) {
+		return new URL(raw);
+	}
+	const host = ctx.request?.headers?.get?.("host") ?? "huuloc.com";
+	const path = typeof raw === "string" && raw.startsWith("/") ? raw : "/";
+	return new URL(`https://${host}${path}`);
+}
+
 function getOrigin(ctx: RouteCtx): string {
-	const raw = ctx.url ?? ctx.request?.url;
-	if (!raw) throw new Error("Route context missing url");
-	return new URL(raw).origin;
+	return getRequestUrl(ctx).origin;
 }
 
 function stateStoreFor(ctx: RouteCtx): OAuthStateStore {
@@ -144,7 +155,7 @@ export default definePlugin({
 		"oauth/google/callback": {
 			public: true,
 			handler: async (ctx: RouteCtx) => {
-				const url = new URL(ctx.url ?? ctx.request!.url);
+				const url = getRequestUrl(ctx);
 				const code = url.searchParams.get("code");
 				const state = url.searchParams.get("state");
 				const errorParam = url.searchParams.get("error");
