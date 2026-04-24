@@ -5,6 +5,13 @@ import { computeSlots, type BusyWindow } from "./availability";
 import { ensureFreshAccessToken, type OAuthAccountRow } from "./token-refresh";
 import { ulid } from "../portraits/ulid";
 
+export class BookingError extends Error {
+	constructor(message: string, public readonly code: "not_found" | "slot_unavailable" | "bad_input" | "upstream") {
+		super(message);
+		this.name = "BookingError";
+	}
+}
+
 export interface CreateBookingInput {
 	db: D1Database;
 	encKey: string;
@@ -55,7 +62,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 	// 1. Load meeting type from EmDash.
 	const { entries: meetingTypes } = await getEmDashCollection("meeting_types");
 	const mt = meetingTypes.find((e: any) => e.id === input.meetingTypeId) as any;
-	if (!mt) throw new Error("Meeting type not found");
+	if (!mt) throw new BookingError("Meeting type not found", "not_found");
 
 	const durationMin = Number(field(mt, "duration_min") ?? 30);
 	const bufferBefore = Number(field(mt, "buffer_before") ?? 0);
@@ -76,14 +83,14 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 		hostIds = [];
 	}
 	if (!Array.isArray(hostIds) || hostIds.length === 0) {
-		throw new Error("No host configured for this meeting type");
+		throw new BookingError("No host configured for this meeting type", "bad_input");
 	}
 	const hostId = hostIds[0];
 
 	// 3. Availability rule.
 	const availId = field<string>(mt, "availability_id") || "default";
 	const ruleRow = await c.availability_rules.get(availId);
-	if (!ruleRow) throw new Error(`Availability rule "${availId}" not found`);
+	if (!ruleRow) throw new BookingError(`Availability rule "${availId}" not found`, "not_found");
 
 	// 4. Busy windows for host's synced calendars (same query shape as slots.ts).
 	const cals = (await c.oauth_calendars.list()).filter(
@@ -124,7 +131,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 		nowIso: new Date().toISOString(),
 	});
 	const match = slots.find((s) => s.start_iso === input.slotStartIso);
-	if (!match) throw new Error("Slot no longer available");
+	if (!match) throw new BookingError("Slot no longer available", "slot_unavailable");
 
 	const slotEndIso = match.end_iso;
 
@@ -160,7 +167,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 			scope: updatedRow.scope,
 			status: updatedRow.status,
 		};
-		await c.oauth_accounts.put(hostId, updatedData);
+		try {
+			await c.oauth_accounts.put(hostId, updatedData);
+		} catch (err: any) {
+			console.error(
+				`[weasley-clock/booking-create] CRITICAL: failed to persist refreshed token for account ${hostId}. Booking will continue but future refreshes may fail if the refresh_token rotated. err=${err?.message ?? err}`,
+			);
+		}
 	}
 
 	// 7. Insert the Google Calendar event. `sendUpdates=all` makes Google email
@@ -186,7 +199,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 	);
 	if (!gcalRes.ok) {
 		const text = await gcalRes.text();
-		throw new Error(`Google Calendar rejected: ${gcalRes.status} ${text}`);
+		console.error(`[weasley-clock/booking-create] Google Calendar rejected: ${gcalRes.status} ${text}`);
+		throw new BookingError("Failed to create calendar event", "upstream");
 	}
 	const gcalBody = (await gcalRes.json()) as { id?: string };
 	const gcalEventId = gcalBody.id ?? null;

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
-import { createBooking } from "../../../../lib/weasley-clock/booking-create";
+import { createBooking, BookingError } from "../../../../lib/weasley-clock/booking-create";
 import { sendConfirmationEmail } from "../../../../lib/weasley-clock/email";
 import { checkRateLimit } from "../../../../lib/weasley-clock/rate-limit";
 
@@ -81,9 +81,16 @@ export const POST: APIRoute = async ({ request }) => {
 		);
 	} catch (err: any) {
 		console.error("[wc/bookings/create]", err?.message ?? err, err?.stack ?? "");
-		const msg = err?.message ?? "Internal error";
-		const status = /not found|no longer available/i.test(msg) ? 409 : 500;
-		return json({ error: msg }, status);
+		if (err instanceof BookingError) {
+			const statusByCode: Record<string, number> = {
+				not_found: 404,
+				slot_unavailable: 409,
+				bad_input: 400,
+				upstream: 502,
+			};
+			return json({ error: err.message }, statusByCode[err.code] ?? 500);
+		}
+		return json({ error: "Internal error" }, 500);
 	}
 };
 
