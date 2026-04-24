@@ -1,5 +1,10 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { TierCode } from "./types";
+
+function authHeaders(keyOrToken: string): Record<string, string> {
+  return keyOrToken.startsWith("sk-ant-oat")
+    ? { "Authorization": `Bearer ${keyOrToken}`, "anthropic-beta": "oauth-2025-04-20" }
+    : { "x-api-key": keyOrToken };
+}
 
 export type TierSuggestion =
   | { ok: true; tier: TierCode; reason: string }
@@ -20,11 +25,6 @@ export async function suggestTier(
   apiKey: string,
   input: { full_name: string; title?: string; company?: string; bio?: string },
 ): Promise<TierSuggestion> {
-  // Accept either an API key (x-api-key) or a Claude Code OAuth token (Bearer).
-  const isOAuth = apiKey.startsWith("sk-ant-oat");
-  const client = isOAuth
-    ? new Anthropic({ authToken: apiKey, defaultHeaders: { "anthropic-beta": "oauth-2025-04-20" } })
-    : new Anthropic({ apiKey });
   const profile = [
     `Name: ${input.full_name}`,
     input.title ? `Title: ${input.title}` : null,
@@ -34,14 +34,20 @@ export async function suggestTier(
 
   let text: string;
   try {
-    const res = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 200,
-      system: SYSTEM,
-      messages: [{ role: "user", content: profile }],
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "anthropic-version": "2023-06-01", ...authHeaders(apiKey) },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 200,
+        system: SYSTEM,
+        messages: [{ role: "user", content: profile }],
+      }),
     });
-    const first = res.content.find((c) => c.type === "text");
-    if (!first || first.type !== "text") return { ok: false, error: "no_text_response" };
+    if (!r.ok) return { ok: false, error: `api_error: ${r.status} ${(await r.text()).slice(0, 300)}` };
+    const res = await r.json() as { content?: Array<{ type: string; text?: string }> };
+    const first = res.content?.find((c) => c.type === "text");
+    if (!first || first.type !== "text" || !first.text) return { ok: false, error: "no_text_response" };
     text = first.text;
   } catch (e) {
     return { ok: false, error: `api_error: ${e instanceof Error ? e.message : String(e)}` };
