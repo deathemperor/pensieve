@@ -21,7 +21,32 @@ interface GitHubUser {
 	created_at: string;
 }
 
+interface GitHubEvent {
+	type: string;
+	repo: { name: string };
+	created_at: string;
+	payload: {
+		commits?: { message: string; sha: string }[];
+		action?: string;
+		ref?: string;
+		ref_type?: string;
+	};
+}
+
+interface GitHubRepo {
+	name: string;
+	description: string | null;
+	html_url: string;
+	language: string | null;
+	stargazers_count: number;
+	updated_at: string;
+	fork: boolean;
+	private: boolean;
+}
+
 let ghUser: GitHubUser | null = null;
+let ghEvents: GitHubEvent[] = [];
+let ghRepos: GitHubRepo[] = [];
 
 // Cache GitHub API responses at Cloudflare's edge (1 hour).
 // Visitors never hit GitHub directly — only one request per hour per edge PoP.
@@ -36,16 +61,144 @@ const ghFetchOpts = {
 	cf: { cacheTtl: 3600, cacheEverything: true },
 } as RequestInit;
 
-// When authenticated, /user returns private repo counts
+// When authenticated, /user returns private repo counts; /events (no /public) includes private activity
 const userEndpoint = ghToken
 	? "https://api.github.com/user"
 	: "https://api.github.com/users/deathemperor";
+const eventsEndpoint = ghToken
+	? "https://api.github.com/users/deathemperor/events?per_page=30"
+	: "https://api.github.com/users/deathemperor/events/public?per_page=30";
+const reposEndpoint = ghToken
+	? "https://api.github.com/user/repos?sort=pushed&per_page=10&affiliation=owner"
+	: "https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner";
+
+// GraphQL query for accurate commit count (last 30 days, all repos)
+let recentCommitCount = 0;
+let claudeEraCommitCount = 232; // fallback if GraphQL unavailable or rate-limited
 
 try {
-	const userRes = await fetch(userEndpoint, ghFetchOpts);
+	const fetches: Promise<Response>[] = [
+		fetch(userEndpoint, ghFetchOpts),
+		fetch(eventsEndpoint, ghFetchOpts),
+		fetch(reposEndpoint, ghFetchOpts),
+	];
+	// GraphQL for commit stats (requires auth)
+	if (ghToken) {
+		const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+		fetches.push(
+			fetch("https://api.github.com/graphql", {
+				method: "POST",
+				headers: { ...ghHeaders, "Content-Type": "application/json" },
+				body: JSON.stringify({
+					query: `{ viewer { last30: contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } claudeEra: contributionsCollection(from: "2026-01-29T00:00:00Z") { totalCommitContributions restrictedContributionsCount } } }`,
+				}),
+				cf: { cacheTtl: 3600, cacheEverything: true },
+			} as RequestInit),
+		);
+	}
+	const results = await Promise.all(fetches);
+	const [userRes, eventsRes, reposRes] = results;
 	if (userRes.ok) ghUser = await userRes.json();
+	if (eventsRes.ok) ghEvents = await eventsRes.json();
+	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
+	if (results[3]?.ok) {
+		const gql = await results[3].json();
+		const last30 = gql?.data?.viewer?.last30;
+		const era = gql?.data?.viewer?.claudeEra;
+		recentCommitCount = (last30?.totalCommitContributions ?? 0) + (last30?.restrictedContributionsCount ?? 0);
+		const eraTotal = (era?.totalCommitContributions ?? 0) + (era?.restrictedContributionsCount ?? 0);
+		if (eraTotal > 0) claudeEraCommitCount = eraTotal;
+	}
 } catch {
-	// GitHub API unavailable — render without the hero pill
+	// GitHub API unavailable — render without stats
+}
+
+// Fallback: count push events if GraphQL unavailable
+const commitEvents = ghEvents.filter((e) => e.type === "PushEvent");
+if (!recentCommitCount) {
+	const hasCommitDetails = commitEvents.some((e) => e.payload.commits && e.payload.commits.length > 0);
+	recentCommitCount = hasCommitDetails
+		? commitEvents.reduce((sum, e) => sum + (e.payload.commits?.length ?? 0), 0)
+		: commitEvents.length;
+}
+
+// Activity by day of week
+const dayNames = isVi
+	? ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+	: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const dayActivity = new Array(7).fill(0);
+for (const e of ghEvents) {
+	const day = new Date(e.created_at).getDay();
+	dayActivity[day]++;
+}
+const maxDayActivity = Math.max(...dayActivity, 1);
+
+// Recent activity feed (last 10 meaningful events)
+const activityFeed = ghEvents
+	.filter((e) => ["PushEvent", "CreateEvent", "PullRequestEvent", "IssuesEvent"].includes(e.type))
+	.slice(0, 10)
+	.map((e) => {
+		// Check if this event is from a private repo (not in public repos list)
+		const repoFullName = e.repo.name;
+		const repo = repoFullName.replace("deathemperor/", "");
+		const isPrivateRepo = ghToken && !ghRepos.some((r) => !r.private && r.name === repo);
+		const displayRepo = isPrivateRepo ? (isVi ? "kho riêng" : "private repo") : repo;
+		const date = new Date(e.created_at);
+		const timeAgo = formatTimeAgo(date);
+		let action = e.type;
+		if (e.type === "PushEvent") {
+			const commits = e.payload.commits;
+			if (commits && commits.length > 0) {
+				action = isVi
+					? `${commits.length} commit tới ${displayRepo}`
+					: `${commits.length} commit${commits.length !== 1 ? "s" : ""} to ${displayRepo}`;
+			} else {
+				action = isVi
+					? `đẩy mã tới ${displayRepo}`
+					: `pushed to ${displayRepo}`;
+			}
+		} else if (e.type === "CreateEvent") {
+			action = isVi
+				? `tạo ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} trong ` : ""}${displayRepo}`
+				: `created ${e.payload.ref_type ?? "repo"} ${e.payload.ref && !isPrivateRepo ? `${e.payload.ref} in ` : ""}${displayRepo}`;
+		} else if (e.type === "PullRequestEvent") {
+			action = isVi
+				? `${e.payload.action} PR trong ${displayRepo}`
+				: `${e.payload.action} PR in ${displayRepo}`;
+		} else if (e.type === "IssuesEvent") {
+			action = isVi
+				? `${e.payload.action} issue trong ${displayRepo}`
+				: `${e.payload.action} issue in ${displayRepo}`;
+		}
+		return { action, timeAgo, date };
+	});
+
+const langColors: Record<string, string> = {
+	TypeScript: "#3178c6",
+	JavaScript: "#f1e05a",
+	Python: "#3572a5",
+	HTML: "#e34c26",
+	CSS: "#563d7c",
+	Go: "#00add8",
+	Rust: "#dea584",
+	Shell: "#89e051",
+	Astro: "#ff5a03",
+};
+
+function formatTimeAgo(date: Date) {
+	const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+	if (seconds < 60) return isVi ? "vừa xong" : "just now";
+	const minutes = Math.floor(seconds / 60);
+	if (minutes < 60) return isVi ? `${minutes} ph trước` : `${minutes}m ago`;
+	const hours = Math.floor(minutes / 60);
+	if (hours < 24) return isVi ? `${hours} giờ trước` : `${hours}h ago`;
+	const days = Math.floor(hours / 24);
+	if (days < 7) return isVi ? `${days} ngày trước` : `${days}d ago`;
+	return date.toLocaleDateString(isVi ? "vi-VN" : "en-US", { month: "short", day: "numeric" });
+}
+
+function formatGHDate(iso: string) {
+	return new Date(iso).toLocaleDateString(isVi ? "vi-VN" : "en-US", { year: "numeric", month: "long" });
 }
 ---
 
@@ -68,7 +221,7 @@ try {
 				<dl class="about-meta">
 					<div class="about-meta-row">
 						<dt>{isVi ? "Vai trò" : "Role"}</dt>
-						<dd>{isVi ? "Giám đốc Công nghệ / Giám đốc Vận hành · Kỹ sư phần mềm" : "Chief Technology Officer / Chief Operating Officer · Software Engineer"}</dd>
+						<dd>{isVi ? "CTO / COO · Kỹ sư full-stack" : "CTO / COO · Full-Stack Engineer"}</dd>
 					</div>
 					<div class="about-meta-row">
 						<dt>{isVi ? "Nơi ở" : "Based"}</dt>
@@ -691,7 +844,7 @@ try {
 											<rect x="6" y="15" width="20" height="3"/>
 										</g>
 									</svg>
-									<span class="origin-label">Phạm · Khmer</span>
+									<span class="origin-label">Võ · Khmer</span>
 								</div>
 							</div>
 						</div>
@@ -753,9 +906,12 @@ try {
 						{ year: "2010", co: "VNG", rune: "ᛗ",
 						  title: { en: "Gunny — fastest integration ever", vi: "Gunny — tích hợp nhanh nhất" },
 						  note: { en: "Revived from ~1k to 100k+ concurrent · from millions to 30B+ VND/month. Helped kill FPT Games' line.", vi: "Hồi sinh từ ~1k lên 100k+ concurrent · từ vài triệu lên hơn 30 tỷ VND/tháng. Góp phần đánh bật FPT Games." } },
-						{ year: "2013–2014", co: "VNG · TalkTV", rune: "ᛟ", major: true,
-						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV, the Twitch of Vietnam", vi: "Chief of product / tech / ops / marketing / content — TalkTV, Twitch của Việt Nam" },
-						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. 3M MAU · 150k peak concurrent — zero marketing budget, 12 months to market leadership. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. 3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không, 12 tháng để dẫn đầu thị trường. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
+						{ year: "2013", co: "VNG · TalkTV", rune: "ᛟ", major: true,
+						  title: { en: "Chief of product / tech / ops / marketing / content — TalkTV", vi: "Chief of product / tech / ops / marketing / content — TalkTV" },
+						  note: { en: "First dedicated livestream for DoTA 2 + LoL in Vietnam. Breeding ground for PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng.", vi: "Livestream đầu tiên cho DoTA 2 + LoL ở Việt Nam. Cái nôi của PewPew, ViruSs, Xemsis, Mixi, QTV, Chim Sẻ Đi Nắng." } },
+						{ year: "2014", co: "VNG · TalkTV", rune: "ᚱ", major: true,
+						  title: { en: "Twitch of Vietnam", vi: "Twitch của Việt Nam" },
+						  note: { en: "3M MAU · 150k peak concurrent — zero marketing budget. 12 months to market leadership.", vi: "3 triệu MAU · đỉnh 150k concurrent — ngân sách marketing bằng không. 12 tháng để dẫn đầu thị trường." } },
 						{ year: "2015", co: "GVN Studio", rune: "ᚲ",
 						  title: { en: "Co-founder & CTO", vi: "Đồng sáng lập & CTO" },
 						  note: { en: "5 titles shipped · 2 countries.", vi: "Phát hành 5 tựa · 2 quốc gia." } },
@@ -769,7 +925,7 @@ try {
 						  title: { en: "+ COO (Chief Technology & Operating Officer)", vi: "+ COO (Chief Technology & Operating Officer)" },
 						  note: { en: "-12% opex · 2× claims/assessor/day.", vi: "-12% chi phí vận hành · gấp đôi số claims mỗi assessor xử lý mỗi ngày." } },
 						{ year: "2025", co: "Papaya", rune: "ᛜ", major: true,
-						  title: { en: "Classical AI → Agentic AI", vi: "AI cổ điển → Agentic AI" },
+						  title: { en: "Traditional AI → Agentic AI", vi: "AI truyền thống → Agentic AI" },
 						  note: { en: "60%+ STP on Hospital Cash · 25%+ on Medical Reimbursement across 4 platform versions.", vi: "STP 60%+ cho Hospital Cash · 25%+ cho Medical Reimbursement qua 4 phiên bản." } },
 						{ year: "2025", co: "Papaya · Oasis", rune: "ᛖ",
 						  title: { en: "Architect of Oasis", vi: "Kiến trúc Oasis" },
@@ -1210,6 +1366,136 @@ try {
 			</div>
 		</div>
 	</section>
+	{ghUser && (
+		<section id="github" class="about-section">
+			<div class="about-inner">
+				<h2 class="section-heading">
+					{isVi ? "Hoạt Động GitHub" : "GitHub Activity"}
+					<a href="#github" class="anchor-link" aria-label="Link to GitHub Activity">#</a>
+				</h2>
+				<p class="section-desc">
+					{isVi ? "Dữ liệu trực tiếp từ GitHub API." : "Live data from the GitHub API."}
+					{isVi ? `Trên GitHub từ ${formatGHDate(ghUser.created_at)}.` : `On GitHub since ${formatGHDate(ghUser.created_at)}.`}
+				</p>
+
+				{/* Coding Eras Timeline */}
+				<div class="eras-timeline">
+					<h3 class="chart-title">{isVi ? "Các thời kỳ lập trình" : "Coding eras"}</h3>
+					<div class="eras-track">
+						<div class="era" style="--era-color: var(--color-muted);">
+							<span class="era-bar" style="flex: 16;" />
+							<div class="era-info">
+								<span class="era-label">{isVi ? "Tự lực" : "Solo"}</span>
+								<span class="era-commits">{isVi ? "1.755 commit" : "1,755 commits"}</span>
+								<span class="era-dates">2006 — {isVi ? "Th6 2022" : "Jun 2022"}</span>
+								<span class="era-note">{isVi ? "Lập trình thủ công, không AI hỗ trợ" : "Manual coding, no AI assist"}</span>
+							</div>
+						</div>
+						<div class="era" style="--era-color: #7c3aed;">
+							<span class="era-bar" style="flex: 3.5;" />
+							<div class="era-info">
+								<span class="era-label">GitHub Copilot</span>
+								<span class="era-commits">{isVi ? "8.106 commit" : "8,106 commits"}</span>
+								<span class="era-dates">{isVi ? "Th6 2022 — Th1 2026" : "Jun 2022 — Jan 2026"}</span>
+								<span class="era-note">{isVi ? "Lập trình có AI hỗ trợ (bản xem trước công khai)" : "AI-assisted coding (public preview)"}</span>
+							</div>
+						</div>
+						<div class="era era-current" style="--era-color: #e8784d;">
+							<span class="era-bar" style="flex: 0.5;" />
+							<div class="era-info">
+								<span class="era-label">Claude Code</span>
+								<span class="era-commits">{isVi ? `${claudeEraCommitCount.toLocaleString("vi-VN")} commit` : `${claudeEraCommitCount.toLocaleString("en-US")} commit${claudeEraCommitCount !== 1 ? "s" : ""}`}</span>
+								<span class="era-dates">{isVi ? "29 Th1, 2026 — nay" : "Jan 29, 2026 — now"}</span>
+								<span class="era-note">{isVi ? "Không có mã người viết — hoàn toàn do AI tạo" : "Zero human code — fully AI-generated"}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="gh-stats">
+					<div class="gh-stat">
+						<span class="gh-stat-value">{ghUser.public_repos + (ghUser.owned_private_repos ?? 0)}</span>
+						<span class="gh-stat-label">{isVi ? "kho mã" : "repos"}</span>
+					</div>
+					<div class="gh-stat">
+						<span class="gh-stat-value">{recentCommitCount}</span>
+						<span class="gh-stat-label">{isVi ? "commit 30 ngày" : "commits (30d)"}</span>
+					</div>
+					<div class="gh-stat">
+						<span class="gh-stat-value">{ghUser.followers}</span>
+						<span class="gh-stat-label">{isVi ? "người theo dõi" : "followers"}</span>
+					</div>
+				</div>
+
+				{/* Day-of-week activity chart */}
+				<div class="activity-chart">
+					<h3 class="chart-title">{isVi ? "Hoạt động theo ngày" : "Activity by day"}</h3>
+					<div class="chart-bars">
+						{dayNames.map((name, i) => (
+							<div class="chart-col">
+								<div class="chart-bar-wrap">
+									<div
+										class="chart-bar"
+										style={`height: ${(dayActivity[i] / maxDayActivity) * 100}%;`}
+									/>
+								</div>
+								<span class="chart-label">{name}</span>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* Recent repos */}
+				{ghRepos.filter((r) => !r.private).length > 0 && (
+					<div class="repos-section">
+						<h3 class="chart-title">{isVi ? "Kho mã gần đây" : "Recent repositories"}</h3>
+						<div class="repos-grid">
+							{ghRepos.filter((r) => !r.private).slice(0, 6).map((repo) => (
+								<a href={repo.html_url} class="repo-card" target="_blank" rel="noopener">
+									<span class="repo-name">{repo.name}</span>
+									{repo.description && (
+										<span class="repo-desc">{repo.description}</span>
+									)}
+									<span class="repo-meta">
+										{repo.language && (
+											<span class="repo-lang">
+												<span
+													class="repo-lang-dot"
+													style={`background: ${langColors[repo.language] ?? "var(--color-muted)"};`}
+												/>
+												{repo.language}
+											</span>
+										)}
+										{repo.stargazers_count > 0 && (
+											<span class="repo-stars">
+												&#9733; {repo.stargazers_count}
+											</span>
+										)}
+									</span>
+								</a>
+							))}
+						</div>
+					</div>
+				)}
+
+				{/* Activity feed */}
+				{activityFeed.length > 0 && (
+					<div class="feed-section">
+						<h3 class="chart-title">{isVi ? "Hoạt động gần đây" : "Recent activity"}</h3>
+						<div class="feed-list">
+							{activityFeed.map((item) => (
+								<div class="feed-item">
+									<span class="feed-dot" />
+									<span class="feed-action">{item.action}</span>
+									<span class="feed-time">{item.timeAgo}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+		</section>
+	)}
 </Base>
 
 <style>
@@ -3059,6 +3345,184 @@ try {
 		opacity: 0.7;
 	}
 
+	/* Coding eras */
+	.eras-timeline {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.eras-track {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-3);
+	}
+
+	.era {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-4);
+	}
+
+	.era-bar {
+		height: 6px;
+		background: var(--era-color);
+		border-radius: 3px;
+		opacity: 0.5;
+		min-width: 20px;
+	}
+
+	.era-current .era-bar {
+		opacity: 1;
+		box-shadow: 0 0 8px color-mix(in srgb, var(--era-color) 40%, transparent);
+	}
+
+	.era-info {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		flex-shrink: 0;
+	}
+
+	.era-label {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--era-color);
+		white-space: nowrap;
+	}
+
+	.era-commits {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-text-secondary);
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	.era-dates {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+		white-space: nowrap;
+	}
+
+	.era-note {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		white-space: nowrap;
+	}
+
+	/* GitHub stats */
+	.gh-stats {
+		display: flex;
+		gap: var(--spacing-8);
+		margin-bottom: var(--spacing-10);
+	}
+
+	.gh-stat {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.gh-stat-value {
+		font-family: var(--font-display);
+		font-size: var(--font-size-2xl);
+		font-weight: var(--font-weight-display);
+		color: var(--color-text);
+		letter-spacing: -0.02em;
+	}
+
+	.gh-stat-label {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+	}
+
+	/* Activity chart */
+	.activity-chart {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.chart-title {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-4);
+	}
+
+	.chart-bars {
+		display: flex;
+		gap: var(--spacing-2);
+		height: 80px;
+		align-items: flex-end;
+	}
+
+	.chart-col {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--spacing-2);
+	}
+
+	.chart-bar-wrap {
+		width: 100%;
+		height: 60px;
+		display: flex;
+		align-items: flex-end;
+	}
+
+	.chart-bar {
+		width: 100%;
+		min-height: 2px;
+		background: var(--color-accent);
+		border-radius: 2px 2px 0 0;
+		opacity: 0.7;
+		transition: opacity var(--transition-fast);
+	}
+
+	.chart-col:hover .chart-bar {
+		opacity: 1;
+	}
+
+	.chart-label {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		color: var(--color-muted);
+	}
+
+	/* Repos */
+	.repos-section {
+		margin-bottom: var(--spacing-10);
+	}
+
+	.repos-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: var(--spacing-3);
+	}
+
+	.repo-card {
+		display: flex;
+		flex-direction: column;
+		gap: var(--spacing-1);
+		padding: var(--spacing-4) var(--spacing-5);
+		background: var(--color-surface-elevated);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		text-decoration: none;
+		color: inherit;
+		transition:
+			border-color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.repo-card:hover {
+		border-color: color-mix(in srgb, var(--color-accent) 50%, var(--color-border));
+		transform: translateY(-1px);
+	}
+
 	.community-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -3513,6 +3977,93 @@ try {
 		color: rgba(200, 210, 225, 0.9);
 	}
 
+	.repo-name {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-sm);
+		font-weight: 500;
+		color: var(--color-accent);
+	}
+
+	.repo-desc {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-text-secondary);
+		line-height: var(--leading-relaxed);
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.repo-meta {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-1);
+	}
+
+	.repo-lang {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-1);
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	.repo-lang-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+	}
+
+	.repo-stars {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		color: var(--color-muted);
+	}
+
+	/* Activity feed */
+	.feed-list {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.feed-item {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-3);
+		padding: var(--spacing-2) 0;
+		border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+	}
+
+	.feed-item:last-child {
+		border-bottom: none;
+	}
+
+	.feed-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--color-accent);
+		flex-shrink: 0;
+		margin-top: 6px;
+	}
+
+	.feed-action {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-sm);
+		color: var(--color-text-secondary);
+		flex: 1;
+	}
+
+	.feed-time {
+		font-family: var(--font-mono);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		white-space: nowrap;
+	}
+
 	/* Responsive */
 	@media (max-width: 900px) {
 		.about-hero-inner {
@@ -3545,6 +4096,10 @@ try {
 		.about-inner {
 			padding: var(--spacing-12) var(--spacing-6);
 		}
+
+		.gh-stats {
+			gap: var(--spacing-6);
+		}
 	}
 
 	@media (max-width: 600px) {
@@ -3554,6 +4109,11 @@ try {
 
 		.about-inner {
 			padding: var(--spacing-10) var(--spacing-5);
+		}
+
+		.gh-stats {
+			flex-wrap: wrap;
+			gap: var(--spacing-4);
 		}
 
 		.links-row {
