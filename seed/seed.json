@@ -436,6 +436,7 @@
 				{ "slug": "min_notice_hrs", "label": "Min Notice (hours)", "type": "number" },
 				{ "slug": "max_advance_days", "label": "Max Advance (days)", "type": "number" },
 				{ "slug": "questions", "label": "Custom Questions (JSON)", "type": "string" },
+				{ "slug": "host_account_ids", "label": "Host Account IDs (JSON array)", "type": "string" },
 				{ "slug": "color", "label": "Color (hex)", "type": "string" }
 			]
 		},
@@ -480,6 +481,7 @@
 				{ "slug": "min_notice_hrs", "label": "Min Notice (hours)", "type": "number" },
 				{ "slug": "max_advance_days", "label": "Max Advance (days)", "type": "number" },
 				{ "slug": "questions", "label": "Custom Questions (JSON)", "type": "string" },
+				{ "slug": "host_account_ids", "label": "Host Account IDs (JSON array)", "type": "string" },
 				{ "slug": "color", "label": "Color (hex)", "type": "string" }
 			]
 		}
