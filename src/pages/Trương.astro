@@ -214,8 +214,7 @@ function formatGHDate(iso: string) {
 						</dd>
 					</div>
 				</dl>
-				{/* Compact profile links in the hero for quick reach — the
-				    full labelled row lives in #elsewhere further down the page. */}
+				{/* Compact profile links in the hero. */}
 				<nav class="hero-profile-links" aria-label={isVi ? "Liên kết cá nhân" : "Profile links"}>
 					<a href="https://github.com/deathemperor" class="hero-profile-link" target="_blank" rel="noopener" aria-label="GitHub">
 						<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -236,13 +235,6 @@ function formatGHDate(iso: string) {
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 							<rect x="2" y="4" width="20" height="16" rx="2" />
 							<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-						</svg>
-					</a>
-					<a href="#elsewhere" class="hero-profile-link hero-profile-more" aria-label={isVi ? "Xem thêm liên kết" : "More links below"}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-							<circle cx="5" cy="12" r="1.5" fill="currentColor" />
-							<circle cx="12" cy="12" r="1.5" fill="currentColor" />
-							<circle cx="19" cy="12" r="1.5" fill="currentColor" />
 						</svg>
 					</a>
 				</nav>
@@ -3010,8 +3002,7 @@ function formatGHDate(iso: string) {
 		text-wrap: pretty;
 	}
 
-	/* Hero profile links — compact icon row, one reach from the top.
-	   Full labelled versions live in #elsewhere further down. */
+	/* Hero profile links — compact icon row, one reach from the top. */
 	.hero-profile-links {
 		display: flex;
 		align-items: center;
@@ -3095,15 +3086,6 @@ function formatGHDate(iso: string) {
 	.hero-profile-link:focus-visible::after {
 		animation-duration: 2.2s;
 	}
-	.hero-profile-more {
-		margin-left: 0.35rem;
-		opacity: 0.75;
-	}
-	.hero-profile-more:hover,
-	.hero-profile-more:focus-visible {
-		opacity: 1;
-	}
-
 	/* Sections */
 	.about-section {
 		border-bottom: 1px solid var(--color-border);
