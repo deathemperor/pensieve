@@ -9,6 +9,7 @@ import MonthView from "../../../components/weasley-clock/MonthView.astro";
 import DayView from "../../../components/weasley-clock/DayView.astro";
 import YearView from "../../../components/weasley-clock/YearView.astro";
 import { materialiseFamilyEvents, type FamilyEventRecord } from "../../../utils/familyEvents";
+import { type SyncedEventRecord } from "../../../utils/weasleyClockEvents";
 import { getCurrentLang } from "../../../utils/lang";
 
 type View = "day" | "week" | "month" | "year";
@@ -83,14 +84,38 @@ function computeWindow(v: View, a: Date): { windowStart: Date; windowEnd: Date }
 
 const { windowStart, windowEnd } = computeWindow(view, anchor);
 occurrences = materialiseFamilyEvents(events, windowStart, windowEnd);
+
+// Fetch synced events from plugin-weasley-clock storage. Plugin namespaces
+// are exposed at Astro.locals.emdash.plugins.<id>.storage.<namespace> — if
+// the shape differs in this EmDash version, the catch below keeps the page
+// rendering (synced view just stays empty until wiring is verified).
+let syncedEvents: SyncedEventRecord[] = [];
+try {
+	const storage = (Astro.locals as any).emdash?.plugins?.["weasley-clock"]?.storage;
+	if (storage?.synced_events) {
+		const all = await storage.synced_events.query({});
+		const items = (all.items ?? all ?? []) as Array<{ id: string; data: any }>;
+		const windowStartMs = windowStart.getTime();
+		const windowEndMs = windowEnd.getTime();
+		syncedEvents = items
+			.map((r) => ({ ...r.data, id: r.id } as SyncedEventRecord))
+			.filter((e) =>
+				e.source_type && !e.deleted &&
+				new Date(e.starts_at).getTime() <= windowEndMs &&
+				new Date(e.ends_at).getTime() >= windowStartMs,
+			);
+	}
+} catch (err) {
+	console.error("Failed to fetch synced events:", err);
+}
 ---
 <Base title={pageTitle} description={pageDescription}>
 	<Header view={view} anchor={anchor} lang={lang} />
 	<main class="wc-main">
-		{view === "day" && <DayView anchor={anchor} occurrences={occurrences} lang={lang} />}
-		{view === "week" && <WeekView anchor={anchor} occurrences={occurrences} />}
-		{view === "month" && <MonthView anchor={anchor} occurrences={occurrences} />}
-		{view === "year" && <YearView anchor={anchor} occurrences={occurrences} />}
+		{view === "day" && <DayView anchor={anchor} occurrences={occurrences} synced={syncedEvents} lang={lang} />}
+		{view === "week" && <WeekView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
+		{view === "month" && <MonthView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
+		{view === "year" && <YearView anchor={anchor} occurrences={occurrences} synced={syncedEvents} />}
 	</main>
 </Base>
 
