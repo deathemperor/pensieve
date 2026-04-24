@@ -288,3 +288,32 @@ test("day-of-week resolution in host timezone (Sunday in ICT)", () => {
 	assert.equal(slots[0].start_iso, "2026-05-03T02:00:00.000Z");
 	assert.equal(slots[1].start_iso, "2026-05-03T02:30:00.000Z");
 });
+
+test("45-min slots step by 45 from first 15-aligned start (no re-alignment)", () => {
+	const rule: AvailabilityRuleData = {
+		label: "",
+		timezone: "Asia/Ho_Chi_Minh",
+		weekly_hours: {
+			mon: [{ start: "09:00", end: "12:00" }],
+			tue: [], wed: [], thu: [], fri: [], sat: [], sun: [],
+		},
+	};
+	const slots = computeSlots({
+		rule,
+		busyWindows: [],
+		durationMin: 45,
+		bufferBeforeMin: 0,
+		bufferAfterMin: 0,
+		minNoticeHrs: 0,
+		maxAdvanceDays: 365,
+		rangeStartIso: "2026-05-04T00:00:00Z",
+		rangeEndIso: "2026-05-04T23:59:59Z",
+		nowIso: "2026-01-01T00:00:00Z",
+	});
+	// 09:00-12:00 ICT = 02:00-05:00 UTC. 45-min slots: 09:00, 09:45, 10:30, 11:15 → 4 slots.
+	// 11:15 + 45 = 12:00 fits exactly.
+	assert.equal(slots.length, 4);
+	assert.equal(slots[0].start_iso, "2026-05-04T02:00:00.000Z");
+	assert.equal(slots[1].start_iso, "2026-05-04T02:45:00.000Z");
+	assert.equal(slots[3].start_iso, "2026-05-04T04:15:00.000Z");
+});

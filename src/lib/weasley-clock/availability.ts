@@ -37,13 +37,22 @@ type DowKey = (typeof DOW_KEYS)[number];
 /** Returns the tz offset (in minutes) of the instant `d` in the given IANA timezone.
  * Positive for zones east of UTC (e.g. Asia/Ho_Chi_Minh → +420).
  *
- * MVP caveat: uses Date.toLocaleString round-trips, which lose sub-second
- * precision and may be off by one hour at DST transitions (acceptable for
- * non-DST zones like Asia/Ho_Chi_Minh). */
+ * Uses `Intl.DateTimeFormat` with `timeZoneName: "longOffset"` to parse the
+ * "GMT+07:00" / "GMT-05:30" string directly — DST-safe and locale-stable. */
 function getTzOffsetMin(d: Date, tz: string): number {
-	const utc = new Date(d.toLocaleString("en-US", { timeZone: "UTC" }));
-	const local = new Date(d.toLocaleString("en-US", { timeZone: tz }));
-	return Math.round((local.getTime() - utc.getTime()) / MIN_MS);
+	const parts = new Intl.DateTimeFormat("en-US", {
+		timeZone: tz,
+		timeZoneName: "longOffset",
+	}).formatToParts(d);
+	const tzName = parts.find((p) => p.type === "timeZoneName")?.value ?? "GMT+00:00";
+	// Format is "GMT+07:00" or "GMT-05:30" or "GMT" for UTC.
+	const m = tzName.match(/^GMT(?:([+-])(\d{2}):(\d{2}))?$/);
+	if (!m) return 0;
+	if (!m[1]) return 0; // "GMT" alone = UTC
+	const sign = m[1] === "+" ? 1 : -1;
+	const hours = parseInt(m[2], 10);
+	const mins = parseInt(m[3], 10);
+	return sign * (hours * 60 + mins);
 }
 
 /** Convert `YYYY-MM-DD` + `HH:MM` (local to `tz`) → UTC ms since epoch. */
@@ -227,8 +236,10 @@ export function computeSlots(input: ComputeSlotsInput): Slot[] {
 
 	const slots: Slot[] = [];
 	for (const iv of remaining) {
-		// Align first slot start to the next 15-min boundary on/after iv.start.
-		// Subsequent slots are back-to-back (step = durationMs), not re-aligned.
+		// After aligning the first slot to a 15-minute boundary, subsequent slots are
+		// back-to-back (step = durationMin). So a 45-min meeting at 09:00 produces
+		// 09:00, 09:45, 10:30, 11:15 — NOT re-aligned to :00/:15/:30/:45 per slot.
+		// This matches Calendly/cal.com default behavior.
 		let t = Math.ceil(iv.start / QUARTER_MS) * QUARTER_MS;
 		while (t + durationMs <= iv.end) {
 			// 4. Notice / max-advance filters.
