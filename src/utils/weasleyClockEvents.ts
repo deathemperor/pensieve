@@ -36,8 +36,8 @@ function familyCategory(occ: FamilyOccurrence): RenderableEvent["category"] {
 		case "wedding_anniv": return "anniversary";
 		case "cultural": return "cultural";
 		case "milestone": return "milestone";
+		default: return "other";
 	}
-	return "other";
 }
 
 function syncedCategory(_evt: SyncedEventRecord): RenderableEvent["category"] {
