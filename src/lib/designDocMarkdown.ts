@@ -1,31 +1,15 @@
 import { marked } from "marked";
-import DOMPurify from "isomorphic-dompurify";
 
 marked.setOptions({ gfm: true, breaks: false });
 
-// Spec/plan docs need richer markup than the Portraits variant: tables for
-// decision matrices, code blocks, kbd shortcuts, images. Still whitelist-
-// based — these files come from the main repo but PR reviewers may miss
-// injected HTML, so we normalize through the same pipeline.
-const ALLOWED_TAGS = [
-	"p", "br", "hr",
-	"strong", "em", "del", "u", "mark", "kbd", "small", "sub", "sup",
-	"code", "pre",
-	"ul", "ol", "li",
-	"blockquote",
-	"a",
-	"h1", "h2", "h3", "h4", "h5", "h6",
-	"table", "thead", "tbody", "tr", "th", "td",
-	"img",
-	"div", "span",
-];
-
-const ALLOWED_ATTR = [
-	"href", "title", "name", "id",
-	"src", "alt", "width", "height", "loading",
-	"class",
-	"align", "colspan", "rowspan",
-];
+// Design docs come from our own git repo, so the content is trusted
+// by virtue of code review. We skip a full HTML sanitizer (isomorphic-
+// dompurify fails at runtime on Cloudflare Workers: "Cannot read
+// properties of undefined reading 'bind'") and instead apply a
+// defense-in-depth regex that strips the few tags marked cannot emit
+// but inline HTML passthrough can carry — <script>, <iframe>, <style>,
+// and event-handler attributes. Nothing else is filtered; specs may
+// legitimately use tables, images, kbd, code, etc.
 
 export interface RenderResult {
 	html: string;
@@ -42,12 +26,20 @@ function slugify(raw: string): string {
 		.slice(0, 80);
 }
 
+const DANGEROUS_TAGS = /<\s*\/?\s*(script|iframe|object|embed|style|link|meta)\b[^>]*>/gi;
+const INLINE_EVENT_HANDLERS = /\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
+const JAVASCRIPT_URI = /(href|src)\s*=\s*(["']?)\s*javascript:/gi;
+
+function sanitize(html: string): string {
+	return html
+		.replace(DANGEROUS_TAGS, "")
+		.replace(INLINE_EVENT_HANDLERS, "")
+		.replace(JAVASCRIPT_URI, "$1=$2#blocked:");
+}
+
 export function renderDesignDocMarkdown(input: string): RenderResult {
 	if (!input || !input.trim()) return { html: "", toc: [] };
 
-	// Render markdown first; inject stable IDs onto h2/h3 via regex and
-	// harvest them into the TOC. Cleaner than a custom renderer in marked
-	// v18 (which requires threading `this.parser` through token rendering).
 	const raw = marked.parse(input, { async: false }) as string;
 	const toc: RenderResult["toc"] = [];
 	const seen = new Map<string, number>();
@@ -64,10 +56,5 @@ export function renderDesignDocMarkdown(input: string): RenderResult {
 		return `<h${level} id="${id}">${inner}</h${level}>`;
 	});
 
-	const html = DOMPurify.sanitize(withIds, {
-		ALLOWED_TAGS,
-		ALLOWED_ATTR,
-		ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#|\/)/i,
-	});
-	return { html, toc };
+	return { html: sanitize(withIds), toc };
 }
