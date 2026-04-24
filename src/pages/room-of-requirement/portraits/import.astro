@@ -1,0 +1,223 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+---
+
+<Base title="Import portraits" description="Bulk-import from vCard or CSV.">
+  <main class="import-page">
+    <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+    <h1>Import contacts</h1>
+    <p class="hint">
+      Drop a <strong>.vcf</strong> file exported from iOS, Google Contacts, or iCloud.
+      We'll preview, dedup by email, then you confirm the batch.
+    </p>
+
+    <label class="upload-area">
+      <input id="vcf-input" type="file" accept=".vcf,text/vcard,text/directory" />
+      <span>📁 Choose .vcf file</span>
+    </label>
+
+    <div id="preview" hidden>
+      <h2>Preview</h2>
+      <p id="summary" class="muted"></p>
+      <table class="preview-table">
+        <thead>
+          <tr><th>Skip</th><th>Name</th><th>Title / Company</th><th>Emails</th><th>Tier</th><th>Status</th></tr>
+        </thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+      <button id="commit-btn" class="btn btn-primary">Import selected</button>
+    </div>
+
+    <p id="error" class="error" hidden></p>
+  </main>
+</Base>
+
+<script>
+  const input = document.getElementById("vcf-input") as HTMLInputElement;
+  const preview = document.getElementById("preview") as HTMLDivElement;
+  const summary = document.getElementById("summary") as HTMLParagraphElement;
+  const body = document.getElementById("preview-body") as HTMLTableSectionElement;
+  const commitBtn = document.getElementById("commit-btn") as HTMLButtonElement;
+  const errEl = document.getElementById("error") as HTMLParagraphElement;
+
+  interface PreviewContact {
+    full_name: string;
+    title: string | null;
+    company: string | null;
+    emails: string[];
+    phones: string[];
+    dedup: "existing" | "new";
+  }
+
+  let contacts: PreviewContact[] = [];
+
+  input.addEventListener("change", async () => {
+    errEl.hidden = true;
+    const f = input.files?.[0];
+    if (!f) return;
+    const text = await f.text();
+
+    const res = await fetch("/api/portraits/import/vcard", {
+      method: "POST",
+      headers: { "Content-Type": "text/vcard" },
+      body: text,
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({})) as { error?: string };
+      errEl.textContent = `Parse failed: ${d.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    const data = await res.json() as { contacts: PreviewContact[] };
+    contacts = data.contacts;
+    renderPreview();
+  });
+
+  function renderPreview() {
+    // Clear existing rows safely
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    if (contacts.length === 0) {
+      summary.textContent = "No contacts parsed.";
+      preview.hidden = false;
+      return;
+    }
+    const nNew = contacts.filter((c) => c.dedup === "new").length;
+    const nDup = contacts.filter((c) => c.dedup === "existing").length;
+    summary.textContent = `${contacts.length} parsed · ${nNew} new · ${nDup} already in rolodex`;
+
+    contacts.forEach((c, i) => {
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-i", String(i));
+
+      // Skip checkbox
+      const tdSkip = document.createElement("td");
+      const skipInput = document.createElement("input");
+      skipInput.type = "checkbox";
+      skipInput.className = "skip";
+      if (c.dedup === "existing") skipInput.checked = true;
+      tdSkip.appendChild(skipInput);
+      tr.appendChild(tdSkip);
+
+      // Name
+      const tdName = document.createElement("td");
+      tdName.textContent = c.full_name;
+      tr.appendChild(tdName);
+
+      // Title / Company
+      const tdTC = document.createElement("td");
+      tdTC.textContent = c.title ?? "—";
+      if (c.company) {
+        const sep = document.createElement("span");
+        sep.className = "muted";
+        sep.textContent = ` · ${c.company}`;
+        tdTC.appendChild(sep);
+      }
+      tr.appendChild(tdTC);
+
+      // Emails
+      const tdEmails = document.createElement("td");
+      tdEmails.className = "muted";
+      tdEmails.textContent = c.emails.join(", ");
+      tr.appendChild(tdEmails);
+
+      // Tier select
+      const tdTier = document.createElement("td");
+      const tierSelect = document.createElement("select");
+      tierSelect.className = "tier-select";
+      for (const t of ["D", "C", "B", "A", "S"]) {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        if (t === "D") opt.selected = true;
+        tierSelect.appendChild(opt);
+      }
+      tdTier.appendChild(tierSelect);
+      tr.appendChild(tdTier);
+
+      // Status
+      const tdStatus = document.createElement("td");
+      tdStatus.className = "muted";
+      tdStatus.textContent = c.dedup;
+      tr.appendChild(tdStatus);
+
+      body.appendChild(tr);
+    });
+    preview.hidden = false;
+  }
+
+  commitBtn.addEventListener("click", async () => {
+    commitBtn.disabled = true;
+    commitBtn.textContent = "Importing…";
+
+    const rows = Array.from(body.querySelectorAll<HTMLTableRowElement>("tr[data-i]"));
+    const payload = {
+      contacts: rows.map((r) => {
+        const i = Number(r.getAttribute("data-i"));
+        const skip = (r.querySelector("input.skip") as unknown as HTMLInputElement).checked;
+        const tier = (r.querySelector("select.tier-select") as unknown as HTMLSelectElement).value;
+        return {
+          ...contacts[i],
+          prestige_tier: tier,
+          skip,
+        };
+      }),
+    };
+
+    const res = await fetch("/api/portraits/import/vcard/commit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json() as { created_count: number; errors: Array<{ index: number; error: string }> };
+    if (res.ok) {
+      alert(`Imported ${data.created_count} contacts. ${data.errors.length > 0 ? `${data.errors.length} errors — check console.` : ""}`);
+      if (data.errors.length > 0) console.error(data.errors);
+      window.location.href = "/room-of-requirement/portraits";
+    } else {
+      errEl.textContent = `Import failed: ${(data as any).error ?? res.statusText}`;
+      errEl.hidden = false;
+      commitBtn.disabled = false;
+      commitBtn.textContent = "Import selected";
+    }
+  });
+</script>
+
+<style>
+  .import-page { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0.5rem 0 2rem; }
+  .upload-area {
+    display: block;
+    border: 2px dashed #3a3a3a;
+    border-radius: 6px;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    color: #d4a89a;
+    transition: border-color 150ms ease;
+  }
+  .upload-area:hover { border-color: #d4a89a; }
+  .upload-area input { display: none; }
+  #preview { margin-top: 2rem; }
+  #preview h2 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.25rem; margin: 0 0 0.5rem; }
+  .preview-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  .preview-table th, .preview-table td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #1a1a1a; }
+  .preview-table th { color: #6a665e; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .preview-table select, .preview-table input { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.15rem 0.3rem; border-radius: 2px; }
+  .btn { padding: 0.5rem 1.1rem; border: 1px solid #3a3a3a; border-radius: 3px; color: #e8e6e0; background: transparent; cursor: pointer; font: inherit; }
+  .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .muted { color: #6a665e; }
+  .error { color: #e57373; margin-top: 1rem; }
+</style>

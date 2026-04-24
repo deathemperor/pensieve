@@ -1,0 +1,104 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface OptionRow { id: string; full_name: string }
+const optionsRs = await db
+  .prepare("SELECT id, full_name FROM contacts WHERE deleted_at IS NULL AND is_placeholder = 0 AND id != ? ORDER BY full_name")
+  .bind(contactId)
+  .all<OptionRow>();
+const options = (optionsRs.results ?? []) as OptionRow[];
+---
+
+<section class="section intro-paths">
+  <h2 class="section-title">{isVi ? "Ai có thể giới thiệu" : "Who can intro me"}</h2>
+  {options.length === 0 ? (
+    <p class="muted">{isVi ? "Cần thêm liên lạc và liên kết họ trước." : "Add more contacts and link them first."}</p>
+  ) : (
+    <form id="intro-form" class="intro-form" data-target={contactId}>
+      <label>
+        <span>{isVi ? "Đi từ" : "Starting from"}</span>
+        <select name="from" required>
+          <option value="">— {isVi ? "chọn" : "pick"} —</option>
+          {options.map((o) => <option value={o.id}>{o.full_name}</option>)}
+        </select>
+      </label>
+      <button type="submit">{isVi ? "Tìm đường" : "Find paths"}</button>
+    </form>
+  )}
+  <div id="intro-results"></div>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("intro-form");
+  const resEl = document.getElementById("intro-results");
+
+  function setMuted(text) {
+    if (!resEl) return;
+    resEl.replaceChildren();
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.textContent = text;
+    resEl.appendChild(p);
+  }
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const from = String(fd.get("from") ?? "");
+    if (!from || !resEl) return;
+    setMuted("Searching…");
+    const r = await fetch(`/api/portraits/paths?from=${encodeURIComponent(from)}&to=${encodeURIComponent(contactId)}&maxHops=4`);
+    if (!r.ok) {
+      setMuted(`Error: ${r.statusText}`);
+      return;
+    }
+    const data = await r.json();
+    const paths = data.paths;
+    resEl.replaceChildren();
+    if (!paths || paths.length === 0) {
+      setMuted("No path found within 4 hops.");
+      return;
+    }
+    const list = document.createElement("ul");
+    list.className = "path-list";
+    for (const p of paths.slice(0, 5)) {
+      const li = document.createElement("li");
+      li.className = "path-item";
+      for (let i = 0; i < p.nodes.length; i++) {
+        const n = p.nodes[i];
+        const a = document.createElement("a");
+        a.href = `/room-of-requirement/portraits/${n.id}`;
+        a.textContent = n.full_name;
+        li.appendChild(a);
+        if (i < p.edges.length) {
+          const step = document.createElement("span");
+          step.className = "path-step";
+          step.textContent = ` —${p.edges[i].kind.replace(/_/g, " ")}→ `;
+          li.appendChild(step);
+        }
+      }
+      list.appendChild(li);
+    }
+    resEl.appendChild(list);
+  });
+</script>
+
+<style>
+  .intro-paths { }
+  .intro-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+  .intro-form label { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.8125rem; color: #8a877e; }
+  .intro-form select { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.35rem 0.55rem; border-radius: 2px; font: inherit; min-width: 14rem; }
+  .intro-form button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.35rem 0.9rem; border-radius: 2px; cursor: pointer; font: inherit; }
+  .intro-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .path-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }
+  .path-item a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .path-item a:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .path-step { color: #6a665e; font-size: 0.75rem; font-family: "JetBrains Mono", monospace; margin: 0 0.2rem; }
+  .muted { color: #6a665e; }
+</style>

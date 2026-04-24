@@ -1,0 +1,102 @@
+---
+import type { Contact } from "../../lib/portraits/types";
+import { tierSectionTitle } from "../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { contacts: Contact[] }
+
+const { contacts } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const h = tierSectionTitle("D", lang);
+
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const days = Math.floor((now - then) / (1000 * 60 * 60 * 24));
+  if (isVi) {
+    if (days < 1) return "hôm nay";
+    if (days < 7) return `${days} ngày trước`;
+    if (days < 60) return `${Math.floor(days / 7)} tuần trước`;
+    if (days < 365) return `${Math.floor(days / 30)} tháng trước`;
+    return `${Math.floor(days / 365)} năm trước`;
+  }
+  if (days < 1) return "today";
+  if (days < 7) return `${days}d ago`;
+  if (days < 60) return `${Math.floor(days / 7)}w ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+  return `${Math.floor(days / 365)}y ago`;
+}
+---
+
+{contacts.length > 0 && (
+  <section class="tier-section tier-D">
+    <header class="tier-header">
+      <h2 class="tier-title">{h.title}</h2>
+      <span class="tier-subtitle">— {h.subtitle}</span>
+      <span class="tier-count">({contacts.length})</span>
+    </header>
+    <table class="corridor-table">
+      <thead>
+        <tr>
+          <th scope="col">{isVi ? "Tên" : "Name"}</th>
+          <th scope="col">{isVi ? "Công ty" : "Company"}</th>
+          <th scope="col" class="last-seen">{isVi ? "Cập nhật" : "Updated"}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {contacts.map((c) => (
+          <tr>
+            <td>
+              <a href={`/room-of-requirement/portraits/${c.id}`}>
+                {c.display_name ?? c.full_name}
+              </a>
+            </td>
+            <td>{c.company ?? "—"}</td>
+            <td class="last-seen">{timeAgo(c.updated_at)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+)}
+
+<style>
+  .tier-section { padding: 2rem 0; border-top: 1px solid #1f1f1f; }
+  .tier-header {
+    display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem;
+  }
+  .tier-title {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: 0.875rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #9a968c;
+  }
+  .tier-subtitle { color: #6a665e; font-size: 0.875rem; }
+  .tier-count { color: #6a665e; font-size: 0.8125rem; margin-left: auto; }
+
+  .corridor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .corridor-table th, .corridor-table td {
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .corridor-table th {
+    font-weight: 500;
+    color: #6a665e;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+  }
+  .corridor-table tbody tr:hover { background: #141414; }
+  .corridor-table a { color: #e8e6e0; text-decoration: none; }
+  .corridor-table a:hover { text-decoration: underline; }
+  .last-seen { color: #8a877e; }
+
+  @media (max-width: 640px) {
+    .corridor-table th:nth-child(2),
+    .corridor-table td:nth-child(2) { display: none; }
+  }
+</style>

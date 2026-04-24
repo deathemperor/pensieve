@@ -1,0 +1,71 @@
+---
+import PortraitCard from "./PortraitCard.astro";
+import type { Contact, TierCode } from "../../lib/portraits/types";
+import { tierSectionTitle } from "../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+  tier: TierCode;
+  contacts: Contact[];
+  isAdminView: boolean;
+}
+
+const { tier, contacts, isAdminView } = Astro.props;
+const h = tierSectionTitle(tier, getCurrentLang(Astro));
+---
+
+{contacts.length > 0 && (
+  <section class={`tier-section tier-${tier}`}>
+    <header class="tier-header">
+      <h2 class="tier-title">{h.title}</h2>
+      {h.subtitle && <span class="tier-subtitle">— {h.subtitle}</span>}
+      <span class="tier-count">({contacts.length})</span>
+    </header>
+    <div class="tier-grid">
+      {contacts.map((c) => (
+        <PortraitCard contact={c} isAdminView={isAdminView} />
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  .tier-section {
+    padding: 2rem 0;
+    border-top: 1px solid #1f1f1f;
+  }
+  .tier-section:first-child { border-top: 0; padding-top: 0; }
+
+  .tier-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .tier-title {
+    font-family: "Inter Tight", sans-serif;
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #9a968c;
+  }
+  .tier-subtitle {
+    color: #6a665e;
+    font-size: 0.875rem;
+  }
+  .tier-count {
+    color: #6a665e;
+    font-size: 0.8125rem;
+    margin-left: auto;
+  }
+
+  .tier-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem 2.5rem;
+    align-items: flex-start;
+  }
+  .tier-S .tier-grid { gap: 3rem 4rem; }
+  .tier-C .tier-grid { gap: 1.25rem 1.5rem; }
+</style>

@@ -1,0 +1,35 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+
+interface Props { db: D1Database }
+const { db } = Astro.props;
+
+interface Row { n: number }
+const rs = await db
+  .prepare("SELECT COUNT(*) AS n FROM contact_reminders WHERE dismissed_at IS NULL AND date(due_at) <= date('now', '+7 days')")
+  .first<Row>();
+const count = rs?.n ?? 0;
+---
+
+{count > 0 && (
+  <a class="reminders-pill" href="#reminders-slideover" data-count={count}>
+    ⏰ {count} {count === 1 ? "reminder" : "reminders"} due this week
+  </a>
+)}
+
+<style>
+  .reminders-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: #d4a89a;
+    background: rgba(212, 168, 154, 0.08);
+    border: 1px solid #d4a89a44;
+    padding: 0.3rem 0.65rem;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: background 120ms ease;
+  }
+  .reminders-pill:hover { background: rgba(212, 168, 154, 0.14); }
+</style>

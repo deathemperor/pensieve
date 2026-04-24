@@ -1,0 +1,319 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const e = env as any;
+const integrations = [
+  {
+    name: "vCard / CSV import",
+    status: "ready",
+    hint: "Drop a .vcf from iCloud, iOS Contacts, or Google export.",
+    href: "/room-of-requirement/portraits/import",
+    action: "Open importer",
+  },
+  {
+    name: "openclaw / iOS Shortcut ingest",
+    status: e.PORTRAITS_INGEST_TOKEN ? "ready" : "needs-secret",
+    hint: e.PORTRAITS_INGEST_TOKEN
+      ? "Bearer-token endpoint active at POST /api/portraits/ingest."
+      : "Set PORTRAITS_INGEST_TOKEN via `npx wrangler secret put PORTRAITS_INGEST_TOKEN`.",
+  },
+  {
+    name: "Claude vision OCR (card capture)",
+    status: e.ANTHROPIC_API_KEY ? "ready" : "needs-secret",
+    hint: e.ANTHROPIC_API_KEY
+      ? "OCR fires automatically on card upload."
+      : "Set ANTHROPIC_API_KEY via wrangler secret. Card uploads work but OCR stays pending until the key is set.",
+  },
+  {
+    name: "Google Custom Search (press mentions)",
+    status: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID ? "ready" : "needs-secret",
+    hint: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID
+      ? "Each contact's detail page gets a Press section that runs a Google CSE search for newspaper mentions (100 queries/day free tier)."
+      : "Create a Custom Search Engine at programmablesearchengine.google.com (either whole-web or restricted to news-site allowlist), then set GOOGLE_CSE_API_KEY (from console.cloud.google.com → Credentials) and GOOGLE_CSE_ID via wrangler secret.",
+  },
+  {
+    name: "Resend outreach",
+    status: e.RESEND_API_KEY ? "ready" : "needs-secret",
+    hint: e.RESEND_API_KEY
+      ? "Compose emails from any email channel on the detail page."
+      : "Set RESEND_API_KEY. Outreach compose returns 503 until the key is set.",
+  },
+  {
+    name: "Google Contacts OAuth sync",
+    status: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET ? "ready" : "not-configured",
+    hint: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "Click Connect to authorize; the People API sync runs on demand and imports your connections as D-tier contacts (dedup on Google resourceName)."
+      : "Register an OAuth app at console.cloud.google.com with redirect URI /api/portraits/integrations/google/callback, then set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET via wrangler secret.",
+    href: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "/api/portraits/integrations/google/start"
+      : undefined,
+    action: e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET
+      ? "Connect Google Contacts"
+      : undefined,
+  },
+  {
+    name: "iOS Shortcut",
+    status: e.PORTRAITS_INGEST_TOKEN ? "ready" : "needs-secret",
+    hint: "Walkthrough: build a share-sheet Shortcut on your iPhone that POSTs to /api/portraits/ingest with your bearer token.",
+    href: "/room-of-requirement/portraits/sync/ios",
+    action: "Open walkthrough",
+  },
+  {
+    name: "Facebook / LinkedIn",
+    status: "csv-only",
+    hint: "Meta retired friends-list API; LinkedIn gates its export behind paid partnership. Use their Download Your Information / Connections Export flows, then import via vCard/CSV.",
+  },
+  {
+    name: "Google Drive folder scan",
+    status: (e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET) ? "ready" : "needs-secret",
+    hint: "Configure a Drive folder below. An hourly cron scans for new image files and runs Claude vision OCR on each.",
+  },
+  {
+    name: "Google Custom Search (press mentions)",
+    status: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID ? "ready" : "needs-secret",
+    hint: e.GOOGLE_CSE_API_KEY && e.GOOGLE_CSE_ID
+      ? "Detail page 'In the press' section uses a Google CSE (100 queries/day free)."
+      : "Create a CSE at programmablesearchengine.google.com, set GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID.",
+  },
+  { name: "Deal pipeline", status: "ready", hint: "Per-contact deals + multi-currency pipeline value in the gallery header.", href: "/room-of-requirement/portraits", action: "Open gallery" },
+  { name: "Event batch scanner", status: "ready", hint: "Upload up to 20 cards under an event name; per-card OCR in parallel.", href: "/room-of-requirement/portraits/events", action: "Manage events" },
+  { name: "Collaborators (per contact)", status: "ready", hint: "Grant another EmDash account view or edit access to individual contacts." },
+  { name: "Encrypted notes (zero-knowledge)", status: "ready", hint: "Per-note AES-GCM-256 via PBKDF2 passphrase; plaintext never reaches the server." },
+];
+---
+
+<Base title="Sync — Portraits" description="Integration status.">
+  <main class="sync-page">
+    <a class="back-link" href="/room-of-requirement/portraits">← Portraits</a>
+    <h1>Sync & integrations</h1>
+    <p class="hint">How data flows into your rolodex.</p>
+
+    {Astro.url.searchParams.get("google") === "connected" && (
+      <div class="notice">✓ Google Contacts connected. Hit "Sync now" below to pull your connections.</div>
+    )}
+
+    <ul class="integrations">
+      {integrations.map((ig) => (
+        <li class={`integration status-${ig.status}`}>
+          <div class="row">
+            <strong class="name">{ig.name}</strong>
+            <span class={`pill pill-${ig.status}`}>{ig.status.replace(/-/g, " ")}</span>
+          </div>
+          <p class="hint">{ig.hint}</p>
+          {ig.href && ig.action && <a class="btn" href={ig.href}>{ig.action}</a>}
+        </li>
+      ))}
+    </ul>
+
+    {e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET && (
+      <section class="sync-actions">
+        <h2 class="section-subtitle">Manual sync</h2>
+        <button id="google-sync-btn" class="btn">Pull Google Contacts now</button>
+        <p id="google-sync-status" class="muted hint"></p>
+      </section>
+    )}
+
+    {e.GOOGLE_OAUTH_CLIENT_ID && e.GOOGLE_OAUTH_CLIENT_SECRET && (
+      <section class="sync-actions drive-section">
+        <h2 class="section-subtitle">Google Drive folder scan</h2>
+        <p class="hint">Save a Drive folder of card photos. Hourly cron will scan + OCR any new images.</p>
+        <ul id="drive-folders-list" class="drive-folders"></ul>
+        <form id="drive-folder-form" class="drive-form">
+          <label class="full">
+            <span>Folder URL or ID <em>*</em></span>
+            <input type="text" name="folder" required placeholder="https://drive.google.com/drive/folders/…" />
+          </label>
+          <label>
+            <span>Label (optional)</span>
+            <input type="text" name="label" placeholder="iPhone card captures" maxlength="60" />
+          </label>
+          <div class="drive-actions">
+            <button type="submit" class="btn">Save folder</button>
+            <button type="button" id="scan-now-btn" class="btn">Scan now</button>
+          </div>
+          <p id="drive-status" class="muted hint" hidden></p>
+        </form>
+      </section>
+    )}
+  </main>
+</Base>
+
+<script>
+  const btn = document.getElementById("google-sync-btn") as HTMLButtonElement | null;
+  const status = document.getElementById("google-sync-status") as HTMLParagraphElement | null;
+  btn?.addEventListener("click", async () => {
+    if (!status) return;
+    btn.disabled = true;
+    status.textContent = "Syncing… this can take a minute for large address books.";
+    try {
+      const res = await fetch("/api/portraits/integrations/google/sync", { method: "POST" });
+      const data = await res.json() as { counts?: { fetched: number; created: number; skipped: number; updated: number }; error?: string };
+      if (!res.ok) {
+        status.textContent = `Sync failed: ${data.error ?? res.statusText}`;
+        return;
+      }
+      const c = data.counts;
+      status.textContent = c
+        ? `✓ Fetched ${c.fetched} · created ${c.created} · skipped ${c.skipped} · already-imported ${c.updated}.`
+        : "✓ Done.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // --- Drive folders UI
+  const driveList = document.getElementById("drive-folders-list") as HTMLUListElement | null;
+  const driveForm = document.getElementById("drive-folder-form") as HTMLFormElement | null;
+  const scanBtn = document.getElementById("scan-now-btn") as HTMLButtonElement | null;
+  const driveStatus = document.getElementById("drive-status") as HTMLParagraphElement | null;
+
+  function setDriveStatus(txt: string) {
+    if (!driveStatus) return;
+    driveStatus.textContent = txt;
+    driveStatus.hidden = false;
+  }
+
+  async function refreshDrive() {
+    if (!driveList) return;
+    const res = await fetch("/api/portraits/integrations/drive/folder");
+    if (!res.ok) return;
+    const data = await res.json() as { folders: Array<{ folder_id: string; label: string | null; enabled: number; last_scanned_at: string | null; last_status: string | null; last_new_count: number }> };
+    driveList.replaceChildren();
+    if (data.folders.length === 0) {
+      const li = document.createElement("li");
+      li.className = "muted empty";
+      li.textContent = "No folders configured.";
+      driveList.appendChild(li);
+      return;
+    }
+    for (const f of data.folders) {
+      const li = document.createElement("li");
+      li.className = "drive-folder";
+      const label = document.createElement("strong");
+      label.textContent = f.label ?? (f.folder_id.slice(0, 10) + "…");
+      li.appendChild(label);
+      const meta = document.createElement("span");
+      meta.className = "drive-meta";
+      const parts: string[] = [f.enabled ? "enabled" : "disabled"];
+      if (f.last_scanned_at) parts.push(`last: ${new Date(f.last_scanned_at).toLocaleString()}`);
+      if (f.last_status) parts.push(String(f.last_status));
+      if (f.last_new_count != null) parts.push(`${f.last_new_count} new`);
+      meta.textContent = parts.join(" · ");
+      li.appendChild(meta);
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "tiny-btn";
+      del.textContent = "remove";
+      del.addEventListener("click", async () => {
+        if (!window.confirm(`Stop scanning folder ${f.folder_id}?`)) return;
+        const r = await fetch(`/api/portraits/integrations/drive/folder?folder=${encodeURIComponent(f.folder_id)}`, { method: "DELETE" });
+        if (r.ok) await refreshDrive();
+      });
+      li.appendChild(del);
+      driveList.appendChild(li);
+    }
+  }
+
+  driveForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!driveForm) return;
+    const fd = new FormData(driveForm);
+    const res = await fetch("/api/portraits/integrations/drive/folder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        folder: String(fd.get("folder") ?? "").trim(),
+        label: String(fd.get("label") ?? "").trim() || undefined,
+      }),
+    });
+    const data = await res.json().catch(() => ({})) as { ok?: boolean; error?: string };
+    if (!res.ok) {
+      setDriveStatus(`Add failed: ${data.error ?? res.statusText}`);
+      return;
+    }
+    driveForm.reset();
+    await refreshDrive();
+    setDriveStatus("✓ Folder saved.");
+  });
+
+  scanBtn?.addEventListener("click", async () => {
+    if (!scanBtn) return;
+    scanBtn.disabled = true;
+    setDriveStatus("Scanning all enabled folders…");
+    try {
+      const res = await fetch("/api/portraits/integrations/drive/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const data = await res.json().catch(() => ({})) as { outcomes?: Array<{ new_files: number; processed_ok: number; failed: number }>; error?: string };
+      if (!res.ok) {
+        setDriveStatus(`Scan failed: ${data.error ?? res.statusText}`);
+        return;
+      }
+      const outs = data.outcomes ?? [];
+      const total = outs.reduce((s, o) => s + o.processed_ok, 0);
+      const failed = outs.reduce((s, o) => s + o.failed, 0);
+      setDriveStatus(`✓ ${outs.length} folder${outs.length === 1 ? "" : "s"} · ${total} new card${total === 1 ? "" : "s"}${failed ? ` · ${failed} failed` : ""}.`);
+      await refreshDrive();
+    } finally {
+      scanBtn.disabled = false;
+    }
+  });
+
+  refreshDrive();
+</script>
+
+<style>
+  .sync-page { max-width: 780px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 1.5rem; }
+  .integrations { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .integration { padding: 1rem; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .integration .row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .name { color: #e8e6e0; }
+  .pill { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 2px; border: 1px solid #3a3a3a; color: #9a968c; }
+  .pill-ready { border-color: #7aa56a; color: #a9cfa0; background: rgba(120, 170, 110, 0.08); }
+  .pill-needs-secret, .pill-not-configured { border-color: #d4a89a; color: #d4a89a; background: rgba(212, 168, 154, 0.08); }
+  .pill-docs-only, .pill-csv-only { border-color: #2a2a2a; color: #6a665e; }
+  .integration .hint { margin: 0.5rem 0 0; font-size: 0.875rem; color: #bdb8ac; }
+  .btn { display: inline-block; margin-top: 0.75rem; padding: 0.4rem 0.9rem; border: 1px solid #d4a89a; border-radius: 3px; color: #d4a89a; text-decoration: none; font-size: 0.875rem; background: none; font-family: inherit; cursor: pointer; }
+  .btn:hover { background: rgba(212, 168, 154, 0.08); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .notice {
+    padding: 0.7rem 0.9rem;
+    background: rgba(120, 170, 110, 0.08);
+    border-left: 2px solid #a9cfa0;
+    border-radius: 2px;
+    color: #bdb8ac;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+  .sync-actions { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #1f1f1f; }
+  .section-subtitle { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.875rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0 0 0.75rem; }
+
+  .drive-folders { list-style: none; padding: 0; margin: 0 0 0.75rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .drive-folder { display: grid; grid-template-columns: auto 1fr auto; gap: 0.5rem; align-items: center; padding: 0.4rem 0.55rem; border: 1px solid #1a1a1a; border-radius: 3px; }
+  .drive-folder strong { color: #e8e6e0; font-family: "JetBrains Mono", monospace; font-size: 0.8125rem; }
+  .drive-folder .drive-meta { color: #6a665e; font-size: 0.75rem; }
+  .drive-form { display: flex; flex-direction: column; gap: 0.5rem; }
+  .drive-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8125rem; color: #8a877e; }
+  .drive-form label em { color: #d4a89a; font-style: normal; }
+  .drive-form input { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.55rem; border-radius: 3px; font: inherit; }
+  .drive-actions { display: flex; gap: 0.5rem; }
+  .drive-actions .btn { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.35rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; font-size: 0.85rem; }
+  .drive-actions .btn:hover:not(:disabled) { background: rgba(212, 168, 154, 0.08); }
+  .drive-actions .btn:disabled { opacity: 0.5; cursor: wait; }
+  .tiny-btn { background: transparent; border: 1px solid #2a2a2a; color: #6a665e; padding: 0.15rem 0.5rem; border-radius: 2px; cursor: pointer; font: inherit; font-size: 0.75rem; }
+  .tiny-btn:hover { border-color: #e57373; color: #e57373; }
+</style>

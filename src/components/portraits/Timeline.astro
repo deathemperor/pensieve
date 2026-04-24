@@ -1,0 +1,95 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+
+interface InteractionRow { id: string; kind: string; body: string | null; happened_at: string }
+const rs = await db
+  .prepare("SELECT id, kind, body, happened_at FROM contact_interactions WHERE contact_id=? ORDER BY happened_at DESC LIMIT 50")
+  .bind(contactId)
+  .all<InteractionRow>();
+const rows = (rs.results ?? []) as InteractionRow[];
+
+const kindIcon = {
+  met: "🤝",
+  call: "📞",
+  email_sent: "📤",
+  email_received: "📥",
+  note: "📝",
+  deal: "💼",
+  intro: "🫱",
+} as const;
+function icon(k: string): string {
+  return (kindIcon as Record<string, string>)[k] ?? "•";
+}
+function fmt(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<section class="section timeline">
+  <h2 class="section-title">Timeline</h2>
+  {rows.length === 0 ? (
+    <p class="muted">No interactions logged yet.</p>
+  ) : (
+    <ul class="timeline-list">
+      {rows.map((r) => (
+        <li class="timeline-item">
+          <span class="icon">{icon(r.kind)}</span>
+          <div class="body">
+            <div class="meta"><strong>{r.kind.replace("_", " ")}</strong> · {fmt(r.happened_at)}</div>
+            {r.body && <div class="note">{r.body}</div>}
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <form id="log-form" class="log-form">
+    <select name="kind" required>
+      <option value="met">met</option>
+      <option value="call">call</option>
+      <option value="email_sent">email sent</option>
+      <option value="email_received">email received</option>
+      <option value="deal">deal</option>
+      <option value="intro">intro</option>
+    </select>
+    <input type="text" name="body" placeholder="Short note (optional)" maxlength="500" />
+    <button type="submit">＋ log</button>
+  </form>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("log-form");
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const body = {
+      kind: String(fd.get("kind") ?? ""),
+      body: String(fd.get("body") ?? "").trim() || undefined,
+      happened_at: new Date().toISOString(),
+    };
+    const res = await fetch(`/api/portraits/${contactId}/interactions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) window.location.reload();
+  });
+</script>
+
+<style>
+  .timeline-list { list-style: none; padding: 0; margin: 0 0 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .timeline-item { display: flex; gap: 0.75rem; }
+  .icon { font-size: 1.1rem; line-height: 1.2; padding-top: 0.1rem; }
+  .meta { color: #8a877e; font-size: 0.8125rem; }
+  .meta strong { color: #bdb8ac; font-weight: 500; }
+  .note { color: #bdb8ac; font-size: 0.9rem; margin-top: 0.15rem; }
+  .muted { color: #6a665e; margin-bottom: 1rem; }
+  .log-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+  .log-form select, .log-form input { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.6rem; border-radius: 3px; font: inherit; }
+  .log-form input { flex: 1; min-width: 180px; }
+  .log-form button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
+  .log-form button:hover { background: rgba(212, 168, 154, 0.08); }
+</style>
