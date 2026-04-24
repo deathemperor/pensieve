@@ -1,0 +1,536 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { env } from "cloudflare:workers";
+import { getCurrentLang } from "../../../utils/lang";
+import { renderDesignDocMarkdown } from "../../../lib/designDocMarkdown";
+
+const isVi = getCurrentLang(Astro) === "vi";
+
+interface DesignDoc {
+	id: string;
+	title: string;
+	doc_type: string;
+	project: string;
+	summary: string | null;
+	prompt: string | null;
+	file_path: string;
+	notion_url: string | null;
+	line_count: number | null;
+	created_at: string;
+	updated_at: string | null;
+}
+
+const db = (env as { DB?: D1Database }).DB;
+const slug = String(Astro.params.slug ?? "").trim();
+
+let doc: DesignDoc | null = null;
+if (db && slug) {
+	// file_path always ends with `<slug>.md`. Match liberally on the
+	// trailing segment so the URL doesn't bake in the full repo path.
+	try {
+		const row = await db
+			.prepare("SELECT * FROM design_docs WHERE file_path LIKE ? LIMIT 1")
+			.bind(`%${slug}.md`)
+			.first<DesignDoc>();
+		if (row) doc = row;
+	} catch {
+		doc = null;
+	}
+}
+
+if (!doc) {
+	return new Response(
+		isVi ? "Không tìm thấy tài liệu" : "Design doc not found",
+		{ status: 404, headers: { "Content-Type": "text/plain;charset=utf-8" } },
+	);
+}
+
+// Fetch the raw markdown from GitHub. Public repo, no auth needed; CF
+// edges this for an hour so most hits never leave the edge.
+const ghToken = (env as { GITHUB_TOKEN?: string }).GITHUB_TOKEN;
+const rawUrl = `https://raw.githubusercontent.com/deathemperor/pensieve/main/${doc.file_path}`;
+let markdownSource = "";
+let fetchError: string | null = null;
+try {
+	const res = await fetch(rawUrl, {
+		headers: ghToken
+			? { "User-Agent": "pensieve-site", Authorization: `Bearer ${ghToken}` }
+			: { "User-Agent": "pensieve-site" },
+		cf: { cacheTtl: 3600, cacheEverything: true },
+	} as RequestInit);
+	if (res.ok) {
+		markdownSource = await res.text();
+	} else {
+		fetchError = `HTTP ${res.status}`;
+	}
+} catch (err) {
+	fetchError = err instanceof Error ? err.message : "network error";
+}
+
+const { html: rendered, toc } = renderDesignDocMarkdown(markdownSource);
+
+const projectDisplayNames: Record<string, string> = {
+	"hp-task-management": "HP Task Management",
+	"hogwarts-library": "Hogwarts Library",
+};
+const projectName = projectDisplayNames[doc.project] ?? doc.project;
+const docTypeLabel = doc.doc_type === "spec"
+	? (isVi ? "Thiết kế" : "Spec")
+	: (isVi ? "Kế hoạch" : "Plan");
+
+const createdDate = new Date(doc.created_at).toLocaleDateString(
+	isVi ? "vi-VN" : "en-US",
+	{ year: "numeric", month: "long", day: "numeric" },
+);
+
+const ghBlobUrl = `https://github.com/deathemperor/pensieve/blob/main/${doc.file_path}`;
+const pageTitle = `${doc.title} — ${docTypeLabel}`;
+---
+
+<Base
+	title={pageTitle}
+	description={doc.summary ?? (isVi ? "Tài liệu thiết kế từ Restricted Section" : "Design document from the Restricted Section")}
+	breadcrumbs={[
+		{ label: isVi ? "Phòng Của Yêu Cầu" : "Room of Requirement", href: "/room-of-requirement" },
+		{ label: isVi ? "Khu Sách Cấm" : "Restricted Section", href: "/room-of-requirement/restricted-section" },
+		{ label: doc.title },
+	]}
+>
+	<main class="rs-doc">
+		<header class="rs-doc-header">
+			<div class="rs-doc-header-inner">
+				<span class={`rs-doc-badge rs-doc-badge-${doc.doc_type}`}>{docTypeLabel}</span>
+				<h1 class="rs-doc-title">{doc.title}</h1>
+				{doc.summary && <p class="rs-doc-summary">{doc.summary}</p>}
+				<dl class="rs-doc-meta">
+					<div class="rs-doc-meta-row"><dt>{isVi ? "Dự án" : "Project"}</dt><dd>{projectName}</dd></div>
+					<div class="rs-doc-meta-row"><dt>{isVi ? "Ngày ghi" : "Logged"}</dt><dd>{createdDate}</dd></div>
+					{doc.line_count && (
+						<div class="rs-doc-meta-row"><dt>{isVi ? "Số dòng" : "Lines"}</dt><dd>{doc.line_count.toLocaleString(isVi ? "vi-VN" : "en-US")}</dd></div>
+					)}
+				</dl>
+			</div>
+		</header>
+
+		<div class="rs-doc-body-wrap">
+			<article class="rs-doc-body">
+				{fetchError && (
+					<div class="rs-doc-error">
+						<p>
+							{isVi
+								? `Không lấy được nội dung từ GitHub (${fetchError}). Nguồn có thể đã được đổi tên hoặc gỡ.`
+								: `Couldn't fetch the document from GitHub (${fetchError}). The source may have been renamed or removed.`}
+						</p>
+						<a href={ghBlobUrl} target="_blank" rel="noopener">
+							{isVi ? "Mở lịch sử trên GitHub" : "Open history on GitHub"}
+						</a>
+					</div>
+				)}
+				{!fetchError && rendered && (
+					<div class="rs-doc-prose" set:html={rendered} />
+				)}
+				{!fetchError && !rendered && (
+					<p class="rs-doc-empty">{isVi ? "Tài liệu rỗng." : "Document is empty."}</p>
+				)}
+
+				<footer class="rs-doc-footer">
+					<a href="/room-of-requirement/restricted-section" class="rs-doc-back">
+						← {isVi ? "Về Khu Sách Cấm" : "Back to the Restricted Section"}
+					</a>
+					<a href={ghBlobUrl} target="_blank" rel="noopener" class="rs-doc-source">
+						{isVi ? "Nguồn trên GitHub" : "View source on GitHub"}
+						<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+							<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+						</svg>
+					</a>
+				</footer>
+			</article>
+
+			<aside class="rs-doc-aside" aria-label={isVi ? "Mục lục" : "Table of contents"}>
+				{toc.length > 0 && (
+					<nav class="rs-doc-toc">
+						<h2 class="rs-doc-aside-title">
+							<span class="rs-doc-aside-rune" aria-hidden="true">ᛟ</span>
+							{isVi ? "Mục lục" : "Contents"}
+						</h2>
+						<ol>
+							{toc.map((h) => (
+								<li class={`rs-doc-toc-l${h.level}`}><a href={`#${h.id}`}>{h.text}</a></li>
+							))}
+						</ol>
+					</nav>
+				)}
+				{(doc.prompt || doc.notion_url) && (
+					<div class="rs-doc-context">
+						{doc.prompt && (
+							<div class="rs-doc-prompt-card">
+								<h2 class="rs-doc-aside-title">
+									<span class="rs-doc-aside-rune" aria-hidden="true">ᛉ</span>
+									{isVi ? "Lời gọi ban đầu" : "Original prompt"}
+								</h2>
+								<p>{doc.prompt}</p>
+							</div>
+						)}
+						{doc.notion_url && (
+							<a href={doc.notion_url} target="_blank" rel="noopener" class="rs-doc-notion">
+								{isVi ? "Mở trên Notion" : "Open on Notion"}
+							</a>
+						)}
+					</div>
+				)}
+			</aside>
+		</div>
+	</main>
+</Base>
+
+<style>
+	/* ─── Restricted Section — individual doc page ─────────────────────
+	   Gold-ruled prose card inside the dark canvas. Matches the
+	   /Trương magical vocabulary: runes, dashed gold rules, silver
+	   inset for prose body, no per-theme backgrounds. */
+
+	.rs-doc {
+		max-width: 1180px;
+		margin: 0 auto;
+		padding: var(--spacing-12, 48px) var(--spacing-6, 24px) var(--spacing-16, 64px);
+	}
+
+	/* Header strip — badge, title, summary, meta */
+	.rs-doc-header {
+		position: relative;
+		margin-bottom: var(--spacing-8, 32px);
+	}
+	.rs-doc-header::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -16px;
+		height: 1px;
+		background-image: linear-gradient(90deg,
+			transparent 0%,
+			rgba(240, 199, 94, 0.24) 20%,
+			rgba(240, 199, 94, 0.4) 50%,
+			rgba(240, 199, 94, 0.24) 80%,
+			transparent 100%);
+		mask-image: repeating-linear-gradient(90deg,
+			#000 0, #000 7px,
+			transparent 7px, transparent 14px);
+		-webkit-mask-image: repeating-linear-gradient(90deg,
+			#000 0, #000 7px,
+			transparent 7px, transparent 14px);
+		pointer-events: none;
+	}
+	.rs-doc-header-inner {
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+	}
+	.rs-doc-badge {
+		align-self: flex-start;
+		font-family: "JetBrains Mono", monospace;
+		font-size: 10.5px;
+		letter-spacing: 0.24em;
+		text-transform: uppercase;
+		padding: 3px 10px;
+		border-radius: 999px;
+		border: 1px solid rgba(240, 199, 94, 0.35);
+		color: rgba(240, 199, 94, 0.9);
+		background: rgba(240, 199, 94, 0.05);
+	}
+	.rs-doc-badge-plan {
+		border-color: rgba(200, 210, 225, 0.35);
+		color: rgba(200, 210, 225, 0.9);
+		background: rgba(200, 210, 225, 0.05);
+	}
+	.rs-doc-title {
+		font-family: "Inter Tight", sans-serif;
+		font-size: clamp(28px, 3.4vw, 44px);
+		font-weight: 600;
+		color: #f7f8f8;
+		margin: 0;
+		letter-spacing: -0.015em;
+		line-height: 1.15;
+	}
+	.rs-doc-summary {
+		font-family: "Inter Tight", sans-serif;
+		font-size: clamp(14px, 1.2vw, 16px);
+		color: #a8adb8;
+		margin: 0;
+		line-height: 1.55;
+		max-width: 62ch;
+	}
+	.rs-doc-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.2rem 2rem;
+		margin: 0.4rem 0 0;
+		font-family: "JetBrains Mono", monospace;
+		font-size: 11.5px;
+		color: #8a8f98;
+	}
+	.rs-doc-meta-row { display: inline-flex; gap: 0.5rem; align-items: baseline; }
+	.rs-doc-meta-row dt { color: rgba(240, 199, 94, 0.55); font-weight: 500; }
+	.rs-doc-meta-row dd { margin: 0; color: #c8ccd4; }
+
+	/* Two-column body: prose + aside. Collapse to single column below 900px. */
+	.rs-doc-body-wrap {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 260px;
+		gap: 3rem;
+		align-items: start;
+	}
+	@media (max-width: 900px) {
+		.rs-doc-body-wrap { grid-template-columns: 1fr; gap: 2rem; }
+	}
+
+	.rs-doc-body {
+		position: relative;
+		padding: 2.2rem 2.4rem 2.6rem;
+		border-radius: 14px;
+		border: 1px solid rgba(200, 210, 225, 0.12);
+		background:
+			linear-gradient(180deg, rgba(200, 210, 225, 0.02) 0%, rgba(200, 210, 225, 0.005) 100%),
+			#0a0b10;
+		box-shadow: inset 0 1px 0 rgba(200, 210, 225, 0.04);
+	}
+	.rs-doc-body::before {
+		/* Silvery rim along the top, like the Pensieve Wrapped hero card */
+		content: "";
+		position: absolute;
+		top: 0; left: 6%; right: 6%; height: 1px;
+		background: linear-gradient(90deg,
+			transparent 0%,
+			rgba(200, 210, 225, 0.4) 50%,
+			transparent 100%);
+		pointer-events: none;
+	}
+	@media (max-width: 600px) {
+		.rs-doc-body { padding: 1.4rem 1.2rem 1.8rem; }
+	}
+
+	/* Prose typography — prose-column styled like a grimoire page */
+	.rs-doc-prose {
+		color: #c8ccd4;
+		font-family: "Inter", system-ui, sans-serif;
+		font-size: 15px;
+		line-height: 1.72;
+		max-width: 72ch;
+	}
+	.rs-doc-prose > * + * { margin-top: 1em; }
+	.rs-doc-prose h1,
+	.rs-doc-prose h2,
+	.rs-doc-prose h3,
+	.rs-doc-prose h4 {
+		font-family: "Inter Tight", sans-serif;
+		color: #f2f3f5;
+		letter-spacing: -0.012em;
+		scroll-margin-top: 1.5rem;
+		line-height: 1.25;
+	}
+	.rs-doc-prose h1 { font-size: 1.9rem; margin-top: 2.2em; font-weight: 600; }
+	.rs-doc-prose h2 { font-size: 1.45rem; margin-top: 2em; font-weight: 600; padding-bottom: 0.35em; border-bottom: 1px dashed rgba(240, 199, 94, 0.22); }
+	.rs-doc-prose h3 { font-size: 1.15rem; margin-top: 1.8em; font-weight: 500; color: rgba(240, 199, 94, 0.82); }
+	.rs-doc-prose h4 { font-size: 1rem; margin-top: 1.6em; font-weight: 500; color: #e8ebf0; }
+	.rs-doc-prose p, .rs-doc-prose li { color: #c8ccd4; }
+	.rs-doc-prose a {
+		color: rgba(240, 199, 94, 0.95);
+		text-decoration: none;
+		border-bottom: 1px dashed rgba(240, 199, 94, 0.3);
+		transition: color 180ms, border-color 180ms;
+	}
+	.rs-doc-prose a:hover { color: #ffdc80; border-bottom-color: rgba(240, 199, 94, 0.7); }
+	.rs-doc-prose code {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 0.88em;
+		background: rgba(240, 199, 94, 0.07);
+		border: 1px solid rgba(240, 199, 94, 0.12);
+		border-radius: 4px;
+		padding: 1px 6px;
+		color: #ffdc80;
+	}
+	.rs-doc-prose pre {
+		background: #05060a;
+		border: 1px solid rgba(240, 199, 94, 0.15);
+		border-left: 2px solid rgba(240, 199, 94, 0.35);
+		border-radius: 6px;
+		padding: 1rem 1.1rem;
+		overflow-x: auto;
+		font-family: "JetBrains Mono", monospace;
+		font-size: 12.5px;
+		line-height: 1.6;
+	}
+	.rs-doc-prose pre code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: #c8ccd4;
+		font-size: inherit;
+	}
+	.rs-doc-prose blockquote {
+		margin: 1em 0;
+		padding: 0.35em 1.1rem;
+		border-left: 3px solid rgba(240, 199, 94, 0.45);
+		background: rgba(240, 199, 94, 0.04);
+		color: #d8dce4;
+		font-style: italic;
+	}
+	.rs-doc-prose ul, .rs-doc-prose ol { padding-left: 1.5em; }
+	.rs-doc-prose li { margin: 0.25em 0; }
+	.rs-doc-prose li::marker { color: rgba(240, 199, 94, 0.5); }
+	.rs-doc-prose hr {
+		border: none;
+		height: 1px;
+		margin: 2em 0;
+		background-image: linear-gradient(90deg,
+			transparent 0%,
+			rgba(240, 199, 94, 0.3) 50%,
+			transparent 100%);
+		mask-image: repeating-linear-gradient(90deg,
+			#000 0, #000 5px,
+			transparent 5px, transparent 10px);
+		-webkit-mask-image: repeating-linear-gradient(90deg,
+			#000 0, #000 5px,
+			transparent 5px, transparent 10px);
+	}
+	.rs-doc-prose table {
+		width: 100%;
+		border-collapse: collapse;
+		margin: 1.2em 0;
+		font-size: 13.5px;
+	}
+	.rs-doc-prose th, .rs-doc-prose td {
+		text-align: left;
+		padding: 0.55em 0.8em;
+		border-bottom: 1px solid rgba(200, 210, 225, 0.1);
+	}
+	.rs-doc-prose th {
+		background: rgba(240, 199, 94, 0.04);
+		color: #e8ebf0;
+		font-weight: 600;
+		border-bottom-color: rgba(240, 199, 94, 0.25);
+	}
+	.rs-doc-prose img {
+		max-width: 100%;
+		border-radius: 6px;
+		border: 1px solid rgba(200, 210, 225, 0.1);
+	}
+	.rs-doc-prose kbd {
+		font-family: "JetBrains Mono", monospace;
+		font-size: 0.82em;
+		background: #13151c;
+		border: 1px solid rgba(200, 210, 225, 0.25);
+		border-bottom-width: 2px;
+		border-radius: 4px;
+		padding: 0.1em 0.4em;
+		color: #e8ebf0;
+	}
+
+	.rs-doc-error {
+		color: #e5a0a0;
+		border-left: 2px solid #b54b3c;
+		padding: 0.6rem 1rem;
+		background: rgba(181, 75, 60, 0.06);
+		border-radius: 4px;
+	}
+	.rs-doc-error a { color: rgba(240, 199, 94, 0.9); margin-top: 0.4rem; display: inline-block; }
+	.rs-doc-empty { color: #8a8f98; font-style: italic; }
+
+	/* Footer — back-link + source-link, flush-apart */
+	.rs-doc-footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 1px dashed rgba(240, 199, 94, 0.18);
+		font-family: "Inter Tight", sans-serif;
+		font-size: 13px;
+	}
+	.rs-doc-back, .rs-doc-source {
+		color: rgba(240, 199, 94, 0.8);
+		text-decoration: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		transition: color 180ms, letter-spacing 180ms;
+	}
+	.rs-doc-back:hover, .rs-doc-source:hover { color: #ffdc80; letter-spacing: 0.02em; }
+
+	/* Right rail — TOC + prompt + notion */
+	.rs-doc-aside {
+		position: sticky;
+		top: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		font-family: "Inter Tight", sans-serif;
+		font-size: 13px;
+	}
+	@media (max-width: 900px) {
+		.rs-doc-aside { position: static; }
+	}
+	.rs-doc-aside-title {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		font-family: "Inter Tight", sans-serif;
+		font-size: 11px;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		font-weight: 500;
+		color: rgba(240, 199, 94, 0.75);
+		margin: 0 0 0.8rem;
+	}
+	.rs-doc-aside-rune {
+		font-family: "IBM Plex Serif", "Iowan Old Style", serif;
+		font-size: 14px;
+		color: rgba(240, 199, 94, 0.55);
+		text-shadow: 0 0 8px rgba(240, 199, 94, 0.25);
+		letter-spacing: 0;
+	}
+	.rs-doc-toc ol {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		border-left: 1px dashed rgba(240, 199, 94, 0.22);
+	}
+	.rs-doc-toc li { line-height: 1.5; padding: 0.25rem 0 0.25rem 0.9rem; }
+	.rs-doc-toc li a {
+		color: #a8adb8;
+		text-decoration: none;
+		transition: color 150ms;
+	}
+	.rs-doc-toc li a:hover { color: #ffdc80; }
+	.rs-doc-toc-l3 { padding-left: 1.6rem !important; font-size: 12px; color: #8a8f98; }
+
+	.rs-doc-prompt-card {
+		border: 1px solid rgba(240, 199, 94, 0.15);
+		border-radius: 8px;
+		padding: 1rem 1.1rem;
+		background: rgba(240, 199, 94, 0.025);
+	}
+	.rs-doc-prompt-card p {
+		color: #c8ccd4;
+		font-size: 12.5px;
+		line-height: 1.6;
+		font-style: italic;
+		margin: 0;
+	}
+	.rs-doc-notion {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.45rem 0.8rem;
+		border-radius: 6px;
+		border: 1px solid rgba(200, 210, 225, 0.2);
+		background: rgba(200, 210, 225, 0.03);
+		color: #c8ccd4;
+		text-decoration: none;
+		font-size: 12px;
+		transition: border-color 180ms, color 180ms;
+	}
+	.rs-doc-notion:hover { border-color: rgba(240, 199, 94, 0.35); color: #ffdc80; }
+</style>
