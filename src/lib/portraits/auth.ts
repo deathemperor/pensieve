@@ -25,16 +25,24 @@ export function accessRank(a: ContactAccess): number {
   return ({ none: 0, view: 1, edit: 2, admin: 3 } as const)[a];
 }
 
+// EmDash's /_emdash/api/auth/me has returned the user object under either
+// {data: {...}} or {user: {...}} across versions. Accept either shape.
+function extractUser(body: unknown): { role?: unknown; email?: unknown } | null {
+  if (!body || typeof body !== "object") return null;
+  const b = body as { data?: unknown; user?: unknown };
+  const candidate = (b.data && typeof b.data === "object" ? b.data : null)
+    ?? (b.user && typeof b.user === "object" ? b.user : null);
+  return candidate as { role?: unknown; email?: unknown } | null;
+}
+
 export function isAdminResponse(
   status: number,
   body: unknown,
 ): boolean {
   if (status !== 200) return false;
-  if (!body || typeof body !== "object") return false;
-  const user = (body as { user?: { role?: unknown } }).user;
-  if (!user || typeof user !== "object") return false;
-  const role = (user as { role?: unknown }).role;
-  return typeof role === "number" && role >= ADMIN_ROLE_THRESHOLD;
+  const user = extractUser(body);
+  if (!user) return false;
+  return typeof user.role === "number" && user.role >= ADMIN_ROLE_THRESHOLD;
 }
 
 export async function requireAdmin(
@@ -63,7 +71,10 @@ export async function requireAdmin(
   }
 
   const admin = isAdminResponse(res.status, body);
-  const user = admin ? (body as { user: AuthUser }).user : null;
+  const raw = extractUser(body);
+  const user: AuthUser | null = raw && typeof raw.role === "number" && typeof raw.email === "string"
+    ? { role: raw.role, email: raw.email }
+    : null;
   return { admin, user };
 }
 
