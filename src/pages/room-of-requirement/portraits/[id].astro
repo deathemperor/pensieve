@@ -1,0 +1,399 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+import { getContact } from "../../../lib/portraits/db";
+import type { ContactWithChannels } from "../../../lib/portraits/types";
+import Timeline from "../../../components/portraits/Timeline.astro";
+import NotesTab from "../../../components/portraits/NotesTab.astro";
+import Relationships from "../../../components/portraits/Relationships.astro";
+import IntroPaths from "../../../components/portraits/IntroPaths.astro";
+import Mentions from "../../../components/portraits/Mentions.astro";
+import Deals from "../../../components/portraits/Deals.astro";
+import Collaborators from "../../../components/portraits/Collaborators.astro";
+import { tierName } from "../../../lib/portraits/tier-labels";
+import { getCurrentLang } from "../../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const auth = await requireAdmin(Astro);
+const db = (env as any).DB;
+const id = Astro.params.id;
+
+if (typeof id !== "string" || !id) {
+  return new Response("Bad request", { status: 400 });
+}
+
+const contact: ContactWithChannels | null = await getContact(db, id);
+
+// Guests can only read placeholder rows. 404 on anything else to avoid existence-leak.
+if (!contact || (!auth.admin && contact.is_placeholder !== 1)) {
+  return new Response("Not found", { status: 404 });
+}
+
+const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
+const tierLabel = tierName(contact.prestige_tier, lang);
+
+// Phase 2: list any cards attached to this contact (admin view only).
+interface CardSummary { id: string; captured_at: string; ocr_status: string }
+let cards: CardSummary[] = [];
+if (auth.admin) {
+  const rs = await db
+    .prepare("SELECT id, captured_at, ocr_status FROM contact_cards WHERE contact_id=? ORDER BY captured_at DESC")
+    .bind(contact.id)
+    .all() as { results: CardSummary[] };
+  cards = (rs.results ?? []) as CardSummary[];
+}
+
+// Astro.cache.set only honors maxAge/swr/tags; set the full Cache-Control directly for "private, no-store".
+Astro.cache.set({ maxAge: auth.admin ? 0 : 3600 });
+Astro.response.headers.set(
+  "Cache-Control",
+  auth.admin ? "private, no-store" : "public, max-age=3600, s-maxage=3600",
+);
+---
+
+<Base title={`${contact.display_name ?? contact.full_name} — Portrait`} description={contact.bio ?? ""}>
+  <main class="detail-page">
+    <header class="detail-hero">
+      <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
+      <div class="detail-identity">
+        <div class="detail-photo" data-tier={contact.prestige_tier}>
+          <span class="initials">
+            {contact.full_name.split(" ").map((p) => p[0] ?? "").join("").slice(0, 2).toUpperCase()}
+          </span>
+        </div>
+        <div class="detail-meta">
+          <h1>{contact.display_name ?? contact.full_name}</h1>
+          {contact.title || contact.company ? (
+            <p class="role">{contact.title}{contact.title && contact.company ? " · " : ""}{contact.company}</p>
+          ) : null}
+          <div class="badges">
+            <span class="tier-badge">{tierLabel}</span>
+            <span class="score">{isVi ? "điểm" : "score"} {contact.tier_score}</span>
+            {contact.is_placeholder === 1 && <span class="demo-ribbon">★ {isVi ? "trưng bày" : "demo"}</span>}
+          </div>
+          {auth.admin && contact.is_placeholder !== 1 && (
+            <a class="edit-link" href={`/room-of-requirement/portraits/${contact.id}/edit`}>
+              ✎ {isVi ? "Sửa" : "Edit"}
+            </a>
+          )}
+        </div>
+      </div>
+    </header>
+
+    {contact.bio && <section class="section"><p class="bio">{contact.bio}</p></section>}
+
+    <section class="section">
+      <h2 class="section-title">{isVi ? "Kênh liên lạc" : "Channels"}</h2>
+      {contact.channels.length === 0 ? (
+        <p class="muted">{isVi ? "Chưa có kênh nào được ghi." : "No channels recorded."}</p>
+      ) : (
+        <ul class="channel-list">
+          {contact.channels.map((ch) => (
+            <li class="channel">
+              <span class="channel-kind">{ch.kind}</span>
+              <span class="channel-value">
+                {ch.kind === "email" ? (
+                  <>
+                    <a href={`mailto:${ch.value}`}>{ch.value}</a>
+                    {auth.admin && !contact.is_placeholder && (
+                      <button
+                        class="compose-btn"
+                        data-email={ch.value}
+                        data-contact={contact.id}
+                        title="Compose with Resend"
+                      >✉️</button>
+                    )}
+                  </>
+                ) : ch.kind === "phone" ? (
+                  <a href={`tel:${ch.value.replace(/[^+\d]/g, "")}`}>{ch.value}</a>
+                ) : ch.kind === "url" || ch.kind === "linkedin" || ch.kind === "twitter" || ch.kind === "x" || ch.kind === "facebook" ? (
+                  <a href={ch.value} target="_blank" rel="noopener noreferrer">{ch.value}</a>
+                ) : (
+                  ch.value
+                )}
+              </span>
+              {ch.label && <span class="channel-label">{ch.label}</span>}
+              {ch.is_primary === 1 && <span class="primary-dot" title="primary">●</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    {tags.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Thẻ" : "Tags"}</h2>
+        <div class="tags">
+          {tags.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      </section>
+    )}
+
+    {auth.admin && <Timeline db={db} contactId={contact.id} />}
+    {auth.admin && <NotesTab db={db} contactId={contact.id} />}
+    {auth.admin && <Relationships db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <IntroPaths db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <Mentions db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <Deals db={db} contactId={contact.id} />}
+
+    {auth.admin && contact.is_placeholder !== 1 && <Collaborators db={db} contactId={contact.id} />}
+
+    {auth.admin && cards.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">Cards</h2>
+        <div class="cards-grid">
+          {cards.map((c) => (
+            <a class="card-tile" href={`/api/portraits/cards/${c.id}/image`}>
+              <img src={`/api/portraits/cards/${c.id}/image`} alt="business card" loading="lazy" />
+              <span class={`card-status card-status-${c.ocr_status}`}>{c.ocr_status}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section class="section meta">
+      <dl>
+        <dt>{isVi ? "Nguồn" : "Source"}</dt><dd>{contact.source}</dd>
+        {contact.location && <><dt>{isVi ? "Địa điểm" : "Location"}</dt><dd>{contact.location}</dd></>}
+        <dt>{isVi ? "Thêm vào" : "Added"}</dt><dd>{new Date(contact.created_at).toLocaleDateString()}</dd>
+        <dt>{isVi ? "Cập nhật" : "Updated"}</dt><dd>{new Date(contact.updated_at).toLocaleDateString()}</dd>
+      </dl>
+    </section>
+  </main>
+
+  <dialog id="compose-dialog" class="compose-dialog">
+    <form id="compose-form" method="dialog">
+      <header class="compose-head">
+        <h3>{isVi ? "Soạn email" : "Compose email"}</h3>
+        <span id="compose-to" class="compose-to muted"></span>
+      </header>
+      <label class="compose-field">
+        <span>{isVi ? "Chủ đề" : "Subject"}</span>
+        <input type="text" name="subject" required maxlength="200" />
+      </label>
+      <label class="compose-field">
+        <span>{isVi ? "Nội dung" : "Body"}</span>
+        <textarea name="body" rows="8" required maxlength="10000"></textarea>
+      </label>
+      <p id="compose-error" class="error" hidden></p>
+      <div class="compose-actions">
+        <button type="button" id="compose-cancel" class="btn-ghost">{isVi ? "Huỷ" : "Cancel"}</button>
+        <button type="submit" id="compose-send" class="btn-primary">{isVi ? "Gửi" : "Send"}</button>
+      </div>
+    </form>
+  </dialog>
+</Base>
+
+<script>
+  const dialog = document.getElementById("compose-dialog") as HTMLDialogElement | null;
+  const form = document.getElementById("compose-form") as HTMLFormElement | null;
+  const toEl = document.getElementById("compose-to") as HTMLSpanElement | null;
+  const errEl = document.getElementById("compose-error") as HTMLParagraphElement | null;
+  const cancelBtn = document.getElementById("compose-cancel") as HTMLButtonElement | null;
+  const sendBtn = document.getElementById("compose-send") as HTMLButtonElement | null;
+  let currentContact: { id: string; email: string } | null = null;
+
+  function reset() {
+    currentContact = null;
+    if (form) form.reset();
+    if (errEl) errEl.hidden = true;
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = "Send"; }
+  }
+
+  cancelBtn?.addEventListener("click", () => {
+    dialog?.close();
+    reset();
+  });
+
+  dialog?.addEventListener("click", (e) => {
+    // Click on backdrop closes
+    if (e.target === dialog) { dialog.close(); reset(); }
+  });
+
+  document.querySelectorAll<HTMLButtonElement>("button.compose-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const email = btn.dataset.email;
+      const cid = btn.dataset.contact;
+      if (!email || !cid || !dialog || !toEl) return;
+      currentContact = { id: cid, email };
+      toEl.textContent = `→ ${email}`;
+      dialog.showModal();
+      (form?.querySelector("input[name=subject]") as HTMLInputElement | null)?.focus();
+    });
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!currentContact || !sendBtn || !errEl) return;
+    const fd = new FormData(form);
+    const subject = String(fd.get("subject") ?? "").trim();
+    const body = String(fd.get("body") ?? "").trim();
+    if (!subject || !body) return;
+
+    errEl.hidden = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Sending…";
+
+    const res = await fetch("/api/portraits/outreach/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contact_id: currentContact.id, to: currentContact.email, subject, body }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { resend_id?: string; error?: string; hint?: string; retry_after?: number };
+
+    if (res.ok) {
+      dialog?.close();
+      reset();
+      window.location.reload();
+      return;
+    }
+
+    const hint = data.hint ? ` — ${data.hint}` : "";
+    const retry = data.retry_after ? ` (retry in ${data.retry_after}s)` : "";
+    errEl.textContent = `Send failed: ${data.error ?? res.statusText}${hint}${retry}`;
+    errEl.hidden = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Send";
+  });
+</script>
+
+<style>
+  .detail-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  .back-link:hover { color: #d4a89a; }
+
+  .detail-identity {
+    display: flex; gap: 1.5rem; align-items: flex-start;
+    margin-top: 1rem;
+  }
+  .detail-photo {
+    width: 120px; height: 120px; border-radius: 4px;
+    background: #1a1a1a; display: grid; place-items: center;
+    border: 1px solid #2a2a2a; flex-shrink: 0;
+  }
+  .detail-photo[data-tier="S"] { border-color: #e7c76b; box-shadow: 0 0 12px rgba(231,199,107,0.2); }
+  .detail-photo[data-tier="A"] { border-color: #c8cbd0; }
+  .detail-photo[data-tier="B"] { border-color: #cd8a4e; }
+  .initials {
+    font-family: "Inter Tight", sans-serif; font-weight: 600;
+    font-size: 1.75rem; color: #666;
+  }
+  .detail-meta h1 {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: clamp(1.5rem, 4vw, 2.25rem); margin: 0;
+    color: #e8e6e0;
+  }
+  .role { color: #9a968c; margin: 0.25rem 0 0.5rem; }
+  .badges { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+  .tier-badge {
+    font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #8a877e; border: 1px solid #3a3a3a; padding: 0.1rem 0.4rem; border-radius: 2px;
+  }
+  .score { font-size: 0.75rem; color: #6a665e; }
+  .demo-ribbon { font-size: 0.75rem; color: #d4a89a; }
+
+  .section { padding: 1.5rem 0; border-top: 1px solid #1a1a1a; margin-top: 1.5rem; }
+  .section-title {
+    font-family: "Inter Tight", sans-serif; font-weight: 500;
+    font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #9a968c; margin: 0 0 0.75rem;
+  }
+  .bio { color: #bdb8ac; line-height: 1.6; margin: 0; }
+  .muted { color: #6a665e; }
+
+  .channel-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .channel { display: flex; gap: 0.75rem; align-items: baseline; font-size: 0.9375rem; }
+  .channel-kind {
+    width: 5rem; text-transform: uppercase; font-size: 0.6875rem;
+    letter-spacing: 0.08em; color: #6a665e;
+  }
+  .channel-value a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .channel-value a:hover { border-bottom-color: #d4a89a; color: #d4a89a; }
+  .channel-label { font-size: 0.75rem; color: #6a665e; }
+  .primary-dot { color: #d4a89a; font-size: 0.6rem; }
+
+  .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.75rem; padding: 0.15rem 0.5rem;
+    border: 1px solid #2a2a2a; border-radius: 2px; color: #9a968c;
+  }
+
+  .meta dl {
+    display: grid; grid-template-columns: 6rem 1fr; gap: 0.35rem 1rem;
+    font-size: 0.875rem;
+  }
+  .meta dt { color: #6a665e; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
+  .meta dd { color: #bdb8ac; margin: 0; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+  .card-tile { position: relative; display: block; border: 1px solid #2a2a2a; border-radius: 4px; overflow: hidden; }
+  .card-tile img { width: 100%; height: 90px; object-fit: cover; }
+  .card-status { position: absolute; top: 4px; right: 4px; font-size: 0.625rem; padding: 0.1rem 0.4rem; border-radius: 2px; background: #0008; color: #e8e6e0; text-transform: uppercase; letter-spacing: 0.06em; }
+  .card-status-parsed { background: rgba(120, 170, 110, 0.2); color: #a9cfa0; }
+  .card-status-failed { background: rgba(229, 115, 115, 0.2); color: #e57373; }
+  .card-status-pending, .card-status-parsing { background: rgba(212, 168, 154, 0.2); color: #d4a89a; }
+
+  button.compose-btn {
+    background: transparent;
+    border: 1px solid #3a3a3a;
+    color: #d4a89a;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: 0.375rem;
+  }
+  button.compose-btn:hover { background: rgba(212, 168, 154, 0.08); }
+
+  .edit-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+    color: #8a877e;
+    text-decoration: none;
+    border-bottom: 1px dashed #3a3a3a;
+  }
+  .edit-link:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+
+  /* Compose dialog */
+  .compose-dialog {
+    background: #0f0f0f;
+    color: #e8e6e0;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 0;
+    max-width: 560px;
+    width: calc(100% - 2rem);
+  }
+  .compose-dialog::backdrop { background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+  .compose-dialog[open] > form { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.9rem; }
+  .compose-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .compose-head h3 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.1rem; margin: 0; color: #e8e6e0; }
+  .compose-to { font-size: 0.85rem; font-family: "JetBrains Mono", monospace; }
+  .compose-field { display: flex; flex-direction: column; gap: 0.25rem; }
+  .compose-field span { font-size: 0.75rem; color: #8a877e; letter-spacing: 0.04em; text-transform: uppercase; }
+  .compose-field input, .compose-field textarea {
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0;
+    padding: 0.55rem 0.7rem; border-radius: 3px; font: inherit;
+  }
+  .compose-field input:focus, .compose-field textarea:focus { border-color: #d4a89a; outline: none; }
+  .compose-field textarea { resize: vertical; min-height: 8rem; }
+  .compose-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .compose-actions button {
+    padding: 0.5rem 1rem; border-radius: 3px; cursor: pointer; font: inherit; background: transparent;
+    border: 1px solid #3a3a3a; color: #e8e6e0;
+  }
+  .compose-actions .btn-ghost:hover { border-color: #6a665e; background: #161616; }
+  .compose-actions .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .compose-actions .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+  .compose-actions .btn-primary:disabled { opacity: 0.5; cursor: wait; }
+  .compose-dialog .error { color: #e57373; font-size: 0.875rem; margin: 0; }
+</style>

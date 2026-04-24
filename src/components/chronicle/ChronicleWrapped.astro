@@ -1,0 +1,67 @@
+---
+import type { WrappedYear } from "../../utils/chronicleWrapped";
+import { getChronicleCategory } from "../../themes/chronicleCategories";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props {
+	recap: WrappedYear;
+}
+
+const { recap } = Astro.props as Props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const catSlugs = Object.keys(recap.categories).sort(
+	(a, b) => recap.categories[b] - recap.categories[a],
+);
+
+const tiltLabel = (() => {
+	if (recap.tilt > 1) return isVi ? "năm đầy ánh sáng" : "bright year";
+	if (recap.tilt < -1) return isVi ? "năm nặng lòng" : "heavy year";
+	if (recap.tilt !== 0) return isVi ? "cân bằng hơi nghiêng" : "slightly tilted";
+	return isVi ? "năm cân bằng" : "balanced year";
+})();
+---
+
+<details class="cc-wrapped">
+	<summary class="cc-wrapped-summary">
+		<span class="cc-wrapped-year">{recap.year}</span>
+		<span class="cc-wrapped-count">{recap.count} {isVi ? "sự kiện" : "events"}</span>
+		<span class="cc-wrapped-tilt" data-tilt={recap.tilt > 1 ? "up" : recap.tilt < -1 ? "down" : "flat"}>
+			{tiltLabel}
+		</span>
+	</summary>
+	<div class="cc-wrapped-body">
+		<div class="cc-wrapped-grid">
+			{catSlugs.map((slug) => {
+				const cat = getChronicleCategory(slug);
+				return (
+					<span class="cc-wrapped-cat" style={`--star:${cat.hex};`}>
+						<i></i>
+						<span class="cc-wrapped-cat-label">{isVi ? cat.label_vi : cat.label_en}</span>
+						<span class="cc-wrapped-cat-count">{recap.categories[slug]}</span>
+					</span>
+				);
+			})}
+		</div>
+		<div class="cc-wrapped-stats">
+			{recap.places > 0 && (
+				<span>
+					<strong>{recap.places}</strong> {isVi ? "địa điểm" : "places"}
+				</span>
+			)}
+			{recap.countries > 0 && (
+				<span>
+					<strong>{recap.countries}</strong> {isVi ? "quốc gia" : "countries"}
+				</span>
+			)}
+			{recap.spanDays > 0 && (
+				<span>
+					{isVi ? "trải dài " : "across "}
+					<strong>{recap.spanDays}</strong>
+					{isVi ? " ngày" : " days"}
+				</span>
+			)}
+		</div>
+	</div>
+</details>

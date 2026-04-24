@@ -5,7 +5,7 @@ interface ChronicleEntryData {
   title: string;
   subtitle?: string;
   roman_date: string;
-  location?: { name?: string; city?: string; country?: string };
+  location?: { name?: string; city?: string; country?: string; lat?: number; lng?: number };
   external_url?: string;
   external_url_label?: string;
   linked_post_slugs?: string[];
@@ -98,6 +98,25 @@ declare global {
       a.style.color = "var(--chronicle-gold)";
       links.appendChild(a);
     }
+    if (data.location && typeof data.location.lat === "number" && typeof data.location.lng === "number") {
+      const mapLink = document.createElement("a");
+      mapLink.href = `https://www.openstreetmap.org/?mlat=${data.location.lat}&mlon=${data.location.lng}&zoom=14`;
+      mapLink.target = "_blank";
+      mapLink.rel = "noopener noreferrer";
+      mapLink.textContent = `▸ ${isVi ? "xem trên bản đồ" : "open in map"}`;
+      mapLink.style.color = "var(--chronicle-gold)";
+      links.appendChild(mapLink);
+    }
+    // Permalink — keep last so it's a subtle footer action
+    {
+      const p = document.createElement("a");
+      p.href = `/pensieve/chronicle/${data.id}`;
+      p.textContent = `▸ ${isVi ? "liên kết cố định" : "permalink"}`;
+      p.style.color = "rgba(212, 168, 67, 0.6)";
+      p.style.fontSize = "11px";
+      p.style.marginTop = "6px";
+      links.appendChild(p);
+    }
 
     modal.setAttribute("data-open", "");
   }
@@ -108,15 +127,69 @@ declare global {
 
   closeBtn?.addEventListener("click", closeModal);
   modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  // Modal arrow-nav — when modal is open, ←/→ jump to adjacent ledger entries.
+  const ledgerIds = Array.from(document.querySelectorAll<HTMLElement>(".cc-entry"))
+    .map((el) => el.dataset.id)
+    .filter((id): id is string => typeof id === "string");
+  function modalNav(dir: -1 | 1) {
+    if (!modal?.hasAttribute("data-open")) return;
+    const currentTitle = modal.querySelector<HTMLElement>('[data-slot="title"]')?.textContent;
+    if (!currentTitle) return;
+    const currentId = Object.entries(window.__CHRONICLE_ENTRIES__ ?? {})
+      .find(([, v]) => v.title === currentTitle)?.[0];
+    if (!currentId) return;
+    const idx = ledgerIds.indexOf(currentId);
+    if (idx < 0) return;
+    const nextIdx = (idx + dir + ledgerIds.length) % ledgerIds.length;
+    openModal(ledgerIds[nextIdx]);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeModal(); return; }
+    if (!modal?.hasAttribute("data-open")) return;
+    if (e.key === "ArrowLeft") { e.preventDefault(); modalNav(-1); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); modalNav(1); }
+  });
+
+  // ---------- Category filter chips ----------
+  const frameEl = document.getElementById("cc-frame");
+  let activeFilter: string | null = null;
+  function applyFilter(slug: string | null) {
+    activeFilter = slug;
+    if (!frameEl) return;
+    if (slug) frameEl.setAttribute("data-filter", slug);
+    else frameEl.removeAttribute("data-filter");
+    document.querySelectorAll<HTMLElement>("[data-legend-category]").forEach((el) => {
+      if (slug && el.dataset.legendCategory === slug) el.setAttribute("data-legend-active", "");
+      else el.removeAttribute("data-legend-active");
+    });
+    document.querySelectorAll<HTMLElement>("[data-category]").forEach((el) => {
+      if (!slug || el.dataset.category === slug) el.setAttribute("data-category-match", "");
+      else el.removeAttribute("data-category-match");
+    });
+  }
+  document.querySelectorAll<HTMLElement>("[data-legend-category]").forEach((chip) => {
+    const slug = chip.dataset.legendCategory;
+    const toggle = () => applyFilter(activeFilter === slug ? null : (slug ?? null));
+    chip.addEventListener("click", toggle);
+    chip.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
 
   // ---------- Zoom ----------
   const frameRoot = document.documentElement;
-  let zoom = 1;
+  const readout = document.querySelector<HTMLElement>("[data-zoom-readout]");
+  const initial = parseFloat(
+    getComputedStyle(frameRoot).getPropertyValue("--chronicle-zoom-scale") || "1",
+  );
+  let zoom = Number.isFinite(initial) && initial > 0 ? initial : 1;
   function setZoom(next: number) {
     zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, next));
     frameRoot.style.setProperty("--chronicle-zoom-scale", String(zoom));
+    if (readout) readout.textContent = `${zoom.toFixed(1)}×`;
   }
+  setZoom(zoom);
 
   document.querySelectorAll<HTMLButtonElement>(".cc-zoom-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -127,10 +200,128 @@ declare global {
     });
   });
 
-  // ---------- Year jump ----------
+  // ---------- Back-to-top on ledger ----------
+  const ledger = document.getElementById("cc-ledger");
+  const backBtn = ledger?.querySelector<HTMLButtonElement>("[data-back-to-top]");
+  if (ledger && backBtn) {
+    const updateBackVisibility = () => {
+      if (ledger.scrollTop > 180) backBtn.setAttribute("data-visible", "");
+      else backBtn.removeAttribute("data-visible");
+    };
+    ledger.addEventListener("scroll", updateBackVisibility, { passive: true });
+    backBtn.addEventListener("click", () => {
+      ledger.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    updateBackVisibility();
+  }
+
+  // ---------- Year jump (scrolls ledger + pulses matching Sky ring) ----------
   (document.querySelector(".cc-year-jump") as unknown as HTMLSelectElement | null)?.addEventListener("change", (e) => {
     const target = (e.currentTarget as unknown as HTMLSelectElement).value;
     if (!target) return;
     document.getElementById(`cc-year-${target}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.querySelectorAll("[data-year]").forEach((el) => el.removeAttribute("data-year-active"));
+    document
+      .querySelectorAll(`[data-year="${CSS.escape(target)}"]`)
+      .forEach((el) => el.setAttribute("data-year-active", ""));
+  });
+
+  // ---------- Arrow-key navigation between stars ----------
+  const stars = Array.from(document.querySelectorAll<HTMLElement>(".cc-star"));
+  if (stars.length > 0) {
+    document.addEventListener("keydown", (e) => {
+      const target = e.target as HTMLElement | null;
+      // Only handle when a star is already focused — don't hijack other inputs.
+      if (!target || !target.classList.contains("cc-star")) return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      const idx = stars.indexOf(target);
+      if (idx < 0) return;
+      const next = e.key === "ArrowLeft" || e.key === "ArrowUp"
+        ? (idx - 1 + stars.length) % stars.length
+        : (idx + 1) % stars.length;
+      stars[next].focus();
+      const nextId = stars[next].dataset.id;
+      if (nextId) setActive(nextId);
+    });
+  }
+  // ---------- Atlas view toggle (stylized SVG vs real tiles) ----------
+  const svgAtlas = document.querySelector<HTMLElement>("[data-atlas-svg]");
+  const tileAtlas = document.querySelector<HTMLElement>("[data-atlas-tiles]");
+  const viewButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-atlas-view]"));
+  let tilesInit = false;
+  async function setAtlasView(mode: "svg" | "tiles") {
+    viewButtons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", btn.dataset.atlasView === mode ? "true" : "false");
+    });
+    if (!svgAtlas || !tileAtlas) return;
+    if (mode === "tiles") {
+      svgAtlas.hidden = true;
+      tileAtlas.hidden = false;
+      tileAtlas.removeAttribute("aria-hidden");
+      if (!tilesInit) {
+        tilesInit = true;
+        try {
+          const mod = await import("./atlas-tiles-client");
+          mod.initAtlasTiles(tileAtlas);
+        } catch (err) {
+          console.error("Failed to init atlas tiles:", err);
+          // Fall back to SVG view on failure.
+          svgAtlas.hidden = false;
+          tileAtlas.hidden = true;
+        }
+      }
+    } else {
+      svgAtlas.hidden = false;
+      tileAtlas.hidden = true;
+      tileAtlas.setAttribute("aria-hidden", "true");
+    }
+  }
+  viewButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.atlasView as "svg" | "tiles" | undefined;
+      if (mode) setAtlasView(mode);
+    });
+  });
+
+  // ---------- Story threads toggle ----------
+  const threadBtn = document.querySelector<HTMLButtonElement>("[data-thread-toggle]");
+  if (threadBtn && frameEl) {
+    threadBtn.addEventListener("click", () => {
+      const on = frameEl.hasAttribute("data-threads-on");
+      if (on) {
+        frameEl.removeAttribute("data-threads-on");
+        threadBtn.setAttribute("aria-pressed", "false");
+      } else {
+        frameEl.setAttribute("data-threads-on", "");
+        threadBtn.setAttribute("aria-pressed", "true");
+      }
+    });
+  }
+
+  // ---------- Keyboard shortcut overlay ----------
+  const overlay = document.querySelector<HTMLElement>(".cc-shortcut-overlay");
+  const openBtn = document.querySelector<HTMLButtonElement>("[data-shortcut-open]");
+  const closeShortcutBtn = overlay?.querySelector<HTMLButtonElement>("[data-shortcut-close]");
+  function toggleShortcuts(force?: boolean) {
+    if (!overlay) return;
+    const shouldOpen = force ?? !overlay.hasAttribute("data-open");
+    if (shouldOpen) overlay.setAttribute("data-open", "");
+    else overlay.removeAttribute("data-open");
+  }
+  openBtn?.addEventListener("click", () => toggleShortcuts(true));
+  closeShortcutBtn?.addEventListener("click", () => toggleShortcuts(false));
+  overlay?.addEventListener("click", (e) => { if (e.target === overlay) toggleShortcuts(false); });
+  document.addEventListener("keydown", (e) => {
+    const target = e.target as HTMLElement | null;
+    const tag = target?.tagName?.toLowerCase();
+    if (tag === "input" || tag === "textarea" || target?.isContentEditable) return;
+    if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+      e.preventDefault();
+      toggleShortcuts();
+    }
+    if (e.key === "Escape" && overlay?.hasAttribute("data-open")) {
+      toggleShortcuts(false);
+    }
   });
 })();

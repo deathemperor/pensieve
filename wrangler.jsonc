@@ -16,6 +16,9 @@
 			"zone_name": "huuloc.com"
 		}
 	],
+	"triggers": {
+		"crons": ["0 23 * * *", "0 * * * *"]
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",

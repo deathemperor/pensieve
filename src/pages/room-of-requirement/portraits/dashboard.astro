@@ -1,0 +1,233 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+import { getCurrentLang } from "../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+
+const tierRs = await db
+  .prepare("SELECT prestige_tier AS t, COUNT(*) AS n FROM contacts WHERE is_placeholder = 0 AND deleted_at IS NULL GROUP BY prestige_tier")
+  .all<{ t: string; n: number }>();
+const tierCounts = new Map<string, number>();
+for (const r of (tierRs.results ?? [])) tierCounts.set(r.t, r.n);
+const contactTotal = Array.from(tierCounts.values()).reduce((s, n) => s + n, 0);
+
+const pipelineRs = await db
+  .prepare(`
+    SELECT currency,
+           SUM(COALESCE(value_cents, 0) * probability / 100) AS expected_cents,
+           COUNT(*) AS count
+    FROM contact_deals
+    WHERE closed_at IS NULL
+    GROUP BY currency
+  `)
+  .all<{ currency: string; expected_cents: number; count: number }>();
+const pipeline = (pipelineRs.results ?? []) as Array<{ currency: string; expected_cents: number; count: number }>;
+
+const remRs = await db
+  .prepare("SELECT COUNT(*) AS n FROM contact_reminders WHERE dismissed_at IS NULL AND date(due_at) <= date('now', '+7 days')")
+  .first<{ n: number }>();
+const remindersDue = remRs?.n ?? 0;
+
+const cardsRs = await db
+  .prepare("SELECT ocr_status AS s, COUNT(*) AS n FROM contact_cards GROUP BY ocr_status")
+  .all<{ s: string; n: number }>();
+const cardCounts = new Map<string, number>();
+for (const r of (cardsRs.results ?? [])) cardCounts.set(r.s, r.n);
+
+interface EventRow { id: string; name: string; happened_at: string; card_count: number }
+const eventsRs = await db
+  .prepare(`
+    SELECT e.id, e.name, e.happened_at, COUNT(l.card_id) AS card_count
+    FROM contact_card_events e
+    LEFT JOIN contact_card_event_links l ON l.event_id = e.id
+    GROUP BY e.id
+    ORDER BY e.happened_at DESC
+    LIMIT 5
+  `)
+  .all<EventRow>();
+const recentEvents = (eventsRs.results ?? []) as EventRow[];
+
+interface MentionRow { id: string; title: string; url: string; source: string | null; published_at: string | null; fetched_at: string; contact_id: string; contact_name: string }
+const mentionsRs = await db
+  .prepare(`
+    SELECT m.id, m.title, m.url, m.source, m.published_at, m.fetched_at, m.contact_id, c.full_name AS contact_name
+    FROM contact_mentions m
+    JOIN contacts c ON c.id = m.contact_id AND c.deleted_at IS NULL
+    ORDER BY COALESCE(m.published_at, m.fetched_at) DESC
+    LIMIT 5
+  `)
+  .all<MentionRow>();
+const recentMentions = (mentionsRs.results ?? []) as MentionRow[];
+
+const openDealsRs = await db
+  .prepare("SELECT COUNT(*) AS n FROM contact_deals WHERE closed_at IS NULL")
+  .first<{ n: number }>();
+const openDeals = openDealsRs?.n ?? 0;
+
+interface DriveRow { folder_id: string; label: string | null; last_scanned_at: string | null; last_status: string | null; last_new_count: number }
+const driveRs = await db
+  .prepare("SELECT folder_id, label, last_scanned_at, last_status, last_new_count FROM drive_scan_folders WHERE enabled = 1 ORDER BY created_at DESC LIMIT 5")
+  .all<DriveRow>();
+const driveFolders = (driveRs.results ?? []) as DriveRow[];
+
+function fmtCurrency(cents: number, cur: string): string {
+  try {
+    return new Intl.NumberFormat(lang === "vi" ? "vi-VN" : "en-US", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(cents / 100);
+  } catch {
+    return `${(cents / 100).toFixed(0)} ${cur}`;
+  }
+}
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<Base title={isVi ? "Bảng điều khiển" : "Dashboard"} description={isVi ? "Tổng quan rolodex." : "Rolodex overview."}>
+  <main class="dashboard">
+    <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
+    <h1>{isVi ? "Bảng điều khiển" : "Dashboard"}</h1>
+    <p class="hint">{isVi ? "Một cái nhìn toàn cảnh rolodex." : "Your whole rolodex at a glance."}</p>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">{isVi ? "Tổng liên lạc" : "Total contacts"}</div>
+        <div class="stat-value">{contactTotal}</div>
+        <div class="stat-break">
+          {(["S","A","B","C","D"] as const).map((t) => (
+            <span class={`tier-tile tier-${t}`}>{t} {tierCounts.get(t) ?? 0}</span>
+          ))}
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">{isVi ? "Pipeline (kỳ vọng)" : "Open pipeline (expected)"}</div>
+        <div class="stat-value">
+          {pipeline.length === 0 ? <span class="muted">—</span> : pipeline.map((p) => <span class="currency-line">{fmtCurrency(p.expected_cents, p.currency)}</span>)}
+        </div>
+        <div class="stat-break muted">{openDeals} {isVi ? "deal đang mở" : `open deal${openDeals === 1 ? "" : "s"}`}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">{isVi ? "Nhắc nhở tuần này" : "Reminders this week"}</div>
+        <div class="stat-value">{remindersDue}</div>
+        <div class="stat-break muted">{isVi ? "sinh nhật + theo dõi" : "birthdays + follow-ups"}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">{isVi ? "Hàng đợi OCR" : "OCR queue"}</div>
+        <div class="stat-value">{(cardCounts.get("pending") ?? 0) + (cardCounts.get("parsing") ?? 0)}</div>
+        <div class="stat-break muted">
+          {cardCounts.get("parsed") ?? 0} {isVi ? "đã xong" : "parsed"} ·{" "}
+          {cardCounts.get("failed") ?? 0} {isVi ? "lỗi" : "failed"}
+        </div>
+      </div>
+    </div>
+
+    {driveFolders.length > 0 && (
+      <section class="dash-section">
+        <div class="dash-section-head">
+          <h2>{isVi ? "Thư mục Drive đang theo dõi" : "Watched Drive folders"}</h2>
+          <a href="/room-of-requirement/portraits/sync" class="more-link">{isVi ? "quản lý →" : "manage →"}</a>
+        </div>
+        <ul class="drive-list">
+          {driveFolders.map((f) => (
+            <li>
+              <code>{f.label ?? f.folder_id.slice(0, 10) + "…"}</code>
+              <span class="muted">
+                {f.last_scanned_at ? `${isVi ? "quét lần cuối" : "last scan"}: ${fmtDate(f.last_scanned_at)}` : (isVi ? "chưa quét" : "not scanned yet")}
+                {f.last_status && <> · {f.last_status}</>}
+                {f.last_new_count != null && <> · {f.last_new_count} {isVi ? "mới" : "new"}</>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <section class="dash-section">
+      <div class="dash-section-head">
+        <h2>{isVi ? "Sự kiện gần đây" : "Recent events"}</h2>
+        <a href="/room-of-requirement/portraits/events" class="more-link">{isVi ? "tất cả →" : "all →"}</a>
+      </div>
+      {recentEvents.length === 0 ? <p class="muted">{isVi ? "Chưa có sự kiện nào." : "No events yet."}</p> : (
+        <ul class="link-list">
+          {recentEvents.map((e) => (
+            <li><a href={`/room-of-requirement/portraits/events/${e.id}`}><span class="row-title">{e.name}</span> <span class="muted">— {fmtDate(e.happened_at)} · {e.card_count} {e.card_count === 1 ? "card" : "cards"}</span></a></li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <section class="dash-section">
+      <div class="dash-section-head">
+        <h2>{isVi ? "Báo chí gần đây" : "Recent press"}</h2>
+      </div>
+      {recentMentions.length === 0 ? <p class="muted">{isVi ? "Chưa có báo đề cập." : "No mentions fetched yet."}</p> : (
+        <ul class="link-list">
+          {recentMentions.map((m) => (
+            <li>
+              <a href={m.url} target="_blank" rel="noopener noreferrer">{m.title}</a>
+              <div class="muted">
+                <a href={`/room-of-requirement/portraits/${m.contact_id}`}>{m.contact_name}</a>
+                {m.source && <> · {m.source}</>}
+                {m.published_at && <> · {fmtDate(m.published_at)}</>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  </main>
+</Base>
+
+<style>
+  .dashboard { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 2rem; }
+  .muted { color: #6a665e; }
+
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75rem; margin-bottom: 2rem;
+  }
+  .stat-card {
+    padding: 1rem; background: #0f0f0f;
+    border: 1px solid #1f1f1f; border-radius: 3px;
+    display: flex; flex-direction: column; gap: 0.35rem;
+  }
+  .stat-label { color: #8a877e; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .stat-value { color: #e8e6e0; font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1.75rem; line-height: 1.1; }
+  .stat-value .currency-line { display: block; font-size: 1.1rem; }
+  .stat-break { font-size: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.25rem; }
+
+  .tier-tile { border: 1px solid #2a2a2a; padding: 0.1rem 0.4rem; border-radius: 2px; color: #9a968c; }
+  .tier-tile.tier-S { border-color: #f8e08c55; color: #f8e08c; }
+  .tier-tile.tier-A { border-color: #e6e8ea55; color: #e6e8ea; }
+  .tier-tile.tier-B { border-color: #cd8a4e55; color: #cd8a4e; }
+
+  .dash-section { padding-top: 1.25rem; border-top: 1px solid #1a1a1a; margin-top: 1.25rem; }
+  .dash-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.5rem; }
+  .dash-section-head h2 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0; }
+  .more-link { color: #8a877e; text-decoration: none; font-size: 0.75rem; }
+  .more-link:hover { color: #d4a89a; }
+
+  .link-list, .drive-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.875rem; }
+  .link-list a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .link-list a:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .row-title { font-weight: 500; }
+  .link-list .muted { font-size: 0.75rem; }
+  .drive-list code { background: #111; padding: 0.05rem 0.35rem; border-radius: 2px; color: #d4a89a; font-size: 0.85rem; font-family: "JetBrains Mono", monospace; margin-right: 0.5rem; }
+</style>

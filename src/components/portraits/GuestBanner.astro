@@ -1,0 +1,38 @@
+---
+import { getCurrentLang } from "../../utils/lang";
+
+const lang = getCurrentLang(Astro);
+const copy = lang === "vi"
+  ? {
+      title: "Bộ sưu tập riêng tư.",
+      body: "Đây là phòng tranh demo với những nhân vật công chúng. Đăng nhập quản trị để xem rolodex thật.",
+    }
+  : {
+      title: "Private collection.",
+      body: "Showing a demo gallery of public-figure portraits. Sign in as admin for the real rolodex.",
+    };
+---
+
+<div class="guest-banner" role="note">
+  <span class="lock">🔒</span>
+  <strong>{copy.title}</strong>
+  <span>{copy.body}</span>
+</div>
+
+<style>
+  .guest-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(90deg, rgba(212, 168, 154, 0.08), transparent);
+    border-left: 2px solid #d4a89a;
+    border-radius: 2px;
+    color: #bdb8ac;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .guest-banner strong { color: #e8e6e0; font-weight: 500; }
+  .lock { font-size: 1rem; }
+</style>

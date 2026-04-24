@@ -1,0 +1,42 @@
+---
+interface Props {
+  size?: number
+}
+
+const { size = 180 } = Astro.props;
+---
+
+<svg
+  class="frame frame-bronze"
+  width={size}
+  height={size}
+  viewBox="0 0 100 100"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+>
+  <defs>
+    <linearGradient id="bronze-grad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#a36a36" />
+      <stop offset="0.5" stop-color="#cd8a4e" />
+      <stop offset="1" stop-color="#70451f" />
+    </linearGradient>
+  </defs>
+  <rect
+    x="1.5"
+    y="1.5"
+    width="97"
+    height="97"
+    rx="1.5"
+    fill="none"
+    stroke="url(#bronze-grad)"
+    stroke-width="1.1"
+  />
+</svg>
+
+<style>
+  .frame-bronze {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+</style>

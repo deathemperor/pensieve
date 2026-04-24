@@ -1,0 +1,190 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../../layouts/Base.astro";
+import { requireAdmin } from "../../../../lib/portraits/auth";
+import { getContact } from "../../../../lib/portraits/db";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+const id = Astro.params.id;
+if (typeof id !== "string" || !id) return new Response("Bad request", { status: 400 });
+
+const db = (env as any).DB;
+const contact = await getContact(db, id);
+if (!contact) return new Response("Not found", { status: 404 });
+if (contact.is_placeholder === 1) return Astro.redirect(`/room-of-requirement/portraits/${id}`, 302);
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
+const tagsStr = tags.join(", ");
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+---
+
+<Base title={isVi ? "Sửa chân dung" : "Edit portrait"} description={isVi ? "Cập nhật liên lạc." : "Update contact."}>
+  <main class="edit-page">
+    <header class="edit-hero">
+      <a class="back-link" href={`/room-of-requirement/portraits/${id}`}>← {contact.display_name ?? contact.full_name}</a>
+      <h1>{isVi ? "Sửa chân dung" : "Edit portrait"}</h1>
+    </header>
+
+    <form id="edit-form" class="edit-form" data-id={id}>
+      <label class="field">
+        <span>{isVi ? "Họ và tên" : "Full name"} <span class="req">*</span></span>
+        <input type="text" name="full_name" required maxlength="200" value={contact.full_name} />
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Tên hiển thị" : "Display name"}</span>
+        <input type="text" name="display_name" maxlength="120" value={contact.display_name ?? ""} />
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span>{isVi ? "Chức danh" : "Title"}</span>
+          <input type="text" name="title" maxlength="120" value={contact.title ?? ""} />
+        </label>
+        <label class="field">
+          <span>{isVi ? "Công ty" : "Company"}</span>
+          <input type="text" name="company" maxlength="120" value={contact.company ?? ""} />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>{isVi ? "Hạng" : "Prestige tier"} <span class="req">*</span></span>
+        <select name="prestige_tier" required>
+          <option value="S" selected={contact.prestige_tier === "S"}>S — {isVi ? "Người khai lập" : "Founder"}</option>
+          <option value="A" selected={contact.prestige_tier === "A"}>A — {isVi ? "Hiệu trưởng" : "Headmaster"}</option>
+          <option value="B" selected={contact.prestige_tier === "B"}>B — {isVi ? "Giáo sư" : "Professor"}</option>
+          <option value="C" selected={contact.prestige_tier === "C"}>C — {isVi ? "Học giả" : "Scholar"}</option>
+          <option value="D" selected={contact.prestige_tier === "D"}>D — {isVi ? "Khách" : "Visitor"}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Điểm (0–100)" : "Tier score (0–100)"}</span>
+        <input type="number" name="tier_score" min="0" max="100" value={contact.tier_score} />
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Địa điểm" : "Location"}</span>
+        <input type="text" name="location" maxlength="120" value={contact.location ?? ""} />
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Tiểu sử" : "Bio"}</span>
+        <textarea name="bio" rows="3" maxlength="500">{contact.bio ?? ""}</textarea>
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Thẻ (phân cách bằng dấu phẩy)" : "Tags (comma-separated)"}</span>
+        <input type="text" name="tags" value={tagsStr} />
+      </label>
+
+      <label class="field">
+        <span>{isVi ? "Sinh nhật (YYYY-MM-DD hoặc --MM-DD)" : "Birthday (YYYY-MM-DD or --MM-DD)"}</span>
+        <input type="text" name="birthday" maxlength="10" placeholder="1990-05-20" value={contact.birthday ?? ""} />
+      </label>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">{isVi ? "Lưu" : "Save changes"}</button>
+        <a class="btn" href={`/room-of-requirement/portraits/${id}`}>{isVi ? "Huỷ" : "Cancel"}</a>
+        <button type="button" class="btn btn-danger" id="delete-btn">{isVi ? "Xoá" : "Delete…"}</button>
+      </div>
+
+      <p id="error" class="error" hidden></p>
+    </form>
+  </main>
+</Base>
+
+<script>
+  const form = document.getElementById("edit-form") as HTMLFormElement;
+  const id = form.dataset.id!;
+  const errEl = document.getElementById("error") as HTMLParagraphElement;
+  const deleteBtn = document.getElementById("delete-btn") as HTMLButtonElement;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errEl.hidden = true;
+    const fd = new FormData(form);
+
+    const tagsRaw = String(fd.get("tags") ?? "").trim();
+    const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
+
+    const birthdayRaw = String(fd.get("birthday") ?? "").trim();
+    const body: Record<string, unknown> = {
+      full_name: String(fd.get("full_name") ?? "").trim(),
+      display_name: String(fd.get("display_name") ?? "").trim() || null,
+      title: String(fd.get("title") ?? "").trim() || null,
+      company: String(fd.get("company") ?? "").trim() || null,
+      prestige_tier: String(fd.get("prestige_tier") ?? "C"),
+      tier_score: Number(fd.get("tier_score") ?? 50),
+      location: String(fd.get("location") ?? "").trim() || null,
+      bio: String(fd.get("bio") ?? "").trim() || null,
+    };
+    if (tags !== undefined) body.tags = tags;
+    if (birthdayRaw) body.birthday = birthdayRaw;
+
+    const res = await fetch(`/api/portraits/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      errEl.textContent = `Save failed: ${data.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    window.location.href = `/room-of-requirement/portraits/${id}`;
+  });
+
+  deleteBtn.addEventListener("click", async () => {
+    if (!window.confirm("Soft-delete this portrait? It can be restored from D1.")) return;
+    const res = await fetch(`/api/portraits/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      window.location.href = "/room-of-requirement/portraits";
+      return;
+    }
+    const d = await res.json().catch(() => ({})) as { error?: string };
+    errEl.textContent = `Delete failed: ${d.error ?? res.statusText}`;
+    errEl.hidden = false;
+  });
+</script>
+
+<style>
+  .edit-page { max-width: 640px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .edit-hero { margin-bottom: 1.5rem; }
+  .back-link { color: #8a877e; font-size: 0.875rem; text-decoration: none; }
+  .back-link:hover { color: #d4a89a; }
+  .edit-hero h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0; }
+  .edit-form { display: flex; flex-direction: column; gap: 1.25rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 0.35rem; }
+  .field span { font-size: 0.8125rem; color: #8a877e; letter-spacing: 0.04em; }
+  .req { color: #d4a89a; }
+  input, select, textarea {
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0;
+    padding: 0.55rem 0.7rem; border-radius: 3px; font: inherit;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #d4a89a; outline: none; }
+  textarea { resize: vertical; }
+  .actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
+  .btn {
+    padding: 0.55rem 1.1rem; border: 1px solid #3a3a3a; border-radius: 3px;
+    color: #e8e6e0; text-decoration: none; font: inherit; cursor: pointer; background: transparent;
+  }
+  .btn:hover { border-color: #6a665e; background: #161616; }
+  .btn-primary { border-color: #d4a89a; color: #d4a89a; }
+  .btn-primary:hover { background: rgba(212, 168, 154, 0.08); }
+  .btn-danger { margin-left: auto; border-color: #3a2828; color: #e57373; }
+  .btn-danger:hover { border-color: #e57373; background: rgba(229, 115, 115, 0.08); }
+  .error { color: #e57373; font-size: 0.875rem; }
+</style>

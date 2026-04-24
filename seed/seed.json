@@ -389,7 +389,54 @@
 				{ "slug": "external_url_label", "label": "External URL Label", "type": "string" },
 				{ "slug": "source", "label": "Source", "type": "string", "required": true },
 				{ "slug": "source_id", "label": "Source ID", "type": "string" },
-				{ "slug": "visibility", "label": "Visibility", "type": "string" }
+				{ "slug": "visibility", "label": "Visibility", "type": "string" },
+				{ "slug": "tags", "label": "Tags (comma-separated)", "type": "string" },
+				{ "slug": "featured_image", "label": "Featured Image", "type": "image" },
+				{ "slug": "thread", "label": "Thread (comma-separated)", "type": "string" }
+			]
+		},
+		{
+			"slug": "family_events",
+			"label": "Family Events",
+			"labelSingular": "Family Event",
+			"supports": ["search"],
+			"fields": [
+				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true, "searchable": true },
+				{ "slug": "event_type", "label": "Type", "type": "string", "required": true, "options": ["birthday", "death_anniv", "wedding_anniv", "cultural", "milestone"] },
+				{ "slug": "date_calendar", "label": "Calendar", "type": "string", "required": true, "options": ["solar", "lunar"] },
+				{ "slug": "month", "label": "Month (1-12)", "type": "number", "required": true },
+				{ "slug": "day", "label": "Day (1-31)", "type": "number", "required": true },
+				{ "slug": "is_leap_month", "label": "Is Leap Month (lunar origin year only)", "type": "boolean" },
+				{ "slug": "origin_year", "label": "Origin Year (birth / death / wedding)", "type": "number" },
+				{ "slug": "person_name", "label": "Person Name", "type": "string" },
+				{ "slug": "relationship", "label": "Relationship", "type": "string" },
+				{ "slug": "notes", "label": "Notes", "type": "portableText" },
+				{ "slug": "visibility", "label": "Visibility", "type": "string", "required": true, "options": ["household", "public"] },
+				{ "slug": "reminder_days_before", "label": "Reminder Days Before (JSON array)", "type": "string" },
+				{ "slug": "photo", "label": "Photo", "type": "image" }
+			]
+		},
+		{
+			"slug": "meeting_types",
+			"label": "Meeting Types",
+			"labelSingular": "Meeting Type",
+			"supports": ["search"],
+			"fields": [
+				{ "slug": "meeting_slug", "label": "Slug", "type": "string", "required": true, "searchable": true },
+				{ "slug": "title_en", "label": "Title (EN)", "type": "string", "required": true },
+				{ "slug": "title_vi", "label": "Title (VI)", "type": "string", "required": true },
+				{ "slug": "description_en", "label": "Description (EN)", "type": "portableText" },
+				{ "slug": "description_vi", "label": "Description (VI)", "type": "portableText" },
+				{ "slug": "duration_min", "label": "Duration (min)", "type": "number", "required": true },
+				{ "slug": "audience_tags", "label": "Audience Tags (JSON array)", "type": "string", "required": true },
+				{ "slug": "availability_id", "label": "Availability Rule ID", "type": "string" },
+				{ "slug": "buffer_before", "label": "Buffer Before (min)", "type": "number" },
+				{ "slug": "buffer_after", "label": "Buffer After (min)", "type": "number" },
+				{ "slug": "min_notice_hrs", "label": "Min Notice (hours)", "type": "number" },
+				{ "slug": "max_advance_days", "label": "Max Advance (days)", "type": "number" },
+				{ "slug": "questions", "label": "Custom Questions (JSON)", "type": "string" },
+				{ "slug": "color", "label": "Color (hex)", "type": "string" }
 			]
 		},
 		{
@@ -32702,7 +32749,9 @@
 					"external_url": "https://en.wikipedia.org/wiki/2017%E2%80%9318_Manchester_United_F.C._season",
 					"external_url_label": "match — MU 2–0 Swansea",
 					"source": "manual",
-					"visibility": "public"
+					"visibility": "public",
+					"tags": "uk-2018, football, birthday",
+					"thread": "uk-trip-2018"
 				}
 			},
 			{
@@ -32720,7 +32769,9 @@
 					"category": "love",
 					"location": "{\"name\":\"Buckingham Palace\",\"city\":\"London\",\"country\":\"GB\",\"lat\":51.50,\"lng\":-0.14}",
 					"source": "manual",
-					"visibility": "public"
+					"visibility": "public",
+					"tags": "uk-2018, engagement",
+					"thread": "uk-trip-2018"
 				}
 			},
 			{
@@ -32773,6 +32824,82 @@
 					"category": "family",
 					"location": "{\"name\":\"Hạnh Phúc Hospital\",\"city\":\"Ho Chi Minh City\",\"country\":\"VN\",\"lat\":10.78,\"lng\":106.70}",
 					"source": "manual",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-hoi-an-2023-09-02",
+				"slug": "gmaps-hoi-an-2023-09-02",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hội An",
+					"title_en": "[draft] Visit to Hội An",
+					"title_vi": "[nháp] Ghé Hội An",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2023-09-02",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hội An\",\"city\":\"Hội An\",\"country\":\"VN\",\"lat\":15.88,\"lng\":108.33}",
+					"source": "google-maps",
+					"source_id": "gmaps-hoi-an-2023-09-02",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-bangkok-2024-03-30",
+				"slug": "gmaps-bangkok-2024-03-30",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Bangkok",
+					"title_en": "[draft] Visit to Bangkok",
+					"title_vi": "[nháp] Ghé Bangkok",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2024-03-30",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Bangkok\",\"city\":\"Bangkok\",\"country\":\"TH\",\"lat\":13.75,\"lng\":100.50}",
+					"source": "google-maps",
+					"source_id": "gmaps-bangkok-2024-03-30",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-hanoi-2026-03-11",
+				"slug": "gmaps-hanoi-2026-03-11",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hà Nội",
+					"title_en": "[draft] Visit to Hà Nội",
+					"title_vi": "[nháp] Ghé Hà Nội",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2026-03-11",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hà Nội\",\"city\":\"Hà Nội\",\"country\":\"VN\",\"lat\":21.02,\"lng\":105.85}",
+					"source": "google-maps",
+					"source_id": "gmaps-hanoi-2026-03-11",
+					"visibility": "public"
+				}
+			},
+			{
+				"id": "gmaps-hongkong-2026-03-25",
+				"slug": "gmaps-hongkong-2026-03-25",
+				"status": "draft",
+				"data": {
+					"title": "[draft] Visit to Hong Kong",
+					"title_en": "[draft] Visit to Hong Kong",
+					"title_vi": "[nháp] Ghé Hong Kong",
+					"subtitle_en": "Auto-promoted from Google Timeline — rename + publish when meaningful",
+					"subtitle_vi": "Tự động đề xuất từ Google Timeline — đổi tên và đăng khi ý nghĩa",
+					"event_date": "2026-03-25",
+					"date_precision": "day",
+					"category": "travel",
+					"location": "{\"name\":\"Hong Kong\",\"city\":\"Hong Kong\",\"country\":\"HK\",\"lat\":22.30,\"lng\":114.17}",
+					"source": "google-maps",
+					"source_id": "gmaps-hongkong-2026-03-25",
 					"visibility": "public"
 				}
 			}

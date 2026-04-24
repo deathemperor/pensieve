@@ -1,0 +1,257 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface DealRow {
+  id: string;
+  title: string;
+  stage: string;
+  value_cents: number | null;
+  currency: string;
+  probability: number;
+  expected_close_at: string | null;
+  summary: string | null;
+  created_at: string;
+  closed_at: string | null;
+}
+const rs = await db
+  .prepare(`
+    SELECT id, title, stage, value_cents, currency, probability, expected_close_at, summary, created_at, closed_at
+    FROM contact_deals
+    WHERE contact_id = ?
+    ORDER BY
+      CASE stage
+        WHEN 'negotiation' THEN 0 WHEN 'proposal' THEN 1 WHEN 'qualified' THEN 2
+        WHEN 'lead' THEN 3 WHEN 'closed_won' THEN 4 WHEN 'closed_lost' THEN 5
+      END,
+      created_at DESC
+  `)
+  .bind(contactId)
+  .all<DealRow>();
+const deals = (rs.results ?? []) as DealRow[];
+
+const stageLabels: Record<string, string> = isVi
+  ? { lead: "Lead", qualified: "Đủ điều kiện", proposal: "Đề xuất", negotiation: "Đàm phán", closed_won: "Chốt thắng", closed_lost: "Chốt thua" }
+  : { lead: "Lead", qualified: "Qualified", proposal: "Proposal", negotiation: "Negotiation", closed_won: "Closed won", closed_lost: "Closed lost" };
+
+function fmtValue(v: number | null, cur: string): string {
+  if (v === null) return "—";
+  const amount = v / 100;
+  try {
+    return new Intl.NumberFormat(lang === "vi" ? "vi-VN" : "en-US", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(amount);
+  } catch {
+    return `${amount.toFixed(0)} ${cur}`;
+  }
+}
+function fmtDate(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<section class="section deals">
+  <h2 class="section-title">{isVi ? "Deal pipeline" : "Deals"}</h2>
+
+  {deals.length === 0 ? <p class="muted">{isVi ? "Chưa có deal nào." : "No deals yet."}</p> : (
+    <ul class="deal-list">
+      {deals.map((d) => {
+        const isClosed = d.stage === "closed_won" || d.stage === "closed_lost";
+        return (
+          <li class={`deal stage-${d.stage} ${isClosed ? "is-closed" : ""}`} data-deal-id={d.id}>
+            <div class="deal-head">
+              <span class="deal-title">{d.title}</span>
+              <span class={`deal-stage stage-badge-${d.stage}`}>{stageLabels[d.stage]}</span>
+            </div>
+            <div class="deal-meta">
+              <span>{fmtValue(d.value_cents, d.currency)}</span>
+              <span class="dot">·</span>
+              <span>{d.probability}%</span>
+              {d.expected_close_at && <><span class="dot">·</span><span>{isVi ? "dự kiến" : "expected"} {fmtDate(d.expected_close_at)}</span></>}
+              {d.closed_at && <><span class="dot">·</span><span>{isVi ? "đóng" : "closed"} {fmtDate(d.closed_at)}</span></>}
+            </div>
+            {d.summary && <p class="deal-summary">{d.summary}</p>}
+            {!isClosed && (
+              <div class="deal-actions">
+                <button class="btn-tiny advance-btn" data-id={d.id} data-next="won">{isVi ? "✓ Thắng" : "✓ Won"}</button>
+                <button class="btn-tiny lost-btn" data-id={d.id} data-next="lost">{isVi ? "✕ Thua" : "✕ Lost"}</button>
+                <button class="btn-tiny delete-btn" data-id={d.id}>{isVi ? "xoá" : "delete"}</button>
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  )}
+
+  <details class="add-details">
+    <summary>＋ {isVi ? "Thêm deal" : "Add deal"}</summary>
+    <form id="deal-form" class="deal-form" data-contact={contactId}>
+      <label>
+        <span>{isVi ? "Tên deal" : "Title"} <em>*</em></span>
+        <input type="text" name="title" required maxlength="200" />
+      </label>
+      <div class="row">
+        <label>
+          <span>{isVi ? "Giai đoạn" : "Stage"} <em>*</em></span>
+          <select name="stage" required>
+            <option value="lead">Lead</option>
+            <option value="qualified">{isVi ? "Đủ điều kiện" : "Qualified"}</option>
+            <option value="proposal">{isVi ? "Đề xuất" : "Proposal"}</option>
+            <option value="negotiation" selected>{isVi ? "Đàm phán" : "Negotiation"}</option>
+          </select>
+        </label>
+        <label>
+          <span>{isVi ? "Xác suất %" : "Probability %"}</span>
+          <input type="number" name="probability" min="0" max="100" value="50" />
+        </label>
+      </div>
+      <div class="row">
+        <label>
+          <span>{isVi ? "Giá trị" : "Value"}</span>
+          <input type="number" name="value" min="0" step="1" placeholder="10000" />
+        </label>
+        <label>
+          <span>{isVi ? "Tiền tệ" : "Currency"}</span>
+          <select name="currency">
+            <option value="USD" selected>USD</option>
+            <option value="VND">VND</option>
+            <option value="EUR">EUR</option>
+            <option value="GBP">GBP</option>
+            <option value="SGD">SGD</option>
+            <option value="JPY">JPY</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        <span>{isVi ? "Dự kiến đóng" : "Expected close"}</span>
+        <input type="date" name="expected_close_at" />
+      </label>
+      <label>
+        <span>{isVi ? "Tóm tắt" : "Summary"}</span>
+        <textarea name="summary" rows="2" maxlength="500"></textarea>
+      </label>
+      <button type="submit">{isVi ? "Tạo deal" : "Create deal"}</button>
+      <p id="deal-error" class="error" hidden></p>
+    </form>
+  </details>
+</section>
+
+<script define:vars={{ contactId }}>
+  const form = document.getElementById("deal-form");
+  const errEl = document.getElementById("deal-error");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errEl.hidden = true;
+    const fd = new FormData(form);
+    const valueRaw = String(fd.get("value") ?? "").trim();
+    const value_cents = valueRaw ? Math.round(Number(valueRaw) * 100) : null;
+    const payload = {
+      title: String(fd.get("title") ?? "").trim(),
+      stage: String(fd.get("stage") ?? "negotiation"),
+      value_cents,
+      currency: String(fd.get("currency") ?? "USD"),
+      probability: Number(fd.get("probability") ?? 50),
+      expected_close_at: String(fd.get("expected_close_at") ?? "") || null,
+      summary: String(fd.get("summary") ?? "").trim() || null,
+    };
+    const res = await fetch(`/api/portraits/${contactId}/deals`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      errEl.textContent = `Failed: ${data.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    window.location.reload();
+  });
+
+  document.querySelectorAll("button.advance-btn, button.lost-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      const next = btn.getAttribute("data-next");
+      if (!id || !next) return;
+      const stage = next === "won" ? "closed_won" : "closed_lost";
+      const res = await fetch(`/api/portraits/${contactId}/deals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage }),
+      });
+      if (res.ok) window.location.reload();
+    });
+  });
+
+  document.querySelectorAll("button.delete-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+      if (!window.confirm("Delete this deal?")) return;
+      const res = await fetch(`/api/portraits/${contactId}/deals/${id}`, { method: "DELETE" });
+      if (res.ok) window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .deal-list { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .deal {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    position: relative;
+  }
+  .deal.stage-negotiation { border-left: 3px solid #d4a89a; }
+  .deal.stage-proposal    { border-left: 3px solid #cd8a4e; }
+  .deal.stage-qualified   { border-left: 3px solid #7a8296; }
+  .deal.stage-lead        { border-left: 3px solid #3a3a3a; }
+  .deal.stage-closed_won  { border-left: 3px solid #a9cfa0; opacity: 0.75; }
+  .deal.stage-closed_lost { border-left: 3px solid #9a968c; opacity: 0.55; }
+  .is-closed .deal-title { text-decoration: line-through; text-decoration-thickness: 1px; color: #8a877e; }
+
+  .deal-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .deal-title { color: #e8e6e0; font-weight: 500; font-size: 0.95rem; }
+  .deal-stage { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.1rem 0.45rem; border-radius: 2px; border: 1px solid #2a2a2a; color: #9a968c; }
+  .stage-badge-closed_won { border-color: #7aa56a; color: #a9cfa0; }
+  .stage-badge-closed_lost { border-color: #3a3a3a; color: #6a665e; }
+  .stage-badge-negotiation { border-color: #d4a89a; color: #d4a89a; }
+
+  .deal-meta { color: #8a877e; font-size: 0.8125rem; margin-top: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.3rem; align-items: center; }
+  .deal-meta .dot { color: #3a3a3a; }
+  .deal-summary { color: #bdb8ac; font-size: 0.875rem; margin: 0.4rem 0 0; line-height: 1.4; }
+
+  .deal-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+  .btn-tiny { background: transparent; border: 1px solid #2a2a2a; color: #8a877e; padding: 0.2rem 0.55rem; border-radius: 2px; cursor: pointer; font: inherit; font-size: 0.75rem; }
+  .btn-tiny.advance-btn { border-color: #4a6a42; color: #a9cfa0; }
+  .btn-tiny.advance-btn:hover { background: rgba(120, 170, 110, 0.08); }
+  .btn-tiny.lost-btn:hover { border-color: #e57373; color: #e57373; }
+  .btn-tiny.delete-btn:hover { border-color: #e57373; color: #e57373; }
+
+  .add-details summary {
+    cursor: pointer; color: #d4a89a; font-size: 0.875rem; padding: 0.35rem 0;
+    list-style: none; user-select: none;
+  }
+  .add-details summary::-webkit-details-marker { display: none; }
+  .add-details[open] summary { margin-bottom: 0.75rem; }
+  .deal-form { display: flex; flex-direction: column; gap: 0.6rem; }
+  .deal-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8125rem; color: #8a877e; }
+  .deal-form label em { color: #d4a89a; font-style: normal; }
+  .deal-form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  @media (max-width: 500px) { .deal-form .row { grid-template-columns: 1fr; } }
+  .deal-form input, .deal-form select, .deal-form textarea {
+    background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.55rem; border-radius: 3px; font: inherit;
+  }
+  .deal-form textarea { resize: vertical; }
+  .deal-form button { align-self: flex-start; background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit; }
+  .deal-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .error { color: #e57373; font-size: 0.875rem; }
+  .muted { color: #6a665e; }
+</style>

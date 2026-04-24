@@ -1,0 +1,147 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../../layouts/Base.astro";
+import { requireAdmin } from "../../../../lib/portraits/auth";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+
+interface EventRow { id: string; name: string; location: string | null; happened_at: string; note: string | null; card_count: number }
+
+const rs = await db
+  .prepare(`
+    SELECT e.id, e.name, e.location, e.happened_at, e.note,
+           COUNT(l.card_id) AS card_count
+    FROM contact_card_events e
+    LEFT JOIN contact_card_event_links l ON l.event_id = e.id
+    GROUP BY e.id
+    ORDER BY e.happened_at DESC
+  `)
+  .all<EventRow>();
+const events = (rs.results ?? []) as EventRow[];
+
+function fmtDate(iso: string): string {
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<Base title={isVi ? "Sự kiện — Portraits" : "Events — Portraits"} description={isVi ? "Quản lý sự kiện." : "Manage batch card captures."}>
+  <main class="events-page">
+    <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
+    <h1>{isVi ? "Sự kiện" : "Events"}</h1>
+    <p class="hint">{isVi ? "Quét nhiều card cùng lúc, gộp theo sự kiện." : "Batch-scan cards grouped by event."}</p>
+
+    <details class="new-event">
+      <summary>＋ {isVi ? "Sự kiện mới" : "New event"}</summary>
+      <form id="event-form" class="event-form">
+        <label><span>{isVi ? "Tên" : "Name"} <em>*</em></span>
+          <input type="text" name="name" required maxlength="200" placeholder="Tech Summit 2026" />
+        </label>
+        <label><span>{isVi ? "Địa điểm" : "Location"}</span>
+          <input type="text" name="location" maxlength="200" placeholder="San Francisco" />
+        </label>
+        <label><span>{isVi ? "Thời gian" : "When"}</span>
+          <input type="date" name="happened_at" />
+        </label>
+        <label><span>{isVi ? "Ghi chú" : "Note"}</span>
+          <textarea name="note" rows="2" maxlength="500"></textarea>
+        </label>
+        <button type="submit">{isVi ? "Tạo sự kiện" : "Create event"}</button>
+        <p id="event-error" class="error" hidden></p>
+      </form>
+    </details>
+
+    {events.length === 0 ? (
+      <p class="muted">{isVi ? "Chưa có sự kiện nào." : "No events yet."}</p>
+    ) : (
+      <ul class="event-list">
+        {events.map((e) => (
+          <li class="event">
+            <a class="event-link" href={`/room-of-requirement/portraits/events/${e.id}`}>
+              <div class="event-head">
+                <span class="event-name">{e.name}</span>
+                <span class="event-cards">{e.card_count} {isVi ? "card" : e.card_count === 1 ? "card" : "cards"}</span>
+              </div>
+              <div class="event-meta">
+                {fmtDate(e.happened_at)}
+                {e.location && <> · {e.location}</>}
+              </div>
+              {e.note && <p class="event-note">{e.note}</p>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </main>
+</Base>
+
+<script>
+  const form = document.getElementById("event-form") as HTMLFormElement | null;
+  const errEl = document.getElementById("event-error") as HTMLParagraphElement | null;
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!errEl) return;
+    errEl.hidden = true;
+    const fd = new FormData(form);
+    const res = await fetch("/api/portraits/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: String(fd.get("name") ?? "").trim(),
+        location: String(fd.get("location") ?? "").trim() || undefined,
+        happened_at: String(fd.get("happened_at") ?? "") || undefined,
+        note: String(fd.get("note") ?? "").trim() || undefined,
+      }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({})) as { error?: string };
+      errEl.textContent = `Failed: ${d.error ?? res.statusText}`;
+      errEl.hidden = false;
+      return;
+    }
+    const { event: ev } = await res.json() as { event: { id: string } };
+    window.location.href = `/room-of-requirement/portraits/events/${ev.id}`;
+  });
+</script>
+
+<style>
+  .events-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  .back-link:hover { color: #d4a89a; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 1.5rem; }
+  .muted { color: #6a665e; }
+
+  .new-event summary { cursor: pointer; color: #d4a89a; padding: 0.5rem 0; list-style: none; }
+  .new-event summary::-webkit-details-marker { display: none; }
+  .new-event[open] { padding: 0.75rem; border: 1px solid #2a2a2a; border-radius: 3px; margin-bottom: 1.5rem; }
+  .event-form { display: flex; flex-direction: column; gap: 0.6rem; }
+  .event-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8125rem; color: #8a877e; }
+  .event-form label em { color: #d4a89a; font-style: normal; }
+  .event-form input, .event-form textarea { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.4rem 0.55rem; border-radius: 3px; font: inherit; }
+  .event-form textarea { resize: vertical; }
+  .event-form button { align-self: flex-start; background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; }
+  .event-form button:hover { background: rgba(212, 168, 154, 0.08); }
+  .error { color: #e57373; font-size: 0.875rem; }
+
+  .event-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+  .event { border: 1px solid #1f1f1f; border-radius: 3px; transition: border-color 120ms ease; }
+  .event:hover { border-color: #3a3a3a; }
+  .event-link { display: block; padding: 0.75rem 0.9rem; color: inherit; text-decoration: none; }
+  .event-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .event-name { color: #e8e6e0; font-weight: 500; }
+  .event-cards { color: #8a877e; font-size: 0.8125rem; }
+  .event-meta { color: #8a877e; font-size: 0.8125rem; margin-top: 0.2rem; }
+  .event-note { color: #bdb8ac; font-size: 0.875rem; margin: 0.4rem 0 0; line-height: 1.4; }
+</style>

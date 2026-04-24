@@ -1,0 +1,148 @@
+---
+export const prerender = false;
+
+import Base from "../../../../layouts/Base.astro";
+import { requireAdmin } from "../../../../lib/portraits/auth";
+import { getCurrentLang } from "../../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+// The Shortcut's Get-Contents-of-URL action posts to this endpoint with a bearer token.
+const origin = new URL(Astro.request.url).origin;
+const endpoint = `${origin}/api/portraits/ingest`;
+---
+
+<Base title={isVi ? "iOS Shortcut — Portraits" : "iOS Shortcut — Portraits"} description={isVi ? "Gửi liên lạc từ iPhone vào Portraits bằng Shortcut." : "Send a contact from your iPhone into Portraits via a Shortcut."}>
+  <main class="ios-page">
+    <a class="back-link" href="/room-of-requirement/portraits/sync">← {isVi ? "Tích hợp" : "Integrations"}</a>
+    <h1>{isVi ? "iOS Shortcut" : "iOS Shortcut"}</h1>
+    <p class="hint">
+      {isVi
+        ? "Gửi một liên lạc từ danh bạ iPhone vào Portraits chỉ bằng một lần chạm từ Share Sheet. Apple không cho phép site phát hành .shortcut đã ký từ server, nên bạn tự dựng trong app Shortcuts — 3 phút."
+        : "Send a contact from your iPhone Contacts into Portraits with one tap from the Share Sheet. Apple doesn't let a site distribute pre-signed .shortcut files, so you build it once in the Shortcuts app — 3 minutes."}
+    </p>
+
+    <section class="step">
+      <h2>1. {isVi ? "Chuẩn bị token" : "Grab your ingest token"}</h2>
+      <p class="hint">
+        {isVi
+          ? "Đặt biến wrangler (chạy một lần trong terminal):"
+          : "Set the wrangler secret (one-time, in terminal):"}
+      </p>
+      <pre><code>npx wrangler secret put PORTRAITS_INGEST_TOKEN</code></pre>
+      <p class="hint">
+        {isVi
+          ? "Dùng một chuỗi ngẫu nhiên dài (vd. từ 1Password). Bạn sẽ dán chuỗi đó vào Shortcut ở bước 3."
+          : "Use a long random string (e.g. from 1Password). You'll paste the same string into the Shortcut in step 3."}
+      </p>
+    </section>
+
+    <section class="step">
+      <h2>2. {isVi ? "Dựng Shortcut trên iPhone" : "Build the Shortcut on your iPhone"}</h2>
+      <ol>
+        <li>{isVi ? "Mở app Shortcuts → tab My Shortcuts → (+) tạo mới." : "Open the Shortcuts app → My Shortcuts tab → tap (+) to create one."}</li>
+        <li>{isVi ? "Đổi tên thành \"Send to Portraits\"." : "Rename it to \"Send to Portraits\"."}</li>
+        <li>{isVi ? "Trong Settings của Shortcut, bật Show in Share Sheet và giới hạn Accepted Types = Contacts." : "In the Shortcut's settings, enable Show in Share Sheet and set Accepted Types = Contacts."}</li>
+        <li>{isVi ? "Thêm các action sau, theo thứ tự:" : "Add the following actions, in order:"}</li>
+      </ol>
+
+      <ol class="action-list">
+        <li><code>Get Details of Contacts</code> → Details = Full Name</li>
+        <li><code>Set Variable</code> → name <code>FullName</code>, value = Magic variable from step above</li>
+        <li><code>Get Details of Contacts</code> → Details = Email Address</li>
+        <li><code>Set Variable</code> → <code>Email</code></li>
+        <li><code>Get Details of Contacts</code> → Details = Phone Number</li>
+        <li><code>Set Variable</code> → <code>Phone</code></li>
+        <li><code>Get Details of Contacts</code> → Details = Organization</li>
+        <li><code>Set Variable</code> → <code>Company</code></li>
+        <li><code>Get Details of Contacts</code> → Details = Job Title</li>
+        <li><code>Set Variable</code> → <code>Title</code></li>
+        <li><code>Dictionary</code> action, structured like the JSON in step 3 (use variables)</li>
+        <li><code>Get Contents of URL</code>:
+          <ul>
+            <li>URL: <code>{endpoint}</code></li>
+            <li>Method: <code>POST</code></li>
+            <li>Headers: <code>Authorization = Bearer YOUR_TOKEN</code> (same string as step 1), <code>Content-Type = application/json</code></li>
+            <li>Request Body: JSON, set to the Dictionary from above</li>
+          </ul>
+        </li>
+        <li><code>Show Result</code> (so you see the response)</li>
+      </ol>
+    </section>
+
+    <section class="step">
+      <h2>3. {isVi ? "Dictionary cấu trúc" : "Dictionary structure"}</h2>
+      <p class="hint">{isVi ? "Shortcut's Dictionary action accepts nested keys. Build it to match this shape:" : "Shortcut's Dictionary action accepts nested keys. Build it to match this shape:"}</p>
+      <pre><code>{`{
+  "source": "shortcut",
+  "idempotency_key": "ios-shortcut-" + <uuid from Shortcut's \`Generate UUID\` action>,
+  "contact": {
+    "full_name": <FullName variable>,
+    "title":     <Title variable>,
+    "company":   <Company variable>,
+    "prestige_tier": "D",
+    "channels": [
+      { "kind": "email", "value": <Email variable>, "is_primary": true },
+      { "kind": "phone", "value": <Phone variable>, "is_primary": false }
+    ]
+  }
+}`}</code></pre>
+      <p class="hint">
+        {isVi
+          ? "Nếu 1 trường không tồn tại trong contact (vd. không có email), để trống — Dictionary không phải bắt buộc mọi key. API vẫn chấp nhận miễn là full_name và prestige_tier có mặt."
+          : "If a contact is missing a field (e.g. no email), leave it empty — Dictionary doesn't force every key. The API only requires full_name + prestige_tier."}
+      </p>
+    </section>
+
+    <section class="step">
+      <h2>4. {isVi ? "Test" : "Test"}</h2>
+      <ol>
+        <li>{isVi ? "Mở một contact bất kỳ trong Contacts." : "Open any contact in Contacts."}</li>
+        <li>{isVi ? "Nhấn Share → tìm \"Send to Portraits\" → chạy." : "Tap Share → find \"Send to Portraits\" → run."}</li>
+        <li>
+          {isVi
+            ? <>Nếu thành công, màn hình iPhone hiện một blob JSON như <code>&lbrace;"ok":true, "contact_id":"..."&rbrace;</code>. Mở gallery để xem tier D mới.</>
+            : <>On success the iPhone shows a JSON blob like <code>&lbrace;"ok":true, "contact_id":"..."&rbrace;</code>. Open the gallery to see the new D-tier portrait.</>}
+        </li>
+      </ol>
+    </section>
+
+    <section class="step">
+      <h2>5. {isVi ? "Bảo mật" : "Security"}</h2>
+      <ul>
+        <li>{isVi ? "Token nằm trong Shortcut trên iPhone và trong wrangler secret của worker — không đâu khác." : "The token lives in the Shortcut on your iPhone and in the worker's wrangler secret — nowhere else."}</li>
+        <li>
+          {isVi
+            ? <>Nếu mất iPhone: thu hồi token bằng <code>npx wrangler secret put PORTRAITS_INGEST_TOKEN</code> (đặt chuỗi mới), cập nhật Shortcut với chuỗi mới.</>
+            : <>If you lose the phone: rotate the token via <code>npx wrangler secret put PORTRAITS_INGEST_TOKEN</code> (new random string), then edit the Shortcut with the new value.</>}
+        </li>
+        <li>
+          {isVi
+            ? <>Endpoint <code>{endpoint}</code> so sánh token bằng constant-time compare và rate-limit bằng Cloudflare.</>
+            : <>The endpoint <code>{endpoint}</code> compares tokens in constant time and is rate-limited by Cloudflare.</>}
+        </li>
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .ios-page { max-width: 800px; margin: 0 auto; padding: 2rem 1.25rem 5rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  .back-link:hover { color: #d4a89a; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.5rem; }
+  .hint { color: #8a877e; }
+  .step { padding: 1.25rem 0; border-top: 1px solid #1a1a1a; }
+  .step h2 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 1rem; letter-spacing: 0.06em; margin: 0 0 0.5rem; color: #e8e6e0; }
+  .step ol, .step ul { margin: 0.5rem 0; padding-left: 1.25rem; color: #bdb8ac; font-size: 0.9rem; line-height: 1.55; }
+  .step li { margin: 0.25rem 0; }
+  .action-list code { background: #111; padding: 0.05rem 0.35rem; border-radius: 2px; color: #d4a89a; font-family: "JetBrains Mono", monospace; font-size: 0.8rem; }
+  pre { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 3px; padding: 0.8rem; overflow-x: auto; font-size: 0.8rem; color: #bdb8ac; }
+  pre code { background: none; padding: 0; color: inherit; }
+</style>

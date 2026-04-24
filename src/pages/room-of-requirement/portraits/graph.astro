@@ -1,0 +1,79 @@
+---
+export const prerender = false;
+
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { requireAdmin } from "../../../lib/portraits/auth";
+import GraphView from "../../../components/portraits/GraphView.tsx";
+import { getCurrentLang } from "../../../utils/lang";
+
+const auth = await requireAdmin(Astro);
+if (!auth.admin) return Astro.redirect("/room-of-requirement/portraits", 302);
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const db = (env as any).DB as import("@cloudflare/workers-types").D1Database;
+
+interface GraphContact { id: string; full_name: string; company: string | null; prestige_tier: "S"|"A"|"B"|"C"|"D" }
+interface GraphEdge { id: string; src_id: string; dst_id: string; kind: string }
+
+const contactsRs = await db
+  .prepare("SELECT id, full_name, company, prestige_tier FROM contacts WHERE deleted_at IS NULL AND is_placeholder = 0 ORDER BY CASE prestige_tier WHEN 'S' THEN 0 WHEN 'A' THEN 1 WHEN 'B' THEN 2 WHEN 'C' THEN 3 WHEN 'D' THEN 4 END")
+  .all<GraphContact>();
+const contacts = (contactsRs.results ?? []) as GraphContact[];
+
+const edgesRs = await db
+  .prepare("SELECT id, src_id, dst_id, kind FROM contact_edges LIMIT 2000")
+  .all<GraphEdge>();
+const edges = (edgesRs.results ?? []) as GraphEdge[];
+
+// Filter out edges pointing to any placeholder/deleted contact, via set membership.
+const validIds = new Set(contacts.map((c) => c.id));
+const visibleEdges = edges.filter((e) => validIds.has(e.src_id) && validIds.has(e.dst_id));
+---
+
+<Base title={isVi ? "Sơ đồ quan hệ" : "Relationship graph"} description={isVi ? "Mạng lưới riêng." : "Private network map."}>
+  <main class="graph-page">
+    <header>
+      <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
+      <h1>{isVi ? "Sơ đồ quan hệ" : "Relationship graph"}</h1>
+      <p class="hint">{contacts.length} {isVi ? "người" : "people"} · {visibleEdges.length} {isVi ? "mối liên hệ" : "edges"}</p>
+    </header>
+
+    {contacts.length === 0 ? (
+      <p class="muted">{isVi ? "Chưa có liên lạc thật nào. Thêm vài người và liên kết họ bằng phần Relationships ở trang chi tiết." : "No real contacts yet. Add some and link them via the Relationships section on any detail page."}</p>
+    ) : (
+      <GraphView client:only="react" contacts={contacts} edges={visibleEdges} />
+    )}
+  </main>
+</Base>
+
+<style>
+  .graph-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .back-link { color: #8a877e; text-decoration: none; font-size: 0.875rem; }
+  h1 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 2rem; margin: 0.5rem 0 0.25rem; }
+  .hint { color: #8a877e; margin: 0 0 1rem; }
+  .muted { color: #6a665e; }
+</style>
+
+<style is:global>
+  .graph-root { display: flex; flex-direction: column; gap: 1rem; }
+  .graph-controls { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; align-items: center; padding: 0.75rem; background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .graph-controls label { display: inline-flex; gap: 0.4rem; align-items: center; font-size: 0.8125rem; color: #8a877e; }
+  .graph-controls select { background: #111; border: 1px solid #2a2a2a; color: #e8e6e0; padding: 0.3rem 0.5rem; border-radius: 2px; font: inherit; min-width: 12rem; }
+  .graph-controls button { background: transparent; border: 1px solid #d4a89a; color: #d4a89a; padding: 0.3rem 0.8rem; border-radius: 2px; font: inherit; cursor: pointer; }
+  .graph-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .graph-controls button:not(:disabled):hover { background: rgba(212, 168, 154, 0.08); }
+  .graph-result { color: #bdb8ac; font-size: 0.8125rem; }
+  .graph-hint { color: #6a665e; font-size: 0.75rem; margin-left: auto; }
+  .graph-canvas { height: 70vh; min-height: 500px; border: 1px solid #1f1f1f; border-radius: 3px; overflow: hidden; }
+  .graph-paths { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; background: #0f0f0f; border: 1px solid #1f1f1f; border-radius: 3px; }
+  .path-row { display: flex; flex-wrap: wrap; gap: 0.25rem; align-items: baseline; font-size: 0.9rem; }
+  .path-rank { color: #6a665e; font-family: "JetBrains Mono", monospace; font-size: 0.75rem; min-width: 2rem; }
+  .path-chain a { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; }
+  .path-chain a:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .path-step { color: #6a665e; font-size: 0.75rem; font-family: "JetBrains Mono", monospace; margin: 0 0.1rem; }
+</style>

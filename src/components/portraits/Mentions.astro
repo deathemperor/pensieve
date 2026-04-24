@@ -1,0 +1,122 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { db: D1Database; contactId: string }
+const { db, contactId } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface MentionRow {
+  id: string;
+  title: string;
+  url: string;
+  source: string | null;
+  snippet: string | null;
+  published_at: string | null;
+  fetched_at: string;
+}
+
+const rs = await db
+  .prepare(`
+    SELECT id, title, url, source, snippet, published_at, fetched_at
+    FROM contact_mentions
+    WHERE contact_id = ?
+    ORDER BY COALESCE(published_at, fetched_at) DESC
+    LIMIT 20
+  `)
+  .bind(contactId)
+  .all<MentionRow>();
+const mentions = (rs.results ?? []) as MentionRow[];
+
+const lastFetchedRow = await db
+  .prepare("SELECT MAX(fetched_at) AS t FROM contact_mentions WHERE contact_id = ?")
+  .bind(contactId)
+  .first<{ t: string | null }>();
+const lastFetched = lastFetchedRow?.t ?? null;
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? "" : d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+---
+
+<section class="section mentions">
+  <div class="mentions-header">
+    <h2 class="section-title">{isVi ? "Báo chí đề cập" : "In the press"}</h2>
+    {lastFetched && (
+      <span class="muted last-fetched">
+        {isVi ? "Tra cứu gần nhất" : "Last fetched"}: {formatDate(lastFetched)}
+      </span>
+    )}
+  </div>
+
+  {mentions.length === 0 ? (
+    <p class="muted">{isVi ? "Chưa có bài báo nào được tra." : "No mentions fetched yet."}</p>
+  ) : (
+    <ul class="mention-list">
+      {mentions.map((m) => (
+        <li class="mention">
+          <div class="mention-head">
+            <a href={m.url} target="_blank" rel="noopener noreferrer" class="mention-title">{m.title}</a>
+            <span class="mention-source">{m.source ?? ""}</span>
+          </div>
+          {m.snippet && <p class="mention-snippet">{m.snippet}</p>}
+          {m.published_at && <div class="mention-date">{formatDate(m.published_at)}</div>}
+        </li>
+      ))}
+    </ul>
+  )}
+
+  <button id="enrich-btn" class="btn" data-id={contactId}>
+    {mentions.length === 0
+      ? (isVi ? "🔍 Tra báo chí" : "🔍 Search the press")
+      : (isVi ? "🔄 Làm mới" : "🔄 Refresh")}
+  </button>
+  <p id="enrich-status" class="muted hint" hidden></p>
+</section>
+
+<script define:vars={{ contactId }}>
+  const btn = document.getElementById("enrich-btn");
+  const status = document.getElementById("enrich-status");
+  btn?.addEventListener("click", async () => {
+    if (!status) return;
+    btn.disabled = true;
+    status.hidden = false;
+    status.textContent = "Searching Google…";
+    try {
+      const res = await fetch(`/api/portraits/${contactId}/enrich`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        status.textContent = `Search failed: ${data.error ?? res.statusText}${data.hint ? ` — ${data.hint}` : ""}`;
+        return;
+      }
+      status.textContent = `Fetched ${data.fetched} · ${data.inserted} new.`;
+      if (data.inserted > 0) window.location.reload();
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+
+<style>
+  .mentions-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+  .last-fetched { font-size: 0.75rem; }
+  .mention-list { list-style: none; padding: 0; margin: 0 0 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .mention { padding: 0.6rem 0; border-bottom: 1px solid #1a1a1a; }
+  .mention-head { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+  .mention-title { color: #e8e6e0; text-decoration: none; border-bottom: 1px dashed #3a3a3a; font-size: 0.95rem; line-height: 1.3; }
+  .mention-title:hover { color: #d4a89a; border-bottom-color: #d4a89a; }
+  .mention-source { font-size: 0.75rem; color: #6a665e; font-family: "JetBrains Mono", monospace; }
+  .mention-snippet { color: #8a877e; font-size: 0.85rem; line-height: 1.45; margin: 0.25rem 0 0; }
+  .mention-date { color: #6a665e; font-size: 0.75rem; margin-top: 0.15rem; }
+  .btn {
+    background: transparent; border: 1px solid #d4a89a; color: #d4a89a;
+    padding: 0.4rem 0.9rem; border-radius: 3px; cursor: pointer; font: inherit;
+  }
+  .btn:hover { background: rgba(212, 168, 154, 0.08); }
+  .btn:disabled { opacity: 0.5; cursor: wait; }
+  .muted { color: #6a665e; }
+  .hint { font-size: 0.8125rem; margin: 0.5rem 0 0; }
+</style>

@@ -1,0 +1,57 @@
+---
+import type { D1Database } from "@cloudflare/workers-types";
+import { getCurrentLang } from "../../utils/lang";
+
+interface Props { db: D1Database }
+const { db } = Astro.props;
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+interface Row { currency: string; expected_cents: number; count: number }
+const rs = await db
+  .prepare(`
+    SELECT currency,
+           SUM(COALESCE(value_cents, 0) * probability / 100) AS expected_cents,
+           COUNT(*) AS count
+    FROM contact_deals
+    WHERE closed_at IS NULL
+    GROUP BY currency
+  `)
+  .all<Row>();
+const rows = (rs.results ?? []) as Row[];
+
+function fmt(v: number, cur: string): string {
+  try {
+    return new Intl.NumberFormat(lang === "vi" ? "vi-VN" : "en-US", {
+      style: "currency", currency: cur, maximumFractionDigits: 0,
+    }).format(v / 100);
+  } catch {
+    return `${(v / 100).toFixed(0)} ${cur}`;
+  }
+}
+
+const totalCount = rows.reduce((s, r) => s + r.count, 0);
+---
+
+{totalCount > 0 && (
+  <span class="pipeline-pill" title={isVi ? "Giá trị deal mở (kỳ vọng)" : "Open pipeline expected value"}>
+    💼 {rows.map((r) => fmt(r.expected_cents, r.currency)).join(" · ")}
+    <span class="pill-count">({totalCount} {isVi ? "deal" : totalCount === 1 ? "deal" : "deals"})</span>
+  </span>
+)}
+
+<style>
+  .pipeline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8125rem;
+    color: #a9cfa0;
+    background: rgba(120, 170, 110, 0.08);
+    border: 1px solid rgba(120, 170, 110, 0.3);
+    padding: 0.3rem 0.65rem;
+    border-radius: 2px;
+    margin-left: 0.5rem;
+  }
+  .pill-count { color: #6a665e; font-size: 0.75rem; }
+</style>
