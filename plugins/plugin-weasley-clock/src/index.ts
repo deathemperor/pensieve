@@ -39,6 +39,17 @@ export function weasleyClockPlugin(): PluginDescriptor {
 					"deleted",
 				],
 			},
+			availability_rules: { indexes: ["timezone"] },
+			bookings: {
+				indexes: [
+					"meeting_type_id",
+					"host_account_id",
+					"slot_start_iso",
+					"status",
+					"cancel_token",
+					"reschedule_token",
+				],
+			},
 		},
 		adminEntry: "plugin-weasley-clock/admin",
 		adminPages: [
