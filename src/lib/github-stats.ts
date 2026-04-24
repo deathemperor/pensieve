@@ -1,11 +1,16 @@
-// Aggregates the Claude-Code-era totals across all of Loc's owned repos:
-// merged-PR count + sum of pre-squash commits per PR.
+// Aggregates the Claude-Code-era totals across every repo the auth token
+// can see — personal, collaborator, and org — by searching for PRs authored
+// by deathemperor and merged since 2026-01-29.
 //
-// Why: GitHub's admin-squash-merge collapses the whole feature branch into
-// one commit on main, and GH's search API then only sees that one commit.
-// A raw `search/commits?q=user:deathemperor` gives you ~600 "landed" commits
-// which severely undercounts the Claude-authored branch commits before the
-// squash. Per-PR `commits.totalCount` recovers that loss.
+// Why search instead of walking owned repos: search covers all affiliations
+// uniformly (huuloc.com's owned repos had 60 PRs; papaya-insurtech org had
+// 377) and naturally scopes to PRs Loc personally authored — the honest
+// "work I did" filter for mixed-authorship org repos.
+//
+// Why per-PR commit counts instead of `/search/commits` totals: admin-squash
+// merge collapses whole feature branches to one commit on main, so the
+// commit-level search undercounts by several-fold. `pullRequest.commits.
+// totalCount` recovers what was on the branch at merge time.
 
 export interface ClaudeEraStats {
 	prCount: number;
@@ -13,45 +18,25 @@ export interface ClaudeEraStats {
 	updatedAt: string;
 }
 
-const ERA_START = "2026-01-29T00:00:00Z";
+const SEARCH_QUERY = "author:deathemperor is:pr is:merged merged:>=2026-01-29";
 
-interface OwnedRepo { owner: { login: string }; name: string; pushed_at: string }
-
-async function fetchOwnedRepos(token: string): Promise<OwnedRepo[]> {
-	const headers = {
-		"User-Agent": "pensieve-site",
-		Accept: "application/vnd.github+json",
-		Authorization: `Bearer ${token}`,
+interface SearchResponse {
+	data?: {
+		search?: {
+			pageInfo: { hasNextPage: boolean; endCursor: string | null };
+			nodes: Array<{ commits?: { totalCount: number } } | null>;
+		};
 	};
-	const all: OwnedRepo[] = [];
-	for (let page = 1; page <= 10; page++) {
-		const res = await fetch(
-			`https://api.github.com/user/repos?affiliation=owner&per_page=100&page=${page}&sort=pushed`,
-			{ headers },
-		);
-		if (!res.ok) break;
-		const chunk = (await res.json()) as OwnedRepo[];
-		if (!chunk.length) break;
-		all.push(...chunk);
-		if (chunk.length < 100) break;
-	}
-	// Only bother querying repos pushed to after the era start — repos idle
-	// since before Jan 29 cannot possibly have merged era-PRs.
-	return all.filter((r) => r.pushed_at >= ERA_START);
+	errors?: unknown;
 }
 
-interface PullNode { mergedAt: string | null; commits: { totalCount: number } }
-interface GqlResponse {
-	data?: { repository?: { pullRequests?: { nodes: PullNode[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } } };
-}
-
-async function sumRepoPrs(token: string, owner: string, name: string): Promise<{ prCount: number; preSquashCommits: number }> {
+export async function aggregateClaudeEraStats(token: string): Promise<ClaudeEraStats> {
 	let prCount = 0;
 	let preSquashCommits = 0;
 	let cursor: string | null = null;
 
-	for (let page = 0; page < 10; page++) {
-		const query = `query($owner:String!,$name:String!,$cursor:String){repository(owner:$owner,name:$name){pullRequests(first:100,after:$cursor,states:MERGED,orderBy:{field:UPDATED_AT,direction:DESC}){nodes{mergedAt commits{totalCount}} pageInfo{hasNextPage endCursor}}}}`;
+	for (let page = 0; page < 20; page++) {
+		const query = `query($cursor:String){search(query:"${SEARCH_QUERY}",type:ISSUE,first:100,after:$cursor){pageInfo{hasNextPage endCursor} nodes{...on PullRequest{commits{totalCount}}}}}`;
 		const res = await fetch("https://api.github.com/graphql", {
 			method: "POST",
 			headers: {
@@ -60,44 +45,21 @@ async function sumRepoPrs(token: string, owner: string, name: string): Promise<{
 				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ query, variables: { owner, name, cursor } }),
+			body: JSON.stringify({ query, variables: { cursor } }),
 		});
 		if (!res.ok) break;
-		const json = (await res.json()) as GqlResponse;
-		const conn = json?.data?.repository?.pullRequests;
+		const json = (await res.json()) as SearchResponse;
+		const conn = json?.data?.search;
 		if (!conn) break;
 
-		let sawOlderThanEra = false;
-		for (const pr of conn.nodes) {
-			if (!pr.mergedAt) continue;
-			if (pr.mergedAt >= ERA_START) {
-				prCount++;
-				preSquashCommits += pr.commits?.totalCount ?? 1;
-			} else {
-				sawOlderThanEra = true;
-			}
+		for (const node of conn.nodes) {
+			if (!node?.commits) continue;
+			prCount++;
+			preSquashCommits += node.commits.totalCount;
 		}
-		// PRs are ordered by UPDATED_AT DESC, so once we see a merged-before-era
-		// PR, all later pages are older too.
-		if (sawOlderThanEra || !conn.pageInfo.hasNextPage) break;
+		if (!conn.pageInfo.hasNextPage) break;
 		cursor = conn.pageInfo.endCursor;
 	}
 
-	return { prCount, preSquashCommits };
-}
-
-export async function aggregateClaudeEraStats(token: string): Promise<ClaudeEraStats> {
-	const repos = await fetchOwnedRepos(token);
-	let prCount = 0;
-	let preSquashCommits = 0;
-	for (const repo of repos) {
-		try {
-			const result = await sumRepoPrs(token, repo.owner.login, repo.name);
-			prCount += result.prCount;
-			preSquashCommits += result.preSquashCommits;
-		} catch (err) {
-			console.error("github-stats: repo failed", repo.owner.login, repo.name, err);
-		}
-	}
 	return { prCount, preSquashCommits, updatedAt: new Date().toISOString() };
 }
