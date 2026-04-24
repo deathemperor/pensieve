@@ -27,14 +27,18 @@ function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "annivers
 ---
 <div class={`wc-day ${isToday ? "wc-day--today" : ""} ${isDimmed ? "wc-day--dim" : ""} wc-day--${variant}`}>
 	<header class="wc-day__head">
-		<DualDate date={date} size={variant === "week" ? "lg" : "md"} />
+		<DualDate
+			date={date}
+			size={variant === "week" ? "lg" : "sm"}
+			mode={variant === "month" ? "compact-month" : "full"}
+		/>
 	</header>
 	<ul class="wc-day__events">
 		{occurrences.map((occ) => (
 			<li>
 				<EventChip
 					title={occ.event.title_vi || occ.event.title_en}
-					subtitle={occ.nth ? `${occ.nth}th · ${occ.event.relationship ?? ""}` : occ.event.relationship ?? ""}
+					subtitle={variant === "week" ? (occ.nth ? `${occ.nth}th · ${occ.event.relationship ?? ""}` : occ.event.relationship ?? "") : undefined}
 					category={chipCategoryFor(occ)}
 					size={variant === "week" ? "full" : "chip"}
 				/>
@@ -44,7 +48,7 @@ function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "annivers
 			<li>
 				<EventChip
 					title={evt.title ?? "(untitled)"}
-					subtitle={evt.location ?? undefined}
+					subtitle={variant === "week" ? (evt.location ?? undefined) : undefined}
 					category="other"
 					size={variant === "week" ? "full" : "chip"}
 				/>
@@ -55,11 +59,12 @@ function chipCategoryFor(ev: FamilyOccurrence): "giỗ" | "birthday" | "annivers
 
 <style>
 	.wc-day { border: 1px solid #2a1f15; padding: 8px; min-height: 160px; background: #110c08; }
-	.wc-day--month { min-height: 70px; padding: 4px; }
+	.wc-day--month { min-height: 90px; padding: 4px 6px; }
 	.wc-day--today { border: 2px solid #c9a961; background: #201810; }
 	/* Dim prev/next-month cells in month view: opacity wins over the
 	   --wc-ink CSS var inside DualDate, desaturates everything uniformly. */
 	.wc-day--dim { opacity: 0.32; background: #0a0604; }
 	.wc-day__head { margin-bottom: 6px; }
-	.wc-day__events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+	.wc-day--month .wc-day__head { margin-bottom: 3px; }
+	.wc-day__events { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 </style>

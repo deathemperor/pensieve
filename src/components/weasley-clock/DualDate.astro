@@ -5,10 +5,11 @@ interface Props {
 	date: Date;
 	size?: "lg" | "md" | "sm";
 	lang?: "vi" | "en";
+	mode?: "full" | "compact-month";
 }
 
-const { date, size = "md", lang = "vi" } = Astro.props;
-const { gregorian, lunar } = formatDualDate(date, { lang });
+const { date, size = "md", lang = "vi", mode = "full" } = Astro.props;
+const { gregorian, lunar } = formatDualDate(date, { lang, mode });
 ---
 <span class={`dual-date dual-date--${size}`}>
 	<span class="dual-date__greg">{gregorian}</span>

@@ -98,9 +98,10 @@ export function lunarToSolar(l: {
  */
 export function formatDualDate(
   date: Date,
-  opts?: { lang?: "vi" | "en" }
+  opts?: { lang?: "vi" | "en"; mode?: "full" | "compact-month" }
 ): { gregorian: string; lunar: string } {
   const lang = opts?.lang ?? "vi";
+  const mode = opts?.mode ?? "full";
 
   // Gregorian label: shift to HCMC local for the display date
   const hcmc = new Date(date.getTime() + 7 * 3600 * 1000);
@@ -110,12 +111,28 @@ export function formatDualDate(
   const localDate = new Date(Date.UTC(sYear, sMonth, sDay));
 
   const locale = lang === "en" ? "en-GB" : "vi-VN";
-  const gregorian = localDate.toLocaleDateString(locale, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC", // already shifted; treat UTC fields as local
-  });
+  let gregorian: string;
+  if (mode === "compact-month") {
+    // Google Calendar style: show just the day number, except on the 1st
+    // of each month, show "D MMM" (VI: "1 thg 5", EN: "May 1").
+    if (sDay === 1) {
+      const monthShort = localDate.toLocaleDateString(locale, {
+        day: "numeric",
+        month: "short",
+        timeZone: "UTC",
+      });
+      gregorian = monthShort;
+    } else {
+      gregorian = String(sDay);
+    }
+  } else {
+    gregorian = localDate.toLocaleDateString(locale, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+  }
 
   const lunar = solarToLunar(date);
   if (!lunar) return { gregorian, lunar: "—" };
