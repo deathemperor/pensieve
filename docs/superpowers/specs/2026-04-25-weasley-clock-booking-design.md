@@ -258,10 +258,10 @@ Total estimate: ~3-5 focused sessions for Phases 1-3. Phase 4 optional.
 
 ---
 
-## Open questions to resolve before Phase 1
+## Resolved decisions
 
-1. **Default availability rule:** what weekly hours should I seed? E.g., Mon-Fri 09:00-17:30 Asia/Ho_Chi_Minh? Or leave it to Loc to configure via admin before first booking?
-2. **Default `host_account_ids` on existing `meeting_types`:** use `loc.truongh@gmail.com` (work) as default, Loc can change per type?
-3. **Location default:** leave blank? Or default to a string like "To be coordinated via email"?
-4. **Default sender address:** `bookings@huuloc.com` needs Resend domain verification. Is that set up, or should I use an already-verified sender?
-5. **Rate limit threshold:** 5 booking attempts per IP per hour reasonable?
+1. **Default availability rule:** 7 days/week 09:00-17:30 Asia/Ho_Chi_Minh (include weekends).
+2. **Default `host_account_ids` on existing `meeting_types`:** `loc.truongh@gmail.com` (Loc's *personal* Google account, not Papaya work).
+3. **Location default:** `"To be coordinated via email"` when meeting_type leaves it blank.
+4. **Email sender:** `loctruongh@gmail.com` via Resend. *NOTE — Resend can send "from" a Gmail address only when that address has been verified in the Resend dashboard. Confirm this is set up; if not, the first production email will bounce.* Plaintext Reply-To also set to this address.
+5. **Rate limit:** 5 booking attempts per IP per hour, enforced via KV counter.
