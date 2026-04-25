@@ -7,6 +7,8 @@ import profilePhoto from "../assets/truong-profile.jpg";
 import { link } from "../utils/link";
 import { getCurrentLang } from "../utils/lang";
 import { env } from "cloudflare:workers";
+import { setCachePolicy } from "../lib/cachePolicy";
+setCachePolicy(Astro, "static");
 const isVi = getCurrentLang(Astro) === "vi";
 
 // GitHub API — authenticated when GITHUB_TOKEN is set (5000 req/hr),

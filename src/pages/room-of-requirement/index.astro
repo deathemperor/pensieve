@@ -184,6 +184,8 @@ if (db) {
 
 // Wishlist (Diagon Alley) — count by priority for the hub card.
 import { getEmDashCollection } from "emdash";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "ror-hub");
 let wishWant = 0;
 let wishSomeday = 0;
 let wishAcquired = 0;

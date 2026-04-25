@@ -7,6 +7,8 @@ import { getCurrentLang } from "../../../utils/lang";
 import { getChronicleCategory } from "../../../themes/chronicleCategories";
 import { formatRomanDate } from "../../../utils/romanDate";
 import "../../../styles/chronicle.css";
+import { setCachePolicy } from "../../../lib/cachePolicy";
+setCachePolicy(Astro, "doc");
 
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";

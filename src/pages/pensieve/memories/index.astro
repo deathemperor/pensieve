@@ -6,6 +6,8 @@ import Base from "../../../layouts/Base.astro";
 import { getReadingTime } from "../../../utils/reading-time";
 import { link } from "../../../utils/link";
 import { getCurrentLang } from "../../../utils/lang";
+import { setCachePolicy } from "../../../lib/cachePolicy";
+setCachePolicy(Astro, "blog-index");
 
 const currentLang = getCurrentLang(Astro);
 const { entries: allPosts, cacheHint } = await getEmDashCollection("posts");

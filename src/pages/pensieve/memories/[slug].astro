@@ -20,6 +20,8 @@ import { getReadingTime } from "../../../utils/reading-time";
 import { themeForFirstCategory } from "../../../themes/categoryThemes";
 import { link } from "../../../utils/link";
 import { otherLang, langLabel, type Lang } from "../../../utils/lang";
+import { setCachePolicy } from "../../../lib/cachePolicy";
+setCachePolicy(Astro, "doc");
 
 const { slug } = Astro.params;
 
