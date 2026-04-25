@@ -1,3 +1,13 @@
+export interface CancellationEmailInput {
+	apiKey: string;
+	guestEmail: string;
+	guestName: string;
+	meetingTitle: string;
+	slotStartIso: string;
+	guestTimezone: string;
+	lang: "vi" | "en";
+}
+
 export interface ConfirmationEmailInput {
 	apiKey: string;
 	guestEmail: string;
@@ -126,5 +136,84 @@ export async function sendConfirmationEmail(input: ConfirmationEmailInput): Prom
 	} catch (e) {
 		// Non-fatal: booking is already persisted + GCal invite sent.
 		console.error("[wc/email] Resend network error:", e instanceof Error ? e.message : String(e));
+	}
+}
+
+export async function sendCancellationEmail(input: CancellationEmailInput): Promise<void> {
+	if (!input.apiKey) {
+		console.error("[wc/email] Missing RESEND_API_KEY — skipping cancellation email");
+		return;
+	}
+
+	const startFmt = formatSlot(input.slotStartIso, input.guestTimezone, input.lang);
+
+	const subject =
+		input.lang === "vi"
+			? `Lịch hẹn đã hủy · ${input.meetingTitle}`
+			: `Booking cancelled · ${input.meetingTitle}`;
+
+	const greeting =
+		input.lang === "vi"
+			? `Chào ${input.guestName},`
+			: `Hi ${input.guestName},`;
+
+	const cancelLine =
+		input.lang === "vi"
+			? `Lịch hẹn "${input.meetingTitle}" đã được hủy thành công.`
+			: `Your booking "${input.meetingTitle}" has been cancelled.`;
+
+	const whenLabel = input.lang === "vi" ? "Thời gian" : "When";
+	const rebookLabel = input.lang === "vi" ? "Đặt lịch mới" : "Book again";
+	const rebookUrl = "https://huuloc.com/book";
+	const signoff = input.lang === "vi" ? "Hẹn gặp lại,\nLộc" : "Hope to connect soon,\nLoc";
+
+	const text = [
+		greeting,
+		"",
+		cancelLine,
+		"",
+		`${whenLabel}: ${startFmt}`,
+		"",
+		`${rebookLabel}: ${rebookUrl}`,
+		"",
+		signoff,
+	].join("\n");
+
+	const html = `<!DOCTYPE html>
+<html><body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+<p>${escapeHtml(greeting)}</p>
+<p>${escapeHtml(cancelLine)}</p>
+<p style="background: #f5f5f5; padding: 12px 16px; border-radius: 6px;">
+<strong>${escapeHtml(whenLabel)}:</strong> ${escapeHtml(startFmt)}
+</p>
+<p>
+<a href="${escapeHtml(rebookUrl)}" style="color: #36c;">${escapeHtml(rebookLabel)}</a>
+</p>
+<p style="white-space: pre-line;">${escapeHtml(signoff)}</p>
+</body></html>`;
+
+	try {
+		const r = await fetch("https://api.resend.com/emails", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${input.apiKey}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				from: FROM,
+				reply_to: REPLY_TO,
+				to: [input.guestEmail],
+				subject,
+				html,
+				text,
+			}),
+		});
+		if (!r.ok) {
+			const body = await r.text();
+			console.error(`[wc/email] Resend non-2xx (cancellation): ${r.status} ${body}`);
+		}
+	} catch (e) {
+		// Non-fatal: booking cancellation is already persisted.
+		console.error("[wc/email] Resend network error (cancellation):", e instanceof Error ? e.message : String(e));
 	}
 }
