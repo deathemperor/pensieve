@@ -105,7 +105,14 @@ export default {
 
 			const cache = caches.default;
 			const cached = await cache.match(cacheKey);
-			if (cached) return cached;
+			if (cached) {
+				// Re-emit the response so we can stamp X-Cache. caches.default
+				// hits don't carry cf-cache-status because Workers bypass the
+				// transparent HTML cache layer.
+				const hit = new Response(cached.body, cached);
+				hit.headers.set("x-cache", "HIT");
+				return hit;
+			}
 
 			const response = await handler.fetch(request, env, ctx);
 			const cc = response.headers.get("cache-control") ?? "";
@@ -115,9 +122,11 @@ export default {
 			if (response.status === 200 && /\bpublic\b/i.test(cc) && /\b(s-maxage|max-age)=\d+/i.test(cc)) {
 				const cacheable = new Response(response.body, response);
 				cacheable.headers.delete("set-cookie");
+				cacheable.headers.set("x-cache", "MISS");
 				ctx.waitUntil(cache.put(cacheKey, cacheable.clone()));
 				return cacheable;
 			}
+			response.headers.set("x-cache", "BYPASS");
 			return response;
 		}
 
