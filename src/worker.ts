@@ -72,19 +72,55 @@ export default {
 		// no attacker input can steer it cross-origin.
 		if (path.startsWith("/tr\u01B0\u01A1ng")) {
 			const tail = path.slice("/tr\u01B0\u01A1ng".length);
-			// nosemgrep: javascript.express.security.audit.express-open-redirect.express-open-redirect
-			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301);
+			// Hardcoded origin + path-only tail — cannot resolve cross-origin.
+			// nosemgrep
+			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301); // nosemgrep
 		}
 
 		// Nickname alias: /deathemperor (any case) → canonical /Tr\u01B0\u01A1ng.
 		// Same hardcoded-origin pattern as /tr\u01B0\u01A1ng above.
 		if (/^\/deathemperor(\/|$)/i.test(path)) {
 			const tail = path.replace(/^\/deathemperor/i, "");
-			// nosemgrep: javascript.express.security.audit.express-open-redirect.express-open-redirect
-			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301);
+			// Hardcoded origin + path-only tail — cannot resolve cross-origin.
+			// nosemgrep
+			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301); // nosemgrep
 		}
 
-		// Everything else → Astro
+		// Everything else → Astro, with edge caching applied per the
+		// Cache-Control header set by setCachePolicy() in page frontmatter.
+		// Workers responses are NOT auto-cached on a custom domain — we
+		// have to drive caches.default ourselves. We fold the resolved
+		// language into the cache key (instead of relying on Vary, which
+		// caches.default ignores) so VI and EN serve from separate slots.
+		if (request.method === "GET" && !path.startsWith("/_emdash") && !path.startsWith("/api/")) {
+			const cookie = request.headers.get("cookie") || "";
+			const cookieLang = cookie.match(/(?:^|;\s*)pref_lang=(vi|en)\b/)?.[1];
+			const accept = (request.headers.get("accept-language") || "").toLowerCase();
+			const acceptLang = accept.startsWith("vi") || accept.includes(",vi") ? "vi" : "en";
+			const lang = cookieLang ?? acceptLang;
+
+			const keyUrl = new URL(request.url);
+			keyUrl.searchParams.set("__lang", lang);
+			const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
+
+			const cache = caches.default;
+			const cached = await cache.match(cacheKey);
+			if (cached) return cached;
+
+			const response = await handler.fetch(request, env, ctx);
+			const cc = response.headers.get("cache-control") ?? "";
+			// Only cache success responses that explicitly opted in via
+			// `public` + a max-age/s-maxage hint. CF refuses to cache
+			// responses carrying a Set-Cookie, so strip those before put.
+			if (response.status === 200 && /\bpublic\b/i.test(cc) && /\b(s-maxage|max-age)=\d+/i.test(cc)) {
+				const cacheable = new Response(response.body, response);
+				cacheable.headers.delete("set-cookie");
+				ctx.waitUntil(cache.put(cacheKey, cacheable.clone()));
+				return cacheable;
+			}
+			return response;
+		}
+
 		return handler.fetch(request, env, ctx);
 	},
 
