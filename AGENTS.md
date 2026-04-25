@@ -29,6 +29,35 @@ Agent skills are in `.agents/skills/`. Load them when working on specific tasks:
 - **creating-plugins** -- Building EmDash plugins with hooks, storage, admin UI, API routes, and Portable Text block types.
 - **emdash-cli** -- CLI commands for content management, seeding, type generation, and visual editing flow.
 
+## Working principles
+
+Adapted from [Karpathy's LLM-coding guidelines](https://github.com/forrestchang/andrej-karpathy-skills). Biased toward caution over speed; for trivial edits, use judgment.
+
+### 1. Think before coding
+State assumptions explicitly. If multiple interpretations exist, present them — don't pick silently. If a simpler approach exists, say so. If something's unclear, stop and ask one targeted question before writing code.
+*Pensieve anchor:* "build a contact gallery" needs a clarifier ("admin-only or public?") before one line — it determines auth model, edge cache strategy, and `is_placeholder` semantics.
+
+### 2. Simplicity first
+Minimum code that solves the problem. No features beyond what was asked. No abstractions for single-use code. No error handling for impossible scenarios. If 200 lines could be 50, rewrite. Ask: "would a senior engineer call this overcomplicated?"
+*Pensieve anchor:* bulk-promote 74 cards via one SQL file beats building a Promote button on day one — reversible (`DELETE WHERE source=…`), zero components, and the button earns its existence on the second batch.
+
+### 3. Surgical changes
+Touch only what's needed. Don't "improve" adjacent code, comments, or formatting. Don't refactor what isn't broken. Match existing style even if you'd do it differently. Mention unrelated dead code; don't delete it. Every changed line should trace to the user's ask.
+*Pensieve anchor:* a focused OAuth bypass in `src/lib/portraits/ocr.ts` is one commit — not bundled with cosmetic tier-suggest.ts refactors that touch lines you weren't asked about.
+
+### 4. Goal-driven execution
+Define verifiable success **before** starting. For multi-step work, write a 3-line plan with explicit verify-checks. Strong criteria let you loop independently; weak ones ("make it work") require constant clarification.
+*Pensieve anchor:* "OCR all 74 cards" → success = `SELECT ocr_status, COUNT(*) FROM contact_cards WHERE id IN (SELECT card_id FROM contact_card_event_links WHERE event_id='ev_…') GROUP BY ocr_status` returns one row with `status='parsed'` and `count=74`. That one query would have caught the `done` vs `parsed` enum bug before 74 invisible rows shipped.
+
+### Verifying your work
+Bugs we caught the hard way (now embedded in the `chocolate-frog` agent rules):
+- `ocr_status='parsed'` is the exact string the gallery filters on — `done` or `success` writes data the UI can't see
+- `--remote` flag on **every** wrangler call — local sandbox D1/R2 is empty, "uploaded" without `--remote` means local only
+- Cookie path scope: EmDash auth cookie is scoped to `/_emdash/*`, so it doesn't auto-propagate to `/api/portraits/*` — read `locals.user` directly instead
+- Same-zone fetch from a Worker into its own origin → 522 Origin Timeout. Don't proxy your own routes; bypass and read state directly.
+
+Verify by SELECTing what you just wrote and asserting count + content, or `curl` the endpoint and grep the body. Don't trust "it should work."
+
 ## Rules
 
 - All content pages must be server-rendered (`output: "server"`). No `getStaticPaths()` for CMS content.
