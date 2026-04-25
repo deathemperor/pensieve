@@ -44,6 +44,8 @@ export default definePlugin({
 				"reschedule_token",
 			],
 		},
+		api_keys: { indexes: ["hash", "revoked_at"] },
+		webhook_endpoints: { indexes: ["active"] },
 	},
 	hooks: {
 		"plugin:install": {

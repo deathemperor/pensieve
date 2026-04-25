@@ -131,6 +131,26 @@ export interface BookingData {
 	reminded_at: string | null;
 }
 
+export interface ApiKeyData {
+	label: string;
+	hash: string;        // SHA-256 hex of the raw key
+	scopes: string[];    // e.g., ["bookings:read"]
+	created_at: string;
+	last_used_at: string | null;
+	revoked_at: string | null;
+}
+
+export interface WebhookEndpointData {
+	url: string;
+	events: string[];          // e.g., ["booking.created","booking.cancelled","booking.rescheduled"]
+	secret: string;            // HMAC-SHA256 secret, rotated on demand
+	active: boolean;
+	created_at: string;
+	last_dispatched_at: string | null;
+	last_status: number | null;  // last HTTP status from a delivery
+	last_error: string | null;
+}
+
 export function collections(db: D1Database) {
 	return {
 		oauth_accounts: new Collection<OAuthAccountData>(db, "oauth_accounts"),
@@ -138,5 +158,7 @@ export function collections(db: D1Database) {
 		oauth_state: new Collection<OAuthStateData>(db, "oauth_state"),
 		availability_rules: new Collection<AvailabilityRuleData>(db, "availability_rules"),
 		bookings: new Collection<BookingData>(db, "bookings"),
+		api_keys: new Collection<ApiKeyData>(db, "api_keys"),
+		webhook_endpoints: new Collection<WebhookEndpointData>(db, "webhook_endpoints"),
 	};
 }

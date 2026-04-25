@@ -50,6 +50,8 @@ export function weasleyClockPlugin(): PluginDescriptor {
 					"reschedule_token",
 				],
 			},
+			api_keys: { indexes: ["hash", "revoked_at"] },
+			webhook_endpoints: { indexes: ["active"] },
 		},
 		adminEntry: "plugin-weasley-clock/admin",
 		adminPages: [
