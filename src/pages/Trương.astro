@@ -190,6 +190,10 @@ function formatGHDate(iso: string) {
 				</p>
 				<dl class="about-meta">
 					<div class="about-meta-row">
+						<dt>{isVi ? "Biệt danh" : "Nickname"}</dt>
+						<dd><code class="about-meta-handle">deathemperor</code> {isVi ? "— trên các diễn đàn Việt Nam từ đầu những năm 2000" : "— across Vietnamese forums since the early 2000s"}</dd>
+					</div>
+					<div class="about-meta-row">
 						<dt>{isVi ? "Vai trò" : "Role"}</dt>
 						<dd>{isVi ? "Giám đốc Công nghệ / Giám đốc Vận hành · Kỹ sư phần mềm" : "Chief Technology Officer / Chief Operating Officer · Software Engineer"}</dd>
 					</div>
@@ -2969,6 +2973,15 @@ function formatGHDate(iso: string) {
 		color: var(--color-text);
 		margin: 0;
 		line-height: 1.5;
+	}
+
+	.about-meta-handle {
+		font-family: var(--font-mono);
+		color: var(--color-text);
+		background: rgba(201, 169, 97, 0.1);
+		padding: 1px 6px;
+		border-radius: 2px;
+		font-size: 0.95em;
 	}
 
 	.about-rule {

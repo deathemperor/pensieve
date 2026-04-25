@@ -76,6 +76,14 @@ export default {
 			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301);
 		}
 
+		// Nickname alias: /deathemperor (any case) → canonical /Tr\u01B0\u01A1ng.
+		// Same hardcoded-origin pattern as /tr\u01B0\u01A1ng above.
+		if (/^\/deathemperor(\/|$)/i.test(path)) {
+			const tail = path.replace(/^\/deathemperor/i, "");
+			// nosemgrep: javascript.express.security.audit.express-open-redirect.express-open-redirect
+			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301);
+		}
+
 		// Everything else → Astro
 		return handler.fetch(request, env, ctx);
 	},
