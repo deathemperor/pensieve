@@ -39,6 +39,20 @@ const tierLabel = tierName(contact.prestige_tier, lang);
 const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
 const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
 
+// Web research links: LinkedIn, company site, press mentions. Stored in external_ids JSON.
+type ExternalIds = { linkedin?: string; company_linkedin?: string; website?: string; site?: string; medium?: string; company?: string; press?: string[] };
+let externalIds: ExternalIds = {};
+try { externalIds = contact.external_ids ? (JSON.parse(contact.external_ids) as ExternalIds) : {}; } catch { /* malformed JSON; render nothing */ }
+const namedLinks: Array<{ label: string; url: string }> = [];
+if (externalIds.linkedin) namedLinks.push({ label: "LinkedIn", url: externalIds.linkedin });
+if (externalIds.company_linkedin) namedLinks.push({ label: "Company LinkedIn", url: externalIds.company_linkedin });
+if (externalIds.website) namedLinks.push({ label: isVi ? "Trang web" : "Website", url: externalIds.website });
+if (externalIds.site) namedLinks.push({ label: isVi ? "Trang chính" : "Main site", url: externalIds.site });
+if (externalIds.company) namedLinks.push({ label: isVi ? "Công ty" : "Company", url: externalIds.company });
+if (externalIds.medium) namedLinks.push({ label: "Medium", url: externalIds.medium });
+const pressUrls: string[] = Array.isArray(externalIds.press) ? externalIds.press.filter((u): u is string => typeof u === "string") : [];
+const pressHostnames = pressUrls.map((u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } });
+
 // Phase 2: list any cards attached to this contact (admin view only).
 interface CardSummary { id: string; captured_at: string; ocr_status: string }
 let cards: CardSummary[] = [];
@@ -92,6 +106,26 @@ Astro.response.headers.set(
     </header>
 
     {contact.bio && <section class="section"><p class="bio">{contact.bio}</p></section>}
+
+    {(namedLinks.length > 0 || pressUrls.length > 0) && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Liên kết & Báo chí" : "Links & Press"}</h2>
+        {namedLinks.length > 0 && (
+          <ul class="ext-link-list">
+            {namedLinks.map((l) => (
+              <li><a href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a></li>
+            ))}
+          </ul>
+        )}
+        {pressUrls.length > 0 && (
+          <ul class="press-list">
+            {pressUrls.map((u, i) => (
+              <li><a href={u} target="_blank" rel="noopener noreferrer">{pressHostnames[i]}</a></li>
+            ))}
+          </ul>
+        )}
+      </section>
+    )}
 
     <section class="section">
       <h2 class="section-title">{isVi ? "Kênh liên lạc" : "Channels"}</h2>
@@ -318,6 +352,24 @@ Astro.response.headers.set(
     color: #9a968c; margin: 0 0 0.75rem;
   }
   .bio { color: #bdb8ac; line-height: 1.6; margin: 0; }
+  .ext-link-list, .press-list {
+    list-style: none; padding: 0; margin: 0 0 0.75rem 0;
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .ext-link-list li a, .press-list li a {
+    display: inline-block;
+    padding: 0.25rem 0.65rem;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    color: #bdb8ac;
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  .ext-link-list li a:hover, .press-list li a:hover {
+    border-color: #c8a45e;
+    color: #d8c89c;
+  }
+  .press-list li a { font-family: "Inter Tight", sans-serif; opacity: 0.85; }
   .muted { color: #6a665e; }
 
   .channel-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
