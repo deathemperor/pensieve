@@ -4257,6 +4257,127 @@ function formatGHDate(iso: string) {
 		margin: 10px 0 0;
 		padding-top: 10px;
 		border-top: 1px dashed var(--color-border, rgba(233, 230, 220, 0.14));
+		transition: color 320ms;
+	}
+
+	/* ── Origin Seal magical polish ──────────────────────────────────
+	   Animate the gold left bar, scatter star-dust behind the grid,
+	   give each glyph a subtle drop-shadow glow, lift+brighten on row
+	   hover. All non-destructive (existing layout/spacing intact). */
+	.origin-seal {
+		position: relative;
+		overflow: hidden;
+		transition: border-color 320ms, box-shadow 320ms;
+	}
+	.origin-seal:hover {
+		border-color: rgba(240, 199, 94, 0.32);
+		box-shadow:
+			inset 0 0 18px rgba(240, 199, 94, 0.05),
+			0 0 22px rgba(240, 199, 94, 0.07);
+	}
+	/* Slow shimmer travels up/down the gold spine — overrides the static
+	   border-left while preserving the same width + gold tone. */
+	.origin-seal::before {
+		content: "";
+		position: absolute;
+		left: -2px;
+		top: 0;
+		width: 2px;
+		height: 100%;
+		background: linear-gradient(180deg,
+			rgba(240, 199, 94, 0.18) 0%,
+			#d4a843 35%,
+			#ffdc80 50%,
+			#d4a843 65%,
+			rgba(240, 199, 94, 0.18) 100%);
+		background-size: 100% 220%;
+		animation: origin-spine-flow 7s ease-in-out infinite alternate;
+		pointer-events: none;
+	}
+	@keyframes origin-spine-flow {
+		from { background-position: 0 0%; }
+		to   { background-position: 0 100%; }
+	}
+	/* Star-dust overlay — four tiny twinkling specks of mixed gold,
+	   silver, and astro-pink, drifting slowly. */
+	.origin-seal::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background:
+			radial-gradient(2px 2px at 18% 22%, rgba(240, 199, 94, 0.55) 0%, transparent 60%),
+			radial-gradient(1.5px 1.5px at 72% 36%, rgba(232, 165, 181, 0.5) 0%, transparent 60%),
+			radial-gradient(2px 2px at 84% 76%, rgba(200, 210, 225, 0.45) 0%, transparent 60%),
+			radial-gradient(1.5px 1.5px at 32% 86%, rgba(240, 199, 94, 0.5) 0%, transparent 60%);
+		animation: origin-stardust-drift 11s ease-in-out infinite alternate;
+		mix-blend-mode: screen;
+	}
+	@keyframes origin-stardust-drift {
+		from { opacity: 0.55; transform: translateY(0); }
+		to   { opacity: 0.95; transform: translateY(-3px); }
+	}
+
+	/* Glyph glows — gold for lineage, astro-pink for sun/moon. */
+	.origin-glyph,
+	.origin-glyph-cjk {
+		filter: drop-shadow(0 0 4px rgba(240, 199, 94, 0.25));
+		transition: filter 320ms, transform 320ms;
+	}
+	.origin-glyph-astro {
+		filter: drop-shadow(0 0 4px rgba(232, 165, 181, 0.3));
+	}
+
+	/* Row interaction: subtle nudge + brighter glow on hover. */
+	.origin-row {
+		transition: transform 220ms ease-out;
+	}
+	.origin-row:hover .origin-glyph,
+	.origin-row:hover .origin-glyph-cjk {
+		filter: drop-shadow(0 0 9px rgba(240, 199, 94, 0.65));
+		transform: scale(1.08);
+	}
+	.origin-row:hover .origin-glyph-astro {
+		filter: drop-shadow(0 0 9px rgba(232, 165, 181, 0.7));
+		transform: scale(1.08);
+	}
+	.origin-row .origin-label { transition: color 220ms; }
+	.origin-row:hover .origin-label { color: #f5f1e6; }
+
+	/* Column titles get a tiny dashed gold tail under the label. */
+	.origin-col-title {
+		position: relative;
+		padding-bottom: 6px;
+	}
+	.origin-col-title::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 1.4rem;
+		height: 1px;
+		background-image: linear-gradient(90deg,
+			rgba(240, 199, 94, 0.65) 0%,
+			transparent 100%);
+		mask-image: repeating-linear-gradient(90deg, #000 0, #000 3px, transparent 3px, transparent 6px);
+		-webkit-mask-image: repeating-linear-gradient(90deg, #000 0, #000 3px, transparent 3px, transparent 6px);
+	}
+
+	/* Caption brightens slightly when the card is hovered. */
+	.origin-seal:hover .origin-caption {
+		color: rgba(240, 199, 94, 0.7);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.origin-seal::before,
+		.origin-seal::after,
+		.origin-row,
+		.origin-glyph,
+		.origin-glyph-cjk,
+		.origin-glyph-astro {
+			animation: none !important;
+			transition: none !important;
+		}
 	}
 
 	/* ──────────────────────────────────────────────────────────────
