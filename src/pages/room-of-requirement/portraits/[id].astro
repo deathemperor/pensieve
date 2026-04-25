@@ -36,6 +36,9 @@ if (!contact || (!auth.admin && contact.is_placeholder !== 1)) {
 const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
 const tierLabel = tierName(contact.prestige_tier, lang);
 
+const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
+const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
+
 // Phase 2: list any cards attached to this contact (admin view only).
 interface CardSummary { id: string; captured_at: string; ocr_status: string }
 let cards: CardSummary[] = [];
@@ -61,9 +64,13 @@ Astro.response.headers.set(
       <a class="back-link" href="/room-of-requirement/portraits">← {isVi ? "Phòng Tranh" : "Portraits"}</a>
       <div class="detail-identity">
         <div class="detail-photo" data-tier={contact.prestige_tier}>
-          <span class="initials">
-            {contact.full_name.split(" ").map((p) => p[0] ?? "").join("").slice(0, 2).toUpperCase()}
-          </span>
+          {photoUrl ? (
+            <img src={photoUrl} alt={contact.display_name ?? contact.full_name} />
+          ) : (
+            <span class="initials">
+              {contact.full_name.split(" ").map((p) => p[0] ?? "").join("").slice(0, 2).toUpperCase()}
+            </span>
+          )}
         </div>
         <div class="detail-meta">
           <h1>{contact.display_name ?? contact.full_name}</h1>
@@ -278,6 +285,10 @@ Astro.response.headers.set(
     width: 120px; height: 120px; border-radius: 4px;
     background: #1a1a1a; display: grid; place-items: center;
     border: 1px solid #2a2a2a; flex-shrink: 0;
+    overflow: hidden;
+  }
+  .detail-photo img {
+    width: 100%; height: 100%; object-fit: cover;
   }
   .detail-photo[data-tier="S"] { border-color: #e7c76b; box-shadow: 0 0 12px rgba(231,199,107,0.2); }
   .detail-photo[data-tier="A"] { border-color: #c8cbd0; }

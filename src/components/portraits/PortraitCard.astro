@@ -28,6 +28,11 @@ const initials = contact.full_name
   .join("")
   .slice(0, 2)
   .toUpperCase();
+
+// photo_key is `portraits/cards/c_<hex>.<ext>` for cohorts promoted from card scans.
+// Extract the card id and serve via the existing admin-protected card image API.
+const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
+const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
 ---
 
 <div class={`portrait-card-wrapper tier-wrapper-${contact.prestige_tier}`}>
@@ -53,9 +58,12 @@ const initials = contact.full_name
     {contact.prestige_tier === "B" && <FrameBronze size={size} />}
     {contact.prestige_tier === "C" && <FrameEtched size={size} />}
 
-    {/* Phase 1: initials only. Photo rendering lands in Phase 2 when card OCR + photo upload arrive. */}
-    <div class="portrait-photo" aria-hidden="true">
-      <span class="initials">{initials}</span>
+    <div class="portrait-photo" aria-hidden={photoUrl ? undefined : "true"}>
+      {photoUrl ? (
+        <img src={photoUrl} alt={contact.display_name ?? contact.full_name} loading="lazy" />
+      ) : (
+        <span class="initials">{initials}</span>
+      )}
     </div>
   </div>
 
