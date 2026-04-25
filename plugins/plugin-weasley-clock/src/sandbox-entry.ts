@@ -47,6 +47,10 @@ export default definePlugin({
 		api_keys: { indexes: ["hash", "revoked_at"] },
 		webhook_endpoints: { indexes: ["active"] },
 	},
+	adminPages: [
+		{ path: "/feeds", label: "Calendar Feeds", icon: "calendar" },
+		{ path: "/api-keys", label: "API Keys", icon: "key" },
+	],
 	hooks: {
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {
