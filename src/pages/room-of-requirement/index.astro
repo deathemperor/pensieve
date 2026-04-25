@@ -4,7 +4,11 @@ export const prerender = false;
 import Base from "../../layouts/Base.astro";
 import { link } from "../../utils/link";
 import { getCurrentLang } from "../../utils/lang";
+import { arsenal } from "../../data/arsenal";
 const isVi = getCurrentLang(Astro) === "vi";
+
+const arsenalWands = arsenal.filter((i) => i.tier === "wand").length;
+const arsenalTotal = arsenal.length;
 
 const techStack = [
 	{
@@ -383,6 +387,17 @@ const wishTotal = wishWant + wishSomeday + wishAcquired;
               )}
             </div>
             <span class="dash-panel-stat">{wishTotal} {isVi ? "món đồ chờ chủ" : "items on the shelf"} &rarr;</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Mad-Eye's Trunk → Personal Arsenal -->
+      <div class="dash-stage" id="stage-trunk">
+        <a href="/room-of-requirement/the-trunk" class="dash-panel dash-nav-panel" data-magic="portkey">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Rương Mắt Điên" : "Mad-Eye's Trunk"}</span>
+            <span class="dash-name-list">{isVi ? "Đũa phép · Bùa chú · macOS · iPhone · CLI" : "Wands · Spells · macOS · iPhone · CLI"}</span>
+            <span class="dash-panel-stat">{arsenalWands} {isVi ? "đũa phép" : "wands"} · {arsenalTotal} {isVi ? "vật phẩm" : "items"} &rarr;</span>
           </div>
         </a>
       </div>
