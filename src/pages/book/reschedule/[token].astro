@@ -1,0 +1,247 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { collections } from "../../../lib/weasley-clock/storage";
+import { getCurrentLang } from "../../../utils/lang";
+import RescheduleSlotPicker from "../../../components/book/RescheduleSlotPicker";
+
+const { token } = Astro.params;
+if (!token) return Astro.redirect("/book");
+
+const c = collections((env as any).DB);
+const all = await c.bookings.list();
+const row = all.find((r) => r.data.reschedule_token === token);
+if (!row) return Astro.redirect("/book");
+
+const booking = row.data;
+
+const { entries: mts, cacheHint } = await getEmDashCollection("meeting_types");
+Astro.cache.set(cacheHint);
+function field(e: any, key: string): any { return e.data?.[key] ?? e[key]; }
+const mt = (mts ?? []).find((e: any) => e.id === booking.meeting_type_id);
+if (!mt) return Astro.redirect("/book");
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const title = isVi ? field(mt, "title_vi") : field(mt, "title_en");
+const durationMin = Number(field(mt, "duration_min") ?? 30);
+const meetingTypeId: string = mt.id;
+
+const locale = isVi ? "vi-VN" : "en-GB";
+const slotFmt = new Intl.DateTimeFormat(locale, {
+	weekday: "long", year: "numeric", month: "long", day: "numeric",
+	hour: "2-digit", minute: "2-digit", hour12: false,
+	timeZone: booking.timezone, timeZoneName: "short",
+}).format(new Date(booking.slot_start_iso));
+
+const isCancelled = booking.status === "cancelled";
+
+const t = {
+	pageTitle: isVi ? "Đổi giờ lịch hẹn" : "Reschedule booking",
+	heading: isVi ? "Đổi giờ lịch hẹn" : "Reschedule your booking",
+	cancelledHeading: isVi ? "Lịch đã hủy" : "Booking cancelled",
+	cancelledMsg: isVi
+		? "Lịch hẹn này đã được hủy và không thể đổi giờ."
+		: "This booking has been cancelled and cannot be rescheduled.",
+	currentLabel: isVi ? "Giờ hiện tại:" : "Current time:",
+	pickNew: isVi ? "Chọn khung giờ mới bên dưới." : "Pick a new time below.",
+	bookAnother: isVi ? "← Đặt lịch hẹn khác" : "← Book another meeting",
+};
+---
+<Base title={t.pageTitle}>
+	<main class="book-resched">
+		{isCancelled ? (
+			<>
+				<h1>{t.cancelledHeading}</h1>
+				{title && <p class="book-resched__title">{title}</p>}
+				<p class="book-resched__when"><span class="label">{t.currentLabel}</span> {slotFmt}</p>
+				<p class="book-resched__msg">{t.cancelledMsg}</p>
+				<p class="book-resched__back"><a href="/book">{t.bookAnother}</a></p>
+			</>
+		) : (
+			<>
+				<h1>{t.heading}</h1>
+				{title && <p class="book-resched__title">{title}</p>}
+				<p class="book-resched__when"><span class="label">{t.currentLabel}</span> {slotFmt}</p>
+				<p class="book-resched__pick">{t.pickNew}</p>
+				<RescheduleSlotPicker
+					client:only="react"
+					rescheduleToken={token}
+					meetingTypeId={meetingTypeId}
+					durationMin={durationMin}
+					lang={lang}
+					title={title}
+					guestTimezone={booking.timezone}
+				/>
+			</>
+		)}
+	</main>
+</Base>
+
+<style>
+	.book-resched { max-width: 960px; margin: 40px auto; padding: 0 20px; color: #e8dcc4; font-family: "Inter Tight", sans-serif; }
+	.book-resched h1 { font-size: 28px; color: #c9a961; margin: 0 0 12px; }
+	.book-resched__title { font-size: 18px; color: #e8dcc4; margin: 0 0 8px; }
+	.book-resched__when { color: #8b6914; font-size: 13px; margin: 0 0 8px; }
+	.book-resched__when .label { color: #6b5638; margin-right: 6px; }
+	.book-resched__pick { color: #8b6914; font-size: 13px; margin: 0 0 24px; }
+	.book-resched__msg { color: #8b6914; font-size: 13px; padding: 14px; background: #110c08; border: 1px solid #2a1f15; }
+	.book-resched__back { margin-top: 28px; }
+	.book-resched__back a { color: #c9a961; text-decoration: none; font-size: 13px; }
+</style>
+
+<style is:global>
+	.slot-picker {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 30px;
+	}
+	@media (max-width: 720px) {
+		.slot-picker {
+			grid-template-columns: 1fr;
+		}
+	}
+	.slot-picker__monthnav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 12px;
+		color: #c9a961;
+		font-size: 14px;
+	}
+	.slot-picker__monthnav button {
+		background: #2a1f15;
+		color: #c9a961;
+		border: 1px solid #8b6914;
+		padding: 4px 10px;
+		cursor: pointer;
+		font-family: inherit;
+	}
+	.slot-picker__monthnav button:hover {
+		background: #3a2a1f;
+	}
+	.slot-picker__headings,
+	.slot-picker__grid {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 2px;
+	}
+	.slot-picker__dow {
+		text-align: center;
+		font-size: 10px;
+		color: #8b6914;
+		letter-spacing: 1px;
+		padding: 6px 0;
+	}
+	.slot-picker__day {
+		aspect-ratio: 1;
+		background: #110c08;
+		border: 1px solid #2a1f15;
+		color: #e8dcc4;
+		cursor: pointer;
+		position: relative;
+		font-size: 12px;
+		font-family: inherit;
+	}
+	.slot-picker__day:hover:not(:disabled) {
+		border-color: #c9a961;
+	}
+	.slot-picker__day:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+	.slot-picker__day--dim {
+		opacity: 0.4;
+	}
+	.slot-picker__day--sel {
+		background: #201810;
+		border-color: #c9a961;
+	}
+	.slot-picker__dot {
+		position: absolute;
+		bottom: 6px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: #c9a961;
+	}
+	.slot-picker__nomonth {
+		margin-top: 12px;
+		color: #8b6914;
+		font-size: 12px;
+	}
+	.slot-picker__right h3 {
+		color: #c9a961;
+		font-size: 14px;
+		margin: 0 0 12px;
+		letter-spacing: 0.5px;
+	}
+	.slot-picker__times {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.slot-picker__times button {
+		background: #2a1f15;
+		color: #c9a961;
+		border: 1px solid #8b6914;
+		padding: 8px 14px;
+		cursor: pointer;
+		font-family: inherit;
+		font-size: 13px;
+	}
+	.slot-picker__times button:hover {
+		background: #3a2a1f;
+		border-color: #c9a961;
+	}
+	.slot-picker__form {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+	.slot-picker__form button[type="submit"] {
+		background: #c9a961;
+		color: #1a1410;
+		border: none;
+		padding: 12px;
+		cursor: pointer;
+		font-weight: 600;
+		letter-spacing: 0.5px;
+		margin-top: 8px;
+		font-family: inherit;
+	}
+	.slot-picker__form button[type="submit"]:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+	.slot-picker__summary {
+		padding: 12px;
+		background: #201810;
+		border: 1px solid #3a2a1f;
+		font-size: 13px;
+		color: #e8dcc4;
+	}
+	.slot-picker__summary div + div {
+		margin-top: 4px;
+	}
+	.slot-picker__back {
+		background: none;
+		border: none;
+		color: #8b6914;
+		cursor: pointer;
+		text-align: left;
+		padding: 0;
+		font-family: inherit;
+		font-size: 12px;
+	}
+	.slot-picker__back:hover {
+		color: #c9a961;
+	}
+</style>

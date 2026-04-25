@@ -1,0 +1,119 @@
+---
+export const prerender = false;
+import { env } from "cloudflare:workers";
+import Base from "../../../layouts/Base.astro";
+import { getEmDashCollection } from "emdash";
+import { collections } from "../../../lib/weasley-clock/storage";
+import { getCurrentLang } from "../../../utils/lang";
+
+const { token } = Astro.params;
+if (!token) return Astro.redirect("/book");
+
+const c = collections((env as any).DB);
+const all = await c.bookings.list();
+const row = all.find((r) => r.data.cancel_token === token);
+if (!row) return Astro.redirect("/book");
+
+const booking = row.data;
+
+const { entries: mts } = await getEmDashCollection("meeting_types");
+function field(e: any, key: string): any { return e.data?.[key] ?? e[key]; }
+const mt = (mts ?? []).find((e: any) => e.id === booking.meeting_type_id);
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+const title = mt ? (isVi ? field(mt, "title_vi") : field(mt, "title_en")) : "";
+
+const locale = isVi ? "vi-VN" : "en-GB";
+const slotFmt = new Intl.DateTimeFormat(locale, {
+	weekday: "long", year: "numeric", month: "long", day: "numeric",
+	hour: "2-digit", minute: "2-digit", hour12: false,
+	timeZone: booking.timezone, timeZoneName: "short",
+}).format(new Date(booking.slot_start_iso));
+
+const isCancelled = booking.status === "cancelled";
+
+const t = {
+	pageTitle: isVi ? "Hủy lịch hẹn" : "Cancel booking",
+	heading: isCancelled
+		? (isVi ? "Lịch đã hủy" : "Already cancelled")
+		: (isVi ? "Hủy lịch hẹn?" : "Cancel this booking?"),
+	whenLabel: isVi ? "Thời gian:" : "When:",
+	confirmBtn: isVi ? "Xác nhận hủy" : "Confirm cancellation",
+	cancelling: isVi ? "Đang hủy…" : "Cancelling…",
+	cancelledMsg: isVi
+		? "Lịch hẹn đã được hủy. Bạn sẽ nhận được email xác nhận trong vài phút."
+		: "Your booking has been cancelled. A confirmation email is on its way.",
+	alreadyCancelledMsg: isVi
+		? "Lịch này đã được hủy trước đó."
+		: "This booking has already been cancelled.",
+	error: isVi ? "Lỗi: " : "Error: ",
+	bookAnother: isVi ? "← Đặt lịch hẹn khác" : "← Book another meeting",
+};
+---
+<Base title={t.pageTitle}>
+	<main class="book-cancel">
+		<h1>{t.heading}</h1>
+		{title && <p class="book-cancel__title">{title}</p>}
+		<p class="book-cancel__when"><span class="label">{t.whenLabel}</span> {slotFmt}</p>
+
+		{isCancelled ? (
+			<p class="book-cancel__msg">{t.alreadyCancelledMsg}</p>
+		) : (
+			<>
+				<button id="confirm-cancel" type="button" data-token={token} data-lang={lang} class="book-cancel__btn">
+					{t.confirmBtn}
+				</button>
+				<p id="cancel-status" hidden></p>
+			</>
+		)}
+
+		<p class="book-cancel__back"><a href="/book">{t.bookAnother}</a></p>
+	</main>
+</Base>
+
+<script is:inline define:vars={{ t }}>
+	const btn = document.getElementById("confirm-cancel");
+	const status = document.getElementById("cancel-status");
+	if (btn) {
+		btn.addEventListener("click", async () => {
+			const token = btn.dataset.token;
+			const lang = btn.dataset.lang;
+			btn.disabled = true;
+			btn.textContent = t.cancelling;
+			try {
+				const res = await fetch("/api/weasley-clock/bookings/cancel", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ cancel_token: token, lang }),
+				});
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+				btn.style.display = "none";
+				status.hidden = false;
+				status.textContent = t.cancelledMsg;
+				status.style.color = "#88a577";
+			} catch (err) {
+				btn.disabled = false;
+				btn.textContent = t.confirmBtn;
+				status.hidden = false;
+				status.style.color = "#ff6b6b";
+				status.textContent = t.error + (err.message || "Network error");
+			}
+		});
+	}
+</script>
+
+<style>
+	.book-cancel { max-width: 620px; margin: 60px auto; padding: 0 20px; color: #e8dcc4; font-family: "Inter Tight", sans-serif; }
+	.book-cancel h1 { font-size: 28px; color: #c9a961; margin: 0 0 16px; }
+	.book-cancel__title { font-size: 18px; color: #e8dcc4; margin: 0 0 12px; }
+	.book-cancel__when { color: #8b6914; font-size: 13px; margin: 0 0 24px; }
+	.book-cancel__when .label { color: #6b5638; margin-right: 6px; }
+	.book-cancel__btn { background: #a0524f; color: #f5f5f5; border: none; padding: 14px 24px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 600; letter-spacing: 0.5px; }
+	.book-cancel__btn:hover { background: #b86461; }
+	.book-cancel__btn:disabled { opacity: 0.5; cursor: default; }
+	.book-cancel__msg { color: #8b6914; font-size: 13px; padding: 14px; background: #110c08; border: 1px solid #2a1f15; }
+	.book-cancel__back { margin-top: 28px; }
+	.book-cancel__back a { color: #c9a961; text-decoration: none; font-size: 13px; }
+</style>
