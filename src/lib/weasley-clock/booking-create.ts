@@ -1,7 +1,8 @@
 import type { D1Database } from "@cloudflare/workers-types";
 import { getEmDashCollection } from "emdash";
 import { collections, type BookingData, type OAuthAccountData } from "./storage";
-import { computeSlots, type BusyWindow } from "./availability";
+import { computeSlots, type Slot } from "./availability";
+import { buildBusyWindowsForHost, hostsAvailableAt, pickAssignedHost } from "./multi-host";
 import { ensureFreshAccessToken, type OAuthAccountRow } from "./token-refresh";
 import { ulid } from "../portraits/ulid";
 
@@ -74,7 +75,7 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 	const meetingTitle = titleVi || titleEn || "Meeting";
 	const location = field<string>(mt, "location") || "To be coordinated via email";
 
-	// 2. Host account — first in the list (round-robin is Phase 4).
+	// 2. Host accounts — host_account_ids is a JSON array.
 	let hostIds: string[] = [];
 	const rawHostIds = field<string | string[]>(mt, "host_account_ids") ?? "[]";
 	try {
@@ -85,55 +86,47 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 	if (!Array.isArray(hostIds) || hostIds.length === 0) {
 		throw new BookingError("No host configured for this meeting type", "bad_input");
 	}
-	const hostId = hostIds[0];
 
 	// 3. Availability rule.
 	const availId = field<string>(mt, "availability_id") || "default";
 	const ruleRow = await c.availability_rules.get(availId);
 	if (!ruleRow) throw new BookingError(`Availability rule "${availId}" not found`, "not_found");
 
-	// 4. Busy windows for host's synced calendars (same query shape as slots.ts).
-	const cals = (await c.oauth_calendars.list()).filter(
-		(r) => r.data.account_id === hostId && r.data.synced === 1,
-	);
-	const calIds = new Set(cals.map((r) => r.data.calendar_id));
-	const eventsRes = await input.db
-		.prepare(
-			`SELECT json_extract(data, '$.starts_at') AS s,
-			        json_extract(data, '$.ends_at') AS e,
-			        json_extract(data, '$.gcal_calendar_id') AS cid,
-			        json_extract(data, '$.deleted') AS del
-			 FROM _plugin_storage
-			 WHERE plugin_id = 'weasley-clock' AND collection = 'synced_events'`,
-		)
-		.all<{ s: string; e: string; cid: string; del: number | null }>();
-	const busyWindows: BusyWindow[] = (eventsRes.results ?? [])
-		.filter((r) => calIds.has(r.cid) && !r.del)
-		.map((r) => ({ start_iso: r.s, end_iso: r.e }));
-
-	// 5. Revalidate the slot is still available. Use a ±1 day window around the
-	// requested slot — enough to include neighboring slots without paying for a
-	// full-month recomputation.
+	// 4. Build busy windows + compute slots per host over a ±1 day window around
+	// the requested slot — enough to revalidate without a full-month recomputation.
 	const slotStartMs = Date.parse(input.slotStartIso);
 	if (Number.isNaN(slotStartMs)) throw new Error("Invalid slot_start_iso");
 	const rangeStartIso = new Date(slotStartMs - DAY_MS).toISOString();
 	const rangeEndIso = new Date(slotStartMs + DAY_MS).toISOString();
-	const slots = computeSlots({
-		rule: ruleRow.data,
-		busyWindows,
-		durationMin,
-		bufferBeforeMin: bufferBefore,
-		bufferAfterMin: bufferAfter,
-		minNoticeHrs,
-		maxAdvanceDays,
-		rangeStartIso,
-		rangeEndIso,
-		nowIso: new Date().toISOString(),
-	});
-	const match = slots.find((s) => s.start_iso === input.slotStartIso);
-	if (!match) throw new BookingError("Slot no longer available", "slot_unavailable");
 
-	const slotEndIso = match.end_iso;
+	const slotsByHost: Record<string, Slot[]> = {};
+	for (const hid of hostIds) {
+		const busy = await buildBusyWindowsForHost(input.db, hid);
+		slotsByHost[hid] = computeSlots({
+			rule: ruleRow.data,
+			busyWindows: busy,
+			durationMin,
+			bufferBeforeMin: bufferBefore,
+			bufferAfterMin: bufferAfter,
+			minNoticeHrs,
+			maxAdvanceDays,
+			rangeStartIso,
+			rangeEndIso,
+			nowIso: new Date().toISOString(),
+		});
+	}
+
+	// 5. Find which hosts have the requested slot, then pick via round-robin.
+	const candidates = hostsAvailableAt(slotsByHost, input.slotStartIso);
+	if (candidates.length === 0) {
+		throw new BookingError("Slot no longer available", "slot_unavailable");
+	}
+
+	const hostId = await pickAssignedHost(input.db, candidates);
+
+	// slotEndIso from the assigned host's matched slot (all candidates share the same end).
+	const matched = slotsByHost[hostId].find((s) => s.start_iso === input.slotStartIso)!;
+	const slotEndIso = matched.end_iso;
 
 	// 6. Fresh access token.
 	const acctRow = await c.oauth_accounts.get(hostId);
