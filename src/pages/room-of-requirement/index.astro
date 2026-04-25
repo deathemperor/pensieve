@@ -181,6 +181,23 @@ if (db) {
     }
   } catch {}
 }
+
+// Wishlist (Diagon Alley) — count by priority for the hub card.
+import { getEmDashCollection } from "emdash";
+let wishWant = 0;
+let wishSomeday = 0;
+let wishAcquired = 0;
+try {
+  const { entries: wishesRaw } = await getEmDashCollection("wishlist");
+  for (const e of wishesRaw) {
+    if (e.data.status !== "published") continue;
+    const p = (e.data.priority ?? "want") as string;
+    if (p === "acquired") wishAcquired++;
+    else if (p === "someday") wishSomeday++;
+    else wishWant++;
+  }
+} catch { /* collection unavailable — counts stay zero */ }
+const wishTotal = wishWant + wishSomeday + wishAcquired;
 ---
 
 <Base title="Room of Requirement" description={isVi ? "Trang web này được xây dựng như thế nào, từng phiên Claude Code" : "How this site is built, one Claude Code session at a time"} breadcrumbs={[{ label: "Room of Requirement" }]}>
@@ -351,6 +368,23 @@ if (db) {
         </a>
       </div>
 
+      <!-- Diagon Alley → Wishlist -->
+      <div class="dash-stage" id="stage-diagon">
+        <a href="/room-of-requirement/diagon-alley" class="dash-panel dash-nav-panel" data-magic="diagon">
+          <div class="dash-panel-inner">
+            <span class="dash-panel-title">{isVi ? "Hẻm Xéo" : "Diagon Alley"}</span>
+            <div class="dash-row" style="gap: 8px;">
+              <span class="dash-badge dash-badge-want">{wishWant} {isVi ? "muốn" : "want"}</span>
+              <span class="dash-badge dash-badge-someday">{wishSomeday} {isVi ? "khi nào đó" : "someday"}</span>
+              {wishAcquired > 0 && (
+                <span class="dash-badge dash-badge-acquired">{wishAcquired} {isVi ? "đã có" : "acquired"}</span>
+              )}
+            </div>
+            <span class="dash-panel-stat">{wishTotal} {isVi ? "món đồ chờ chủ" : "items on the shelf"} &rarr;</span>
+          </div>
+        </a>
+      </div>
+
     </div>
   </section>
 </Base>
@@ -425,6 +459,9 @@ if (db) {
   .dash-badge { font-family: var(--font-mono); font-size: 10px; padding: 1px 6px; border-radius: 3px; }
   .dash-badge-spec { color: #7c3aed; background: color-mix(in srgb, #7c3aed 12%, transparent); }
   .dash-badge-plan { color: #d4a843; background: color-mix(in srgb, #d4a843 12%, transparent); }
+  .dash-badge-want     { color: #f0c75e; background: color-mix(in srgb, #f0c75e 14%, transparent); }
+  .dash-badge-someday  { color: #c8d2e1; background: color-mix(in srgb, #c8d2e1 10%, transparent); }
+  .dash-badge-acquired { color: #3fb950; background: color-mix(in srgb, #3fb950 12%, transparent); }
 
   /* ═══ Door magic — base element styles. State transitions (.tracing, .door-open)
      live in the global block below because class-toggling from JS needs to work
