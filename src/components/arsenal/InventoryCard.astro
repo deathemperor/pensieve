@@ -1,0 +1,93 @@
+---
+// src/components/arsenal/InventoryCard.astro
+//
+// Plain bordered tile for inventory entries — small icon, title, frequency
+// dot. Whole card is the homepage link.
+
+import type { ArsenalItem } from "../../data/arsenal";
+
+interface Props {
+	item: ArsenalItem;
+	lang: "en" | "vi";
+}
+const { item, lang } = Astro.props;
+const role = item.role[lang];
+---
+
+<a
+	class="trunk-inv"
+	href={item.homepageUrl}
+	target="_blank"
+	rel="noopener noreferrer"
+	data-category={item.category}
+	data-frequency={item.frequency}
+	data-platform={item.platform}
+	title={role}
+>
+	<span class="trunk-dot" aria-hidden="true" />
+	<img src={item.icon} alt={`${item.title} icon`} loading="lazy" width="48" height="48" />
+	<span class="trunk-inv-title">{item.title}</span>
+</a>
+
+<style>
+.trunk-inv {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 16px 10px 12px;
+	min-height: 120px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 4px;
+	color: var(--trunk-accent, #d4a843);
+	text-decoration: none;
+	background: rgba(255, 255, 255, 0.015);
+	transition: border-color 180ms ease, background 180ms ease;
+}
+.trunk-inv:hover {
+	border-color: color-mix(in oklab, currentColor 35%, transparent);
+	background: rgba(255, 255, 255, 0.04);
+}
+.trunk-inv img { width: 48px; height: 48px; object-fit: contain; }
+.trunk-inv-title {
+	font-family: "Inter Tight", system-ui, sans-serif;
+	font-size: 0.78rem;
+	color: rgb(220, 214, 200);
+	text-align: center;
+	line-height: 1.2;
+}
+.trunk-dot {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: currentColor;
+}
+.trunk-inv[data-frequency="this_week"] .trunk-dot { opacity: 0.6; }
+.trunk-inv[data-frequency="this_month"] .trunk-dot { opacity: 0.3; }
+.trunk-inv[data-frequency="rare"] .trunk-dot {
+	background: transparent;
+	border: 1px solid currentColor;
+	width: 8px;
+	height: 8px;
+}
+
+/* Same accent palette as WandCard — duplicated intentionally so each
+   component owns its own styling and can be moved independently. */
+.trunk-inv[data-category="ai"]        { --trunk-accent: #b794f4; color: var(--trunk-accent); }
+.trunk-inv[data-category="editor"]    { --trunk-accent: #4fd1c5; color: var(--trunk-accent); }
+.trunk-inv[data-category="terminal"]  { --trunk-accent: #f6ad55; color: var(--trunk-accent); }
+.trunk-inv[data-category="dev"]       { --trunk-accent: #68d391; color: var(--trunk-accent); }
+.trunk-inv[data-category="messenger"] { --trunk-accent: #63b3ed; color: var(--trunk-accent); }
+.trunk-inv[data-category="finance"]   { --trunk-accent: #38a169; color: var(--trunk-accent); }
+.trunk-inv[data-category="media"]     { --trunk-accent: #fc8181; color: var(--trunk-accent); }
+.trunk-inv[data-category="system"]    { --trunk-accent: #a0aec0; color: var(--trunk-accent); }
+.trunk-inv[data-category="reading"]   { --trunk-accent: #7f9cf5; color: var(--trunk-accent); }
+.trunk-inv[data-category="journal"]   { --trunk-accent: #d4a843; color: var(--trunk-accent); }
+.trunk-inv[data-category="transit"]   { --trunk-accent: #ed8936; color: var(--trunk-accent); }
+.trunk-inv[data-category="shopping"]  { --trunk-accent: #76e4f7; color: var(--trunk-accent); }
+.trunk-inv[data-category="social"]    { --trunk-accent: #f687b3; color: var(--trunk-accent); }
+</style>
