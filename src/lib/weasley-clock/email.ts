@@ -232,6 +232,116 @@ export async function sendCancellationEmail(input: CancellationEmailInput): Prom
 	}
 }
 
+export interface ReminderEmailInput {
+	apiKey: string;
+	guestEmail: string;
+	guestName: string;
+	meetingTitleVi: string;
+	meetingTitleEn: string;
+	slotStartIso: string;
+	guestTimezone: string;
+	cancelUrl: string;
+	rescheduleUrl: string;
+}
+
+export async function sendReminderEmail(input: ReminderEmailInput): Promise<void> {
+	if (!input.apiKey) {
+		console.error("[wc/email] Missing RESEND_API_KEY — skipping reminder email");
+		return;
+	}
+
+	const startFmtVi = formatSlot(input.slotStartIso, input.guestTimezone, "vi");
+	const startFmtEn = formatSlot(input.slotStartIso, input.guestTimezone, "en");
+
+	const subject = `Nhắc lịch hẹn ngày mai · Reminder: tomorrow's meeting · ${input.meetingTitleVi}`;
+
+	const text = [
+		`Chào ${input.guestName},`,
+		"",
+		`Nhắc lịch hẹn ngày mai`,
+		"",
+		`Cuộc hẹn: ${input.meetingTitleVi}`,
+		`Thời gian: ${startFmtVi}`,
+		`Múi giờ: ${input.guestTimezone}`,
+		"",
+		`Huỷ lịch hẹn: ${input.cancelUrl}`,
+		`Đổi giờ: ${input.rescheduleUrl}`,
+		"",
+		"Hẹn gặp bạn,\nLộc",
+		"",
+		"---",
+		"",
+		`Hi ${input.guestName},`,
+		"",
+		`Reminder: tomorrow's meeting`,
+		"",
+		`Meeting: ${input.meetingTitleEn}`,
+		`When: ${startFmtEn}`,
+		`Timezone: ${input.guestTimezone}`,
+		"",
+		`Cancel booking: ${input.cancelUrl}`,
+		`Reschedule: ${input.rescheduleUrl}`,
+		"",
+		"See you soon,\nLoc",
+	].join("\n");
+
+	const html = `<!DOCTYPE html>
+<html><body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; color: #111; max-width: 560px; margin: 0 auto; padding: 24px;">
+<p>${escapeHtml(`Chào ${input.guestName},`)}</p>
+<h2 style="font-size: 1.1rem; margin: 0 0 8px;">Nhắc lịch hẹn ngày mai</h2>
+<p style="background: #f5f5f5; padding: 12px 16px; border-radius: 6px;">
+<strong>Cuộc hẹn:</strong> ${escapeHtml(input.meetingTitleVi)}<br/>
+<strong>Thời gian:</strong> ${escapeHtml(startFmtVi)}<br/>
+<strong>Múi giờ:</strong> ${escapeHtml(input.guestTimezone)}
+</p>
+<p>
+<a href="${escapeHtml(input.cancelUrl)}" style="color: #b33;">Huỷ lịch hẹn</a>
+&nbsp;·&nbsp;
+<a href="${escapeHtml(input.rescheduleUrl)}" style="color: #36c;">Đổi giờ</a>
+</p>
+<p style="white-space: pre-line;">${escapeHtml("Hẹn gặp bạn,\nLộc")}</p>
+<hr style="border: none; border-top: 1px solid #ddd; margin: 24px 0;"/>
+<p>${escapeHtml(`Hi ${input.guestName},`)}</p>
+<h2 style="font-size: 1.1rem; margin: 0 0 8px;">Reminder: tomorrow&#39;s meeting</h2>
+<p style="background: #f5f5f5; padding: 12px 16px; border-radius: 6px;">
+<strong>Meeting:</strong> ${escapeHtml(input.meetingTitleEn)}<br/>
+<strong>When:</strong> ${escapeHtml(startFmtEn)}<br/>
+<strong>Timezone:</strong> ${escapeHtml(input.guestTimezone)}
+</p>
+<p>
+<a href="${escapeHtml(input.cancelUrl)}" style="color: #b33;">Cancel booking</a>
+&nbsp;·&nbsp;
+<a href="${escapeHtml(input.rescheduleUrl)}" style="color: #36c;">Reschedule</a>
+</p>
+<p style="white-space: pre-line;">${escapeHtml("See you soon,\nLoc")}</p>
+</body></html>`;
+
+	try {
+		const r = await fetch("https://api.resend.com/emails", {
+			method: "POST",
+			headers: {
+				Authorization: `Bearer ${input.apiKey}`,
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				from: FROM,
+				reply_to: REPLY_TO,
+				to: [input.guestEmail],
+				subject,
+				html,
+				text,
+			}),
+		});
+		if (!r.ok) {
+			const body = await r.text();
+			console.error(`[wc/email] Resend non-2xx (reminder): ${r.status} ${body}`);
+		}
+	} catch (e) {
+		// Non-fatal: booking is already persisted.
+		console.error("[wc/email] Resend network error (reminder):", e instanceof Error ? e.message : String(e));
+	}
+}
+
 export async function sendRescheduledEmail(input: RescheduledEmailInput): Promise<void> {
 	if (!input.apiKey) {
 		console.error("[wc/email] Missing RESEND_API_KEY — skipping reschedule email");

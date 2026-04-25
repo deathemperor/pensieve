@@ -107,6 +107,22 @@ export default {
 			return;
 		}
 
+		// Every 10 min: send 24h reminder emails for upcoming confirmed bookings.
+		if (event.cron === "*/10 * * * *") {
+			try {
+				if (!env.RESEND_API_KEY) {
+					console.log("[cron] reminders: RESEND_API_KEY not set, skipping");
+					return;
+				}
+				const { runReminderPass } = await import("./lib/weasley-clock/reminders");
+				const result = await runReminderPass({ db, resendApiKey: env.RESEND_API_KEY });
+				console.log(`[cron] reminders: scanned=${result.scanned} sent=${result.sent} errors=${result.errors}`);
+			} catch (err: any) {
+				console.error("[cron] reminders: exception:", err?.message ?? err);
+			}
+			return;
+		}
+
 		// Hourly: scan enabled Drive folders for new card images + sweep stale rate-limit rows.
 		if (event.cron === "0 * * * *") {
 			try {
