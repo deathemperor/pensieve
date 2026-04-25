@@ -1,0 +1,151 @@
+---
+// src/components/arsenal/WandCard.astro
+//
+// Wand-tier hero card: rune corners, large icon, title, italic role,
+// frequency dots, and a parchment overlay on hover with the bilingual note.
+
+import RuneCorners from "./RuneCorners.astro";
+import type { ArsenalItem } from "../../data/arsenal";
+
+interface Props {
+	item: ArsenalItem;
+	lang: "en" | "vi";
+}
+const { item, lang } = Astro.props;
+const note = item.note ? item.note[lang] : "";
+const role = item.role[lang];
+const visitLabel = lang === "vi" ? "Truy cập →" : "Visit →";
+---
+
+<a
+	class="trunk-wand"
+	href={item.homepageUrl}
+	target="_blank"
+	rel="noopener noreferrer"
+	data-category={item.category}
+	data-frequency={item.frequency}
+	data-platform={item.platform}
+>
+	<RuneCorners size={20} />
+	<div class="trunk-wand-icon">
+		<img src={item.icon} alt={`${item.title} icon`} loading="lazy" width="96" height="96" />
+	</div>
+	<h3 class="trunk-wand-title">{item.title}</h3>
+	<p class="trunk-wand-role">— {role} —</p>
+	<div class="trunk-wand-meta">
+		<span class="trunk-dot" aria-hidden="true" />
+		<span class="trunk-platform">{item.platform === "cli" ? "spell" : item.platform}</span>
+	</div>
+	{note && (
+		<div class="trunk-wand-overlay">
+			<p class="trunk-wand-note">{note}</p>
+			<span class="trunk-wand-cta">{visitLabel}</span>
+		</div>
+	)}
+</a>
+
+<style>
+.trunk-wand {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12px;
+	padding: 28px 18px 20px;
+	min-height: 260px;
+	border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.02);
+	color: var(--trunk-accent, #d4a843);
+	text-decoration: none;
+	overflow: hidden;
+	transition: border-color 200ms ease, transform 200ms ease;
+}
+.trunk-wand:hover {
+	border-color: color-mix(in oklab, currentColor 38%, transparent);
+	transform: translateY(-2px);
+}
+.trunk-wand:hover :global(.trunk-rune) { opacity: 0.85; }
+
+.trunk-wand-icon { width: 96px; height: 96px; display: grid; place-items: center; }
+.trunk-wand-icon img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.4)); }
+
+.trunk-wand-title {
+	margin: 0;
+	font-family: "Inter Tight", system-ui, sans-serif;
+	font-weight: 600;
+	font-size: 1.05rem;
+	color: rgb(232, 226, 213);
+	text-align: center;
+}
+.trunk-wand-role {
+	margin: 0;
+	font-style: italic;
+	font-size: 0.82rem;
+	color: rgb(180, 174, 160);
+	text-align: center;
+}
+.trunk-wand-meta {
+	margin-top: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.7rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: rgb(160, 154, 140);
+}
+.trunk-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: currentColor;
+}
+.trunk-wand[data-frequency="this_week"] .trunk-dot { opacity: 0.6; }
+.trunk-wand[data-frequency="this_month"] .trunk-dot { opacity: 0.3; }
+.trunk-wand[data-frequency="rare"] .trunk-dot {
+	background: transparent;
+	border: 1px solid currentColor;
+}
+
+.trunk-wand-overlay {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 18px 16px;
+	background: rgba(232, 226, 213, 0.95);
+	color: rgb(28, 26, 22);
+	transform: translateY(100%);
+	transition: transform 240ms ease;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.trunk-wand:hover .trunk-wand-overlay,
+.trunk-wand:focus-visible .trunk-wand-overlay {
+	transform: translateY(0);
+}
+.trunk-wand-note { margin: 0; font-size: 0.82rem; line-height: 1.45; }
+.trunk-wand-cta {
+	font-size: 0.72rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+/* Category accents — applied via data-category attribute */
+.trunk-wand[data-category="ai"]        { --trunk-accent: #b794f4; color: var(--trunk-accent); }
+.trunk-wand[data-category="editor"]    { --trunk-accent: #4fd1c5; color: var(--trunk-accent); }
+.trunk-wand[data-category="terminal"]  { --trunk-accent: #f6ad55; color: var(--trunk-accent); }
+.trunk-wand[data-category="dev"]       { --trunk-accent: #68d391; color: var(--trunk-accent); }
+.trunk-wand[data-category="messenger"] { --trunk-accent: #63b3ed; color: var(--trunk-accent); }
+.trunk-wand[data-category="finance"]   { --trunk-accent: #38a169; color: var(--trunk-accent); }
+.trunk-wand[data-category="media"]     { --trunk-accent: #fc8181; color: var(--trunk-accent); }
+.trunk-wand[data-category="system"]    { --trunk-accent: #a0aec0; color: var(--trunk-accent); }
+.trunk-wand[data-category="reading"]   { --trunk-accent: #7f9cf5; color: var(--trunk-accent); }
+.trunk-wand[data-category="journal"]   { --trunk-accent: #d4a843; color: var(--trunk-accent); }
+.trunk-wand[data-category="transit"]   { --trunk-accent: #ed8936; color: var(--trunk-accent); }
+.trunk-wand[data-category="shopping"]  { --trunk-accent: #76e4f7; color: var(--trunk-accent); }
+.trunk-wand[data-category="social"]    { --trunk-accent: #f687b3; color: var(--trunk-accent); }
+</style>

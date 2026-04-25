@@ -1,0 +1,37 @@
+---
+// src/components/arsenal/RuneCorners.astro
+//
+// Four small SVG rune-style corner ornaments. Tints via CSS `currentColor`
+// — set the parent's `color` to the category accent and the runes pick it up.
+
+interface Props {
+	size?: number;
+}
+const { size = 18 } = Astro.props;
+---
+
+<span class="trunk-runes" aria-hidden="true" style={`--rune-size: ${size}px;`}>
+	<svg class="trunk-rune trunk-rune-tl" viewBox="0 0 24 24"><path d="M0 8 L0 0 L8 0 M2 6 L6 2 M0 12 L4 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+	<svg class="trunk-rune trunk-rune-tr" viewBox="0 0 24 24"><path d="M16 0 L24 0 L24 8 M18 2 L22 6 M20 12 L24 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+	<svg class="trunk-rune trunk-rune-bl" viewBox="0 0 24 24"><path d="M0 16 L0 24 L8 24 M2 18 L6 22 M0 12 L4 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+	<svg class="trunk-rune trunk-rune-br" viewBox="0 0 24 24"><path d="M16 24 L24 24 L24 16 M18 22 L22 18 M20 12 L24 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+</span>
+
+<style>
+.trunk-runes {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.trunk-rune {
+	position: absolute;
+	width: var(--rune-size, 18px);
+	height: var(--rune-size, 18px);
+	opacity: 0.45;
+	transition: opacity 200ms ease;
+}
+.trunk-rune-tl { top: 8px; left: 8px; }
+.trunk-rune-tr { top: 8px; right: 8px; transform: scaleX(-1); }
+.trunk-rune-bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+.trunk-rune-br { bottom: 8px; right: 8px; transform: scale(-1, -1); }
+</style>
