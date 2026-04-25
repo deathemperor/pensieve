@@ -44,7 +44,14 @@ export default definePlugin({
 				"reschedule_token",
 			],
 		},
+		api_keys: { indexes: ["hash", "revoked_at"] },
+		webhook_endpoints: { indexes: ["active"] },
 	},
+	adminPages: [
+		{ path: "/feeds", label: "Calendar Feeds", icon: "calendar" },
+		{ path: "/api-keys", label: "API Keys", icon: "key" },
+		{ path: "/webhooks", label: "Webhooks", icon: "webhook" },
+	],
 	hooks: {
 		"plugin:install": {
 			handler: async (_event: unknown, ctx: PluginContext) => {

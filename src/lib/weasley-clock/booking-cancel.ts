@@ -145,6 +145,19 @@ export async function cancelBooking(input: CancelBookingInput): Promise<CancelBo
 		cancelled_at: nowIso,
 	});
 
+	try {
+		const { dispatchWebhook } = await import("./webhooks");
+		await dispatchWebhook({
+			db: input.db,
+			event: "booking.cancelled",
+			data: {
+				booking_id: row.id,
+				slot_start_iso: row.data.slot_start_iso,
+				cancelled_at: nowIso,
+			},
+		});
+	} catch (err: any) { console.error("[wc/booking-cancel] webhook dispatch failed:", err?.message ?? err); }
+
 	// 7. Return result.
 	return { ...baseResult, wasAlreadyCancelled: false };
 }
