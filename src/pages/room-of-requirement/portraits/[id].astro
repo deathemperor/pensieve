@@ -39,8 +39,17 @@ const tierLabel = tierName(contact.prestige_tier, lang);
 const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
 const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
 
-// Web research links: LinkedIn, company site, press mentions. Stored in external_ids JSON.
-type ExternalIds = { linkedin?: string; company_linkedin?: string; website?: string; site?: string; medium?: string; company?: string; press?: string[] };
+// Web research dossier stored in external_ids JSON.
+interface DossierQuote { text: string; source?: string; date?: string; attributed_to?: string }
+interface DossierMilestone { label: string; year?: string; detail?: string }
+interface DossierPost { title: string; date?: string; url?: string }
+interface DossierRecognition { label: string; year?: string }
+type ExternalIds = {
+  linkedin?: string; company_linkedin?: string; website?: string; site?: string;
+  medium?: string; company?: string; press?: string[];
+  quotes?: DossierQuote[]; milestones?: DossierMilestone[];
+  posts?: DossierPost[]; recognitions?: DossierRecognition[];
+};
 let externalIds: ExternalIds = {};
 try { externalIds = contact.external_ids ? (JSON.parse(contact.external_ids) as ExternalIds) : {}; } catch { /* malformed JSON; render nothing */ }
 const namedLinks: Array<{ label: string; url: string }> = [];
@@ -52,6 +61,11 @@ if (externalIds.company) namedLinks.push({ label: isVi ? "Công ty" : "Company",
 if (externalIds.medium) namedLinks.push({ label: "Medium", url: externalIds.medium });
 const pressUrls: string[] = Array.isArray(externalIds.press) ? externalIds.press.filter((u): u is string => typeof u === "string") : [];
 const pressHostnames = pressUrls.map((u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } });
+const quotes = Array.isArray(externalIds.quotes) ? externalIds.quotes : [];
+const milestones = Array.isArray(externalIds.milestones) ? externalIds.milestones : [];
+const posts = Array.isArray(externalIds.posts) ? externalIds.posts : [];
+const recognitions = Array.isArray(externalIds.recognitions) ? externalIds.recognitions : [];
+const quoteHostname = (u?: string) => { if (!u) return ""; try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } };
 
 // Phase 2: list any cards attached to this contact (admin view only).
 interface CardSummary { id: string; captured_at: string; ocr_status: string }
@@ -124,6 +138,70 @@ Astro.response.headers.set(
             ))}
           </ul>
         )}
+      </section>
+    )}
+
+    {quotes.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Phát biểu" : "Quotes"}</h2>
+        <ul class="quote-list">
+          {quotes.map((q) => (
+            <li class="quote">
+              <blockquote>{q.text}</blockquote>
+              <cite>
+                {q.attributed_to ?? (contact.display_name ?? contact.full_name)}
+                {q.date ? ` · ${q.date}` : ""}
+                {q.source ? (
+                  <> · <a href={q.source} target="_blank" rel="noopener noreferrer">{quoteHostname(q.source)}</a></>
+                ) : null}
+              </cite>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {milestones.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Cột mốc" : "Milestones"}</h2>
+        <ul class="milestone-list">
+          {milestones.map((m) => (
+            <li>
+              {m.year ? <span class="milestone-year">{m.year}</span> : null}
+              <span class="milestone-label">{m.label}</span>
+              {m.detail ? <span class="milestone-detail"> — {m.detail}</span> : null}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {recognitions.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Vinh danh" : "Recognitions"}</h2>
+        <ul class="recognition-list">
+          {recognitions.map((r) => (
+            <li>★ {r.label}{r.year ? ` (${r.year})` : ""}</li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {posts.length > 0 && (
+      <section class="section">
+        <h2 class="section-title">{isVi ? "Bài viết / Bài đăng" : "Posts"}</h2>
+        <ul class="post-list">
+          {posts.map((p) => (
+            <li>
+              {p.url ? (
+                <a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}</a>
+              ) : (
+                <span>{p.title}</span>
+              )}
+              {p.date ? <span class="post-date"> — {p.date}</span> : null}
+            </li>
+          ))}
+        </ul>
       </section>
     )}
 
@@ -370,6 +448,32 @@ Astro.response.headers.set(
     color: #d8c89c;
   }
   .press-list li a { font-family: "Inter Tight", sans-serif; opacity: 0.85; }
+
+  .quote-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .quote blockquote {
+    margin: 0; padding: 0.75rem 1rem;
+    border-left: 2px solid #c8a45e;
+    color: #e1d8c4;
+    font-style: italic;
+    line-height: 1.55;
+  }
+  .quote cite {
+    display: block; margin-top: 0.35rem; padding-left: 1rem;
+    color: #8a847a; font-style: normal; font-size: 0.85rem;
+  }
+  .quote cite a { color: #bdb8ac; }
+
+  .milestone-list, .recognition-list, .post-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 0.4rem;
+    color: #bdb8ac; line-height: 1.5;
+  }
+  .milestone-year {
+    display: inline-block; min-width: 6rem;
+    color: #c8a45e; font-family: "Inter Tight", sans-serif; font-weight: 600;
+  }
+  .milestone-detail { color: #8a847a; }
+  .post-date { color: #8a847a; font-size: 0.85rem; }
   .muted { color: #6a665e; }
 
   .channel-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
