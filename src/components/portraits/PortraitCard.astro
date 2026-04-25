@@ -29,10 +29,14 @@ const initials = contact.full_name
   .slice(0, 2)
   .toUpperCase();
 
-// photo_key is `portraits/cards/c_<hex>.<ext>` for cohorts promoted from card scans.
-// Extract the card id and serve via the existing admin-protected card image API.
+// External avatar (web-research headshot) wins over the card-derived photo.
+// photo_key fallback path: `portraits/cards/c_<hex>.<ext>` from card scans, served via admin-protected image API.
 const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
-const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
+let photoUrl: string | null = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
+try {
+  const ext = contact.external_ids ? JSON.parse(contact.external_ids) as { avatar?: string } : {};
+  if (ext.avatar && /^https?:\/\//.test(ext.avatar)) photoUrl = ext.avatar;
+} catch { /* malformed external_ids → keep card-derived photoUrl */ }
 ---
 
 <div class={`portrait-card-wrapper tier-wrapper-${contact.prestige_tier}`}>

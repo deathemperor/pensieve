@@ -14,6 +14,7 @@ import Mentions from "../../../components/portraits/Mentions.astro";
 import Deals from "../../../components/portraits/Deals.astro";
 import Collaborators from "../../../components/portraits/Collaborators.astro";
 import { tierName } from "../../../lib/portraits/tier-labels";
+import { renderMarkdown } from "../../../lib/portraits/markdown";
 import { getCurrentLang } from "../../../utils/lang";
 
 const lang = getCurrentLang(Astro);
@@ -37,7 +38,9 @@ const tags = contact.tags ? (JSON.parse(contact.tags) as string[]) : [];
 const tierLabel = tierName(contact.prestige_tier, lang);
 
 const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
-const photoUrl = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
+// External avatar (web-research headshot) takes precedence over the card-derived photo.
+// Resolved here using the parsed externalIds below.
+let photoUrl: string | null = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
 
 // Web research dossier stored in external_ids JSON.
 interface DossierQuote { text: string; source?: string; date?: string; attributed_to?: string }
@@ -46,7 +49,7 @@ interface DossierPost { title: string; date?: string; url?: string }
 interface DossierRecognition { label: string; year?: string }
 type ExternalIds = {
   linkedin?: string; company_linkedin?: string; website?: string; site?: string;
-  medium?: string; company?: string; press?: string[];
+  medium?: string; company?: string; press?: string[]; avatar?: string;
   quotes?: DossierQuote[]; milestones?: DossierMilestone[];
   posts?: DossierPost[]; recognitions?: DossierRecognition[];
 };
@@ -61,6 +64,8 @@ if (externalIds.company) namedLinks.push({ label: isVi ? "Công ty" : "Company",
 if (externalIds.medium) namedLinks.push({ label: "Medium", url: externalIds.medium });
 const pressUrls: string[] = Array.isArray(externalIds.press) ? externalIds.press.filter((u): u is string => typeof u === "string") : [];
 const pressHostnames = pressUrls.map((u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return u; } });
+if (externalIds.avatar && /^https?:\/\//.test(externalIds.avatar)) photoUrl = externalIds.avatar;
+const bioHtml = contact.bio ? renderMarkdown(contact.bio) : "";
 const quotes = Array.isArray(externalIds.quotes) ? externalIds.quotes : [];
 const milestones = Array.isArray(externalIds.milestones) ? externalIds.milestones : [];
 const posts = Array.isArray(externalIds.posts) ? externalIds.posts : [];
@@ -119,7 +124,7 @@ Astro.response.headers.set(
       </div>
     </header>
 
-    {contact.bio && <section class="section"><p class="bio">{contact.bio}</p></section>}
+    {bioHtml && <section class="section"><div class="bio" set:html={bioHtml} /></section>}
 
     {(namedLinks.length > 0 || pressUrls.length > 0) && (
       <section class="section">
@@ -429,7 +434,29 @@ Astro.response.headers.set(
     font-size: 0.8125rem; letter-spacing: 0.18em; text-transform: uppercase;
     color: #9a968c; margin: 0 0 0.75rem;
   }
-  .bio { color: #bdb8ac; line-height: 1.6; margin: 0; }
+  .bio { color: #bdb8ac; line-height: 1.65; margin: 0; }
+  .bio p { margin: 0 0 0.8rem 0; }
+  .bio p:last-child { margin-bottom: 0; }
+  .bio a { color: #d8c89c; border-bottom: 1px dotted #5a4a2a; }
+  .bio a:hover { color: #f0d97e; border-bottom-style: solid; }
+  .bio ul, .bio ol { margin: 0.5rem 0 0.8rem 1.25rem; padding: 0; }
+  .bio li { margin: 0.2rem 0; }
+  .bio blockquote {
+    margin: 0.6rem 0; padding: 0.5rem 0.9rem;
+    border-left: 2px solid #5a4a2a; color: #c8c0b0;
+    font-style: italic;
+  }
+  .bio strong { color: #d8d0bc; }
+  .bio code {
+    background: #1a1a1a; padding: 0.05rem 0.3rem;
+    border-radius: 3px; font-size: 0.92em;
+  }
+  .bio h2, .bio h3, .bio h4 {
+    margin: 1rem 0 0.4rem; color: #d8c89c;
+    font-family: "Inter Tight", sans-serif; font-weight: 600;
+  }
+  .bio h3 { font-size: 1rem; }
+  .bio h4 { font-size: 0.9rem; }
   .ext-link-list, .press-list {
     list-style: none; padding: 0; margin: 0 0 0.75rem 0;
     display: flex; flex-wrap: wrap; gap: 0.5rem;
