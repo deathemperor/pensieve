@@ -24,16 +24,23 @@ const techStack = [
 	{
 		name: "Cloudflare Workers",
 		role: isVi ? "Hosting & tính toán" : "Hosting & compute",
-		description: isVi ? "Edge runtime — D1 (SQL), R2 (lưu trữ), KV (session)" : "Edge runtime — D1 (SQL), R2 (storage), KV (sessions)",
+		description: isVi ? "Edge runtime — D1 (SQL), R2 (lưu trữ), KV (session), Cron Triggers" : "Edge runtime — D1 (SQL), R2 (storage), KV (sessions), Cron Triggers",
 		url: "https://workers.cloudflare.com",
 		color: "#F6821F",
 	},
 	{
 		name: "Resend",
 		role: isVi ? "Gửi email" : "Email delivery",
-		description: isVi ? "API email giao dịch cho thông báo bình luận" : "Transactional email API for comment notifications",
+		description: isVi ? "Email giao dịch — bình luận, xác nhận đặt lịch, nhắc 24h" : "Transactional email — comments, booking confirmations, 24h reminders",
 		url: "https://resend.com",
 		color: "#3fb950",
+	},
+	{
+		name: "Google Calendar",
+		role: isVi ? "Đồng bộ lịch" : "Calendar sync",
+		description: isVi ? "OAuth + Calendar API — kiểm tra rảnh, tạo sự kiện cho /book" : "OAuth + Calendar API — free/busy checks, event insert for /book",
+		url: "https://developers.google.com/calendar",
+		color: "#4285F4",
 	},
 	{
 		name: "Claude Code",
