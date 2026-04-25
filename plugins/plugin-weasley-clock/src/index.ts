@@ -57,6 +57,7 @@ export function weasleyClockPlugin(): PluginDescriptor {
 		adminPages: [
 			{ path: "/feeds", label: "Calendar Feeds", icon: "calendar" },
 			{ path: "/api-keys", label: "API Keys", icon: "key" },
+			{ path: "/webhooks", label: "Webhooks", icon: "webhook" },
 		],
 	};
 }
