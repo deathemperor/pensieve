@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+import { arsenal, type ArsenalPlatform } from "../../data/arsenal";
+import WandCard from "../../components/arsenal/WandCard.astro";
+import InventoryCard from "../../components/arsenal/InventoryCard.astro";
+
+const lang = getCurrentLang(Astro);
+const isVi = lang === "vi";
+
+const wands = arsenal.filter((i) => i.tier === "wand");
+const inventory = arsenal.filter((i) => i.tier === "inventory");
+
+// Sort inventory: today → this_week → this_month → rare, then by title
+const FREQ_RANK = { today: 0, this_week: 1, this_month: 2, rare: 3 } as const;
+const inventorySorted = [...inventory].sort((a, b) => {
+	const fa = FREQ_RANK[a.frequency];
+	const fb = FREQ_RANK[b.frequency];
+	if (fa !== fb) return fa - fb;
+	return a.title.localeCompare(b.title);
+});
+
+function countByPlatform(p: ArsenalPlatform) {
+	return arsenal.filter((i) => i.platform === p).length;
+}
+
+const counts = {
+	wands: wands.length,
+	macos: countByPlatform("macos"),
+	iphone: countByPlatform("iphone"),
+	cli: countByPlatform("cli"),
+};
+
+const tabLabels = {
+	en: { all: "All", macos: "macOS", iphone: "iPhone", cli: "Spells" },
+	vi: { all: "Tất Cả", macos: "macOS", iphone: "iPhone", cli: "Bùa Chú" },
+};
+const t = tabLabels[lang];
+---
+
+<Base
+	title={isVi ? "Rương Mắt Điên — Vũ Khí" : "Mad-Eye's Trunk — Arsenal"}
+	description={isVi
+		? "Bộ đồ Lộc mở ra mỗi sáng. Đũa phép, bùa chú, và mọi thứ trong rương."
+		: "The kit Loc opens every morning. Wands, spells, and everything else in the trunk."}
+	breadcrumbs={[
+		{ label: isVi ? "Căn Phòng Yêu Cầu" : "Room of Requirement", href: "/room-of-requirement" },
+		{ label: isVi ? "Rương Mắt Điên" : "Mad-Eye's Trunk" },
+	]}
+>
+	<section class="trunk-hero">
+		<span class="trunk-eyebrow">{isVi ? "Rương Mắt Điên" : "Mad-Eye's Trunk"}</span>
+		<h1 class="trunk-title">{isVi ? "Vũ Khí Hằng Ngày" : "The Daily Arsenal"}</h1>
+		<p class="trunk-subtitle">
+			{isVi
+				? "Bộ đồ Lộc mở ra mỗi sáng. Lớp đũa phép chính, rồi đến phần còn lại trong rương."
+				: "The kit Loc opens every morning. Wand-tier daily drivers, then the rest of the compartment."}
+		</p>
+		<div class="trunk-meta">
+			<span><strong>{counts.wands}</strong> {isVi ? "đũa phép" : "wands"}</span>
+			<span class="trunk-meta-dot" />
+			<span><strong>{counts.macos}</strong> macOS</span>
+			<span class="trunk-meta-dot" />
+			<span><strong>{counts.iphone}</strong> iPhone</span>
+			<span class="trunk-meta-dot" />
+			<span><strong>{counts.cli}</strong> {isVi ? "bùa chú" : "spells"}</span>
+		</div>
+	</section>
+
+	<section class="trunk-wands" aria-label={isVi ? "Đũa phép" : "Wands"}>
+		<h2 class="trunk-h2">{isVi ? "Đũa Phép" : "Wands"}</h2>
+		<div class="trunk-wand-grid">
+			{wands.map((w) => <WandCard item={w} lang={lang} />)}
+		</div>
+	</section>
+
+	<section class="trunk-trunk" aria-label={isVi ? "Trong rương" : "The Trunk"}>
+		<h2 class="trunk-h2">{isVi ? "Trong Rương" : "The Trunk"}</h2>
+
+		<form class="trunk-tabs" role="tablist" aria-label={isVi ? "Lọc theo nền tảng" : "Filter by platform"}>
+			<input type="radio" id="trunk-tab-all" name="trunk-tab" value="all" checked />
+			<label for="trunk-tab-all">{t.all} <span class="trunk-tab-count">{inventorySorted.length}</span></label>
+
+			<input type="radio" id="trunk-tab-macos" name="trunk-tab" value="macos" />
+			<label for="trunk-tab-macos">{t.macos} <span class="trunk-tab-count">{counts.macos}</span></label>
+
+			<input type="radio" id="trunk-tab-iphone" name="trunk-tab" value="iphone" />
+			<label for="trunk-tab-iphone">{t.iphone} <span class="trunk-tab-count">{counts.iphone}</span></label>
+
+			<input type="radio" id="trunk-tab-cli" name="trunk-tab" value="cli" />
+			<label for="trunk-tab-cli">{t.cli} <span class="trunk-tab-count">{counts.cli}</span></label>
+		</form>
+
+		<div class="trunk-inv-grid">
+			{inventorySorted.map((i) => <InventoryCard item={i} lang={lang} />)}
+		</div>
+
+		<p class="trunk-legend">
+			<span class="trunk-legend-dot" data-state="today" /> {isVi ? "hôm nay" : "today"}
+			<span class="trunk-legend-dot" data-state="this_week" /> {isVi ? "tuần này" : "this week"}
+			<span class="trunk-legend-dot" data-state="this_month" /> {isVi ? "tháng này" : "this month"}
+			<span class="trunk-legend-dot" data-state="rare" /> {isVi ? "hiếm khi" : "rare"}
+		</p>
+	</section>
+
+	<footer class="trunk-footer">
+		<a href="/room-of-requirement">{isVi ? "← Trở lại Căn Phòng Yêu Cầu" : "← Back to the Room of Requirement"}</a>
+	</footer>
+</Base>
+
+<style>
+.trunk-hero {
+	padding: 64px 24px 40px;
+	max-width: 720px;
+	margin: 0 auto;
+	text-align: center;
+}
+.trunk-eyebrow {
+	display: inline-block;
+	font-size: 0.72rem;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: rgb(180, 174, 160);
+	margin-bottom: 12px;
+}
+.trunk-title {
+	font-family: "Inter Tight", system-ui, sans-serif;
+	font-weight: 700;
+	font-size: clamp(2rem, 5vw, 3rem);
+	margin: 0 0 16px;
+	color: rgb(232, 226, 213);
+}
+.trunk-subtitle {
+	margin: 0 0 24px;
+	color: rgb(180, 174, 160);
+	font-size: 1rem;
+	line-height: 1.55;
+}
+.trunk-meta {
+	display: inline-flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	font-size: 0.85rem;
+	color: rgb(180, 174, 160);
+}
+.trunk-meta strong { color: rgb(212, 168, 67); font-weight: 600; }
+.trunk-meta-dot {
+	width: 4px;
+	height: 4px;
+	border-radius: 50%;
+	background: rgba(212, 168, 67, 0.4);
+}
+
+.trunk-h2 {
+	font-family: "Inter Tight", system-ui, sans-serif;
+	font-size: 1.4rem;
+	font-weight: 600;
+	color: rgb(232, 226, 213);
+	margin: 0 0 24px;
+	text-align: center;
+}
+
+.trunk-wands { padding: 32px 24px; max-width: 1200px; margin: 0 auto; }
+.trunk-wand-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
+}
+@media (min-width: 768px) { .trunk-wand-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .trunk-wand-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1280px) { .trunk-wand-grid { grid-template-columns: repeat(6, 1fr); } }
+
+.trunk-trunk { padding: 48px 24px 32px; max-width: 1200px; margin: 0 auto; }
+.trunk-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
+	margin-bottom: 24px;
+}
+.trunk-tabs input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+.trunk-tabs label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 999px;
+	font-size: 0.85rem;
+	color: rgb(180, 174, 160);
+	cursor: pointer;
+	transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+.trunk-tabs label:hover { color: rgb(232, 226, 213); border-color: rgba(255, 255, 255, 0.2); }
+.trunk-tabs input[type="radio"]:checked + label {
+	color: rgb(28, 26, 22);
+	background: rgb(232, 226, 213);
+	border-color: rgb(232, 226, 213);
+}
+.trunk-tab-count { font-size: 0.72rem; opacity: 0.7; }
+
+.trunk-inv-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+}
+@media (min-width: 600px) { .trunk-inv-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px) { .trunk-inv-grid { grid-template-columns: repeat(6, 1fr); } }
+
+/* CSS-only filter — when a non-"all" tab is checked, hide non-matching cards.
+   InventoryCard exposes data-platform on its <a class="trunk-inv">. */
+.trunk-tabs:has(input[value="macos"]:checked)  ~ .trunk-inv-grid > a:not([data-platform="macos"])  { display: none; }
+.trunk-tabs:has(input[value="iphone"]:checked) ~ .trunk-inv-grid > a:not([data-platform="iphone"]) { display: none; }
+.trunk-tabs:has(input[value="cli"]:checked)    ~ .trunk-inv-grid > a:not([data-platform="cli"])    { display: none; }
+
+.trunk-legend {
+	margin: 28px 0 0;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 12px;
+	font-size: 0.78rem;
+	color: rgb(160, 154, 140);
+}
+.trunk-legend-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: rgb(212, 168, 67);
+	margin-right: 4px;
+}
+.trunk-legend-dot[data-state="this_week"] { opacity: 0.6; }
+.trunk-legend-dot[data-state="this_month"] { opacity: 0.3; }
+.trunk-legend-dot[data-state="rare"] {
+	background: transparent;
+	border: 1px solid rgb(212, 168, 67);
+}
+
+.trunk-footer { padding: 32px 24px 64px; text-align: center; }
+.trunk-footer a {
+	color: rgb(180, 174, 160);
+	font-size: 0.9rem;
+	text-decoration: none;
+}
+.trunk-footer a:hover { color: rgb(232, 226, 213); }
+</style>
