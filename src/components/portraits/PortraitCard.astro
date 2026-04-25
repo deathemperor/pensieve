@@ -28,6 +28,15 @@ const initials = contact.full_name
   .join("")
   .slice(0, 2)
   .toUpperCase();
+
+// External avatar (web-research headshot) wins over the card-derived photo.
+// photo_key fallback path: `portraits/cards/c_<hex>.<ext>` from card scans, served via admin-protected image API.
+const photoCardId = (contact.photo_key ?? "").match(/portraits\/cards\/(c_[a-f0-9]+)/)?.[1] ?? null;
+let photoUrl: string | null = photoCardId ? `/api/portraits/cards/${photoCardId}/image` : null;
+try {
+  const ext = contact.external_ids ? JSON.parse(contact.external_ids) as { avatar?: string } : {};
+  if (ext.avatar && /^https?:\/\//.test(ext.avatar)) photoUrl = ext.avatar;
+} catch { /* malformed external_ids → keep card-derived photoUrl */ }
 ---
 
 <div class={`portrait-card-wrapper tier-wrapper-${contact.prestige_tier}`}>
@@ -53,9 +62,12 @@ const initials = contact.full_name
     {contact.prestige_tier === "B" && <FrameBronze size={size} />}
     {contact.prestige_tier === "C" && <FrameEtched size={size} />}
 
-    {/* Phase 1: initials only. Photo rendering lands in Phase 2 when card OCR + photo upload arrive. */}
-    <div class="portrait-photo" aria-hidden="true">
-      <span class="initials">{initials}</span>
+    <div class="portrait-photo" aria-hidden={photoUrl ? undefined : "true"}>
+      {photoUrl ? (
+        <img src={photoUrl} alt={contact.display_name ?? contact.full_name} loading="lazy" />
+      ) : (
+        <span class="initials">{initials}</span>
+      )}
     </div>
   </div>
 
