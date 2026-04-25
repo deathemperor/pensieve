@@ -5,6 +5,8 @@ import Base from "../../../layouts/Base.astro";
 import { env } from "cloudflare:workers";
 import { getCurrentLang } from "../../../utils/lang";
 import { renderDesignDocMarkdown } from "../../../lib/designDocMarkdown";
+import { setCachePolicy } from "../../../lib/cachePolicy";
+setCachePolicy(Astro, "doc");
 
 const isVi = getCurrentLang(Astro) === "vi";
 

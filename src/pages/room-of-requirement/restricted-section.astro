@@ -7,6 +7,8 @@ const isVi = getCurrentLang(Astro) === "vi";
 
 // The Restricted Section — design docs from D1
 import { env } from "cloudflare:workers";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "blog-index");
 const db = env.DB;
 let designDocs: { id: string; title: string; doc_type: string; project: string; summary: string; prompt: string; file_path: string; notion_url: string; line_count: number; created_at: string }[] = [];
 

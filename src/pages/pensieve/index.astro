@@ -8,6 +8,8 @@ import { link } from "../../utils/link";
 import { categoryThemeMap, type ThemeSlug } from "../../themes/categoryThemes";
 import { themes } from "../../themes";
 import { getCurrentLang } from "../../utils/lang";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "blog-index");
 
 const currentLang = getCurrentLang(Astro);
 const { entries: allPosts, cacheHint } = await getEmDashCollection("posts");

@@ -4,6 +4,8 @@ export const prerender = false;
 import { getEmDashCollection } from "emdash";
 import Base from "../../layouts/Base.astro";
 import { getCurrentLang } from "../../utils/lang";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "blog-index");
 
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";

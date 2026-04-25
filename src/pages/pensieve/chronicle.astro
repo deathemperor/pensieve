@@ -14,6 +14,8 @@ import { getCurrentLang } from "../../utils/lang";
 import { parseChronicleDate, compareChronicleDate } from "../../utils/chronicleDate";
 import { formatRomanDate } from "../../utils/romanDate";
 import "../../styles/chronicle.css";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "static");
 
 const lang = getCurrentLang(Astro);
 const isVi = lang === "vi";

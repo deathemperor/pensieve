@@ -3,6 +3,8 @@ export const prerender = false;
 // huuloc.com landing page — standalone, no Base layout
 import SiteCat from "../components/SiteCat.astro";
 import { getCurrentLang } from "../utils/lang";
+import { setCachePolicy } from "../lib/cachePolicy";
+setCachePolicy(Astro, "static");
 const currentLang = getCurrentLang(Astro);
 const isVi = currentLang === "vi";
 const copy = {
