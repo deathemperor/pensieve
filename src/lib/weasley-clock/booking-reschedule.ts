@@ -207,6 +207,20 @@ export async function rescheduleBooking(input: RescheduleBookingInput): Promise<
 		reminded_at: null,
 	});
 
+	try {
+		const { dispatchWebhook } = await import("./webhooks");
+		await dispatchWebhook({
+			db: input.db,
+			event: "booking.rescheduled",
+			data: {
+				booking_id: row.id,
+				old_slot_start_iso: oldStartIso,  // captured BEFORE the put
+				new_slot_start_iso: input.newSlotStartIso,
+				new_slot_end_iso: newSlotEndIso,
+			},
+		});
+	} catch (err: any) { console.error("[wc/booking-reschedule] webhook dispatch failed:", err?.message ?? err); }
+
 	return {
 		bookingId: row.id,
 		guestEmail: booking.guest_email,

@@ -230,6 +230,23 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 	};
 	await c.bookings.put(bookingId, bookingData);
 
+	try {
+		const { dispatchWebhook } = await import("./webhooks");
+		await dispatchWebhook({
+			db: input.db,
+			event: "booking.created",
+			data: {
+				booking_id: bookingId,
+				meeting_type_id: input.meetingTypeId,
+				slot_start_iso: input.slotStartIso,
+				slot_end_iso: slotEndIso,
+				guest_email: input.guestEmail,
+				guest_name: input.guestName,
+				timezone: input.guestTimezone,
+			},
+		});
+	} catch (err: any) { console.error("[wc/booking-create] webhook dispatch failed:", err?.message ?? err); }
+
 	return {
 		bookingId,
 		cancelToken,
