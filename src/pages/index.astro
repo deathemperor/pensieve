@@ -1,594 +1,557 @@
 ---
+// huuloc.com landing — Direction C ("Daily Prophet" editorial index).
+// Replaces the previous 4-up project grid + role/bio split. Brings the
+// Pensieve writing forward, masthead-style hero, numbered rows per
+// section. Footer simplified to Subscribe + Colophon (Elsewhere lives
+// on /Trương).
+//
+// IA: Featured Pensieve → Writing → Hogwarts → Nydus → Beyond.
+// VI/EN strict toggle stays top-right via pref_lang cookie.
+// Per-category accent comes in only as a thin vertical rule on cards
+// (honors SOUL.md: ONE dark canvas, accents are ribbons).
 export const prerender = false;
-// huuloc.com landing page — standalone, no Base layout
-import SiteCat from "../components/SiteCat.astro";
+
+import { getEmDashCollection, getEntryTerms } from "emdash";
 import { getCurrentLang } from "../utils/lang";
+import { link } from "../utils/link";
+import SiteCat from "../components/SiteCat.astro";
 import { setCachePolicy } from "../lib/cachePolicy";
 setCachePolicy(Astro, "static");
+
 const currentLang = getCurrentLang(Astro);
 const isVi = currentLang === "vi";
+
+// ── Featured Pensieve essays ────────────────────────────────────────
+let latest: Array<{ id: string; title: string; cat: string | null; date: Date | null }> = [];
+let totalEssays = 0;
+try {
+	const { entries, cacheHint } = await getEmDashCollection("posts");
+	Astro.cache.set(cacheHint);
+	const filtered = entries.filter((p) => p.data.language === currentLang);
+	totalEssays = filtered.length;
+	const sorted = filtered.toSorted(
+		(a, b) => (b.data.publishedAt?.getTime() ?? 0) - (a.data.publishedAt?.getTime() ?? 0),
+	);
+	for (const p of sorted.slice(0, 4)) {
+		const cats = await getEntryTerms("posts", p.data.id, "category");
+		latest.push({
+			id: p.id,
+			title: p.data.title,
+			cat: cats[0]?.label ?? null,
+			date: p.data.publishedAt ?? null,
+		});
+	}
+} catch {
+	// No posts yet — featured block hides itself gracefully.
+}
+
+const fmtDate = (d: Date | null) =>
+	d ? d.toLocaleDateString(isVi ? "vi-VN" : "en-US", { month: "short", year: "numeric" }) : "";
+
+// ── Copy ─────────────────────────────────────────────────────────────
 const copy = {
-  description: isVi
-    ? "Kỹ sư senior, viết song ngữ, Việt Nam. Dự án và bài viết dài lưu ở đây."
-    : "Senior engineer, bilingual writer, Vietnam. Projects and long-form writing live here.",
-  role: isVi
-    ? "Kỹ sư phần mềm senior. Viết song ngữ. Sống ở Việt Nam."
-    : "Senior software engineer. Bilingual writer. Based in Vietnam.",
-  bio: isVi
-    ? "Ở VNG từ 2006, xây hệ thống session và nền tảng phát hành game."
-    : "At VNG from 2006, building session systems and game publishing platforms.",
-  bioPapaya: isVi
-    ? "Giờ ở "
-    : "Now at ",
-  bioPapayaRest: isVi
-    ? ", đưa các tác tử AI vào phần thủ công của việc làm phần mềm. Viết dài bằng tiếng Việt và tiếng Anh — chủ yếu về ký ức, gia đình, cá, và những điều đáng giữ lại."
-    : ", putting AI agents to work on the craft side of software. Writes long-form in Vietnamese and English — mostly about memory, family, fish, and the things worth keeping.",
-  sectionGrounds: isVi ? "Khuôn Viên" : "The Grounds",
-  sectionHogwarts: "Hogwarts",
-  sectionNydus: "Nydus",
-  sectionBeyond: isVi ? "Ngoài Cổng Trường" : "Beyond the Gates",
-  weasleyClockMeta: isVi ? "Lịch gia đình · dương + âm" : "Family calendar · solar + lunar",
-  weasleyClockDesc: isVi
-    ? "Đồng hồ Weasley trong nhà Nydus. Giỗ, sinh nhật, lễ Tết — hiển thị cả dương lịch và âm lịch."
-    : "The Weasley Clock in our home, Nydus. Anniversaries, birthdays, cultural observances — shown in both Gregorian and Vietnamese lunar calendars.",
-  pensieveMeta: isVi ? "VI · EN · 130 bài" : "VI · EN · 130 posts",
-  pensieveDesc: isVi
-    ? "Những câu chuyện dài cứu về từ Facebook, sắp xếp theo chủ đề và có cả hai phiên bản tiếng Việt và tiếng Anh."
-    : "Long-form narratives rescued from Facebook, sorted into themed categories with every post available in both Vietnamese and English.",
-  rorMeta: isVi ? "Nhật ký xây dựng" : "Build diary",
-  rorDesc: isVi
-    ? "Trang này được xây như thế nào — kiến trúc, tech stack, và Priori Incantatem: dòng thời gian mọi phiên Claude Code."
-    : "How this site is built — architecture, tech stack, and Priori Incantatem: a timeline of every Claude Code session.",
-  truongMeta: isVi ? "Giới thiệu" : "About",
-  truongDesc: isVi
-    ? "Câu chuyện khởi đầu, liên kết hồ sơ, và hoạt động GitHub trực tiếp."
-    : "Origin story, profile links, and live GitHub activity.",
-  libraryMeta: isVi ? "Slide giáo dục" : "Education slides",
-  libraryDesc: isVi
-    ? "Bài giảng trình chiếu — lớp AI dựa trên phim ảnh, chạy bằng Reveal.js. Ai cần PowerPoint?"
-    : "Slide decks for teaching — movie-based AI lessons, powered by Reveal.js. Who needs PowerPoint?",
-  greatHallMeta: isVi ? "Sắp có" : "Coming soon",
-  greatHallDesc: isVi
-    ? "Khoá học, bài giảng từ trường học và đại học — kho lưu trữ học thuật."
-    : "Courses, lectures, and lessons from schools and universities — the academic archive.",
-  quidditchMeta: isVi ? "Sân chơi animation" : "Animation playground",
-  quidditchDesc: isVi
-    ? "Các animation web, mỗi cái đi kèm nhật ký xây Claude Code đầy đủ — lướt qua từng prompt và chỉnh sửa."
-    : "Web animations, each paired with a full Claude Code build diary — scrub through every prompt and edit.",
-  gamesMeta: isVi ? "Sân chơi" : "Games",
-  gamesDesc: isVi
-    ? "Tuyển tập game nhỏ tìm được trên GitHub — để chơi, để học cách chúng được dựng nên."
-    : "A curated collection of small games found on GitHub — to play, and to study how they were put together.",
-  soonBadge: isVi ? "sắp" : "soon",
+	description: isVi
+		? "Kỹ sư senior, viết song ngữ, Việt Nam. Pensieve là nơi giữ lại các bài viết dài."
+		: "Senior engineer, bilingual writer, Vietnam. The Pensieve keeps long-form writing.",
+	tagline: isVi
+		? "Kỹ sư phần mềm senior. Viết song ngữ. Sống ở Việt Nam. Người giữ một Pensieve."
+		: "Senior software engineer. Bilingual writer. Based in Vietnam. Keeper of a Pensieve.",
+	bio: isVi
+		? "Ở VNG từ 2006, xây hệ thống session và nền tảng phát hành game. Giờ ở "
+		: "At VNG since 2006, building session systems and game publishing platforms. Now at ",
+	bioRest: isVi
+		? ", đưa các tác tử AI vào việc làm phần mềm. Viết dài bằng tiếng Việt và tiếng Anh — về ký ức, gia đình, cá."
+		: ", building AI agents for the long tail of software work. Long-form in Vietnamese and English — about memory, family, fish.",
+	featuredLabel: isVi ? "Nổi bật" : "Featured",
+	latestLabel: isVi ? "Mới nhất" : "Latest",
+	pensieveTitle: isVi ? "Pensieve" : "The Pensieve",
+	pensieveDesc: isVi
+		? "Những bài viết dài tôi cứu về từ Facebook trước khi chúng trôi đi. Ký ức, gia đình, cá, những điều đáng giữ."
+		: "Essays I rescued from Facebook before they scrolled away. Memory, family, fish, the things worth keeping.",
+	readAll: isVi ? `Đọc tất cả ${totalEssays}` : `Read all ${totalEssays}`,
+	pensieveMeta: isVi
+		? `VI · EN · ${totalEssays} bài · đang viết tiếp`
+		: `VI · EN · ${totalEssays} essays · ongoing`,
+	secWriting: isVi ? "Viết" : "Writing",
+	secHogwarts: "Hogwarts",
+	secNydus: "Nydus",
+	secBeyond: isVi ? "Ngoài Cổng Trường" : "Beyond the Gates",
+	tagWriting: isVi ? "đọc" : "to read",
+	tagHogwarts: isVi ? "học & chơi" : "to learn & play",
+	tagNydus: isVi ? "nhà" : "home",
+	tagBeyond: isVi ? "nơi khác" : "elsewhere",
+	holName: "HOL Archive",
+	holMeta: "VI · 25k posts · 2005–",
+	holDesc: isVi
+		? "Diễn đàn vBulletin cũ, dựng lại từ Internet Archive. Read-only — để nhớ những năm đó."
+		: "An old vBulletin forum, rebuilt from the Internet Archive. Read-only — for remembering those years.",
+	libraryName: "The Library",
+	libraryMeta: isVi ? "Slide Reveal.js" : "Reveal.js slides",
+	libraryDesc: isVi
+		? "Slide cho lớp AI-và-điện-ảnh tôi dạy. Reveal.js, trình chiếu trực tiếp."
+		: "Slide decks for the AI-and-cinema class I teach. Reveal.js, presented live.",
+	gamesName: "The Games Room",
+	gamesMeta: isVi ? "Game tuyển từ GitHub" : "Curated GitHub finds",
+	gamesDesc: isVi
+		? "Các game nhỏ tôi tìm thấy trên GitHub — để chơi, và để học cách dựng nên."
+		: "Small games I found on GitHub — to play, and to study how they were put together.",
+	quidditchName: "Quidditch Pitch",
+	quidditchMeta: isVi ? "Sân chơi animation" : "Animation playground",
+	quidditchDesc: isVi
+		? "Animation web, mỗi cái đi kèm nhật ký Claude Code đầy đủ — lướt qua từng prompt."
+		: "Web animations, each paired with a full Claude Code build diary — scrub through every prompt.",
+	greatHallName: "Great Hall",
+	greatHallMeta: isVi ? "Sắp có" : "Coming soon",
+	greatHallDesc: isVi
+		? "Khoá học, bài giảng — kho lưu trữ học thuật."
+		: "Courses, lectures, lessons — the academic archive.",
+	soonBadge: isVi ? "sắp" : "soon",
+	weasleyName: "The Weasley Clock",
+	weasleyMeta: isVi ? "Lịch gia đình · dương + âm" : "Family calendar · solar + lunar",
+	weasleyDesc: isVi
+		? "Đồng hồ Weasley trong nhà Nydus. Giỗ, sinh nhật, lễ Tết — dương lịch và âm lịch."
+		: "The Weasley Clock in our home, Nydus. Anniversaries, birthdays, observances — Gregorian and lunar.",
+	rorName: "Room of Requirement",
+	rorMeta: isVi ? "Nhật ký xây dựng" : "Build diary",
+	rorDesc: isVi
+		? "Cách trang này được dựng nên. Kiến trúc, stack, và Priori Incantatem — mọi phiên Claude Code, từ đầu đến cuối."
+		: "How this site is built. Architecture, stack, and Priori Incantatem — every Claude Code session, end to end.",
+	truongName: "Trương",
+	truongMeta: isVi ? "Giới thiệu" : "About",
+	truongDesc: isVi
+		? "Câu chuyện khởi đầu, hồ sơ, và hoạt động GitHub trực tiếp."
+		: "Origin story, profile links, and live GitHub activity.",
+	colophonClaude: isVi
+		? "Mỗi dòng mã trên trang này do Claude Code viết."
+		: "Every line of code on this site was written by Claude Code.",
+	colophonStack: isVi
+		? "Astro · Cloudflare Workers · D1 · R2 · KV"
+		: "Astro · Cloudflare Workers · D1 · R2 · KV",
+	subscribe: isVi ? "Đăng ký" : "Subscribe",
+	colophon: isVi ? "Đường biên" : "Colophon",
 };
+
+// Section structure — pure data so the template stays clean
+type Item = {
+	href: string | null;
+	name: string;
+	meta: string;
+	desc: string;
+	accent: string;
+	iconKey: string;
+	coming?: boolean;
+};
+const sections: Array<{ label: string; sub: string; items: Item[] }> = [
+	{
+		label: copy.secWriting,
+		sub: copy.tagWriting,
+		items: [
+			{ href: "/hol/", name: copy.holName, meta: copy.holMeta, desc: copy.holDesc, accent: "#7a9fb8", iconKey: "archive" },
+		],
+	},
+	{
+		label: copy.secHogwarts,
+		sub: copy.tagHogwarts,
+		items: [
+			{ href: "/hogwarts/library/", name: copy.libraryName, meta: copy.libraryMeta, desc: copy.libraryDesc, accent: "#7fb069", iconKey: "library" },
+			{ href: "/hogwarts/games/", name: copy.gamesName, meta: copy.gamesMeta, desc: copy.gamesDesc, accent: "#ff8a5b", iconKey: "games" },
+			{ href: "/hogwarts/quidditch/", name: copy.quidditchName, meta: copy.quidditchMeta, desc: copy.quidditchDesc, accent: "#d4a02a", iconKey: "snitch" },
+			{ href: null, name: copy.greatHallName, meta: copy.greatHallMeta, desc: copy.greatHallDesc, accent: "#62666d", iconKey: "great", coming: true },
+		],
+	},
+	{
+		label: copy.secNydus,
+		sub: copy.tagNydus,
+		items: [
+			{ href: "/nydus/weasley-clock", name: copy.weasleyName, meta: copy.weasleyMeta, desc: copy.weasleyDesc, accent: "#e0a87a", iconKey: "clock" },
+		],
+	},
+	{
+		label: copy.secBeyond,
+		sub: copy.tagBeyond,
+		items: [
+			{ href: "/room-of-requirement", name: copy.rorName, meta: copy.rorMeta, desc: copy.rorDesc, accent: "#d4a02a", iconKey: "room" },
+			{ href: "/Trương", name: copy.truongName, meta: copy.truongMeta, desc: copy.truongDesc, accent: "#c08aff", iconKey: "quill" },
+		],
+	},
+];
+
+// Running 01..NN counter for the row numbers (resets per page, runs across sections)
+let runningNum = 1;
+
+// Inline icon helper — keyed by name, returns an SVG string.
+function icon(key: string): string {
+	const stroke = "var(--accent)";
+	switch (key) {
+		case "archive":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="7" width="24" height="17" rx="2" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linejoin="round"/><path d="M9 12 L23 12 M9 16 L23 16 M9 20 L18 20" stroke="${stroke}" stroke-width="2" stroke-linecap="round"/></svg>`;
+		case "library":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4 h20 v24 H6 Z" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linejoin="round"/><line x1="10" y1="9" x2="22" y2="9" stroke="${stroke}" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="14" x2="22" y2="14" stroke="${stroke}" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="19" x2="18" y2="19" stroke="${stroke}" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+		case "games":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="13" rx="4" fill="none" stroke="${stroke}" stroke-width="2.25"/><line x1="10" y1="17.5" x2="14" y2="17.5" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round"/><line x1="12" y1="15.5" x2="12" y2="19.5" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round"/><circle cx="21" cy="16" r="1.25" fill="${stroke}"/><circle cx="24" cy="19" r="1.25" fill="${stroke}"/></svg>`;
+		case "snitch":
+			return `<svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><g class="snitch-wing snitch-wing-left"><ellipse cx="11" cy="16" rx="6" ry="2" fill="#d4a02a" opacity=".5"/></g><g class="snitch-wing"><ellipse cx="21" cy="16" rx="6" ry="2" fill="#d4a02a" opacity=".5"/></g><circle class="snitch-orb" cx="16" cy="16" r="4.5" fill="#d4a02a" stroke="#ffd88a" stroke-width=".5"/><circle cx="14.5" cy="14.5" r="1.2" fill="#fff" opacity=".9"/></svg>`;
+		case "great":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28 V12 L16 4 L24 12 V28" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linejoin="round"/><line x1="16" y1="4" x2="16" y2="1" stroke="${stroke}" stroke-width="2" stroke-linecap="round"/><rect x="13" y="18" width="6" height="6" rx=".5" fill="none" stroke="${stroke}" stroke-width="1.5"/></svg>`;
+		case "clock":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="${stroke}" stroke-width="2.25"/><path d="M16 8 L16 16 L22 19" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+		case "room":
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 28 V10 Q16 2 23 10 V28" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linejoin="round"/><circle cx="20" cy="18" r="1.5" fill="${stroke}"/></svg>`;
+		case "quill":
+		default:
+			return `<svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round"/><path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="${stroke}" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+	}
+}
 ---
 
 <html lang={isVi ? "vi" : "en"}>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trương Hữu Lộc</title>
-<meta name="description" content={copy.description} />
-<meta property="og:title" content="Trương Hữu Lộc" />
-<meta property="og:description" content={copy.description} />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://huuloc.com/" />
-<meta name="ai-content-declaration" content="site-code:ai-generated; content:human-written" />
-<meta name="generator" content="Astro + Claude Code" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Trương Hữu Lộc</title>
+	<meta name="description" content={copy.description} />
+	<meta property="og:title" content="Trương Hữu Lộc" />
+	<meta property="og:description" content={copy.description} />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://huuloc.com/" />
+	<meta name="ai-content-declaration" content="site-code:ai-generated; content:human-written" />
+	<meta name="generator" content="Astro + Claude Code" />
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;590;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <details class="lang-toggle">
-    <summary>{isVi ? "VI" : "EN"} <span class="arrow">▾</span></summary>
-    <div class="lang-menu">
-      <a href="#" class="lang-item" data-switch-lang="vi" data-active={isVi}>Tiếng Việt</a>
-      <a href="#" class="lang-item" data-switch-lang="en" data-active={!isVi}>English</a>
-    </div>
-  </details>
-  <main class="page">
-    <section class="hero">
-      <div class="eyebrow">
-        <svg width="14" height="14" viewBox="0 0 32 32" aria-hidden="true">
-          <path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" />
-          <path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        huuloc.com
-      </div>
+	<details class="lang-toggle">
+		<summary>{isVi ? "VI" : "EN"} <span class="arrow">▾</span></summary>
+		<div class="lang-menu">
+			<a href="#" class="lang-item" data-switch-lang="vi" data-active={isVi}>Tiếng Việt</a>
+			<a href="#" class="lang-item" data-switch-lang="en" data-active={!isVi}>English</a>
+		</div>
+	</details>
 
-      <h1 class="name">Trương Hữu Lộc</h1>
-      <p class="role">{copy.role}</p>
-      <p class="bio">
-        {copy.bio}
-        {copy.bioPapaya}<a href="https://papaya.asia" rel="noopener">Papaya</a>{copy.bioPapayaRest}
-      </p>
-    </section>
+	<main class="page">
+		{/* ── Masthead hero ───────────────────────────────────────── */}
+		<header class="masthead">
+			<div class="rule">
+				<span>Vol. {new Date().getFullYear() - 2005} · No. {String(new Date().getMonth() + 1).padStart(2, "0")}</span>
+				<span class="rule-mid">
+					<svg width="12" height="12" viewBox="0 0 32 32" aria-hidden="true">
+						<path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" />
+						<path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+						<path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+					</svg>
+					huuloc.com
+				</span>
+				<span>{new Date().toLocaleDateString(isVi ? "vi-VN" : "en-US", { month: "long", year: "numeric" })}</span>
+			</div>
+			<h1 class="name">Trương <em>Hữu</em> Lộc</h1>
+			<div class="lede">
+				<p class="tagline">{copy.tagline}</p>
+				<p class="bio">
+					{copy.bio}<a href="https://papaya.asia" rel="noopener">Papaya</a>{copy.bioRest}
+				</p>
+			</div>
+		</header>
 
-    <section class="section">
-      <span class="section-label">{copy.sectionGrounds}</span>
-      <ul class="project-list">
-        <li>
-          <a href="/pensieve/" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="currentColor" /></svg>Pensieve</h2>
-                <span class="project-meta">{copy.pensieveMeta}</span>
-              </div>
-              <p class="project-desc">{copy.pensieveDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-        <li>
-          <a href="/hol/" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="7" width="24" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><path d="M9 12 L23 12 M9 16 L23 16 M9 20 L18 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>HOL Archive</h2>
-                <span class="project-meta">VI · 25k posts · 2005–</span>
-              </div>
-              <p class="project-desc">
-                Kỷ niệm của một diễn đàn vBulletin cũ, được dựng lại từ
-                Internet Archive. Read-only — để nhớ lại những năm tháng đó.
-              </p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-        <li>
-          <a href="/room-of-requirement" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M9 28 V10 Q16 2 23 10 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><circle cx="20" cy="18" r="1.5" fill="currentColor" /></svg>Room of Requirement</h2>
-                <span class="project-meta">{copy.rorMeta}</span>
-              </div>
-              <p class="project-desc">{copy.rorDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-        <li>
-          <a href="/Trương" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 28 C16 22 15 18 16 13" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><path d="M16 15 C13 13 9 10 8 5 C13 6 16 11 16 15" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><path d="M16 11 C19 9 23 6 24 2 C19 3 16 7 16 11" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /></svg>Trương</h2>
-                <span class="project-meta">{copy.truongMeta}</span>
-              </div>
-              <p class="project-desc">{copy.truongDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+		{/* ── Featured Pensieve ───────────────────────────────────── */}
+		<section class="featured" style="--accent: #9b8cff;">
+			<div class="section-rule">
+				<span class="section-tag">{copy.featuredLabel}</span>
+				<span class="hairline" />
+			</div>
+			<div class="featured-card">
+				<div>
+					<h2 class="featured-title">
+						<svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+							<ellipse cx="16" cy="10.5" rx="11" ry="2.75" fill="none" stroke="var(--accent)" stroke-width="2.25" stroke-linejoin="round" />
+							<path d="M5 10.5 L5 14 C5 20.5 9.5 25 16 25 C22.5 25 27 20.5 27 14 L27 10.5" fill="none" stroke="var(--accent)" stroke-width="2.25" stroke-linejoin="round" />
+							<ellipse cx="16" cy="10.5" rx="4.5" ry="1.1" fill="var(--accent)" />
+						</svg>
+						{copy.pensieveTitle}
+					</h2>
+					<div class="featured-meta">{copy.pensieveMeta}</div>
+					<p class="featured-desc">{copy.pensieveDesc}</p>
+					<a href="/pensieve/" class="featured-cta">{copy.readAll} →</a>
+				</div>
+				{latest.length > 0 && (
+					<div class="latest">
+						<div class="latest-head">{copy.latestLabel}</div>
+						{latest.map((e, i) => (
+							<a href={link(`pensieve/memories/${e.id}`)} class="latest-row">
+								<span class="latest-num">{String(i + 1).padStart(3, "0")}</span>
+								<span class="latest-title">{e.title}</span>
+								<span class="latest-date">{fmtDate(e.date)}</span>
+							</a>
+						))}
+					</div>
+				)}
+			</div>
+		</section>
 
-    <section class="section">
-      <span class="section-label">{copy.sectionHogwarts}</span>
-      <ul class="project-list">
-        <li>
-          <a href="/hogwarts/library/" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 4 h20 v24 H6 Z" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><line x1="10" y1="9" x2="22" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><line x1="10" y1="14" x2="22" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><line x1="10" y1="19" x2="18" y2="19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>The Library</h2>
-                <span class="project-meta">{copy.libraryMeta}</span>
-              </div>
-              <p class="project-desc">{copy.libraryDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-        <li>
-          <span class="project project-coming">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><path d="M8 28 V12 L16 4 L24 12 V28" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" /><line x1="16" y1="4" x2="16" y2="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" /><rect x="13" y="18" width="6" height="6" rx="0.5" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Great Hall</h2>
-                <span class="project-meta">{copy.greatHallMeta}</span>
-              </div>
-              <p class="project-desc">{copy.greatHallDesc}</p>
-            </div>
-            <span class="project-arrow coming-badge">{copy.soonBadge}</span>
-          </span>
-        </li>
-        <li>
-          <a href="/hogwarts/games/" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="11" width="24" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="2.25" /><line x1="10" y1="17.5" x2="14" y2="17.5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><line x1="12" y1="15.5" x2="12" y2="19.5" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" /><circle cx="21" cy="16" r="1.25" fill="currentColor" /><circle cx="24" cy="19" r="1.25" fill="currentColor" /></svg>The Games Room</h2>
-                <span class="project-meta">{copy.gamesMeta}</span>
-              </div>
-              <p class="project-desc">{copy.gamesDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-        <li>
-          <a class="project project-quidditch" href="/hogwarts/quidditch/">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name">
-                  <svg class="project-icon snitch-icon" width="18" height="18" viewBox="0 0 32 32" aria-hidden="true">
-                    <g class="snitch-wing snitch-wing-left">
-                      <ellipse cx="11" cy="16" rx="6" ry="2" fill="currentColor" opacity="0.5" />
-                    </g>
-                    <g class="snitch-wing snitch-wing-right">
-                      <ellipse cx="21" cy="16" rx="6" ry="2" fill="currentColor" opacity="0.5" />
-                    </g>
-                    <circle class="snitch-orb" cx="16" cy="16" r="4.5" fill="#d4a02a" stroke="#ffd88a" stroke-width="0.5" />
-                    <circle class="snitch-spark" cx="14.5" cy="14.5" r="1.2" fill="#ffffff" opacity="0.9" />
-                  </svg>Quidditch Pitch
-                </h2>
-                <span class="project-meta">{copy.quidditchMeta}</span>
-              </div>
-              <p class="project-desc">{copy.quidditchDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+		{/* ── Other sections ──────────────────────────────────────── */}
+		{sections.map((sec) => (
+			<section class="section">
+				<div class="section-rule">
+					<h2 class="section-label">{sec.label}</h2>
+					<span class="section-sub">{sec.sub}</span>
+					<span class="hairline" />
+				</div>
+				<div class="rows">
+					{sec.items.map((it) => {
+						const num = String(runningNum++).padStart(2, "0");
+						const Tag = it.href ? "a" : "span";
+						return (
+							<Tag
+								href={it.href ?? undefined}
+								class:list={["row", { coming: it.coming, "row-quidditch": it.iconKey === "snitch" }]}
+								style={`--accent: ${it.accent};`}
+							>
+								<span class="row-num">{num}</span>
+								<div class="row-body">
+									<div class="row-head">
+										<h3 class="row-name">
+											<span class="row-icon" set:html={icon(it.iconKey)} />
+											{it.name}
+										</h3>
+										<span class="row-meta">· {it.meta}</span>
+									</div>
+									<p class="row-desc">{it.desc}</p>
+								</div>
+								<span class="row-arrow">{it.coming ? copy.soonBadge : "→"}</span>
+							</Tag>
+						);
+					})}
+				</div>
+			</section>
+		))}
 
-    <section class="section">
-      <span class="section-label">{copy.sectionNydus}</span>
-      <ul class="project-list">
-        <li>
-          <a href="/nydus/weasley-clock" class="project">
-            <div>
-              <div class="project-head">
-                <h2 class="project-name"><svg class="project-icon" width="16" height="16" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2.25"/><path d="M16 8 L16 16 L22 19" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/></svg>The Weasley Clock</h2>
-                <span class="project-meta">{copy.weasleyClockMeta}</span>
-              </div>
-              <p class="project-desc">{copy.weasleyClockDesc}</p>
-            </div>
-            <span class="project-arrow">&rarr;</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+		{/* ── Footer — Subscribe + Colophon (Elsewhere lives on /Trương) ─ */}
+		<footer class="foot">
+			<div class="foot-col">
+				<div class="foot-head">{copy.subscribe}</div>
+				<div class="foot-links">
+					<a href="/pensieve/rss-en.xml">RSS · EN</a>
+					<a href="/pensieve/rss-vi.xml">RSS · VI</a>
+					<a href="/pensieve/rss.xml">RSS · All</a>
+				</div>
+			</div>
+			<div class="foot-col foot-colophon">
+				<div class="foot-head">{copy.colophon}</div>
+				<p class="foot-prose">{copy.colophonClaude}</p>
+				<p class="foot-prose foot-stack">{copy.colophonStack}</p>
+			</div>
+			<div class="foot-end">
+				© Trương Hữu Lộc · {new Date().getFullYear()}
+			</div>
+		</footer>
+	</main>
 
-    <section class="section">
-      <span class="section-label">{copy.sectionBeyond}</span>
-      <div class="links-row">
-        <a href="https://github.com/deathemperor" rel="noopener" class="link-item">GitHub</a>
-        <a href="https://www.linkedin.com/in/deathemperor/" rel="noopener" class="link-item">LinkedIn</a>
-        <a href="https://fb.me/deathemperor" rel="noopener" class="link-item">Facebook</a>
-      </div>
-    </section>
-
-    <footer class="foot">
-      <span>&copy; Trương Hữu Lộc</span>
-    </footer>
-  </main>
-  <SiteCat />
-  <script>
-    // Set pref_lang cookie + reload on click. Matches Base.astro's global handler
-    // so the same switcher UX works on this standalone page.
-    document.querySelectorAll<HTMLAnchorElement>('[data-switch-lang]').forEach((a) => {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const v = a.dataset.switchLang || 'en';
-        const secure = location.protocol === 'https:' ? '; Secure' : '';
-        document.cookie = `pref_lang=${v}; path=/; max-age=${3600 * 24 * 365}; SameSite=Lax${secure}`;
-        location.reload();
-      });
-    });
-  </script>
+	<SiteCat />
+	<script>
+		document.querySelectorAll<HTMLAnchorElement>("[data-switch-lang]").forEach((a) => {
+			a.addEventListener("click", (e) => {
+				e.preventDefault();
+				const v = a.dataset.switchLang || "en";
+				const secure = location.protocol === "https:" ? "; Secure" : "";
+				document.cookie = `pref_lang=${v}; path=/; max-age=${3600 * 24 * 365}; SameSite=Lax${secure}`;
+				location.reload();
+			});
+		});
+	</script>
 </body>
 </html>
 
 <style is:global>
-  :root {
-    --bg: #08090a;
-    --elevated: #141516;
-    --text: #f7f8f8;
-    --secondary: #8a8f98;
-    --muted: #62666d;
-    --border: rgba(255, 255, 255, 0.06);
-    --accent: #5e6ad2;
-    --sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  }
-
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.55;
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+	:root {
+		--bg: #08090a;
+		--elevated: #141516;
+		--text: #f7f8f8;
+		--secondary: #8a8f98;
+		--muted: #62666d;
+		--border: rgba(255,255,255,0.06);
+		--accent: #5e6ad2;
+		--sans: "Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+		--mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+	}
+	* { box-sizing: border-box; }
+	html, body { margin: 0; padding: 0; }
+	body {
+		background: var(--bg);
+		color: var(--text);
+		font-family: var(--sans);
+		font-size: 16px;
+		line-height: 1.55;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
 </style>
 
 <style>
-  /* Language toggle — top-right, minimal, mirrors the Base.astro nav-lang styling */
-  .lang-toggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 10;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  .lang-toggle > summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 0.35rem 0.55rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--elevated);
-    transition: border-color 120ms ease, color 120ms ease;
-  }
-  .lang-toggle > summary:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
-  .lang-toggle > summary::-webkit-details-marker { display: none; }
-  .lang-toggle .arrow { font-size: 0.7em; opacity: 0.6; }
-  .lang-menu {
-    position: absolute;
-    right: 0;
-    margin-top: 0.25rem;
-    background: var(--elevated);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.25rem;
-    min-width: 8rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
-  .lang-item {
-    display: block;
-    padding: 0.4rem 0.6rem;
-    border-radius: 4px;
-    text-decoration: none;
-    color: var(--secondary);
-    font-size: 0.8125rem;
-    transition: background 120ms ease, color 120ms ease;
-  }
-  .lang-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-  .lang-item[data-active="true"] { color: var(--text); font-weight: 500; }
+	.lang-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 10; font-family: var(--mono); font-size: .75rem; color: var(--muted); }
+	.lang-toggle > summary { list-style: none; cursor: pointer; padding: .55rem .7rem; border: 1px solid var(--border); border-radius: 999px; background: var(--elevated); }
+	.lang-toggle > summary::-webkit-details-marker { display: none; }
+	.lang-menu { position: absolute; right: 0; margin-top: .25rem; background: var(--elevated); border: 1px solid var(--border); border-radius: 8px; padding: .25rem; min-width: 8rem; display: flex; flex-direction: column; }
+	.lang-item { padding: .55rem .7rem; border-radius: 4px; text-decoration: none; color: var(--secondary); font-size: .85rem; }
+	.lang-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+	.lang-item[data-active="true"] { color: var(--text); font-weight: 500; }
 
-  .page {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: clamp(3rem, 10vh, 6rem) 1.5rem 4rem;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+	.page { max-width: 920px; margin: 0 auto; padding: clamp(3rem, 8vh, 5rem) 1.5rem 4rem; }
 
-  .hero { margin-bottom: 4rem; }
+	/* Masthead */
+	.masthead { margin-bottom: 4rem; }
+	.rule {
+		display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+		padding-bottom: 1rem; margin-bottom: 1.75rem; border-bottom: 1px solid var(--border);
+		font-family: var(--mono); font-size: .7rem; color: var(--muted);
+		letter-spacing: .08em; text-transform: uppercase;
+	}
+	.rule-mid { display: inline-flex; align-items: center; gap: .5rem; }
+	.name {
+		font-family: var(--sans); font-size: clamp(2.25rem, 7vw, 4.75rem); font-weight: 590;
+		letter-spacing: -.032em; line-height: .98; margin: 0 0 1.5rem; text-wrap: balance;
+	}
+	.name em { color: var(--muted); font-style: italic; font-weight: 400; }
+	.lede {
+		display: grid; grid-template-columns: 1fr 1fr; gap: 2.25rem;
+		padding-top: 1.1rem; border-top: 1px solid var(--border);
+	}
+	.tagline { font-size: 1.0625rem; color: var(--text); margin: 0; line-height: 1.5; font-weight: 500; }
+	.bio { font-size: .9375rem; color: var(--secondary); margin: 0; line-height: 1.6; }
+	.bio a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
 
-  .eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin-bottom: 2rem;
-  }
+	/* Section rules */
+	.section-rule {
+		display: flex; align-items: baseline; gap: .85rem; margin-bottom: 1.25rem;
+	}
+	.section-tag {
+		font-family: var(--mono); font-size: .7rem; color: var(--accent);
+		letter-spacing: .14em; text-transform: uppercase; font-weight: 500;
+	}
+	.section-label { font-size: 1.25rem; font-weight: 590; letter-spacing: -.018em; margin: 0; }
+	.section-sub { color: var(--muted); font-size: .8125rem; font-style: italic; }
+	.hairline { flex: 1; height: 1px; background: var(--border); }
 
-  .eyebrow svg { flex-shrink: 0; }
+	/* Featured */
+	.featured { margin-bottom: 3.5rem; }
+	.featured-card {
+		display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.75rem;
+		padding: 1.6rem 1.75rem; background: var(--elevated);
+		border: 1px solid var(--border); border-radius: 14px; position: relative; overflow: hidden;
+	}
+	.featured-card::before {
+		content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent);
+	}
+	.featured-title {
+		display: inline-flex; align-items: center; gap: .6rem;
+		font-size: 1.75rem; font-weight: 590; letter-spacing: -.022em; margin: 0 0 .55rem;
+	}
+	.featured-meta {
+		font-family: var(--mono); font-size: .7rem; color: var(--muted);
+		letter-spacing: .04em; margin-bottom: .85rem;
+	}
+	.featured-desc { font-size: .9375rem; color: var(--secondary); margin: 0 0 1.1rem; line-height: 1.6; }
+	.featured-cta {
+		display: inline-block; padding: .55rem .85rem;
+		border: 1px solid var(--accent); color: var(--accent);
+		border-radius: 8px; text-decoration: none; font-size: .85rem; font-weight: 500;
+		transition: background 120ms ease;
+	}
+	.featured-cta:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+	.latest {
+		display: flex; flex-direction: column; gap: 0;
+		border-left: 1px solid var(--border); padding-left: 1.5rem;
+	}
+	.latest-head {
+		font-family: var(--mono); font-size: .65rem; color: var(--muted);
+		letter-spacing: .12em; text-transform: uppercase; margin-bottom: .65rem;
+	}
+	.latest-row {
+		display: grid; grid-template-columns: auto 1fr auto; gap: .75rem;
+		padding: .65rem 0; border-bottom: 1px solid var(--border);
+		text-decoration: none; color: inherit; align-items: baseline;
+		transition: opacity 120ms ease;
+	}
+	.latest-row:hover { opacity: 1; }
+	.latest-row:hover .latest-title { color: var(--accent); }
+	.latest-num { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .04em; }
+	.latest-title { font-size: .875rem; color: var(--text); font-weight: 500; letter-spacing: -.01em; transition: color 120ms ease; }
+	.latest-date { font-family: var(--mono); font-size: .65rem; color: var(--muted); white-space: nowrap; }
 
-  .name {
-    font-family: var(--sans);
-    font-size: clamp(1.75rem, 4vw, 2.75rem);
-    font-weight: 590;
-    letter-spacing: -0.024em;
-    line-height: 1.08;
-    margin: 0 0 0.75rem;
-  }
+	/* Section rows */
+	.section { margin-bottom: 2.75rem; }
+	.rows { display: flex; flex-direction: column; }
+	.row {
+		display: grid; grid-template-columns: 44px 1fr auto; gap: 1.1rem;
+		padding: 1.1rem 0; border-top: 1px solid var(--border);
+		text-decoration: none; color: inherit; align-items: start;
+		transition: background 120ms ease;
+	}
+	.row:hover:not(.coming) { background: rgba(255,255,255,.015); }
+	.row.coming { opacity: .45; cursor: default; }
+	.row-num { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .04em; padding-top: .25rem; }
+	.row-head { display: flex; align-items: baseline; gap: .75rem; flex-wrap: wrap; margin-bottom: .25rem; }
+	.row-name {
+		display: inline-flex; align-items: center; gap: .5rem;
+		font-size: 1.0625rem; font-weight: 590; letter-spacing: -.015em; margin: 0;
+	}
+	.row-icon { display: inline-flex; color: var(--accent); }
+	.row-meta { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .03em; }
+	.row-desc { font-size: .9rem; color: var(--secondary); margin: 0; line-height: 1.55; max-width: 62ch; }
+	.row-arrow { color: var(--muted); padding-top: .35rem; transition: color 120ms ease, transform 120ms ease; }
+	.row:hover:not(.coming) .row-arrow { color: var(--text); transform: translateX(2px); }
+	.row.coming .row-arrow {
+		font-family: var(--mono); font-size: .65rem; text-transform: uppercase;
+		letter-spacing: .1em;
+	}
 
-  .role {
-    font-size: 1.0625rem;
-    color: var(--secondary);
-    margin: 0 0 1.5rem;
-    max-width: 52ch;
-  }
+	/* Quidditch snitch */
+	.row-quidditch .row-icon svg { overflow: visible; }
+	.row-quidditch .snitch-orb { animation: snitch-pulse 2.4s ease-in-out infinite; }
+	.row-quidditch .snitch-wing { transform-origin: 16px 16px; animation: snitch-flap .28s ease-in-out infinite alternate; }
+	.row-quidditch .snitch-wing-left { transform: scaleX(-1); }
+	@keyframes snitch-flap { from { transform: scaleY(.55); } to { transform: scaleY(1); } }
+	@keyframes snitch-pulse {
+		0%, 100% { filter: drop-shadow(0 0 4px rgba(212, 160, 42, 0.4)); }
+		50%      { filter: drop-shadow(0 0 8px rgba(212, 160, 42, 0.7)); }
+	}
+	.row-quidditch:hover .snitch-wing { animation-duration: .14s; }
+	@media (prefers-reduced-motion: reduce) { .snitch-wing, .snitch-orb { animation: none; } }
 
-  .bio {
-    font-size: 1rem;
-    color: var(--secondary);
-    margin: 0;
-    max-width: 56ch;
-    line-height: 1.65;
-  }
+	/* Footer — Subscribe + Colophon */
+	.foot {
+		margin-top: 3.5rem; padding-top: 1.75rem; border-top: 2px solid var(--border);
+		display: grid; grid-template-columns: minmax(180px, 1fr) 2fr; gap: 2.5rem;
+		align-items: start;
+	}
+	.foot-head {
+		font-family: var(--mono); font-size: .65rem; color: var(--muted);
+		letter-spacing: .12em; text-transform: uppercase; margin-bottom: .65rem;
+	}
+	.foot-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+	.foot-links a { font-size: .85rem; color: var(--secondary); text-decoration: none; transition: color 120ms ease; }
+	.foot-links a:hover { color: var(--text); }
+	.foot-colophon { max-width: 60ch; }
+	.foot-prose { font-size: .875rem; color: var(--secondary); margin: 0 0 .35rem; line-height: 1.6; }
+	.foot-stack { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .04em; }
+	.foot-end {
+		grid-column: 1 / -1;
+		text-align: right;
+		font-family: var(--mono); font-size: .65rem; color: var(--muted); letter-spacing: .06em;
+		padding-top: 1.25rem; margin-top: 1rem;
+		border-top: 1px solid var(--border);
+	}
 
-  .bio a {
-    color: var(--text);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border);
-    transition: border-color 120ms ease;
-  }
-
-  .bio a:hover { border-color: var(--secondary); }
-
-  .section { margin-bottom: 3rem; }
-
-  .section-label {
-    display: block;
-    font-family: var(--mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin: 0 0 1rem;
-  }
-
-  .project-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .project {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: start;
-    gap: 1rem;
-    padding: 1.25rem 1.25rem 1.125rem;
-    background: var(--elevated);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 120ms ease, transform 120ms ease;
-  }
-
-  .project:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    transform: translateY(-1px);
-  }
-
-  /* Animated snitch micro-icon on the Quidditch tile */
-  .snitch-icon {
-    overflow: visible;
-    transform-origin: center;
-  }
-  .snitch-orb {
-    filter: drop-shadow(0 0 3px rgba(212, 160, 42, 0.55));
-    animation: snitch-pulse 2.4s ease-in-out infinite;
-  }
-  .snitch-spark {
-    animation: snitch-spark 2.4s ease-in-out infinite;
-  }
-  .snitch-wing {
-    transform-origin: 16px 16px;
-    animation: snitch-flap 0.24s ease-in-out infinite alternate;
-  }
-  .snitch-wing-left { transform: scaleX(-1); }
-
-  @keyframes snitch-pulse {
-    0%, 100% { filter: drop-shadow(0 0 2px rgba(212, 160, 42, 0.45)); }
-    50%      { filter: drop-shadow(0 0 6px rgba(255, 216, 138, 0.9)); }
-  }
-  @keyframes snitch-spark {
-    0%, 100% { opacity: 0.6; }
-    50%      { opacity: 1; }
-  }
-  @keyframes snitch-flap {
-    from { transform: scaleY(0.55); }
-    to   { transform: scaleY(1);    }
-  }
-
-  .project-quidditch:hover .snitch-orb {
-    animation-duration: 1.2s;
-  }
-  .project-quidditch:hover .snitch-wing {
-    animation-duration: 0.12s;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .snitch-orb, .snitch-spark, .snitch-wing {
-      animation: none;
-    }
-  }
-
-  .project-head {
-    display: flex;
-    align-items: baseline;
-    gap: 0.625rem;
-    margin-bottom: 0.375rem;
-  }
-
-  .project-name {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    font-size: 1.0625rem;
-    font-weight: 590;
-    letter-spacing: -0.015em;
-    margin: 0;
-  }
-
-  .project-icon {
-    flex-shrink: 0;
-  }
-
-  .project-meta {
-    font-family: var(--mono);
-    font-size: 0.6875rem;
-    color: var(--muted);
-    letter-spacing: 0.03em;
-  }
-
-  .project-desc {
-    font-size: 0.9375rem;
-    color: var(--secondary);
-    margin: 0;
-    line-height: 1.55;
-  }
-
-  .project-arrow {
-    color: var(--muted);
-    font-size: 1rem;
-    transition: color 120ms ease, transform 120ms ease;
-    padding-top: 2px;
-  }
-
-  .project:hover .project-arrow {
-    color: var(--text);
-    transform: translateX(2px);
-  }
-
-  .project-coming {
-    cursor: default;
-    opacity: 0.5;
-  }
-
-  .project-coming:hover {
-    border-color: var(--border);
-    transform: none;
-  }
-
-  .coming-badge {
-    font-family: var(--mono);
-    font-size: 0.6875rem;
-    color: var(--muted);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-  }
-
-  .links-row {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .link-item {
-    font-size: 0.9375rem;
-    color: var(--secondary);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 1px;
-    transition: color 120ms ease, border-color 120ms ease;
-  }
-
-  .link-item:hover {
-    color: var(--text);
-    border-color: var(--secondary);
-  }
-
-  .foot {
-    margin-top: auto;
-    padding-top: 3rem;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--muted);
-    letter-spacing: 0.02em;
-  }
-
-  @media (max-width: 600px) {
-    .page { padding: 3rem 1.25rem 3rem; }
-  }
+	/* Mobile */
+	@media (max-width: 720px) {
+		.page { padding: 3rem 1.1rem 3rem; }
+		.name { font-size: clamp(2rem, 11vw, 3rem); }
+		.lede { grid-template-columns: 1fr; gap: .75rem; }
+		.featured-card { grid-template-columns: 1fr; gap: 1.4rem; padding: 1.4rem 1.4rem; }
+		.latest { border-left: 0; padding-left: 0; border-top: 1px solid var(--border); padding-top: 1rem; }
+		.row { grid-template-columns: 32px 1fr auto; gap: .85rem; padding: 1rem 0; }
+		.row-meta { font-size: .65rem; }
+		.foot { grid-template-columns: 1fr; gap: 1.5rem; }
+		.foot-end { text-align: left; }
+	}
 </style>
