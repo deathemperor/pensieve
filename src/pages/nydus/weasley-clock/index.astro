@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import { getEmDashCollection } from "emdash";
+import { env } from "cloudflare:workers";
 import Base from "../../../layouts/Base.astro";
 import Header from "../../../components/weasley-clock/Header.astro";
 import WeekView from "../../../components/weasley-clock/WeekView.astro";
@@ -85,25 +86,32 @@ function computeWindow(v: View, a: Date): { windowStart: Date; windowEnd: Date }
 const { windowStart, windowEnd } = computeWindow(view, anchor);
 occurrences = materialiseFamilyEvents(events, windowStart, windowEnd);
 
-// Fetch synced events from plugin-weasley-clock storage. Plugin namespaces
-// are exposed at Astro.locals.emdash.plugins.<id>.storage.<namespace> — if
-// the shape differs in this EmDash version, the catch below keeps the page
-// rendering (synced view just stays empty until wiring is verified).
+// Synced Google-Calendar events live in the EmDash plugin-storage table
+// (`_plugin_storage`, plugin_id='weasley-clock', collection='synced_events').
+// The plugin sandbox's storage API isn't exposed to Astro pages, so query
+// D1 directly with a date-range filter — faster than loading all rows and
+// avoids the silent-empty-array failure mode the previous wiring had.
 let syncedEvents: SyncedEventRecord[] = [];
 try {
-	const storage = (Astro.locals as any).emdash?.plugins?.["weasley-clock"]?.storage;
-	if (storage?.synced_events) {
-		const all = await storage.synced_events.query({});
-		const items = (all.items ?? all ?? []) as Array<{ id: string; data: any }>;
-		const windowStartMs = windowStart.getTime();
-		const windowEndMs = windowEnd.getTime();
-		syncedEvents = items
-			.map((r) => ({ ...r.data, id: r.id } as SyncedEventRecord))
-			.filter((e) =>
-				e.source_type && !e.deleted &&
-				new Date(e.starts_at).getTime() <= windowEndMs &&
-				new Date(e.ends_at).getTime() >= windowStartMs,
-			);
+	const db = env.DB;
+	if (db) {
+		const windowStartIso = windowStart.toISOString();
+		const windowEndIso = windowEnd.toISOString();
+		const res = await db
+			.prepare(
+				`SELECT id, data FROM _plugin_storage
+				 WHERE plugin_id = 'weasley-clock'
+				   AND collection = 'synced_events'
+				   AND json_extract(data, '$.deleted') = 0
+				   AND json_extract(data, '$.starts_at') <= ?
+				   AND json_extract(data, '$.ends_at')   >= ?`,
+			)
+			.bind(windowEndIso, windowStartIso)
+			.all<{ id: string; data: string }>();
+		syncedEvents = (res.results ?? []).map((r) => {
+			const parsed = JSON.parse(r.data) as Omit<SyncedEventRecord, "id">;
+			return { ...parsed, id: r.id } as SyncedEventRecord;
+		});
 	}
 } catch (err) {
 	console.error("Failed to fetch synced events:", err);
