@@ -97,12 +97,17 @@ try {
 	if (db) {
 		const windowStartIso = windowStart.toISOString();
 		const windowEndIso = windowEnd.toISOString();
+		// Hide untitled events: events-map.ts stamps the placeholder
+		// "(no title)" when the upstream Google Calendar `summary` is empty
+		// (typically work-calendar busy markers, hidden personal blocks, or
+		// system-generated events). Loc has explicitly opted out of these.
 		const res = await db
 			.prepare(
 				`SELECT id, data FROM _plugin_storage
 				 WHERE plugin_id = 'weasley-clock'
 				   AND collection = 'synced_events'
 				   AND json_extract(data, '$.deleted') = 0
+				   AND json_extract(data, '$.title') != '(no title)'
 				   AND json_extract(data, '$.starts_at') <= ?
 				   AND json_extract(data, '$.ends_at')   >= ?`,
 			)
