@@ -5,7 +5,7 @@
 // section. Footer simplified to Subscribe + Colophon (Elsewhere lives
 // on /Trương).
 //
-// IA: Featured Pensieve → Writing → Hogwarts → Nydus → Beyond.
+// IA: Featured Pensieve → Reliquary → Hogwarts → Nydus → Beyond.
 // VI/EN strict toggle stays top-right via pref_lang cookie.
 // Per-category accent comes in only as a thin vertical rule on cards
 // (honors SOUL.md: ONE dark canvas, accents are ribbons).
@@ -72,11 +72,11 @@ const copy = {
 	pensieveMeta: isVi
 		? `VI · EN · ${totalEssays} bài · đang viết tiếp`
 		: `VI · EN · ${totalEssays} essays · ongoing`,
-	secWriting: isVi ? "Viết" : "Writing",
+	secReliquary: isVi ? "Hộp Ký Ức" : "Reliquary",
 	secHogwarts: "Hogwarts",
 	secNydus: "Nydus",
 	secBeyond: isVi ? "Ngoài Cổng Trường" : "Beyond the Gates",
-	tagWriting: isVi ? "đọc" : "to read",
+	tagReliquary: isVi ? "một quá khứ, dựng lại" : "a past, revived",
 	tagHogwarts: isVi ? "học & chơi" : "to learn & play",
 	tagNydus: isVi ? "nhà" : "home",
 	tagBeyond: isVi ? "nơi khác" : "elsewhere",
@@ -143,8 +143,8 @@ type Item = {
 };
 const sections: Array<{ label: string; sub: string; items: Item[] }> = [
 	{
-		label: copy.secWriting,
-		sub: copy.tagWriting,
+		label: copy.secReliquary,
+		sub: copy.tagReliquary,
 		items: [
 			{ href: "/hol/", name: copy.holName, meta: copy.holMeta, desc: copy.holDesc, accent: "#7a9fb8", iconKey: "archive" },
 		],
