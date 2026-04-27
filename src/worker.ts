@@ -118,7 +118,7 @@ export default {
 				// hits don't carry cf-cache-status because Workers bypass the
 				// transparent HTML cache layer.
 				const hit = new Response(cached.body, cached);
-				hit.headers.set("x-cache", "HIT");
+				hit.headers.set("x-pensieve-cache", "HIT");
 				return hit;
 			}
 
@@ -130,11 +130,11 @@ export default {
 			if (response.status === 200 && /\bpublic\b/i.test(cc) && /\b(s-maxage|max-age)=\d+/i.test(cc)) {
 				const cacheable = new Response(response.body, response);
 				cacheable.headers.delete("set-cookie");
-				cacheable.headers.set("x-cache", "MISS");
+				cacheable.headers.set("x-pensieve-cache", "MISS");
 				ctx.waitUntil(cache.put(cacheKey, cacheable.clone()));
 				return cacheable;
 			}
-			response.headers.set("x-cache", "BYPASS");
+			response.headers.set("x-pensieve-cache", "BYPASS");
 			return response;
 		}
 
