@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { env } from "cloudflare:workers";
 import { requireAdmin, resolveContactAccess } from "../../../lib/portraits/auth";
 import { getContact, updateContact, softDeleteContact, type UpdateContactInput } from "../../../lib/portraits/db";
+import { renderMarkdown } from "../../../lib/portraits/markdown";
 import type { TierCode } from "../../../lib/portraits/types";
 
 export const prerender = false;
@@ -43,7 +44,9 @@ export const GET: APIRoute = async (ctx) => {
       ? "public, max-age=3600, s-maxage=3600"
       : "private, no-store";
 
-  return new Response(JSON.stringify({ contact, access: access.admin ? "admin" : access.access }), {
+  const contactWithHtml = { ...contact, bio_html: contact.bio ? renderMarkdown(contact.bio) : "" };
+
+  return new Response(JSON.stringify({ contact: contactWithHtml, access: access.admin ? "admin" : access.access }), {
     status: 200,
     headers: { "Content-Type": "application/json", "Cache-Control": cacheHeader },
   });

@@ -187,7 +187,7 @@ Astro.response.headers.set(
       bodyEl.appendChild(err);
       return;
     }
-    const data = await res.json() as { contact: { id: string; full_name: string; display_name: string | null; title: string | null; company: string | null; prestige_tier: string; tier_score: number; bio: string | null; channels: Array<{ kind: string; value: string; is_primary: number }>; tags: string | null } };
+    const data = await res.json() as { contact: { id: string; full_name: string; display_name: string | null; title: string | null; company: string | null; prestige_tier: string; tier_score: number; bio: string | null; bio_html: string | null; channels: Array<{ kind: string; value: string; is_primary: number }>; tags: string | null } };
     const c = data.contact;
 
     titleEl.textContent = c.display_name ?? c.full_name;
@@ -214,7 +214,15 @@ Astro.response.headers.set(
     badges.appendChild(sc);
     bodyEl.appendChild(badges);
 
-    if (c.bio) {
+    if (c.bio_html) {
+      // bio_html is sanitized server-side via marked + DOMPurify (lib/portraits/markdown.ts).
+      // Parse into nodes rather than assign as a string to keep this safe-by-default.
+      const bio = document.createElement("div");
+      bio.className = "slideover-bio";
+      const parsed = new DOMParser().parseFromString(c.bio_html, "text/html");
+      bio.append(...Array.from(parsed.body.childNodes));
+      bodyEl.appendChild(bio);
+    } else if (c.bio) {
       const bio = document.createElement("p");
       bio.className = "slideover-bio";
       bio.textContent = c.bio;
@@ -405,6 +413,15 @@ Astro.response.headers.set(
   .slideover-badges { display: flex; gap: 0.5rem; align-items: center; }
   .slideover-tier-badge { font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: #d4a89a; border: 1px solid #d4a89a; padding: 0.1rem 0.4rem; border-radius: 2px; }
   .slideover-bio { color: #bdb8ac; line-height: 1.55; margin: 0.5rem 0 0; }
+  .slideover-bio p { margin: 0 0 0.6rem 0; }
+  .slideover-bio p:last-child { margin-bottom: 0; }
+  .slideover-bio a { color: #d8c89c; border-bottom: 1px dotted #5a4a2a; text-decoration: none; }
+  .slideover-bio a:hover { color: #f0d97e; border-bottom-style: solid; }
+  .slideover-bio strong { color: #d8d0bc; }
+  .slideover-bio ul, .slideover-bio ol { margin: 0.4rem 0 0.6rem 1.1rem; padding: 0; }
+  .slideover-bio li { margin: 0.15rem 0; }
+  .slideover-bio blockquote { margin: 0.4rem 0; padding: 0.2rem 0 0.2rem 0.7rem; border-left: 2px solid #3a3a3a; color: #9a968c; font-style: italic; }
+  .slideover-bio code { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 0.85em; background: #1a1a1a; padding: 0.05rem 0.25rem; border-radius: 2px; }
   .slideover-h3 { font-family: "Inter Tight", sans-serif; font-weight: 500; font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase; color: #9a968c; margin: 0.75rem 0 0.35rem; }
   .slideover-channels { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.9rem; }
   .slideover-channels li { display: flex; gap: 0.75rem; align-items: baseline; }
