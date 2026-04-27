@@ -57,7 +57,8 @@ const { size = 320 } = Astro.props;
     inset: 0;
     pointer-events: none;
   }
-  .frame-gold {
-    filter: drop-shadow(0 0 8px rgba(231, 199, 107, 0.25));
-  }
+  /* Glow is provided by the parent `.tier-S .portrait-frame::before`
+     pseudo-element via box-shadow; previously a `filter: drop-shadow`
+     here, but filter is a paint-stage effect and stacks with the
+     animated drop-shadow — both repaint per frame on slower hardware. */
 </style>

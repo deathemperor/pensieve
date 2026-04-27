@@ -164,16 +164,40 @@ try {
     letter-spacing: 0.04em;
   }
 
-  /* S-tier candle glow */
-  .tier-S .portrait-frame {
+  /* S-tier candle glow.
+     The previous version animated `filter: drop-shadow(...)` which is a
+     paint-stage effect — every keyframe step re-rasterizes the SVG layer
+     and dominates frame time on lower-end hardware. The implementation
+     below bakes the glow into a static `box-shadow` on a pseudo-element
+     and animates its `opacity` instead. Opacity is a composite-only
+     property, so the heartbeat stays on the GPU and costs ~zero CPU. */
+  .tier-S .portrait-frame::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    box-shadow: 0 0 16px 2px rgba(231, 199, 107, 0.55);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.55;
     animation: candle 5s ease-in-out infinite;
+    will-change: opacity;
   }
   @keyframes candle {
-    0%, 100% { filter: drop-shadow(0 0 10px rgba(231,199,107,0.3)); }
-    50%      { filter: drop-shadow(0 0 14px rgba(231,199,107,0.45)); }
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 1; }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .tier-S .portrait-frame { animation: none; }
+  /* Auto-disable on devices that struggle with continuous animation:
+     - users who asked for reduced motion at the OS level
+     - touch devices (mostly phones/tablets, often thermally constrained)
+     - small viewports (a separate signal in case the touch heuristic misses) */
+  @media (prefers-reduced-motion: reduce),
+         (hover: none) and (pointer: coarse),
+         (max-width: 768px) {
+    .tier-S .portrait-frame::before {
+      animation: none;
+      opacity: 0.7;
+    }
   }
 
   .portrait-card-wrapper { position: relative; }
