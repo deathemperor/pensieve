@@ -77,14 +77,20 @@ export default {
 			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301); // nosemgrep
 		}
 
-		// Nickname alias: /deathemperor (any case) → canonical /Tr\u01B0\u01A1ng.
-		// Same hardcoded-origin pattern as /tr\u01B0\u01A1ng above.
-		if (/^\/deathemperor(\/|$)/i.test(path)) {
-			const tail = path.replace(/^\/deathemperor/i, "");
-			// Hardcoded origin + path-only tail — cannot resolve cross-origin.
-			// nosemgrep
-			return Response.redirect(`https://huuloc.com/Tr\u01B0\u01A1ng${tail}${url.search}`, 301); // nosemgrep
-		}
+		// Profile aliases: /deathemperor and /Truong (ASCII, no diacritics)
+		// serve the SAME content as /Tr\u01B0\u01A1ng without a browser-
+		// visible redirect. The URL bar stays as the visitor typed; the
+		// worker rewrites the inbound request to the canonical Astro route
+		// so /Tr\u01B0\u01A1ng.astro renders. <link rel="canonical"> in
+		// Base.astro tells search engines the real URL, so SEO collapses
+		// the aliases. Folding the rewrite into the cache key below also
+		// means /deathemperor and /Tr\u01B0\u01A1ng share one cache slot per
+		// language — no duplicate origin renders.
+		const aliasMatch = path.match(/^\/(deathemperor|truong)(\/.*)?$/i);
+		const aliasedPath = aliasMatch ? `/Tr\u01B0\u01A1ng${aliasMatch[2] ?? ""}` : path;
+		const downstreamRequest = aliasMatch
+			? new Request(new URL(`${aliasedPath}${url.search}`, url.origin).toString(), request)
+			: request;
 
 		// Everything else → Astro, with edge caching applied per the
 		// Cache-Control header set by setCachePolicy() in page frontmatter.
@@ -92,14 +98,16 @@ export default {
 		// have to drive caches.default ourselves. We fold the resolved
 		// language into the cache key (instead of relying on Vary, which
 		// caches.default ignores) so VI and EN serve from separate slots.
-		if (request.method === "GET" && !path.startsWith("/_emdash") && !path.startsWith("/api/")) {
+		if (request.method === "GET" && !aliasedPath.startsWith("/_emdash") && !aliasedPath.startsWith("/api/")) {
 			const cookie = request.headers.get("cookie") || "";
 			const cookieLang = cookie.match(/(?:^|;\s*)pref_lang=(vi|en)\b/)?.[1];
 			const accept = (request.headers.get("accept-language") || "").toLowerCase();
 			const acceptLang = accept.startsWith("vi") || accept.includes(",vi") ? "vi" : "en";
 			const lang = cookieLang ?? acceptLang;
 
-			const keyUrl = new URL(request.url);
+			// Cache key is built off the canonical (post-rewrite) URL so
+			// /deathemperor and /Tr\u01B0\u01A1ng share cache entries.
+			const keyUrl = new URL(downstreamRequest.url);
 			keyUrl.searchParams.set("__lang", lang);
 			const cacheKey = new Request(keyUrl.toString(), { method: "GET" });
 
@@ -114,7 +122,7 @@ export default {
 				return hit;
 			}
 
-			const response = await handler.fetch(request, env, ctx);
+			const response = await handler.fetch(downstreamRequest, env, ctx);
 			const cc = response.headers.get("cache-control") ?? "";
 			// Only cache success responses that explicitly opted in via
 			// `public` + a max-age/s-maxage hint. CF refuses to cache
@@ -130,7 +138,7 @@ export default {
 			return response;
 		}
 
-		return handler.fetch(request, env, ctx);
+		return handler.fetch(downstreamRequest, env, ctx);
 	},
 
 	async scheduled(event: ScheduledEvent, env: any, _ctx: ExecutionContext) {
