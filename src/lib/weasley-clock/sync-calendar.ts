@@ -51,7 +51,11 @@ export async function syncCalendar(
 
 		const body = (await res.json()) as { items?: GoogleEvent[]; nextPageToken?: string; nextSyncToken?: string };
 		for (const evt of body.items ?? []) {
-			const row = mapGoogleEvent(evt, { accountId: cal.account_id, calendarId: cal.calendar_id });
+			const row = mapGoogleEvent(evt, {
+				accountId: cal.account_id,
+				calendarId: cal.calendar_id,
+				accessRole: cal.access_role,
+			});
 			// synced_events is also a plugin-storage collection — write via raw D1
 			const now = new Date().toISOString();
 			const json = JSON.stringify(row);
