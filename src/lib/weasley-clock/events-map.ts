@@ -39,9 +39,19 @@ function allDayToUtc(dateStr: string): string {
 	return new Date(utcMidnight - HCMC_OFFSET_MS).toISOString();
 }
 
+// Title placeholders carry meaning the renderer keys on:
+// - "(no title)": user genuinely omitted the summary on a calendar we have
+//   full read access to → safe to hide as noise.
+// - "Busy": Google returned no summary because the calendar is shared at
+//   the freeBusyReader access level (typically org-restricted work
+//   calendars). The slot IS occupied — render as anonymous block so the
+//   viewer can see scheduling conflicts even without the title.
+export const TITLE_PLACEHOLDER_NONE = "(no title)";
+export const TITLE_PLACEHOLDER_BUSY = "Busy";
+
 export function mapGoogleEvent(
 	evt: GoogleEvent,
-	ctx: { accountId: string; calendarId: string },
+	ctx: { accountId: string; calendarId: string; accessRole?: string | null },
 ): SyncedEventRow {
 	const allDay = !!(evt.start.date && !evt.start.dateTime);
 	const starts_at = allDay
@@ -53,13 +63,20 @@ export function mapGoogleEvent(
 
 	const id = `gcal_${ctx.accountId}_${ctx.calendarId}_${evt.id}`.replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 128);
 
+	const trimmed = evt.summary?.trim();
+	const title = trimmed
+		? trimmed
+		: ctx.accessRole === "freeBusyReader"
+			? TITLE_PLACEHOLDER_BUSY
+			: TITLE_PLACEHOLDER_NONE;
+
 	return {
 		id,
 		source_type: "gcal",
 		gcal_account_id: ctx.accountId,
 		gcal_calendar_id: ctx.calendarId,
 		external_uid: evt.id,
-		title: evt.summary?.trim() || "(no title)",
+		title,
 		starts_at,
 		ends_at,
 		all_day: allDay ? 1 : 0,
