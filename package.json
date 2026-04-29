@@ -40,7 +40,7 @@
 	"devDependencies": {
 		"@astrojs/check": "0.9.8",
 		"@cloudflare/workers-types": "4.20260411.1",
-		"@types/node": "22.19.17",
+		"@types/node": "24.12.2",
 		"puppeteer": "23.11.1",
 		"tsx": "4.21.0",
 		"wrangler": "4.81.1"
