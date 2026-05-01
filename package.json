@@ -38,7 +38,7 @@
 		"sanitize-html": "^2.17.3"
 	},
 	"devDependencies": {
-		"@astrojs/check": "0.9.8",
+		"@astrojs/check": "0.9.9",
 		"@cloudflare/workers-types": "4.20260411.1",
 		"@types/node": "22.19.17",
 		"puppeteer": "23.11.1",
