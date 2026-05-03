@@ -1,0 +1,536 @@
+---
+export const prerender = false;
+
+import Base from "../../layouts/Base.astro";
+import { getCurrentLang } from "../../utils/lang";
+import { setCachePolicy } from "../../lib/cachePolicy";
+setCachePolicy(Astro, "static");
+
+const isVi = getCurrentLang(Astro) === "vi";
+
+// ────────────────────────────────────────────────────────────────────
+// Frozen snapshot — Chrome history Takeout export 2026-05-03.
+// Source data + analyzer in takeout/chrome/ (gitignored).
+// To refresh: re-run takeout/chrome/analyze.py and update the constants below.
+// ────────────────────────────────────────────────────────────────────
+
+const SNAPSHOT = {
+	exported: "2026-05-03",
+	rangeStart: "2025-05-04",
+	rangeEnd: "2026-05-03",
+	spanDays: 365,
+	totalHistoryEntries: 83850,
+	articlesAfterFilter: 3977,
+	rareUniqueHosts: 450,
+};
+
+interface Subject {
+	icon: string;
+	keyEn: string;
+	keyVi: string;
+	blurbEn: string;
+	blurbVi: string;
+	count: number;
+	share: number;
+	topHosts: Array<[string, number]>;
+	samples: Array<[string, string]>; // [host, title]
+}
+
+const SUBJECTS: Subject[] = [
+	{
+		icon: "🪄",
+		keyEn: "Software Craft",
+		keyVi: "Thủ Công Phần Mềm",
+		blurbEn: "the artisan's daily reading — frameworks, languages, tooling, libraries",
+		blurbVi: "đọc hàng ngày của người thợ — framework, ngôn ngữ, công cụ, thư viện",
+		count: 873,
+		share: 21.9,
+		topHosts: [
+			["stackoverflow.com", 91],
+			["expo.dev", 87],
+			["apollographql.com", 61],
+			["simonwillison.net", 42],
+			["docs.cloud.google.com", 40],
+		],
+		samples: [
+			["nextjs.org", "Guides: Package Bundling | Next.js"],
+			["vite.dev", "Vite | Next Generation Frontend Tooling"],
+			["lucumr.pocoo.org", "Armin Ronacher — Dependency Crisis"],
+			["jrsinclair.com", "What's the difference between ordinary functions and arrow functions in JavaScript?"],
+			["developer.mozilla.org", "MDN Web Docs reference"],
+			["blog.cloudflare.com", "Orchestrating AI Code Review at scale"],
+		],
+	},
+	{
+		icon: "🇻🇳",
+		keyEn: "Ancient Runes — Vietnam",
+		keyVi: "Cổ Tự — Việt Nam",
+		blurbEn: "Vietnamese voices — VnExpress, Tuổi Trẻ, Thanh Niên, vi.wikipedia",
+		blurbVi: "tiếng nói Việt — VnExpress, Tuổi Trẻ, Thanh Niên, vi.wikipedia",
+		count: 618,
+		share: 15.5,
+		topHosts: [
+			["vnexpress.net", 167],
+			["vi.wikipedia.org", 30],
+			["tuoitre.vn", 28],
+			["thanhnien.vn", 20],
+			["cellphones.com.vn", 17],
+		],
+		samples: [
+			["vnexpress.net", "Góc nhìn — Chia sẻ quan điểm, ý kiến, kinh nghiệm"],
+			["tuoitre.vn", "Shark Bình tham gia rửa tiền trong vụ Mr Pips"],
+			["vi.wikipedia.org", "Loạn 12 sứ quân — Wikipedia tiếng Việt"],
+			["vi.wikipedia.org", "Con ma nhà họ Hứa — Wikipedia tiếng Việt"],
+			["vi.wikipedia.org", "Danh sách Thủ tướng Chính phủ Việt Nam"],
+		],
+	},
+	{
+		icon: "🔮",
+		keyEn: "The AI Frontier",
+		keyVi: "Tiền Tuyến AI",
+		blurbEn: "the model race, the agent stack, the new tools — Gemini posts, Claude docs, the prompt-engineering guide, leaderboards",
+		blurbVi: "cuộc đua model, kho công cụ agent — Gemini, Claude, leaderboard",
+		count: 543,
+		share: 13.7,
+		topHosts: [
+			["blog.google", 103],
+			["ai.google.dev", 100],
+			["ai-sdk.dev", 74],
+			["forum.cursor.com", 26],
+			["lmarena.ai", 22],
+		],
+		samples: [
+			["blog.google", "Gemini 3 Pro: the frontier of vision AI"],
+			["ai-sdk.dev", "AI SDK Core: Generating Structured Data"],
+			["lmarena.ai", "Overview Leaderboard | LMArena"],
+			["browser-use.com", "Browser Use — Enable AI to automate the web"],
+			["mcpmarket.com", "MCP Market — Browse MCP servers"],
+		],
+	},
+	{
+		icon: "💬",
+		keyEn: "Tech Discussion",
+		keyVi: "Thảo Luận Công Nghệ",
+		blurbEn: "Hacker News and selected subreddits — where engineers argue and announce",
+		blurbVi: "Hacker News và các subreddit chọn lọc — nơi kỹ sư tranh luận",
+		count: 334,
+		share: 8.4,
+		topHosts: [
+			["reddit.com", 127],
+			["news.ycombinator.com", 125],
+			["businessinsider.com", 17],
+			["macrumors.com", 12],
+			["ycombinator.com", 11],
+		],
+		samples: [
+			["news.ycombinator.com", "Google flags Immich sites as dangerous | Hacker News"],
+			["stratechery.com", "Google, Nvidia, and OpenAI — Stratechery by Ben Thompson"],
+			["sequoiacap.com", "Partnering with Abby Care: A Caregiving Revolution"],
+			["news.ycombinator.com", "2025-06-04 front | Hacker News"],
+		],
+	},
+	{
+		icon: "📜",
+		keyEn: "Wikipedia & Curiosity",
+		keyVi: "Wikipedia & Tò Mò",
+		blurbEn: "the rabbit holes — Wikipedia, archive.org, fandom — pure intellectual wandering",
+		blurbVi: "hang thỏ — Wikipedia, archive.org, fandom — lang thang trí thức",
+		count: 298,
+		share: 7.5,
+		topHosts: [
+			["en.wikipedia.org", 193],
+			["archive.is", 45],
+			["gameofthrones.fandom.com", 32],
+			["imdb.com", 19],
+			["archive.org", 9],
+		],
+		samples: [
+			["en.wikipedia.org", "Saturday Night Live 50th Anniversary Special — Wikipedia"],
+			["en.wikipedia.org", "List of Michelin-starred restaurants in Vietnam"],
+			["en.wikipedia.org", "Quentin Tarantino — Wikipedia"],
+			["en.wikipedia.org", "Apple Computer, Inc. v. Microsoft Corp."],
+			["en.wikipedia.org", "Honda CRF series — Wikipedia"],
+			["archive.is", "Sam Altman May Control Our Future — The New Yorker"],
+			["archive.is", "Artificial Intelligence Is Not Intelligent — The Atlantic"],
+		],
+	},
+	{
+		icon: "🐠",
+		keyEn: "Care of Magical Creatures",
+		keyVi: "Chăm Sóc Sinh Vật Huyền Bí",
+		blurbEn: "fish-keeping, aquascaping, planted tanks — the recurring spine of the hobby",
+		blurbVi: "nuôi cá, aquascape, hồ thủy sinh — xương sống của sở thích",
+		count: 134,
+		share: 3.4,
+		topHosts: [
+			["thuysinhtim.vn", 22],
+			["shelly.com", 22],
+			["weekaqua.world", 18],
+			["buceplant.com", 13],
+			["wildexoticbettas.com", 13],
+		],
+		samples: [
+			["buceplant.com", "Plant Profile — Flame Moss"],
+			["bwaquatics.com", "Rare Wild Betta Fish | Blackwater Aquatics"],
+			["greenaqua.hu", "Green Aqua Aquascaping Gallery and Store"],
+			["books.google.com.vn", "Nature Aquarium World — Takashi Amano"],
+			["aquasabi.de", "Aquasabi — aquascaping shop"],
+		],
+	},
+	{
+		icon: "🏟️",
+		keyEn: "Quidditch & Sport",
+		keyVi: "Quidditch & Thể Thao",
+		blurbEn: "barely registers in reading — sport is a YouTube/livescore habit, not an article-reading one",
+		blurbVi: "gần như không đọc — thể thao là thói quen YouTube/livescore, không phải đọc bài",
+		count: 14,
+		share: 0.4,
+		topHosts: [
+			["livescore.com", 9],
+			["transfermarkt.com", 1],
+			["bbc.com", 1],
+			["edition.cnn.com", 1],
+		],
+		samples: [
+			["edition.cnn.com", "Mohamed Salah casts Liverpool future in doubt"],
+			["bbc.com", "Fantasy Premier League: What are the new FPL rules for 2025–26?"],
+			["livescore.com", "Football Live Scores & Fixtures | LiveScore"],
+		],
+	},
+];
+
+// 25 long-tail samples — randomly drawn from rare hosts (1–3 visits)
+const WIDER_READING: Array<[string, string]> = [
+	["chosun.com", "G-Drive Fire Destroys 125,000 Officials' Data"],
+	["killedbygoogle.com", "Google Graveyard — Killed by Google"],
+	["addyosmani.com", "AddyOsmani.com — 21 Lessons From 14 Years at Google"],
+	["antirez.com", "Don't fall into the anti-AI hype — antirez"],
+	["jalammar.github.io", "The Illustrated Transformer — Jay Alammar"],
+	["alexschapiro.com", "Alex Schapiro — Security research, ethical hacking, and building stuff"],
+	["0x44.xyz", "How I found a bypass in Google's big anti-adblock update"],
+	["a16z.com", "Why Software Is Eating the World — Andreessen Horowitz"],
+	["hardcoregaming101.net", "Hardcore Gaming 101 — Promoting the culture of video games"],
+	["anderegg.ca", "YouTube is a mysterious monopoly — anderegg.ca"],
+	["annas-archive.org", "An update from the team — Anna's Blog"],
+	["avbrief.com", "United MAX Hit by Falling Object at 36,000 Feet"],
+	["manus.im", "Context Engineering for AI Agents: Lessons from Building Manus"],
+	["json-render.dev", "json-render | The Generative UI Framework"],
+	["security.googleblog.com", "Introducing OSS Rebuild: Open Source, Rebuilt to Last"],
+	["finance.vietstock.vn", "VikkiBank: Vikki Digital Bank Limited"],
+	["deadline.com", "Harry Potter's Dominic McLaughlin Reacts To Daniel Radcliffe Letter"],
+	["alainnicolas.fr", "Sort your dependencies! — Alain Nicolas"],
+	["turboconsolelog.io", "Why Use Turbo Console Log? Motivation & Benefits"],
+	["tritienlaptop.com", "Surface Laptop 3 Core i7 / RAM 16GB / SSD 512GB Like new"],
+	["swiperx.com", "SwipeRx — B2B commerce platform for pharmacies in southeast Asia"],
+	["landing.ai", "LandingAI: Computer Vision Platform"],
+	["aimaker.substack.com", "How I Took Karpathy's LLM Wiki and Built an AI-Powered Second Brain"],
+	["chosun.com", "Korea — top stories"],
+	["cocoapods.org", "CocoaPods Guides — Private Pods"],
+];
+
+const MONTHS: Array<[string, number]> = [
+	["2025-05", 171],
+	["2025-06", 278],
+	["2025-07", 206],
+	["2025-08", 209],
+	["2025-09", 374],
+	["2025-10", 370],
+	["2025-11", 579],
+	["2025-12", 673],
+	["2026-01", 452],
+	["2026-02", 159],
+	["2026-03", 220],
+	["2026-04", 264],
+	["2026-05", 30],
+];
+const MAX_MONTH = Math.max(...MONTHS.map(([, n]) => n));
+
+const t = {
+	pageTitle: isVi ? "Cú Đường — Một Năm Đọc" : "The Owlery — A Year of Reading",
+	pageDesc: isVi
+		? "Một năm bài viết Trương Hữu Lộc thật sự đã đọc trên Chrome — phân tích bằng chủ đề Hogwarts."
+		: "A year of articles Trương Hữu Lộc actually read on Chrome — read through a Hogwarts lens.",
+	dumbledore: isVi
+		? '"Lời nói, theo ý kiến không hề khiêm tốn của tôi, là nguồn ma thuật vô tận nhất của chúng ta." — Albus Dumbledore'
+		: '"Words are, in my not-so-humble opinion, our most inexhaustible source of magic." — Albus Dumbledore',
+	intro: isVi
+		? "Cú phượng hoàng bay khắp thế giới giao thư; đây là một năm thư mà người xem thật sự đã mở. Google Takeout trả về"
+		: "Owls fly across the world to deliver post; this is a year of post the watcher actually opened. Google Takeout returned",
+	intro2: isVi
+		? "lượt mục lịch sử Chrome cho khoảng thời gian"
+		: "Chrome history entries for the window",
+	intro3: isVi
+		? "Sau khi loại các trang quản trị công việc, đăng nhập, dashboard, mạng xã hội, và lượt xem lại,"
+		: "After dropping work consoles, dashboards, login flows, social feeds, and revisit echoes,",
+	intro4: isVi
+		? "bài viết còn lại — phần đọc thật sự."
+		: "articles remain — the actual reading.",
+	honest: isVi
+		? "Đây là câu trả lời trung thực cho câu hỏi \"Lộc đọc gì\": không phải khảo sát đa lĩnh vực mọi châu lục, mà là những vết cắt sâu của một thợ thủ công vào phần mềm, AI, nuôi cá, tin Việt Nam — với một đuôi dài tò mò thật sự đi khắp thế giới."
+		: "This is the honest answer to \"what does Loc read\": not a polymath survey of every continent, but a craftsman's deep cuts in software, AI, fish-keeping, and Vietnamese news, with a long tail of curiosities that *do* range across the world.",
+
+	s1: isVi ? "I. Các Môn Học Trong Cú Đường" : "I. The Subjects of the Owlery",
+	s1Sub: isVi ? '"Có bảy môn học mà mọi phù thủy phải học."' : '"There are seven subjects every wizard must take."',
+	s1Body: isVi
+		? "Mỗi bài viết được phân theo tên miền trước (~85% corpus), rồi đến dấu tiếng Việt, rồi từ khóa tiêu đề. Phần còn lại là đuôi dài — xem Phần III."
+		: "Each article was sorted by hostname first (~85% of the corpus), then Vietnamese diacritics, then title keywords. The rest is the long tail — see Section III.",
+	colSubject: isVi ? "Môn học" : "Subject",
+	colCovers: isVi ? "Bao gồm" : "What it covers",
+	colArticles: isVi ? "Bài" : "Articles",
+	colShare: isVi ? "Tỷ lệ" : "Share",
+	wider: isVi ? "Đọc Rộng" : "Wider Reading",
+	widerBlurb: isVi ? "đuôi dài — bài từ các host chỉ-một-lần" : "the long tail — articles from one-off hosts",
+
+	s2: isVi ? "II. Bên Trong Mỗi Môn — Mẫu Đại Diện" : "II. Inside Each Subject — A Sampling",
+	s2Sub: isVi ? "Mẫu tiêu đề đại diện mỗi môn." : "Representative titles per subject.",
+	topOutlets: isVi ? "Outlets được vào nhiều nhất:" : "Most-visited outlets:",
+
+	s3: isVi ? "III. Đọc Rộng — Phần Đuôi Dài" : "III. Wider Reading — The Long Tail",
+	s3Sub: isVi
+		? '*Bài viết từ các host vào 1–3 lần — nơi "từ khắp nơi" thật sự ở.*'
+		: '*Articles from hosts visited 1–3 times — where "from everywhere" actually lives.*',
+	s3Body: isVi
+		? `Sau khi mọi tài liệu dev và tin Việt Nam và diễn đàn cá đã được tính, **${(SNAPSHOT.articlesAfterFilter - SUBJECTS.reduce((s, x) => s + x.count, 0)).toLocaleString()} bài** ở đuôi dài — host người xem chỉ vào một hoặc hai lần, rải khắp bề rộng thật của web. Hai mươi lăm mẫu host hiếm:`
+		: `After all the dev docs and Vietnamese news and aquarium forums are accounted for, **${(SNAPSHOT.articlesAfterFilter - SUBJECTS.reduce((s, x) => s + x.count, 0)).toLocaleString()} articles** sit in the long tail — hosts the watcher visited only once or twice, scattered across the genuine breadth of the web. Twenty-five rare-host samples:`,
+
+	s4: isVi ? "IV. Năm — Theo Tháng" : "IV. The Year, Month by Month",
+	s4Sub: isVi ? '"Đọc lên xuống như mặt trăng."' : '"Reading rises and falls like the moon."',
+	s4Articles: isVi ? "bài" : "articles",
+
+	s5: isVi ? "V. Lời Nón Phân Loại" : "V. The Sorting Hat — What This Reading Reveals",
+	s5p1: isVi
+		? "Đây là một năm **đọc sâu, hẹp, khoác thêm sự tò mò thi thoảng**. Môn lớn nhất — **Thủ Công Phần Mềm ở 22%** — là nghề hằng ngày của kỹ sư: tài liệu, changelog framework, câu trả lời edge-case trên Stack Overflow. Lớp tiếp theo là **Tiền Tuyến AI** — mỗi thông báo Gemini, mỗi tài liệu Claude SDK, mỗi lần kiểm tra leaderboard trên lmarena. Người xem đang theo kịp một lĩnh vực chuyển động nhanh, không phải khảo sát từ bên ngoài."
+		: "This is a year of **deep, narrow reading dressed in occasional curiosity**. The largest subject — **Software Craft at 22%** — is the engineer's daily craft: documentation, framework changelogs, edge-case answers on Stack Overflow. The next layer is the **AI frontier** — every Gemini announcement, every Claude SDK doc, every leaderboard check on lmarena. The watcher is keeping pace with a fast-moving field, not surveying it from outside.",
+	s5p2: isVi
+		? "Bên dưới phần lõi dev/AI, việc đọc mỏng dần thành các lòng trung thành đã biết: **tin Việt Nam** (16% — VnExpress, Tuổi Trẻ, Thanh Niên), **diễn đàn và shop nuôi cá** (3%), và **hang thỏ Wikipedia luôn-bật** (8%) — nơi thế giới rộng hơn thật sự lóe lên."
+		: "Beneath the dev/AI core, the reading thins into known loyalties: **Vietnamese news** (16% — VnExpress, Tuổi Trẻ, Thanh Niên), **fish-keeping forums and shops** (3%), and the always-on **Wikipedia rabbit hole** (8%) where the wider world actually peeks through.",
+	s5p3: isVi
+		? "**Các tab Wikipedia**, đặc biệt, là phần \"từ khắp nơi\" trung thực nhất: trong cùng một năm người xem mở các bài về *\"77th Primetime Emmy Awards\"*, *\"Economy of Vietnam\"*, *\"The Odyssey (2026 film)\"*, *\"Apple Computer, Inc. v. Microsoft Corp.\"*, *\"Honda CRF series\"*, cộng với các mục tiếng Việt về *\"Loạn 12 sứ quân\"*, *\"Con ma nhà họ Hứa\"*, *\"Harry Potter và Hoàng tử lai\"*. Điện ảnh, bóng đá, thần thoại Bắc Âu, lịch sử-và-folklore Việt Nam — tất cả từ một vòng xoáy tab nửa đêm, không có cái nào cho công việc."
+		: "**The Wikipedia tabs**, in particular, are the truest \"from everywhere\": in the same year the watcher visited articles for *\"77th Primetime Emmy Awards\"*, *\"Economy of Vietnam\"*, *\"The Odyssey (2026 film)\"*, *\"Apple Computer, Inc. v. Microsoft Corp.\"*, *\"Honda CRF series\"*, plus Vietnamese-language entries on *\"Loạn 12 sứ quân\"*, *\"Con ma nhà họ Hứa\"*, *\"Harry Potter và Hoàng tử lai\"*. Cinema and football and Norse mythology and Vietnamese history-and-folklore — all from one midnight tab-spree, none of it for work.",
+	s5p4: isVi
+		? `Sự thật trung thực trong dữ liệu: **"tôi đọc bài từ khắp nơi"** không hẳn đúng *theo khối lượng*. Phần lớn là nghề. Nhưng bề rộng LÀ thật — **${SNAPSHOT.rareUniqueHosts} host hiếm khác biệt** ở đuôi dài, mỗi host vào một hoặc hai lần, rải khắp bề rộng thật của web. Bề rộng sống ở các góc, không phải ở khối lượng.`
+		: `The honest truth in the data: **"I read articles from everywhere"** isn't quite right *by volume*. The bulk is craft. But the breadth IS real — **${SNAPSHOT.rareUniqueHosts} distinct rare hosts** in the long tail, each visited once or twice, scattered across the genuine width of the web. The breadth lives in the corners, not the volume.`,
+	s5p5: isVi
+		? "Nếu Nón Phân Loại phải nói: **Ravenclaw với một kệ sở thích Hufflepuff**. Một thợ thủ công trước — framework, paper AI, Stack Overflow lúc 3 giờ chiều — nhưng một kẻ lang thang lúc nửa đêm, mở các tab Wikipedia về các hãng phim đã tuyệt chủng và các vị thần Bắc Âu và các sứ quân Việt Nam thế kỷ 10 cho đến khi laptop tự đóng."
+		: "If the Sorting Hat had to say: **Ravenclaw with a Hufflepuff hobby shelf**. A craftsman first — frameworks, AI papers, Stack Overflow at 3 PM — but a wanderer at midnight, opening Wikipedia tabs about extinct film studios and Norse gods and 10th-century Vietnamese warlords until the laptop closes itself.",
+
+	s6: isVi ? "VI. Những Gì Không Thể Cho Thấy" : "VI. What This Cannot Show",
+	s6Sub: isVi ? '"Tưởng ký có giới hạn. Ký ức không phải sự thật."' : '"The Pensieve has limits. Memory is not the same as truth."',
+	caveats: isVi
+		? [
+			["Khoảng thời gian.", `Takeout chỉ trả về ${SNAPSHOT.spanDays} ngày — bất cứ điều gì trước ${SNAPSHOT.rangeStart} đều vô hình.`],
+			["Độ sâu đọc.", "Một tiêu đề có thể là đóng tab 3 giây hoặc đọc sâu 30 phút. Chrome không ghi thời gian dừng."],
+			["Thiết bị khác.", "Bài đọc trên điện thoại hoặc tablet (không sync) không xuất hiện."],
+			["Ẩn danh.", "Bất cứ thứ gì mở trong chế độ ẩn danh đều vô hình."],
+			["URL công việc lọt qua.", `Bộ lọc đã loại 79.873 trên ${SNAPSHOT.totalHistoryEntries.toLocaleString()} mục — nhưng vài trang Papaya/Cassava/nội bộ có thể còn nếu chúng có tiêu đề kiểu bài viết.`],
+			["Định kiến tiêu đề.", "Phân loại đọc tiêu đề trang, không đọc nội dung bài. Một bài về dân số học Hàn Quốc trên businessinsider.com có thể bị xếp vào \"Thảo Luận Công Nghệ\" chỉ vì tên miền."],
+		]
+		: [
+			["Time horizon.", `Takeout returned only ${SNAPSHOT.spanDays} days — anything before ${SNAPSHOT.rangeStart} is invisible.`],
+			["Reading depth.", "A title in this list could mean a 3-second tab close or a 30-minute deep read. Chrome history doesn't record dwell."],
+			["Other devices.", "Articles read on phone or tablet (without sync) don't appear here."],
+			["Incognito.", "Anything opened in private mode is invisible."],
+			["Work URLs leaked through.", `The filter dropped 79,873 of ${SNAPSHOT.totalHistoryEntries.toLocaleString()} entries — but a few Papaya/Cassava/internal pages may still be in the candidate set if they had article-style titles.`],
+			["Title bias.", "Classification reads page titles, not article body. An article about Korean demographics on businessinsider.com might cluster under \"Tech Discussion\" simply because of the host."],
+		],
+	footnote: isVi
+		? `Tạo từ Google Takeout xuất ngày ${SNAPSHOT.exported}. Dữ liệu nguồn được giữ riêng tư.`
+		: `Generated from Google Takeout export of ${SNAPSHOT.exported}. Source data is kept private.`,
+};
+
+const formatDate = (iso: string) => {
+	const d = new Date(iso);
+	return isVi
+		? `${d.getDate()} tháng ${d.getMonth() + 1}, ${d.getFullYear()}`
+		: d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+};
+
+const widerCount = SNAPSHOT.articlesAfterFilter - SUBJECTS.reduce((s, x) => s + x.count, 0);
+---
+
+<Base
+	title={t.pageTitle}
+	description={t.pageDesc}
+	breadcrumbs={[
+		{ label: isVi ? "Phòng Cần Thiết" : "Room of Requirement", href: "/room-of-requirement" },
+		{ label: t.pageTitle },
+	]}
+>
+	<article class="ow">
+		<header class="ow-hdr">
+			<h1 class="ow-title">{t.pageTitle}</h1>
+			<p class="ow-sub">{t.pageDesc}</p>
+			<blockquote class="ow-quote">{t.dumbledore}</blockquote>
+			<p class="ow-intro">
+				{t.intro} <strong>{SNAPSHOT.totalHistoryEntries.toLocaleString()}</strong> {t.intro2}
+				<strong>{formatDate(SNAPSHOT.rangeStart)} → {formatDate(SNAPSHOT.rangeEnd)}</strong> ({SNAPSHOT.spanDays} {isVi ? "ngày" : "days"}).
+				{t.intro3} <strong>{SNAPSHOT.articlesAfterFilter.toLocaleString()}</strong> {t.intro4}
+			</p>
+			<p class="ow-honest">{t.honest}</p>
+		</header>
+
+		<section class="ow-sec">
+			<h2 class="ow-h2">{t.s1}</h2>
+			<p class="ow-em">{t.s1Sub}</p>
+			<p class="ow-body">{t.s1Body}</p>
+			<div class="ow-table-wrap">
+				<table class="ow-table">
+					<thead>
+						<tr><th>{t.colSubject}</th><th>{t.colCovers}</th><th class="num">{t.colArticles}</th><th class="num">{t.colShare}</th></tr>
+					</thead>
+					<tbody>
+						{SUBJECTS.map((s) => (
+							<tr>
+								<td class="subj"><span class="ow-icon">{s.icon}</span> <strong>{isVi ? s.keyVi : s.keyEn}</strong></td>
+								<td class="ow-blurb">{isVi ? s.blurbVi : s.blurbEn}</td>
+								<td class="num">{s.count.toLocaleString()}</td>
+								<td class="num">{s.share.toFixed(1)}%</td>
+							</tr>
+						))}
+						<tr class="ow-rest">
+							<td class="subj"><span class="ow-icon">❓</span> {t.wider}</td>
+							<td class="ow-blurb">{t.widerBlurb}</td>
+							<td class="num">{widerCount.toLocaleString()}</td>
+							<td class="num">{(widerCount / SNAPSHOT.articlesAfterFilter * 100).toFixed(1)}%</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
+
+		<section class="ow-sec">
+			<h2 class="ow-h2">{t.s2}</h2>
+			<p class="ow-em">{t.s2Sub}</p>
+			{SUBJECTS.map((s) => (
+				<div class="ow-subject">
+					<h3 class="ow-h3">
+						<span class="ow-icon">{s.icon}</span> {isVi ? s.keyVi : s.keyEn}
+					</h3>
+					<p class="ow-blurb">{isVi ? s.blurbVi : s.blurbEn}</p>
+					<p class="ow-meta">
+						<strong>{t.topOutlets}</strong>{" "}
+						{s.topHosts.map(([h, n], i) => (
+							<>{i > 0 && " · "}<span class="ow-host">{h}</span> ({n})</>
+						))}
+					</p>
+					<ul class="ow-samples">
+						{s.samples.map(([h, title]) => (
+							<li><span class="ow-host">[{h}]</span> {title}</li>
+						))}
+					</ul>
+				</div>
+			))}
+		</section>
+
+		<section class="ow-sec">
+			<h2 class="ow-h2">{t.s3}</h2>
+			<p class="ow-em" set:html={t.s3Sub.replace(/\*([^*]+)\*/g, "<em>$1</em>")} />
+			<p class="ow-body" set:html={t.s3Body} />
+			<ul class="ow-samples ow-wider">
+				{WIDER_READING.map(([h, title]) => (
+					<li><span class="ow-host">[{h}]</span> {title}</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="ow-sec">
+			<h2 class="ow-h2">{t.s4}</h2>
+			<p class="ow-em">{t.s4Sub}</p>
+			<div class="ow-month-grid">
+				{MONTHS.map(([mo, n]) => (
+					<div class="ow-month">
+						<div class="ow-month-bar-wrap">
+							<div class="ow-month-bar" style={`width: ${(n / MAX_MONTH * 100).toFixed(1)}%`}></div>
+						</div>
+						<div class="ow-month-meta">
+							<span class="ow-month-label">{mo}</span>
+							<span class="ow-month-count">{n.toLocaleString()} {t.s4Articles}</span>
+						</div>
+					</div>
+				))}
+			</div>
+		</section>
+
+		<section class="ow-sec ow-hat">
+			<h2 class="ow-h2">{t.s5}</h2>
+			<p class="ow-body" set:html={t.s5p1} />
+			<p class="ow-body" set:html={t.s5p2} />
+			<p class="ow-body" set:html={t.s5p3} />
+			<p class="ow-body" set:html={t.s5p4} />
+			<p class="ow-body ow-coda" set:html={t.s5p5} />
+		</section>
+
+		<section class="ow-sec">
+			<h2 class="ow-h2">{t.s6}</h2>
+			<p class="ow-em">{t.s6Sub}</p>
+			<ul class="ow-caveats">
+				{t.caveats.map(([term, body]) => (
+					<li><strong>{term}</strong> {body}</li>
+				))}
+			</ul>
+		</section>
+
+		<footer class="ow-foot">
+			<p>{t.footnote}</p>
+		</footer>
+	</article>
+</Base>
+
+<style>
+	.ow { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-12) var(--spacing-8) var(--spacing-16); }
+	.ow-hdr { margin-bottom: var(--spacing-12); }
+	.ow-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: var(--font-weight-display); letter-spacing: -0.02em; color: var(--color-text); margin: 0 0 var(--spacing-3); }
+	.ow-sub { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-muted); font-style: italic; margin: 0 0 var(--spacing-5); max-width: 60ch; }
+	.ow-quote { font-family: var(--font-sans); font-style: italic; color: var(--color-text-secondary); border-left: 2px solid var(--color-border); padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-4); margin: 0 0 var(--spacing-5); max-width: 70ch; }
+	.ow-intro { font-family: var(--font-sans); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-3); max-width: 70ch; }
+	.ow-honest { font-family: var(--font-sans); color: var(--color-text-secondary); font-style: italic; line-height: var(--leading-relaxed); margin: 0; max-width: 70ch; }
+
+	.ow-sec { margin-top: var(--spacing-14); }
+	.ow-h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.8rem); font-weight: var(--font-weight-display); color: var(--color-text); margin: 0 0 var(--spacing-2); letter-spacing: -0.01em; }
+	.ow-h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: var(--color-text); margin: 0 0 var(--spacing-2); }
+	.ow-em { font-family: var(--font-sans); font-size: var(--font-size-sm); font-style: italic; color: var(--color-text-secondary); margin: 0 0 var(--spacing-4); }
+	.ow-body { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-4); max-width: 70ch; }
+	.ow-blurb { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0 0 var(--spacing-3); }
+	.ow-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0 0 var(--spacing-3); line-height: var(--leading-relaxed); }
+	.ow-host { color: var(--color-text-secondary); }
+	.ow-icon { display: inline-block; margin-right: 0.3em; }
+
+	.ow-table-wrap { overflow-x: auto; margin: var(--spacing-4) 0 var(--spacing-3); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface-elevated); }
+	.ow-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--font-size-sm); }
+	.ow-table thead th { text-align: left; padding: var(--spacing-3) var(--spacing-4); font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+	.ow-table tbody td { padding: var(--spacing-2) var(--spacing-4); color: var(--color-text); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+	.ow-table tbody tr:last-child td { border-bottom: 0; }
+	.ow-table .num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+	.ow-table .subj { white-space: nowrap; }
+	.ow-table .ow-rest td { color: var(--color-muted); font-style: italic; }
+
+	.ow-subject { margin-bottom: var(--spacing-7); padding-bottom: var(--spacing-5); border-bottom: 1px dashed var(--color-border); }
+	.ow-subject:last-child { border-bottom: 0; }
+
+	.ow-samples { list-style: none; padding: 0; margin: 0 0 var(--spacing-3); display: flex; flex-direction: column; gap: var(--spacing-2); }
+	.ow-samples li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--leading-relaxed); padding-left: var(--spacing-3); }
+	.ow-samples .ow-host { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); }
+
+	.ow-wider li { padding: var(--spacing-1) var(--spacing-3); }
+
+	.ow-month-grid { display: flex; flex-direction: column; gap: var(--spacing-2); margin: var(--spacing-4) 0; }
+	.ow-month { display: grid; grid-template-columns: 1fr auto; gap: var(--spacing-3); align-items: center; }
+	.ow-month-bar-wrap { height: 18px; background: var(--color-surface); border-radius: 2px; overflow: hidden; }
+	.ow-month-bar { height: 100%; background: var(--color-text-secondary); opacity: 0.6; }
+	.ow-month-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); display: flex; gap: var(--spacing-3); align-items: baseline; }
+	.ow-month-label { font-weight: 500; color: var(--color-text); }
+	.ow-month-count { font-variant-numeric: tabular-nums; }
+
+	.ow-hat .ow-coda { margin-top: var(--spacing-4); padding-top: var(--spacing-4); border-top: 1px solid var(--color-border); font-style: italic; color: var(--color-text-secondary); }
+
+	.ow-caveats { list-style: none; padding: 0; margin: var(--spacing-4) 0 0; display: flex; flex-direction: column; gap: var(--spacing-3); }
+	.ow-caveats li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--leading-relaxed); padding-left: var(--spacing-4); border-left: 2px solid var(--color-border); max-width: 75ch; }
+	.ow-caveats li strong { color: var(--color-text); margin-right: 0.4em; }
+
+	.ow-foot { margin-top: var(--spacing-12); padding-top: var(--spacing-5); border-top: 1px solid var(--color-border); }
+	.ow-foot p { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0; }
+
+	@media (max-width: 700px) {
+		.ow { padding: var(--spacing-8) var(--spacing-5) var(--spacing-12); }
+	}
+</style>

@@ -1396,6 +1396,138 @@ function formatGHDate(iso: string) {
 		</div>
 	</section>
 
+	<section id="owlery-wrapped" class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading" data-rune="ᚺ">
+				{isVi ? "Cú Đường — Một Năm Đọc" : "The Owlery — A Year of Reading"}
+				<a href="#owlery-wrapped" class="anchor-link" aria-label="Link to Owlery">#</a>
+			</h2>
+			<p class="section-desc">
+				{isVi
+					? "Cú phượng hoàng bay khắp thế giới giao thư. Đây là một năm thư tôi thật sự đã mở. Google Takeout trả về 365 ngày lịch sử Chrome — sau khi loại các trang quản trị, đăng nhập, dashboard, mạng xã hội và lượt xem lại, 3.977 bài viết còn lại. Đây là sự thật trung thực về tôi đọc gì: không phải khảo sát mọi châu lục, mà là vết cắt sâu của thợ thủ công vào phần mềm và AI, cộng với một đuôi dài tò mò THẬT SỰ đi khắp thế giới."
+					: "Owls fly across the world to deliver post. This is a year of post I actually opened. Google Takeout returned 365 days of Chrome history — after dropping work consoles, logins, dashboards, social feeds and revisit echoes, 3,977 articles remain. This is the honest answer to what I read: not a polymath survey of every continent, but a craftsman's deep cuts in software and AI, plus a long tail of curiosities that *do* range across the world."}
+			</p>
+
+			<div class="wrapped-grid">
+				{/* HERO */}
+				<article class="wrap-card wrap-hero">
+					<div class="wrap-stat">3,977</div>
+					<div class="wrap-label">
+						{isVi ? "Bài viết · 365 ngày · ~11/ngày" : "Articles · 365 days · ~11/day"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "83.850 lượt mục lịch sử Chrome xuất ra. Sau bộ lọc khắc nghiệt — bỏ tab công việc, dashboard, đăng nhập, mạng xã hội — gần 4.000 bài viết thật sự được đọc còn lại. Khoảng mười một bài mỗi ngày, đa phần lúc 11 giờ tối hoặc 3 giờ chiều."
+							: "83,850 raw Chrome history entries exported. After ruthless filtering — work tabs, dashboards, logins, social feeds all dropped — nearly 4,000 actually-read articles remain. About eleven a day, mostly at 11 PM or 3 PM."}
+					</p>
+				</article>
+
+				{/* SUBJECTS — wide fingerprint */}
+				<article class="wrap-card wrap-wide wrap-fingerprint">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Các Môn Học Trong Cú Đường" : "Subjects of the Owlery"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Mỗi bài viết phân theo tên miền và từ khóa tiêu đề. Phần mềm và AI chiếm ngôi — phần đọc là phần kéo dài của ngày làm việc, không phải nghỉ ngơi từ nó."
+							: "Each article sorted by hostname and title keywords. Software and AI dominate — reading is an extension of the workday, not a respite from it."}
+					</p>
+					<ul class="wrap-list owlery-subjects">
+						<li><span class="wrap-list-score">21.9%</span> 🪄 {isVi ? "Thủ Công Phần Mềm — frameworks, Stack Overflow, simonwillison" : "Software Craft — frameworks, Stack Overflow, simonwillison"}</li>
+						<li><span class="wrap-list-score">15.5%</span> 🇻🇳 {isVi ? "Cổ Tự — VnExpress, Tuổi Trẻ, vi.wikipedia" : "Ancient Runes — VnExpress, Tuổi Trẻ, vi.wikipedia"}</li>
+						<li><span class="wrap-list-score">13.7%</span> 🔮 {isVi ? "Tiền Tuyến AI — blog Google, Claude docs, lmarena" : "AI Frontier — Google blog, Claude docs, lmarena"}</li>
+						<li><span class="wrap-list-score">8.4%</span> 💬 {isVi ? "Thảo Luận Công Nghệ — Hacker News, Reddit, Stratechery" : "Tech Discussion — Hacker News, Reddit, Stratechery"}</li>
+						<li><span class="wrap-list-score">7.5%</span> 📜 {isVi ? "Wikipedia & Tò Mò — hang thỏ thật sự sống ở đây" : "Wikipedia & Curiosity — the rabbit hole actually lives here"}</li>
+						<li><span class="wrap-list-score">3.4%</span> 🐠 {isVi ? "Chăm Sóc Sinh Vật — diễn đàn cá, shop thủy sinh" : "Care of Magical Creatures — fish forums, aquascape shops"}</li>
+						<li><span class="wrap-list-score">29.3%</span> ❓ {isVi ? "Đọc Rộng — đuôi dài 450 host hiếm" : "Wider Reading — long tail of 450 rare hosts"}</li>
+					</ul>
+				</article>
+
+				{/* CRAFTSMAN — top reading is dev work */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">44%</div>
+					<div class="wrap-label">
+						{isVi ? "Đọc Là Phần Kéo Dài Của Nghề" : "Reading Is an Extension of Craft"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Phần mềm (22%) + AI (14%) + thảo luận công nghệ (8%) = 44% việc đọc. Tôi đang theo kịp một lĩnh vực chuyển động nhanh, không khảo sát từ ngoài. Stack Overflow, blog Google AI, simonwillison.net — đây là tủ thuốc hằng ngày."
+							: "Software (22%) + AI (14%) + tech discussion (8%) = 44% of reading. I'm keeping pace with a fast-moving field, not surveying it from outside. Stack Overflow, Google AI blog, simonwillison.net — these are the daily medicine cabinet."}
+					</p>
+				</article>
+
+				{/* WIKIPEDIA — the real "from everywhere" */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Hang Thỏ Wikipedia — Sự Tò Mò Thật Sự" : "The Wikipedia Rabbit Hole — Real Curiosity"}
+					</div>
+					<div class="wrap-sentimental">
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Loạn 12 sứ quân</span>
+							<span class="wrap-senti-meta">{isVi ? "lịch sử Việt Nam thế kỷ 10" : "10th-century Vietnamese warlord period"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Apple Computer, Inc. v. Microsoft Corp.</span>
+							<span class="wrap-senti-meta">{isVi ? "vụ kiện UI 1988" : "the 1988 look-and-feel UI lawsuit"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Honda CRF series · Heimdall</span>
+							<span class="wrap-senti-meta">{isVi ? "xe trail · thần Bắc Âu — cùng đêm" : "trail bikes · Norse god — same night"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">List of Michelin-starred restaurants in Vietnam</span>
+							<span class="wrap-senti-meta">{isVi ? "khía cạnh ẩm thực" : "the food angle"}</span>
+						</div>
+					</div>
+				</article>
+
+				{/* MOST DISTANT — the single furthest article */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">450</div>
+					<div class="wrap-label">
+						{isVi ? "Host Hiếm Trong Đuôi Dài" : "Rare Hosts in the Long Tail"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Bốn trăm năm mươi tên miền vào một hoặc hai lần — mới thấy bề rộng thật sự. Bài cá biệt nhất: \"G-Drive Fire Destroys 125,000 Officials' Data\" trên chosun.com — báo Hàn Quốc. Nhỏ, lệch, đáng đọc."
+							: "Four hundred and fifty domains visited once or twice — that's the actual breadth. Single most distant: \"G-Drive Fire Destroys 125,000 Officials' Data\" on chosun.com — a Korean newspaper. Small, sideways, worth reading."}
+					</p>
+				</article>
+
+				{/* MONTH ARC */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">673 → 30</div>
+					<div class="wrap-label">
+						{isVi ? "Năm Theo Tháng" : "The Year, Month by Month"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Đọc nhiều nhất tháng 12 (673 bài) — mùa lập kế hoạch năm mới và nghỉ lễ. Thấp nhất tháng 2 (159) — sau Tết, công việc gọi. Tháng 5 (30) chỉ có 3 ngày dữ liệu."
+							: "Peak in December (673 articles) — year-end planning and holidays. Trough in February (159) — post-Tết, work calls. May (30) is only 3 days of data."}
+					</p>
+				</article>
+
+				{/* SORTING HAT */}
+				<article class="wrap-card wrap-wide">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Lời Nón Phân Loại" : "What the Sorting Hat Says"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Sự thật trung thực: \"tôi đọc bài từ khắp nơi\" không hẳn đúng theo khối lượng. Phần lớn là nghề. Nhưng bề rộng LÀ thật — 450 host hiếm trong đuôi dài. Bề rộng sống ở các góc, không phải khối lượng. Ravenclaw với một kệ sở thích Hufflepuff — thợ thủ công trước (framework, paper AI, Stack Overflow lúc 3 giờ chiều), kẻ lang thang sau (Wikipedia về sứ quân Việt Nam thế kỷ 10 lúc nửa đêm). Đó là toàn bộ cái phép thuật."
+							: "The honest truth: \"I read articles from everywhere\" isn't quite right by volume. The bulk is craft. But the breadth IS real — 450 rare hosts in the long tail. The breadth lives in the corners, not the volume. Ravenclaw with a Hufflepuff hobby shelf — a craftsman first (frameworks, AI papers, Stack Overflow at 3 PM), a wanderer second (Wikipedia about 10th-century Vietnamese warlords at midnight). That's the whole magic."}
+					</p>
+				</article>
+			</div>
+
+			<p class="vial-footer">
+				<a href="/room-of-requirement/owlery-of-articles">
+					{isVi ? "Đọc bản phân tích đầy đủ — mỗi môn, mọi mẫu, đuôi dài 25 host →" : "Read the full analysis — every subject, all samples, 25 long-tail hosts →"}
+				</a>
+			</p>
+		</div>
+	</section>
+
 	<section id="life-in-dates" class="about-section">
 		<div class="about-inner">
 			<a class="life-tile" href="/pensieve/chronicle">
