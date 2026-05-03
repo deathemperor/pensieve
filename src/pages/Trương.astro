@@ -1250,6 +1250,152 @@ function formatGHDate(iso: string) {
 		</div>
 	</section>
 
+	<section id="views-wrapped" class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading" data-rune="ᛞ">
+				{isVi ? "Tưởng Ký Của Những Cái Nhìn — Wrapped" : "The Pensieve of Views — Wrapped"}
+				<a href="#views-wrapped" class="anchor-link" aria-label="Link to Views Wrapped">#</a>
+			</h2>
+			<p class="section-desc">
+				{isVi
+					? "Nếu IMDb là dãy lọ tôi cố tình chấm điểm thì YouTube là dãy lọ chảy về bằng tự động phát. Google Takeout đưa lại 169 ngày · 10.169 lượt xem (16/11/2025 → 3/5/2026 — Google đã giới hạn cửa sổ ở khoảng sáu tháng). Đây không phải sự thật trọn vẹn về tôi — đây là cái mà cuộn vô tận để lại."
+					: "If IMDb is the shelf of vials I deliberately score, YouTube is the shelf that fills itself by autoplay. Google Takeout returned 169 days · 10,169 watches (16 Nov 2025 → 3 May 2026 — Google now caps the window at roughly six months). This isn't the whole truth of me. It's what the infinite scroll leaves behind."}
+			</p>
+
+			<div class="wrapped-grid">
+				{/* HERO */}
+				<article class="wrap-card wrap-hero">
+					<div class="wrap-stat">10,169</div>
+					<div class="wrap-label">
+						{isVi ? "Lượt Xem · 169 ngày · ~60/ngày" : "Watches · 169 days · ~60/day"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Khoảng sáu mươi lượt mở mỗi ngày, đều như nước. Không phải binge — đây là tiêu thụ-như-bầu-bạn: tin tức khi làm việc, highlight khi chờ, clip ngắn khi nghỉ, podcast khi di chuyển."
+							: "About sixty opens a day, steady as water. Not bingeing — this is consumption-as-companionship: news while working, highlights while waiting, short-form while resting, podcasts during transit."}
+					</p>
+				</article>
+
+				{/* THEMATIC FINGERPRINT — Hogwarts subjects */}
+				<article class="wrap-card wrap-wide wrap-fingerprint">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Các Môn Học Tại Hogwarts (theo lượt xem)" : "Hogwarts Subjects (by watch share)"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Mỗi lượt xem được phân vào một môn theo kênh và từ khóa tiêu đề. Bóng đá thắng tuyệt đối, không phải cá cảnh — chiều sâu của sở thích sống ở phòng cá, không phải ở lịch sử xem."
+							: "Each watch sorted by channel name and title keywords. Football dominates, not aquariums — the depth of the hobby lives in the tank room, not the watch history."}
+					</p>
+					<ul class="wrap-list views-subjects">
+						<li><span class="wrap-list-score">17.3%</span> 👾 {isVi ? "Đồ Chơi Muggle — clip ngắn, Zack D. Films" : "Muggle Curios — Zack D. Films, short-form"}</li>
+						<li><span class="wrap-list-score">16.6%</span> 🏟️ {isVi ? "Quidditch — Man United, Premier League" : "Quidditch — Man United, Premier League"}</li>
+						<li><span class="wrap-list-score">4.2%</span> 🪄 {isVi ? "Biến Hình — Code, AI, công nghệ" : "Transfiguration — Code, AI, hardware"}</li>
+						<li><span class="wrap-list-score">3.5%</span> 🎬 {isVi ? "Bùa Chú — kịch bản, điện ảnh" : "Charms — screenplays, cinema"}</li>
+						<li><span class="wrap-list-score">3.4%</span> 📜 {isVi ? "Lịch Sử Phép Thuật — bài luận dài" : "History of Magic — long-form essays"}</li>
+						<li><span class="wrap-list-score">3.3%</span> 🦉 {isVi ? "Bí Tâm — Khắc kỷ, Peterson, Modern Wisdom" : "Occlumency — Stoicism, Peterson, Modern Wisdom"}</li>
+						<li><span class="wrap-list-score">3.0%</span> 📰 {isVi ? "Quibbler — NYT, BBC, CNN" : "The Quibbler — NYT, BBC, CNN"}</li>
+						<li><span class="wrap-list-score">2.9%</span> 🔮 {isVi ? "Tiên Đoán — startups, founders" : "Divination — startups, founders"}</li>
+						<li><span class="wrap-list-score">2.1%</span> 🐠 {isVi ? "Chăm Sóc Sinh Vật — hồ thủy sinh" : "Care of Magical Creatures — fish-keeping"}</li>
+						<li><span class="wrap-list-score">1.3%</span> 🇻🇳 {isVi ? "Cổ Tự — VTV24, FPT, tiếng nói Việt" : "Ancient Runes — VTV24, FPT, Vietnamese voices"}</li>
+					</ul>
+				</article>
+
+				{/* THE KETTLE — top channel as gravity well */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">958 ×</div>
+					<div class="wrap-label">
+						{isVi ? "Zack D. Films — Cái Ấm Luôn Sôi" : "Zack D. Films — The Kettle"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "9.4% mọi lượt xem. Một kênh hoạt hình ngắn về sự thật kỳ lạ. Không phải vì tôi yêu nó — mà vì nó chạy nền khi tôi làm việc khác. Lực hấp dẫn lớn nhất của tưởng ký không phải là một niềm say mê. Nó là âm thanh trắng có hình."
+							: "9.4% of all watches. A short-form animation channel of strange-fact vignettes. Not because I love it — because it runs in the background while I'm doing something else. The single largest gravity well in this Pensieve is not a passion. It's white noise with pictures."}
+					</p>
+				</article>
+
+				{/* QUIDDITCH — football */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">17%</div>
+					<div class="wrap-label">
+						{isVi ? "Quidditch — Khẩu Phần Bóng Đá" : "Quidditch — The Football Diet"}
+					</div>
+					<ul class="wrap-list">
+						<li><span class="wrap-list-score">×223</span> Manchester United</li>
+						<li><span class="wrap-list-score">×133</span> Premier League</li>
+						<li><span class="wrap-list-score">×130</span> ESPN FC</li>
+						<li><span class="wrap-list-score">×126</span> FPT Bóng Đá</li>
+						<li><span class="wrap-list-score">×116</span> The Overlap</li>
+					</ul>
+				</article>
+
+				{/* MEMORIES WORTH BOTTLING — top rewatches as sentimental */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Ký Ức Đáng Đóng Chai" : "Memories Worth Bottling"}
+					</div>
+					<div class="wrap-sentimental">
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Chad Smith — "Otherside" (Drumeo)</span>
+							<span class="wrap-senti-meta">{isVi ? "5 lần xem lại" : "5 rewatches"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Lex Fridman × John Carmack #309</span>
+							<span class="wrap-senti-meta">{isVi ? "4 lần · Peter Steinberger #491 · Jeff Kaplan #493 cũng vậy" : "4 rewatches · Peter Steinberger #491 · Jeff Kaplan #493 the same"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">{isVi ? "Hannah Fry — tám clip khoa học ngắn" : "Hannah Fry — eight tiny science explainers"}</span>
+							<span class="wrap-senti-meta">{isVi ? "Apollo, hắt hơi-trước-mặt-trời, lon nắp kẹt — quay lại nhiều hơn bất kỳ giọng nói nào" : "Apollo, sneeze-at-sun, stuck-lid — returned to more than any other voice"}</span>
+						</div>
+					</div>
+				</article>
+
+				{/* THE LAST TERM — month arc */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">12 → 41</div>
+					<div class="wrap-label">
+						{isVi ? "Học Kỳ Vừa Qua — Theo Tháng" : "The Last Term — Month by Month"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "78/ngày tháng 12 đỉnh điểm, giảm còn 41/ngày tháng 4 — sự chú ý đang co lại. Theo Rogan Shorts đột ngột tăng vọt vào tháng 4 (#2 sau nhiều tháng vắng bóng); Jordan Peterson Nation lần đầu vào top-5. Có gì đó thay đổi trong cách tôi nghỉ ngơi."
+							: "Peaked at 78/day in December, fell to 41/day in April — attention contracting. Theo Rogan Shorts surged into #2 in April after months absent; Jordan Peterson Nation entered the top-5 for the first time. Something shifted in how I rest."}
+					</p>
+				</article>
+
+				{/* SORTING HAT — narrative wide card */}
+				<article class="wrap-card wrap-wide">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Lời Nón Phân Loại" : "What the Sorting Hat Says"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Phạm vi rộng, lòng trung thành hẹp. Bóng đá là tin lớn nhất; Code & công nghệ, điện ảnh, bài luận dài, và cụm tò mò Khắc kỷ-Peterson chia phần còn lại. Hồ cá đăng ký 2.1% — sở thích trung tâm sống ngoài YouTube. YouTube Music chỉ 0.9%: đây là cây đũa cho video, không phải âm thanh. Không phải Ravenclaw đơn thuần (quá bồn chồn), không phải Hufflepuff đơn thuần (quá tò mò) — mà là đường nối giữa hai bên, một người xem đọc để thuộc về nhiều nơi cùng lúc."
+							: "Wide scope, narrow loyalties. Football is the loudest signal; Code & tech, cinema, long-form essays, and the Stoic-Peterson cluster split what's left. Aquariums register 2.1% — the central hobby lives outside YouTube. YouTube Music is 0.9% of watches: this is a wand for video, not for sound. Not Ravenclaw alone (too restless), not Hufflepuff alone (too curious) — but the seam between them, a watcher who reads to belong to many places at once."}
+					</p>
+				</article>
+
+				{/* KIDS' FINGERPRINT — honest disclosure */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">149 ×</div>
+					<div class="wrap-label">
+						{isVi ? "Dấu Vân Tay Nội Dung Trẻ Em" : "The Kids' Fingerprint"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? '149 lượt tìm "Peppa Pig", "Baby Shark", "Siêu Nhân Cơ Động", "PAW Patrol", "Dave and Ava" trong cùng cửa sổ. Tài khoản chia sẻ với một đứa trẻ — bản tổng hợp PAW Patrol hai giờ được xem lại là manh mối. Sự thật trung thực hơn việc giả vờ tưởng ký chỉ chứa của tôi.'
+							: '149 searches for "Peppa Pig", "Baby Shark", "Siêu Nhân Cơ Động", "PAW Patrol", "Dave and Ava" in the same window. The account is shared with a child — the rewatched PAW Patrol two-hour compilation is the tell. More honest than pretending the Pensieve only holds me.'}
+					</p>
+				</article>
+			</div>
+
+			<p class="vial-footer">
+				<a href="/room-of-requirement/pensieve-of-views">
+					{isVi ? "Đọc bản phân tích đầy đủ — top 30 kênh, từng tháng, mọi lưu ý →" : "Read the full analysis — top 30 channels, every month, all caveats →"}
+				</a>
+			</p>
+		</div>
+	</section>
+
 	<section id="life-in-dates" class="about-section">
 		<div class="about-inner">
 			<a class="life-tile" href="/pensieve/chronicle">
