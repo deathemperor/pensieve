@@ -11,6 +11,15 @@ data/
 .session/
 .superpowers/
 
+# Google Takeout — raw private exports, never commit
+takeout/
+watch-history.json
+watch-history.html
+search-history.json
+subscriptions.csv
+my-comments.html
+my-live-chat-messages.html
+
 # macOS
 .DS_Store
 **/.DS_Store
