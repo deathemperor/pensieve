@@ -8,7 +8,7 @@ setCachePolicy(Astro, "static");
 
 const isVi = getCurrentLang(Astro) === "vi";
 
-// Frozen snapshot from Google My Activity export 2026-05-03.
+// Frozen snapshot — Google My Activity Discover/MyActivity.json export.
 // Source: takeout/myactivity/.../Discover/MyActivity.json (gitignored).
 // To refresh: re-run takeout/discover/analyze.py and update constants.
 
@@ -22,26 +22,19 @@ const SNAPSHOT = {
 	uniqueHosts: 73,
 };
 
-interface Source {
+interface SourceRow {
 	icon: string;
 	keyEn: string;
 	keyVi: string;
-	blurbEn: string;
-	blurbVi: string;
 	count: number;
 	share: number;
 	samples: Array<[string, string]>;
 }
 
-const SOURCES: Source[] = [
+const SOURCES: SourceRow[] = [
 	{
-		icon: "🐦",
-		keyEn: "X / Twitter Threads",
-		keyVi: "X / Twitter Threads",
-		blurbEn: "what people are saying in real-time — football fans, AI researchers, tech voices",
-		blurbVi: "những gì mọi người đang nói trong thời gian thực — fan bóng đá, nhà nghiên cứu AI, tiếng nói công nghệ",
-		count: 159,
-		share: 45.2,
+		icon: "🐦", keyEn: "X / Twitter Threads", keyVi: "X / Twitter Threads",
+		count: 159, share: 45.2,
 		samples: [
 			["x.com", "Manchester United want to sign… (transfer thread)"],
 			["x.com", "Claude Opus 4.7 just implemented… (AI announcement)"],
@@ -49,37 +42,23 @@ const SOURCES: Source[] = [
 			["x.com", "People often separate React components… (programming hot-take)"],
 			["x.com", "T1 coaching staff gets a 2.4… (League of Legends)"],
 			["x.com", "👔 List of managers out of contract… (football)"],
-			["x.com", "Google Maps Platform powers more… (tech)"],
-			["x.com", "Lisandro Martinez on his recovery… (United defender)"],
 		],
 	},
 	{
-		icon: "🪄",
-		keyEn: "Tech Press",
-		keyVi: "Báo Công Nghệ",
-		blurbEn: "the trade press — Verge, TechCrunch, Ars, 9to5, Tom's Guide, blog.google",
-		blurbVi: "báo chuyên ngành — Verge, TechCrunch, Ars, 9to5, blog Google",
-		count: 103,
-		share: 29.3,
+		icon: "🪄", keyEn: "Tech Press", keyVi: "Báo Công Nghệ",
+		count: 103, share: 29.3,
 		samples: [
 			["theverge.com", "The Verge — tech & culture coverage"],
 			["techcrunch.com", "Fintech founder charged with…"],
 			["blog.google", "More advanced AI capabilities…"],
 			["9to5mac.com", "The cost-friendly MacBook upgrade…"],
 			["github.blog", "GitHub announcements"],
-			["arstechnica.com", "Ars Technica deep dives"],
 			["simonwillison.net", "Simon Willison's blog — LLM commentary"],
-			["tomsguide.com", "I test Gemini for a living…"],
 		],
 	},
 	{
-		icon: "🌍",
-		keyEn: "World Press",
-		keyVi: "Báo Thế Giới",
-		blurbEn: "the broadsheets — NYT, Atlantic, Economist, Guardian, FT, Bloomberg",
-		blurbVi: "báo lớn — NYT, Atlantic, Economist, Guardian, FT, Bloomberg",
-		count: 40,
-		share: 11.4,
+		icon: "🌍", keyEn: "World Press", keyVi: "Báo Thế Giới",
+		count: 40, share: 11.4,
 		samples: [
 			["theatlantic.com", "'We're Definitely Going to…'"],
 			["nytimes.com", "New York Times — front-page coverage"],
@@ -87,18 +66,11 @@ const SOURCES: Source[] = [
 			["theguardian.com", "Eric Cantona asked to front Manchester United…"],
 			["ft.com", "Financial Times — markets coverage"],
 			["bloomberg.com", "Bloomberg — finance & tech"],
-			["wsj.com", "Wall Street Journal"],
-			["reuters.com", "Reuters — wire-service news"],
 		],
 	},
 	{
-		icon: "🇻🇳",
-		keyEn: "Vietnamese News",
-		keyVi: "Tin Việt Nam",
-		blurbEn: "VnExpress International, Tuổi Trẻ — Vietnam in English",
-		blurbVi: "VnExpress International, Tuổi Trẻ — Việt Nam bằng tiếng Anh",
-		count: 16,
-		share: 4.5,
+		icon: "🇻🇳", keyEn: "Vietnamese News", keyVi: "Tin Việt Nam",
+		count: 16, share: 4.5,
 		samples: [
 			["e.vnexpress.net", "HCMC's scoop of nostalgia, served…"],
 			["e.vnexpress.net", "VnExpress International front page"],
@@ -106,96 +78,98 @@ const SOURCES: Source[] = [
 		],
 	},
 	{
-		icon: "🎮",
-		keyEn: "Gaming & Pop Culture",
-		keyVi: "Game & Văn Hóa Đại Chúng",
-		blurbEn: "games, TV, the wider entertainment world",
-		blurbVi: "game, phim, thế giới giải trí",
-		count: 10,
-		share: 2.8,
+		icon: "🎮", keyEn: "Gaming & Pop Culture", keyVi: "Game & Văn Hóa Đại Chúng",
+		count: 10, share: 2.8,
 		samples: [
 			["polygon.com", "Polygon — gaming culture"],
 			["ign.com", "IGN — game reviews"],
 			["news.blizzard.com", "Blizzard official news"],
-			["movieweb.com", "Movie news & reviews"],
-			["pcgamer.com", "PC Gamer"],
 		],
 	},
 	{
-		icon: "🏟️",
-		keyEn: "Football Press",
-		keyVi: "Báo Bóng Đá",
-		blurbEn: "the football specialist outlets — ManUtd, TalkSport",
-		blurbVi: "báo chuyên bóng đá — ManUtd, TalkSport",
-		count: 2,
-		share: 0.6,
-		samples: [
-			["manutd.com", "Manchester United official"],
-			["talksport.com", "TalkSport football radio"],
-		],
+		icon: "🏟️", keyEn: "Football Press", keyVi: "Báo Bóng Đá",
+		count: 2, share: 0.6,
+		samples: [["manutd.com", "Manchester United official"], ["talksport.com", "TalkSport football radio"]],
 	},
 ];
 
 const t = {
-	pageTitle: isVi ? "Cú Bưu — Discover Mang Đến Gì" : "Owl Post — What Discover Delivers",
+	pageTitle: isVi ? "Cú Bưu — Người Đọc Mà Thuật Toán Thấy" : "Owl Post — The Reader The Algorithm Sees",
 	pageDesc: isVi
-		? "Một năm thuật toán Google Discover thả lên màn hình tôi và những bài tôi đã chạm — báo cáo trung thực về việc thuật toán có 'số' của tôi đến đâu."
-		: "A year of articles Google's Discover algorithm dropped on my screen and which ones I tapped — an honest report on how well the algorithm has my number.",
+		? "Năm đặc điểm cá tính được dữ liệu Google Discover xác nhận: tôi là ai khi tôi không chú ý ai đang nhìn."
+		: "Five personality traits the Google Discover data confirms: who I am when I'm not noticing anyone's looking.",
 	hagrid: isVi
-		? '"Có người nói hắn đã chết. Lời nhảm, theo ý tôi." — Hagrid'
-		: '"There\'s some that say he died. Codswallop, in my opinion." — Hagrid',
-	intro: isVi
-		? "Cú Đường là cho cú tôi gửi đi — bài viết tôi tự tìm trên Chrome. Đây là ngược lại: cú thuật toán Google Discover thả trước cửa, và cái tôi đã mở. Bề mặt khác, cùng một người đọc. My Activity trả về"
-		: "The Owlery is for owls I send out — articles I sought on Chrome. This is the inverse: owls Google's Discover algorithm dropped on my doorstep, and what I opened. Different surface, same reader. My Activity returned",
-	intro2: isVi ? "lần chạm bài viết từ Discover trên iOS Google app trong" : "Discover article taps from the iOS Google app across",
-	intro3: isVi ? "ngày, cộng với" : "days, plus",
-	intro4: isVi
-		? 'phiên "N cards in your feed" — những lúc feed mở nhưng không chạm gì. Bài viết là tín hiệu thật.'
-		: '"N cards in your feed" sessions — moments the feed opened but nothing was tapped. The articles are the truer signal.',
+		? '"Cú bay đến từ mọi hướng; câu hỏi là người ta chọn mở cái nào." — Hagrid (gần đúng)'
+		: '"Owls fly here from every direction; the question is which ones one chooses to open." — Hagrid (approximately)',
+	introTitle: isVi ? "Đây không phải báo cáo về thuật toán." : "This isn't a report about the algorithm.",
+	introBody: isVi
+		? `Đây là chân dung người đọc bên dưới ${SNAPSHOT.articles} lượt chạm bài qua ${SNAPSHOT.spanDays} ngày feed Google Discover trên iOS. Dữ liệu hỗ trợ kết luận; không phải ngược lại. Cộng thêm ${SNAPSHOT.sessions} phiên feed mở mà tôi cuộn qua không chạm — sự không-chạm cũng là dữ liệu.`
+		: `It's a portrait of the reader underneath ${SNAPSHOT.articles} article taps across ${SNAPSHOT.spanDays} days of the iOS Google Discover feed. The data supports the conclusions; not the other way around. Plus ${SNAPSHOT.sessions} feed-open sessions where I scrolled past without tapping — non-taps are also data.`,
 
-	s1: isVi ? "I. Cú Đến Từ Đâu" : "I. Where the Owls Come From",
-	s1Sub: isVi
-		? '"Cú bay đến từ mọi hướng; câu hỏi là người ta chọn mở cái nào."'
-		: '"Owls fly here from every direction; the question is which ones one chooses to open."',
-	colSrc: isVi ? "Nguồn" : "Source",
-	colCovers: isVi ? "Cái gì sống ở đây" : "What lives here",
-	colArticles: isVi ? "Bài" : "Articles",
-	colShare: isVi ? "Tỷ lệ" : "Share",
-	longTail: isVi ? "Đuôi dài — báo nhỏ" : "Long-tail outlets",
-	longTailBlurb: isVi ? "tên miền chỉ-một-lần" : "one-off domains",
-	hostsNote: isVi
-		? `${SNAPSHOT.uniqueHosts} tên miền duy nhất. Thuật toán quăng lưới rộng hơn việc đọc có chủ ý, nhưng phần lớn lưới rơi xuống cùng vài cây quen.`
-		: `${SNAPSHOT.uniqueHosts} unique hosts. The algorithm casts a wider net than deliberate reading does — but most of the casting lands on the same few favorite trees.`,
+	t1Title: isVi ? "I. Người Hâm Mộ Manchester United 17 Năm" : "I. The 17-Year Manchester United Lifer",
+	t1Body1: isVi
+		? "Trong 159 lượt chạm X threads (45% mọi lượt chạm), phần lớn là Manchester United. Tin chuyển nhượng, danh sách HLV, Mainoo và Garnacho và Mbeumo. Lisandro Martinez phục hồi. Salah làm gì với Liverpool. Eric Cantona làm bộ phim tài liệu mới."
+		: "Of 159 Discover taps to X threads (45% of all taps), most are about Manchester United. Transfer rumors, manager shortlists, Mainoo and Garnacho and Mbeumo. Lisandro Martinez's recovery. What Salah's doing at Liverpool. Eric Cantona fronting a new documentary.",
+	t1Body2: isVi
+		? "Qua mọi thay đổi thuật toán, mọi đổi việc, mọi đổi nước, đội bóng vẫn hiện lên vì nó vẫn quan trọng. 105 lần tìm \"mu fixtures\" qua nhiều năm nói cùng một điều — đây không phải fan thời vụ. Đây là người trung thành đời người."
+		: "Through every algorithm change, every job change, every country change, the team keeps coming up because it keeps mattering. The 105 lifetime \"mu fixtures\" searches say the same thing — this isn't a casual fan. This is a lifelong loyalist.",
 
-	s2: isVi ? "II. Bên Trong Mỗi Nguồn — Mẫu Đại Diện" : "II. Inside Each Source — A Sampling",
-	s2Sub: isVi ? "Tiêu đề đại diện mỗi nguồn." : "Representative titles per source.",
+	t2Title: isVi ? "II. Người Đọc Bản Ra Mắt Hằng Ngày" : "II. The Daily Releaser",
+	t2Body1: isVi
+		? "29% lượt chạm Discover là báo công nghệ — Verge, TechCrunch, blog Google, Ars Technica, 9to5Mac, Tom's Guide, Simon Willison. Apple thông báo gì? Anthropic ship cái gì? Gemini có khả năng mới gì?"
+		: "29% of Discover taps are tech press — Verge, TechCrunch, blog.google, Ars Technica, 9to5Mac, Tom's Guide, Simon Willison. What did Apple announce? What did Anthropic ship? What new capability did Gemini gain?",
+	t2Body2: isVi
+		? "Anh đọc cái gì ra mắt hôm nay như người khác đọc tin tức. Không phải để mắt vào lĩnh vực — anh để cả hai. Đây là người thợ giữ tay nghề bằng việc theo dõi mỗi bản ra mắt."
+		: "He reads what shipped today like other people read the news. Doesn't keep an eye on the field — keeps both. This is a craftsman keeping his hand sharp by watching every release.",
 
-	s3: isVi ? "III. Nón Phân Loại" : "III. The Sorting Hat — What This Reveals",
-	s3p1: isVi
-		? "Thuật toán có \"số\" của tôi. **45% lượt chạm vào X threads** — và X threads nó phục vụ được dệt CHẶT: chuyển nhượng Manchester United, thông báo AI, hot-take lập trình, thread công nghệ thi thoảng. Feed không phơi tôi ra với một thế giới rộng hơn; nó *tập trung* thế giới hiện tại của tôi."
-		: "The algorithm has my number. **45% of taps go to X threads** — and the X threads it serves are *tightly* themed: Manchester United transfers, AI announcements, programming hot-takes, the occasional Vietnam-watching tech thread. The feed is not exposing me to a wider world; it is *concentrating* my existing world.",
-	s3p2: isVi
-		? "Sau X, lớp tiếp theo là **29% báo công nghệ** — Verge, TechCrunch, Ars, 9to5, Tom's Guide. Đây là người thợ giữ nhịp, giống Chrome. Rồi **5% tin Việt Nam** (chủ yếu e.vnexpress, VnExpress tiếng Anh) và **11% báo thế giới** (NYT, Atlantic, Economist, Guardian — báo lớn) — đây là những thứ THẬT SỰ vươn ra ngoài nghề."
-		: "After X, the next layer is **29% tech press** — Verge, TechCrunch, Ars, 9to5, Tom's Guide. This is craftsman keeping pace, same as Chrome. Then **5% Vietnamese news** (mostly e.vnexpress, the English-language VnExpress) and **11% world press** (NYT, Atlantic, Economist, Guardian — the broadsheets) — these are the ones that *do* reach beyond the trade.",
-	s3p3: isVi
-		? "Sự thật trung thực: Discover **không phải** cánh cửa bí mật đến việc đọc rộng hơn. Đó là một tấm gương khác đôi chút của cùng một người. Fan bóng đá, người theo dõi AI, công dân Việt Nam, đôi khi đọc báo lớn. Bề rộng là thật nhưng nhỏ."
-		: "The honest truth: Discover is *not* the secret door to wider reading. It's a slightly different mirror of the same person. Football fan, AI watcher, Vietnam citizen, occasional broadsheet reader. The breadth is real but small.",
+	t3Title: isVi ? "III. Đọc Báo Lớn — Mà Không Đặt Báo" : "III. The Atlantic Subscriber, Without Subscribing",
+	t3Body1: isVi
+		? "11% lượt chạm là báo lớn — NYT, The Atlantic, The Economist, The Guardian, FT, Bloomberg, Reuters, WSJ. Anh không đặt báo nào trong số đó. Vẫn đọc khi chúng tìm đến."
+		: "11% of taps are broadsheets — NYT, The Atlantic, The Economist, The Guardian, FT, Bloomberg, Reuters, WSJ. He doesn't subscribe to any of them. Reads them anyway when they reach him.",
+	t3Body2: isVi
+		? "Đó là cách báo lớn vào nhà này: không qua hộp thư, mà qua feed. Đặc điểm không phải \"người đọc báo có học\". Đặc điểm là \"người mở khi nó đến tay\". Khác nhau. Khiêm tốn hơn."
+		: "That's how broadsheets enter this house: not through the mailbox, through the feed. The trait isn't \"erudite broadsheet reader.\" The trait is \"person who opens it when it lands.\" Different. More modest.",
 
-	s4: isVi ? "IV. Những Gì Không Thể Cho Thấy" : "IV. What This Cannot Show",
+	t4Title: isVi ? "IV. Công Dân Hai Tiếng" : "IV. The Bilingual Citizen",
+	t4Body1: isVi
+		? "5% lượt chạm là báo Việt — chủ yếu e.vnexpress (VnExpress phiên bản tiếng Anh) và Tuổi Trẻ. Việt Nam viết bằng tiếng Anh — vì có lúc anh muốn đọc về quê nhà bằng giọng phân tích, không phải giọng quê."
+		: "5% of taps are Vietnamese press — mostly e.vnexpress (the English-language VnExpress) and Tuổi Trẻ. Vietnam written in English — because sometimes the home country reads better in the analytical voice than the local one.",
+	t4Body2: isVi
+		? "Tin cộng đồng đến qua tiếng Việt; phân tích đến qua tiếng Anh. Một quê hương, hai cửa sổ, không xung đột. Đó là một loại đa quốc gia mà thuật toán nhận ra — và phục vụ chính xác."
+		: "Daily news comes in Vietnamese; analysis comes in English. One country, two windows, no conflict. It's a kind of multi-national-ness the algorithm recognizes — and serves precisely.",
+
+	t5Title: isVi ? "V. Người Đọc Mà Thuật Toán Thấy" : "V. The Reader The Algorithm Sees",
+	t5Body1: isVi
+		? "Bốn đặc điểm — Manchester United, người ra mắt hằng ngày, đọc báo lớn không đặt báo, công dân hai tiếng — chiếm 70% lượt chạm. Phần còn lại (game, văn hóa đại chúng, đuôi dài 73 host) là chỉnh đính."
+		: "Four traits — Manchester United, daily releaser, broadsheet-reader-without-subscribing, bilingual citizen — account for 70% of taps. The rest (gaming, pop culture, 73-host long tail) is rounding error.",
+	t5Body2: isVi
+		? "Discover không phơi anh ra với thế giới rộng hơn. Nó tập trung thế giới hiện tại. Đó vừa là tốt (anh không phí thời gian với cái không quan tâm) vừa là hạn chế (cánh cửa rộng hơn không tự mở qua feed)."
+		: "Discover doesn't expose him to a wider world. It concentrates the existing one. That's both good (he isn't wasting time on what he doesn't care about) and limiting (the wider door doesn't open by itself through the feed).",
+	t5Body3: isVi
+		? "Anh không phải kẻ lang thang. Anh là người trở về."
+		: "He's not a wanderer. He's a returner.",
+
+	refTitle: isVi ? "Phụ Lục — Phân Tích Theo Nguồn" : "Reference — Breakdown by Source",
+	refBody: isVi
+		? "Bảng số liệu hỗ trợ các đặc điểm ở trên. Mỗi nguồn có sáu tiêu đề mẫu để cho thấy hình dạng nội dung."
+		: "The numbers backing the traits above. Each source has six sample titles to show the content shape.",
+	refColSrc: isVi ? "Nguồn" : "Source",
+	refColCount: isVi ? "Lượt chạm" : "Taps",
+	refColShare: isVi ? "Tỷ lệ" : "Share",
+
+	cavTitle: isVi ? "Lưu Ý — Những Gì Không Thể Cho Thấy" : "Caveats — What This Cannot Show",
 	caveats: isVi
 		? [
-			["Lịch sử Discover ngắn.", `My Activity trả về ${SNAPSHOT.spanDays} ngày; lượt chạm trước ${SNAPSHOT.rangeStart} không có ở đây. Google giữ Discover taps khoảng 12–14 tháng theo mặc định.`],
-			["\"N cards in your feed\" không có chạm là vô hình với khẩu vị.", `Thuật toán hiển thị hàng trăm cards mỗi ngày; chúng ta chỉ thấy ${SNAPSHOT.articles} chạm, không phải hàng nghìn lượt cuộn qua.`],
-			["Một số mục là \"Content From Discover\" không có tiêu đề.", "Google ẩn những cái đó vì lý do nội dung/bản quyền. Tính trong tổng nhưng loại khỏi danh sách bài."],
+			["Khoảng thời gian.", `Takeout trả về ${SNAPSHOT.spanDays} ngày; lượt chạm trước ${SNAPSHOT.rangeStart} không có ở đây.`],
+			["Đặc điểm là phỏng đoán.", "Trên 352 lượt chạm. Mẫu lớn hơn có thể tinh chỉnh hoặc thêm đặc điểm mới."],
 			["Độ sâu đọc không biết.", "Chạm một X tweet không giống đọc một bài Atlantic 30 phút; cả hai đều tính một dòng."],
-			["Chỉ iOS Google app.", "Đây là feed Discover trong iOS Google app, tách biệt với lịch sử Chrome (đã phân tích trong Cú Đường). Bài đọc qua Safari, webview của app mạng xã hội, hoặc trên desktop không xuất hiện."],
+			["Chỉ iOS Google app.", "Bài đọc qua Safari, webview của app mạng xã hội, hoặc trên desktop không xuất hiện."],
 		]
 		: [
-			["Discover history is short.", `My Activity returned ${SNAPSHOT.spanDays} days; taps before ${SNAPSHOT.rangeStart} aren't here. Google retains Discover taps for ~12–14 months by default.`],
-			["\"N cards in your feed\" without a tap is invisible to taste.", `The algorithm shows hundreds of cards every day; we only see the ${SNAPSHOT.articles} taps, not the thousands of scrolls past.`],
-			["Some entries say \"Content From Discover\" with no title.", "Google redacts those for content/copyright reasons. Counted in totals but excluded from the article list."],
+			["Time horizon.", `Takeout returned ${SNAPSHOT.spanDays} days; taps before ${SNAPSHOT.rangeStart} aren't here.`],
+			["Traits are inferred.", "From 352 taps. A larger sample might refine these or add new ones."],
 			["Read depth is unknown.", "Tapping an X tweet is not the same as reading a 30-minute Atlantic essay; both count as one row."],
-			["iOS Google app only.", "This is the Discover feed inside the iOS Google app, separate from Chrome history (already analyzed in The Owlery). Articles read via Safari, social-app webviews, or on desktop don't appear."],
+			["iOS Google app only.", "Articles read via Safari, social-app webviews, or on desktop don't appear."],
 		],
 	footnote: isVi
 		? `Tạo từ Google My Activity export ngày ${SNAPSHOT.exported}. Dữ liệu nguồn được giữ riêng tư.`
@@ -208,8 +182,6 @@ const formatDate = (iso: string) => {
 		? `${d.getDate()} tháng ${d.getMonth() + 1}, ${d.getFullYear()}`
 		: d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
 };
-
-const longTailCount = SNAPSHOT.articles - SOURCES.reduce((s, x) => s + x.count, 0);
 ---
 
 <Base
@@ -225,67 +197,86 @@ const longTailCount = SNAPSHOT.articles - SOURCES.reduce((s, x) => s + x.count, 
 			<h1 class="op-title">{t.pageTitle}</h1>
 			<p class="op-sub">{t.pageDesc}</p>
 			<blockquote class="op-quote">{t.hagrid}</blockquote>
-			<p class="op-intro">
-				{t.intro} <strong>{SNAPSHOT.articles}</strong> {t.intro2}
-				<strong>{formatDate(SNAPSHOT.rangeStart)} → {formatDate(SNAPSHOT.rangeEnd)}</strong> ({SNAPSHOT.spanDays} {isVi ? "ngày" : "days"})
-				{t.intro3} <strong>{SNAPSHOT.sessions}</strong> {t.intro4}
+			<p class="op-intro"><strong>{t.introTitle}</strong> {t.introBody}</p>
+			<p class="op-window">
+				{formatDate(SNAPSHOT.rangeStart)} → {formatDate(SNAPSHOT.rangeEnd)} · {SNAPSHOT.spanDays} {isVi ? "ngày" : "days"} · {SNAPSHOT.articles} {isVi ? "lượt chạm bài" : "article taps"}
 			</p>
 		</header>
 
-		<section class="op-sec">
-			<h2 class="op-h2">{t.s1}</h2>
-			<p class="op-em">{t.s1Sub}</p>
+		<section class="op-trait">
+			<h2 class="op-h2">{t.t1Title}</h2>
+			<p class="op-body">{t.t1Body1}</p>
+			<p class="op-body">{t.t1Body2}</p>
+			<ul class="op-evidence">
+				{SOURCES[0].samples.slice(0, 5).map(([h, title]) => (
+					<li><span class="op-host">[{h}]</span> {title}</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="op-trait">
+			<h2 class="op-h2">{t.t2Title}</h2>
+			<p class="op-body">{t.t2Body1}</p>
+			<p class="op-body">{t.t2Body2}</p>
+			<ul class="op-evidence">
+				{SOURCES[1].samples.slice(0, 5).map(([h, title]) => (
+					<li><span class="op-host">[{h}]</span> {title}</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="op-trait">
+			<h2 class="op-h2">{t.t3Title}</h2>
+			<p class="op-body">{t.t3Body1}</p>
+			<p class="op-body">{t.t3Body2}</p>
+			<ul class="op-evidence">
+				{SOURCES[2].samples.slice(0, 5).map(([h, title]) => (
+					<li><span class="op-host">[{h}]</span> {title}</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="op-trait">
+			<h2 class="op-h2">{t.t4Title}</h2>
+			<p class="op-body">{t.t4Body1}</p>
+			<p class="op-body">{t.t4Body2}</p>
+			<ul class="op-evidence">
+				{SOURCES[3].samples.map(([h, title]) => (
+					<li><span class="op-host">[{h}]</span> {title}</li>
+				))}
+			</ul>
+		</section>
+
+		<section class="op-trait op-synth">
+			<h2 class="op-h2">{t.t5Title}</h2>
+			<p class="op-body">{t.t5Body1}</p>
+			<p class="op-body">{t.t5Body2}</p>
+			<p class="op-coda">{t.t5Body3}</p>
+		</section>
+
+		<section class="op-ref">
+			<h2 class="op-h2">{t.refTitle}</h2>
+			<p class="op-em">{t.refBody}</p>
 			<div class="op-table-wrap">
 				<table class="op-table">
 					<thead>
-						<tr><th>{t.colSrc}</th><th>{t.colCovers}</th><th class="num">{t.colArticles}</th><th class="num">{t.colShare}</th></tr>
+						<tr><th>{t.refColSrc}</th><th class="num">{t.refColCount}</th><th class="num">{t.refColShare}</th></tr>
 					</thead>
 					<tbody>
 						{SOURCES.map((s) => (
 							<tr>
-								<td class="src"><span class="op-icon">{s.icon}</span> <strong>{isVi ? s.keyVi : s.keyEn}</strong></td>
-								<td class="op-blurb">{isVi ? s.blurbVi : s.blurbEn}</td>
+								<td><span class="op-icon">{s.icon}</span> {isVi ? s.keyVi : s.keyEn}</td>
 								<td class="num">{s.count}</td>
 								<td class="num">{s.share.toFixed(1)}%</td>
 							</tr>
 						))}
-						<tr class="op-rest">
-							<td class="src"><span class="op-icon">❓</span> {t.longTail}</td>
-							<td class="op-blurb">{t.longTailBlurb}</td>
-							<td class="num">{longTailCount}</td>
-							<td class="num">{(longTailCount / SNAPSHOT.articles * 100).toFixed(1)}%</td>
-						</tr>
 					</tbody>
 				</table>
 			</div>
-			<p class="op-meta">{t.hostsNote}</p>
 		</section>
 
-		<section class="op-sec">
-			<h2 class="op-h2">{t.s2}</h2>
-			<p class="op-em">{t.s2Sub}</p>
-			{SOURCES.map((s) => (
-				<div class="op-source">
-					<h3 class="op-h3"><span class="op-icon">{s.icon}</span> {isVi ? s.keyVi : s.keyEn}</h3>
-					<p class="op-blurb">{isVi ? s.blurbVi : s.blurbEn}</p>
-					<ul class="op-samples">
-						{s.samples.map(([h, title]) => (
-							<li><span class="op-host">[{h}]</span> {title}</li>
-						))}
-					</ul>
-				</div>
-			))}
-		</section>
-
-		<section class="op-sec op-hat">
-			<h2 class="op-h2">{t.s3}</h2>
-			<p class="op-body" set:html={t.s3p1} />
-			<p class="op-body" set:html={t.s3p2} />
-			<p class="op-body op-coda" set:html={t.s3p3} />
-		</section>
-
-		<section class="op-sec">
-			<h2 class="op-h2">{t.s4}</h2>
+		<section class="op-trait">
+			<h2 class="op-h2">{t.cavTitle}</h2>
 			<ul class="op-caveats">
 				{t.caveats.map(([term, body]) => (
 					<li><strong>{term}</strong> {body}</li>
@@ -303,35 +294,31 @@ const longTailCount = SNAPSHOT.articles - SOURCES.reduce((s, x) => s + x.count, 
 	.op { max-width: var(--wide-width); margin: 0 auto; padding: var(--spacing-12) var(--spacing-8) var(--spacing-16); }
 	.op-hdr { margin-bottom: var(--spacing-12); }
 	.op-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: var(--font-weight-display); letter-spacing: -0.02em; color: var(--color-text); margin: 0 0 var(--spacing-3); }
-	.op-sub { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-muted); font-style: italic; margin: 0 0 var(--spacing-5); max-width: 60ch; }
+	.op-sub { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-muted); font-style: italic; margin: 0 0 var(--spacing-5); max-width: 70ch; }
 	.op-quote { font-family: var(--font-sans); font-style: italic; color: var(--color-text-secondary); border-left: 2px solid var(--color-border); padding: var(--spacing-2) 0 var(--spacing-2) var(--spacing-4); margin: 0 0 var(--spacing-5); max-width: 70ch; }
-	.op-intro { font-family: var(--font-sans); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0; max-width: 70ch; }
+	.op-intro { font-family: var(--font-sans); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-3); max-width: 70ch; }
+	.op-window { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0; }
 
-	.op-sec { margin-top: var(--spacing-14); }
-	.op-h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.8rem); font-weight: var(--font-weight-display); color: var(--color-text); margin: 0 0 var(--spacing-2); letter-spacing: -0.01em; }
-	.op-h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: var(--color-text); margin: 0 0 var(--spacing-2); }
-	.op-em { font-family: var(--font-sans); font-size: var(--font-size-sm); font-style: italic; color: var(--color-text-secondary); margin: 0 0 var(--spacing-4); }
-	.op-body { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-4); max-width: 70ch; }
-	.op-blurb { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: 0 0 var(--spacing-3); }
-	.op-meta { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: var(--spacing-3) 0 0; line-height: var(--leading-relaxed); max-width: 70ch; }
-	.op-host { color: var(--color-text-secondary); font-family: var(--font-mono); font-size: var(--font-size-xs); }
+	.op-trait { margin-top: var(--spacing-12); }
+	.op-h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.8rem); font-weight: var(--font-weight-display); color: var(--color-text); margin: 0 0 var(--spacing-4); letter-spacing: -0.01em; }
+	.op-body { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-3); max-width: 70ch; }
+	.op-em { font-family: var(--font-sans); font-size: var(--font-size-sm); font-style: italic; color: var(--color-text-secondary); margin: 0 0 var(--spacing-4); max-width: 70ch; }
+	.op-coda { font-family: var(--font-display); font-size: var(--font-size-lg); font-style: italic; color: var(--color-text); margin: var(--spacing-4) 0 0; padding-top: var(--spacing-4); border-top: 1px solid var(--color-border); max-width: 70ch; }
+
+	.op-evidence { list-style: none; padding: 0; margin: var(--spacing-4) 0 0; display: flex; flex-direction: column; gap: var(--spacing-2); padding-left: var(--spacing-4); border-left: 2px solid var(--color-border); }
+	.op-evidence li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: var(--leading-relaxed); }
+	.op-host { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); }
 	.op-icon { display: inline-block; margin-right: 0.3em; }
 
+	.op-synth { padding: var(--spacing-6) var(--spacing-6); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
+
+	.op-ref { margin-top: var(--spacing-14); }
 	.op-table-wrap { overflow-x: auto; margin: var(--spacing-4) 0 var(--spacing-3); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface-elevated); }
 	.op-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--font-size-sm); }
 	.op-table thead th { text-align: left; padding: var(--spacing-3) var(--spacing-4); font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
-	.op-table tbody td { padding: var(--spacing-2) var(--spacing-4); color: var(--color-text); border-bottom: 1px solid var(--color-border); vertical-align: top; }
+	.op-table tbody td { padding: var(--spacing-2) var(--spacing-4); color: var(--color-text); border-bottom: 1px solid var(--color-border); }
 	.op-table tbody tr:last-child td { border-bottom: 0; }
 	.op-table .num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
-	.op-table .src { white-space: nowrap; }
-	.op-table .op-rest td { color: var(--color-muted); font-style: italic; }
-
-	.op-source { margin-bottom: var(--spacing-7); padding-bottom: var(--spacing-5); border-bottom: 1px dashed var(--color-border); }
-	.op-source:last-child { border-bottom: 0; }
-	.op-samples { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--spacing-2); }
-	.op-samples li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--leading-relaxed); padding-left: var(--spacing-3); }
-
-	.op-hat .op-coda { margin-top: var(--spacing-4); padding-top: var(--spacing-4); border-top: 1px solid var(--color-border); font-style: italic; color: var(--color-text-secondary); }
 
 	.op-caveats { list-style: none; padding: 0; margin: var(--spacing-4) 0 0; display: flex; flex-direction: column; gap: var(--spacing-3); }
 	.op-caveats li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--leading-relaxed); padding-left: var(--spacing-4); border-left: 2px solid var(--color-border); max-width: 75ch; }
