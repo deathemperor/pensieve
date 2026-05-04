@@ -8,145 +8,117 @@ setCachePolicy(Astro, "static");
 
 const isVi = getCurrentLang(Astro) === "vi";
 
-// Frozen snapshot from Google Takeout Chrome history export 2026-05-03.
-// Source: takeout/Takeout/Chrome/History.json (gitignored).
-// To refresh: re-run takeout/chrome/analyze.py and update constants.
+// Frozen snapshot — Google Takeout (Chrome history) + My Activity (Discover) export 2026-05-03.
+// Sources gitignored under takeout/. To refresh: re-run analyzers and update.
 
 const SNAPSHOT = {
 	exported: "2026-05-03",
-	rangeStart: "2025-05-04",
-	rangeEnd: "2026-05-03",
-	spanDays: 365,
-	totalHistoryEntries: 83850,
-	articlesAfterFilter: 3977,
-	rareUniqueHosts: 450,
+	chromeStart: "2025-05-04",
+	chromeEnd: "2026-05-03",
+	chromeDays: 365,
+	chromeArticles: 3977,
+	discoverStart: "2025-03-30",
+	discoverEnd: "2026-05-03",
+	discoverDays: 400,
+	discoverTaps: 352,
+	combinedTotal: 4329,
 };
 
-interface SubjectRow {
-	icon: string;
-	keyEn: string;
-	keyVi: string;
-	count: number;
-	share: number;
-	topHosts: Array<[string, number]>;
-}
-
-const SUBJECTS: SubjectRow[] = [
-	{
-		icon: "🪄", keyEn: "Software Craft", keyVi: "Thủ Công Phần Mềm", count: 873, share: 21.9,
-		topHosts: [["stackoverflow.com", 91], ["expo.dev", 87], ["apollographql.com", 61], ["simonwillison.net", 42], ["docs.cloud.google.com", 40]],
-	},
-	{
-		icon: "🇻🇳", keyEn: "Vietnamese Voices", keyVi: "Tiếng Nói Việt", count: 618, share: 15.5,
-		topHosts: [["vnexpress.net", 167], ["vi.wikipedia.org", 30], ["tuoitre.vn", 28], ["thanhnien.vn", 20]],
-	},
-	{
-		icon: "🔮", keyEn: "AI Frontier", keyVi: "Tiền Tuyến AI", count: 543, share: 13.7,
-		topHosts: [["blog.google", 103], ["ai.google.dev", 100], ["ai-sdk.dev", 74], ["forum.cursor.com", 26], ["lmarena.ai", 22]],
-	},
-	{
-		icon: "💬", keyEn: "Tech Discussion", keyVi: "Thảo Luận Công Nghệ", count: 334, share: 8.4,
-		topHosts: [["reddit.com", 127], ["news.ycombinator.com", 125], ["businessinsider.com", 17], ["macrumors.com", 12]],
-	},
-	{
-		icon: "📜", keyEn: "Wikipedia & Curiosity", keyVi: "Wikipedia & Tò Mò", count: 298, share: 7.5,
-		topHosts: [["en.wikipedia.org", 193], ["archive.is", 45], ["gameofthrones.fandom.com", 32], ["imdb.com", 19]],
-	},
-	{
-		icon: "🐠", keyEn: "Care of Magical Creatures", keyVi: "Chăm Sóc Sinh Vật", count: 134, share: 3.4,
-		topHosts: [["thuysinhtim.vn", 22], ["shelly.com", 22], ["weekaqua.world", 18], ["buceplant.com", 13]],
-	},
-];
-
-const widerCount = SNAPSHOT.articlesAfterFilter - SUBJECTS.reduce((s, x) => s + x.count, 0);
-
 const t = {
-	pageTitle: isVi ? "Cú Đường — Người Đọc Bên Dưới Dữ Liệu" : "The Owlery — The Reader Underneath The Data",
+	pageTitle: isVi ? "Cú Đường — Năm Đọc" : "The Owlery — A Year of Reading",
 	pageDesc: isVi
-		? "Sáu đặc điểm cá tính được dữ liệu Chrome history xác nhận: tôi là ai khi tôi tự chọn cái để đọc."
-		: "Six personality traits the Chrome history data confirms: who I am when I choose what to read.",
+		? "Bảy đặc điểm cá tính được rút từ cả việc đọc có chủ ý (Chrome) lẫn việc đọc do thuật toán mang đến (iOS Discover). Cùng một người, hai bề mặt."
+		: "Seven personality traits drawn from both deliberate reading (Chrome) and algorithmically-delivered reading (iOS Discover). Same person, two surfaces.",
 	dumbledore: isVi
 		? '"Lời nói, theo ý kiến không hề khiêm tốn của tôi, là nguồn ma thuật vô tận nhất của chúng ta." — Albus Dumbledore'
 		: '"Words are, in my not-so-humble opinion, our most inexhaustible source of magic." — Albus Dumbledore',
-	introTitle: isVi ? "Đây không phải báo cáo về việc đọc của tôi." : "This isn't a report about my reading.",
-	introBody: isVi
-		? `Đây là chân dung người đọc bên dưới ${SNAPSHOT.articlesAfterFilter.toLocaleString()} bài viết qua ${SNAPSHOT.spanDays} ngày Chrome history. ${SNAPSHOT.totalHistoryEntries.toLocaleString()} mục lịch sử thô được lọc xuống còn gần 4.000 bài thật sự đọc — tab công việc, dashboard, đăng nhập, mạng xã hội đều bị bỏ. Dữ liệu hỗ trợ kết luận; không phải ngược lại.`
-		: `It's a portrait of the reader underneath ${SNAPSHOT.articlesAfterFilter.toLocaleString()} articles across ${SNAPSHOT.spanDays} days of Chrome history. ${SNAPSHOT.totalHistoryEntries.toLocaleString()} raw history entries filtered down to nearly 4,000 actually-read articles — work tabs, dashboards, logins, and social feeds dropped. The data supports the conclusions; not the other way around.`,
+	intro: isVi
+		? `Hai cửa sổ vào cùng một người đọc. Chrome desktop (cú tôi gửi đi — ${SNAPSHOT.chromeArticles.toLocaleString()} bài tự tìm trong ${SNAPSHOT.chromeDays} ngày, sau khi loại tab công việc) và feed Discover trên iOS (cú đến tay — ${SNAPSHOT.discoverTaps} lượt chạm bài thuật toán chọn trong ${SNAPSHOT.discoverDays} ngày). Đây là những gì các bài viết — không phải tên miền — nói về tôi.`
+		: `Two windows into the same reader. Chrome desktop (owls I send out — ${SNAPSHOT.chromeArticles.toLocaleString()} articles I sought across ${SNAPSHOT.chromeDays} days, after work tabs are stripped) and the iOS Discover feed (owls that arrive — ${SNAPSHOT.discoverTaps} taps to articles the algorithm chose across ${SNAPSHOT.discoverDays} days). What follows is what the articles — not the domain names — say about me.`,
 
-	t1Title: isVi ? "I. Kỹ Sư Mở Stack Overflow Lúc 3 Giờ Chiều" : "I. The Stack-Overflow-At-3-PM Engineer",
+	t1Title: isVi ? "I. Người Tra Lỗi Lúc 3 Giờ Chiều" : "I. The 3-PM Lookup Engineer",
 	t1Body1: isVi
-		? "22% năm đọc của anh là tài liệu phần mềm — Stack Overflow, framework docs, changelog Vercel, blog Simon Willison. Cộng thêm 14% paper AI và tài liệu Claude SDK. Cộng thêm 8% thảo luận công nghệ trên Hacker News và Reddit. Tổng: 44% việc đọc là phần kéo dài của nghề."
-		: "22% of his year-of-reading is software craft — Stack Overflow, framework docs, Vercel changelogs, Simon Willison's blog. Plus 14% AI papers and Claude SDK pages. Plus 8% tech discussion on Hacker News and Reddit. Total: 44% of reading is an extension of the workday.",
+		? 'Khi code hỏng lúc 3 giờ chiều, anh tìm. Copy thông báo lỗi, dán vào ô tìm kiếm, đọc câu trả lời được upvote nhất. Mỗi ngày, không cách nào khác. "How to flush DNS cache." "Why is my Next.js page returning JSON instead of HTML." "TypeScript union type assertion." "Cocoapods private pods setup." "Eslint rule for arrow function expressions."'
+		: 'When code breaks at 3 PM, he looks it up. Copy the error message, paste it in the search box, read the highest-voted answer. Every day, no other way. "How to flush DNS cache." "Why is my Next.js page returning JSON instead of HTML." "TypeScript union type assertion." "Cocoapods private pods setup." "Eslint rule for arrow function expressions."',
 	t1Body2: isVi
-		? "Anh không nghỉ ngơi khỏi công việc bằng cách đọc; anh đọc để tiếp tục làm việc. Đây là kỹ sư mà việc đọc là tủ thuốc hằng ngày — không phải giải trí, không phải khám phá, mà là việc giữ tay nghề ở mỗi giờ ngẫu nhiên."
-		: "He doesn't take breaks from his work to read; he reads to keep doing his work. This is an engineer for whom reading is the daily medicine cabinet — not entertainment, not exploration, but keeping his hand sharp at random hours.",
+		? "Đây là người thợ giải bài toán nhỏ liên tục. Đọc không phải để giải trí — đọc để mở khóa bước tiếp. 22% việc đọc Chrome là loại này; cộng thêm 14% paper AI và Claude SDK docs. Tổng cộng khoảng 44% năm đọc là phần kéo dài của ngày làm việc."
+		: "This is a craftsman solving small problems on repeat. Reading isn't for pleasure — it's to unblock the next move. 22% of Chrome reading is this kind of lookup; plus 14% AI papers and Claude SDK docs. Combined: roughly 44% of the year-of-reading is an extension of the workday.",
 
-	t2Title: isVi ? "II. Người Chơi Cá Thuộc Tên Latin" : "II. The Hobbyist Who Knows the Latin Names",
+	t2Title: isVi ? "II. Người Hâm Mộ Manchester United 17 Năm" : "II. The 17-Year Manchester United Lifer",
 	t2Body1: isVi
-		? "Hồ thủy sinh chỉ chiếm 3% Chrome reading — nhỏ về khối lượng. Nhưng độ chuyên thì khác: anh tìm \"astatheros macracanthus\", \"oscura heterospila\", \"motaguense\" — tên loài cichlid Latin nhập từ trí nhớ, qua nhiều năm, nhiều lần."
-		: "Aquariums show up at only 3% of his Chrome reading — small in volume. But the depth is different: he searches \"astatheros macracanthus\", \"oscura heterospila\", \"motaguense\" — Latin cichlid species names typed from memory, over many years, many times.",
+		? 'Mainoo. Garnacho. Mbeumo. "Lisandro Martinez on his recovery." "List of managers out of contract." "Eric Cantona asked to front Manchester United documentary." "ANOTHER Bruno Assist | Chelsea v Man Utd Extended Highlights." Trên Discover, 159 lượt chạm X threads — phần lớn là MU. Trên YouTube, 223 lượt xem kênh chính thức của United.'
+		: 'Mainoo. Garnacho. Mbeumo. "Lisandro Martinez on his recovery." "List of managers out of contract." "Eric Cantona asked to front Manchester United documentary." "ANOTHER Bruno Assist | Chelsea v Man Utd Extended Highlights." On Discover, 159 X-thread taps — most of them MU. On YouTube, 223 watches of the official United channel.',
 	t2Body2: isVi
-		? "Hầu hết người chơi cá nói \"cichlid vàng\" hoặc \"cá Trung Mỹ\". Anh không. Đây là loại sở thích mà chiều sâu sống ngoài lịch sử trình duyệt — sống trong phòng cá, trong tủ kính, trong các tên Latin đã thuộc lòng."
-		: "Most fishkeepers say \"yellow cichlid\" or \"Central American cichlid.\" He doesn't. This is the kind of hobby where depth lives outside the browser history — lives in the tank room, in the glass cabinet, in the Latin names committed to memory.",
+		? "Qua mọi thay đổi thuật toán, mọi đổi việc, mọi đổi nước, đội bóng vẫn hiện lên vì nó vẫn quan trọng. 105 lần tìm \"mu fixtures\" qua nhiều năm nói cùng một điều. Đây không phải fan thời vụ. Đây là lòng trung thành đời người."
+		: "Through every algorithm change, every job change, every country change, the team keeps coming up because it keeps mattering. The 105 lifetime \"mu fixtures\" searches say the same thing. Not a casual fan. A lifelong loyalist.",
 
-	t3Title: isVi ? "III. Kẻ Lang Thang Wikipedia Lúc Nửa Đêm" : "III. The Midnight Wikipedia Wanderer",
+	t3Title: isVi ? "III. Người Đọc Bản Ra Mắt Hằng Ngày" : "III. The Daily Releaser",
 	t3Body1: isVi
-		? 'Wikipedia chiếm 8% Chrome reading. Trong một năm anh mở tab cho "Loạn 12 sứ quân" (sứ quân Việt thế kỷ 10), "Apple Computer, Inc. v. Microsoft Corp." (vụ kiện UI 1988), "Honda CRF series" (xe trail), "Heimdall" (thần Bắc Âu), "Saturday Night Live 50th Anniversary", "List of Michelin-starred restaurants in Vietnam".'
-		: 'Wikipedia is 8% of his Chrome reading. In one year he opened tabs for "Loạn 12 sứ quân" (10th-century Vietnamese warlords), "Apple Computer, Inc. v. Microsoft Corp." (the 1988 UI lawsuit), "Honda CRF series" (trail bikes), "Heimdall" (the Norse god), "Saturday Night Live 50th Anniversary", "List of Michelin-starred restaurants in Vietnam".',
+		? '"Gemini 3 Pro: the frontier of vision AI." "More advanced AI capabilities…" "The cost-friendly MacBook upgrade." "I test Gemini for a living — here\'s what surprised me." "Orchestrating AI Code Review at scale." "GitHub announcements." Mỗi thông báo Apple, mỗi cập nhật Claude, mỗi bản ra mắt framework — anh đã đọc trước cà phê sáng.'
+		: '"Gemini 3 Pro: the frontier of vision AI." "More advanced AI capabilities…" "The cost-friendly MacBook upgrade." "I test Gemini for a living — here\'s what surprised me." "Orchestrating AI Code Review at scale." "GitHub announcements." Every Apple announcement, every Claude SDK update, every framework release — read before morning coffee.',
 	t3Body2: isVi
-		? "Sáu chủ đề, một đêm — không cái nào cho công việc. Sự lang thang là thật và cụ thể. Khi anh không đọc tài liệu kỹ thuật và không đọc bóng đá, anh đọc thứ này. Đó là khu vực tò mò thuần khiết, nhỏ về khối lượng, đặc biệt về độ rộng."
-		: "Six subjects, one night — none for work. The wandering is real and specific. When he isn't reading technical docs and isn't reading football, he reads this. That's the zone of pure curiosity — small in volume, distinctive in breadth.",
+		? "29% lượt chạm Discover thuộc về loại này; 14% việc đọc Chrome cũng. Biết cái gì ship hôm nay là một phần của tay nghề, không phải tin tức. Đây là người thợ giữ nhịp một lĩnh vực chuyển động nhanh — không phải để mắt vào, mà để cả hai."
+		: "29% of Discover taps are this category; 14% of Chrome reading is too. Knowing what shipped today is part of the craft, not news. This is a craftsman keeping pace with a fast-moving field — not keeping an eye on it, keeping both.",
 
-	t4Title: isVi ? "IV. Người Đọc Hai Tiếng" : "IV. The Bilingual Reader",
+	t4Title: isVi ? "IV. Người Chơi Cá Thuộc Tên Latin" : "IV. The Hobbyist Who Knows the Latin Names",
 	t4Body1: isVi
-		? "16% Chrome reading là tiếng Việt — VnExpress, Tuổi Trẻ, Thanh Niên, vi.wikipedia. Đây là tỷ lệ đáng kể. Quê hương đọc hằng ngày bằng tiếng mẹ đẻ; mọi thứ khác đọc bằng tiếng Anh."
-		: "16% of his Chrome reading is Vietnamese — VnExpress, Tuoi Tre, Thanh Nien, vi.wikipedia. That's a meaningful share. The home country reads daily in his native voice; everything else reads in English.",
+		? '"Astatheros macracanthus." "Oscura heterospila." "Motaguense." Tên loài cichlid Latin nhập từ trí nhớ, qua nhiều năm, nhiều lần. Cộng thêm "Plant Profile — Flame Moss," "Rare Wild Betta Fish," "Nature Aquarium World — Takashi Amano," "Reverse Osmosis Filters & Accessories."'
+		: '"Astatheros macracanthus." "Oscura heterospila." "Motaguense." Latin cichlid species names typed from memory, over many years, many times. Plus "Plant Profile — Flame Moss," "Rare Wild Betta Fish," "Nature Aquarium World — Takashi Amano," "Reverse Osmosis Filters & Accessories."',
 	t4Body2: isVi
-		? "Hai tiếng, một người, không xung đột — chỉ là hai cửa sổ vào cùng một thế giới. Đặc điểm này giải thích vì sao tin Việt và phân tích quốc tế cùng tồn tại trong một ngày đọc — hai tủ sách trong cùng một phòng."
-		: "Two languages, one person, no conflict — just two windows into the same world. This trait explains why Vietnamese news and international analysis coexist within a single day of reading — two bookshelves in the same room.",
+		? "Hầu hết người chơi cá nói \"cichlid vàng\" hoặc \"cá Trung Mỹ\". Anh không. Sở thích này có chiều sâu sống ngoài lịch sử trình duyệt — sống trong phòng cá, trong tủ kính, trong tên Latin đã thuộc lòng. 3% theo khối lượng đọc, một trăm phần trăm theo độ chuyên."
+		: "Most fishkeepers say \"yellow cichlid\" or \"Central American cichlid.\" He doesn't. This hobby's depth lives outside browser history — in the tank room, in the glass cabinet, in the Latin names committed to memory. 3% by volume, one-hundred percent by specificity.",
 
-	t5Title: isVi ? "V. Bề Rộng Sống Ở Các Góc" : "V. The Breadth Lives In The Corners",
+	t5Title: isVi ? "V. Kẻ Lang Thang Wikipedia Lúc Nửa Đêm" : "V. The Midnight Wikipedia Wanderer",
 	t5Body1: isVi
-		? "450 tên miền chỉ vào một hoặc hai lần — đây là đuôi dài thật sự. Trong đó có chosun.com (báo Hàn Quốc), avbrief.com (tin hàng không), manus.im (AI agent platform Trung Quốc), antirez.com (kỹ sư Redis), 0x44.xyz (security researcher), addyosmani.com (engineer Google), jalammar.github.io (giải thích Transformer)."
-		: "450 domains visited exactly once or twice — that's the actual long tail. Among them: chosun.com (Korean newspaper), avbrief.com (aviation news), manus.im (Chinese AI agent startup), antirez.com (Redis engineer), 0x44.xyz (security researcher), addyosmani.com (Google engineer), jalammar.github.io (Transformer explainer).",
+		? '"Loạn 12 sứ quân." "Apple Computer, Inc. v. Microsoft Corp." "Honda CRF series." "Heimdall." "Saturday Night Live 50th Anniversary Special." "List of Michelin-starred restaurants in Vietnam." "List of countries by GDP (PPP)." "Quentin Tarantino." "The Bear (TV series)." "Ramanujan."'
+		: '"Loạn 12 sứ quân." "Apple Computer, Inc. v. Microsoft Corp." "Honda CRF series." "Heimdall." "Saturday Night Live 50th Anniversary Special." "List of Michelin-starred restaurants in Vietnam." "List of countries by GDP (PPP)." "Quentin Tarantino." "The Bear (TV series)." "Ramanujan."',
 	t5Body2: isVi
-		? "\"Tôi đọc bài từ khắp nơi\" không hẳn đúng theo khối lượng — phần lớn là nghề. Nhưng các góc hẹp này là thật. Mỗi góc một bài, mỗi bài một niềm tò mò. Bề rộng không sống ở khối lượng. Sống ở các góc, và các góc được yêu."
-		: "\"I read articles from everywhere\" isn't quite right by volume — the bulk is craft. But these narrow corners are real. One article per corner, one curiosity per article. Breadth doesn't live in volume. It lives in the corners, and the corners are loved.",
+		? "Sáu chủ đề, một đêm — sứ quân Việt thế kỷ 10 gặp vụ kiện UI 1988 gặp xe trail Honda gặp thần Bắc Âu. Không cái nào cho công việc. Sự lang thang là thật và cụ thể. Khi anh không tra lỗi và không xem highlight, anh đọc cái này. 8% việc đọc — không nhiều, nhưng đậm đặc."
+		: "Six subjects, one night — 10th-century Vietnamese warlords meet 1988 software lawsuits meet Honda trail bikes meet Norse gods. None for work. The wandering is real and specific. When he isn't looking up errors and isn't watching highlights, he reads this. 8% of reading — not much, but concentrated.",
 
-	t6Title: isVi ? "VI. Người Thợ, Với Sở Thích Bên Cạnh" : "VI. A Craftsman, With Hobbies On The Side",
+	t6Title: isVi ? "VI. Người Đọc Hai Tiếng" : "VI. The Bilingual Reader",
 	t6Body1: isVi
-		? "Sáu đặc điểm — kỹ sư 3 giờ chiều, người chơi cá thuộc Latin, kẻ lang thang Wikipedia, người đọc hai tiếng, các góc bề rộng — tổng hợp thành một chân dung nhất quán."
-		: "Six traits — the 3 PM engineer, the Latin-name hobbyist, the midnight Wanderer, the bilingual reader, the corners-of-breadth — add up to one consistent portrait.",
+		? '"Shark Bình tham gia rửa tiền trong vụ Mr Pips lừa đảo 1.300 tỉ đồng." "Nam sinh Bách khoa Hà Nội gây sốt với Phở anh Hai." "HCMC\'s scoop of nostalgia, served." "Loạn 12 sứ quân — Wikipedia tiếng Việt." "Con ma nhà họ Hứa." "Danh sách Thủ tướng Chính phủ Việt Nam."'
+		: '"Shark Bình tham gia rửa tiền trong vụ Mr Pips lừa đảo 1.300 tỉ đồng." "Nam sinh Bách khoa Hà Nội gây sốt với Phở anh Hai." "HCMC\'s scoop of nostalgia, served." "Loạn 12 sứ quân — Wikipedia tiếng Việt." "Con ma nhà họ Hứa." "Danh sách Thủ tướng Chính phủ Việt Nam."',
 	t6Body2: isVi
-		? "Người thợ thủ công đọc để giữ tay nghề, với những lòng trung thành sâu bên cạnh — Manchester United, hồ cá, tin Việt Nam. Không phải học giả khảo sát mọi châu lục. Nhưng cũng không phải kỹ sư hẹp. Đó là cái gì đó cụ thể hơn: một người mang công việc của mình vào mọi thứ anh đọc, và mang sự yêu mến vào những góc còn lại."
-		: "A craftsman reading to stay sharp, with deep loyalties on the side — Manchester United, fish-keeping, Vietnamese news. Not a polymath surveying every continent. But also not a narrow engineer. It's something more specific: a person who brings his work into everything he reads, and brings affection into the corners that remain.",
+		? "Tin Việt đọc bằng tiếng Việt. Phân tích quê nhà đọc bằng tiếng Anh (e.vnexpress, Tuổi Trẻ phiên bản English). Một quê hương, hai cửa sổ — không cái nào cảm thấy xa lạ. 16% Chrome reading là tiếng Việt; 5% lượt chạm Discover là báo Việt. Hai bề mặt nói cùng một thói quen."
+		: "Vietnamese news read in Vietnamese. Home-country analysis read in English (e.vnexpress, Tuoi Tre's English edition). One country, two windows — neither feels foreign. 16% of Chrome reading is Vietnamese; 5% of Discover taps are Vietnamese press. Two surfaces, one habit.",
 
-	refTitle: isVi ? "Phụ Lục — Phân Tích Theo Môn" : "Reference — Breakdown by Subject",
-	refBody: isVi ? "Bảng số liệu hỗ trợ các đặc điểm ở trên." : "The numbers backing the traits above.",
-	refColSubj: isVi ? "Môn" : "Subject",
-	refColCount: isVi ? "Bài" : "Articles",
-	refColShare: isVi ? "Tỷ lệ" : "Share",
-	refColTop: isVi ? "Outlets hàng đầu" : "Top outlets",
+	t7Title: isVi ? "VII. Bài Đọc Một Lần, Không Quay Lại" : "VII. Read Once, Never Returned To",
+	t7Body1: isVi
+		? '"How I found a bypass in Google\'s big anti-adblock update." "21 Lessons From 14 Years at Google." "The Illustrated Transformer." "Don\'t fall into the anti-AI hype." "Sort your dependencies!" "Context Engineering for AI Agents: Lessons from Building Manus." "Why Software Is Eating the World." "United MAX Hit by Falling Object at 36,000 Feet."'
+		: '"How I found a bypass in Google\'s big anti-adblock update." "21 Lessons From 14 Years at Google." "The Illustrated Transformer." "Don\'t fall into the anti-AI hype." "Sort your dependencies!" "Context Engineering for AI Agents: Lessons from Building Manus." "Why Software Is Eating the World." "United MAX Hit by Falling Object at 36,000 Feet."',
+	t7Body2: isVi
+		? "Mỗi bài đọc một lần, không bookmark, không quay lại. Không phải vì chúng dễ quên — mà vì chúng đã được đọc. Đây là người không lưu tài liệu để đọc lại; người đọc rồi đi. \"Tôi đọc bài từ khắp nơi\" không hẳn đúng theo khối lượng — nhưng các bài này là thật."
+		: "Each read once, never bookmarked, never returned to. Not because they're forgettable — because they're done. This is someone who doesn't save articles to re-read; he reads, and moves on. \"I read articles from everywhere\" isn't quite right by volume — but these are real.",
+
+	t8Title: isVi ? "VIII. Người Thợ Với Sở Thích Bên Cạnh" : "VIII. A Craftsman With Hobbies On The Side",
+	t8Body1: isVi
+		? "Bảy đặc điểm — kỹ sư 3 giờ chiều, người United đời người, người ra mắt hằng ngày, người chơi cá Latin, kẻ lang thang Wikipedia, người đọc hai tiếng, người đọc một lần — tổng hợp thành một chân dung nhất quán qua hai bề mặt."
+		: "Seven traits — 3-PM engineer, lifelong United fan, daily releaser, Latin-name hobbyist, midnight Wanderer, bilingual reader, read-once-and-move-on — add up to one consistent portrait across two surfaces.",
+	t8Body2: isVi
+		? "Người thợ thủ công đọc để giữ tay nghề, với những lòng trung thành sâu bên cạnh. Không phải học giả khảo sát mọi châu lục. Cũng không phải kỹ sư hẹp. Cái gì đó cụ thể hơn: một người mang công việc vào mọi thứ anh đọc, và mang sự yêu mến vào những góc còn lại."
+		: "A craftsman reading to stay sharp, with deep loyalties on the side. Not a polymath surveying every continent. Also not a narrow engineer. Something more specific: a person who brings his work into everything he reads, and brings affection into the corners that remain.",
 
 	cavTitle: isVi ? "Lưu Ý — Những Gì Không Thể Cho Thấy" : "Caveats — What This Cannot Show",
 	caveats: isVi
 		? [
-			["Khoảng thời gian.", `Takeout chỉ trả về ${SNAPSHOT.spanDays} ngày — bất cứ điều gì trước ${SNAPSHOT.rangeStart} đều vô hình.`],
-			["Đặc điểm là phỏng đoán.", "Trên ~4.000 bài viết được lọc. Mẫu lớn hơn có thể tinh chỉnh."],
-			["Độ sâu đọc.", "Một tiêu đề có thể là đóng tab 3 giây hoặc đọc sâu 30 phút. Chrome không ghi thời gian dừng."],
-			["Thiết bị khác.", "Bài đọc trên điện thoại hoặc tablet (không sync) không xuất hiện."],
-			["Ẩn danh.", "Bất cứ thứ gì mở trong chế độ ẩn danh đều vô hình."],
+			["Tên miền không phải nội dung.", "Một số host được tải nền (script bên thứ ba, redirect, image CDN, đăng nhập) mà tôi không nhớ ghé thăm — chính tại sao báo cáo này dùng tiêu đề bài viết, không phải danh sách host."],
+			["Khoảng thời gian.", `Chrome: ${SNAPSHOT.chromeDays} ngày. Discover: ${SNAPSHOT.discoverDays} ngày. Trước hai mốc đó: vô hình.`],
+			["Đặc điểm là phỏng đoán.", "Trên ~4.300 bài tổng cộng. Mẫu lớn hơn có thể tinh chỉnh."],
+			["Độ sâu đọc không biết.", "Một tiêu đề có thể là đóng tab 3 giây hoặc đọc sâu 30 phút."],
+			["Thiết bị khác / ẩn danh.", "Bài đọc trên điện thoại không sync, hoặc trong chế độ ẩn danh, không xuất hiện."],
 		]
 		: [
-			["Time horizon.", `Takeout returned only ${SNAPSHOT.spanDays} days — anything before ${SNAPSHOT.rangeStart} is invisible.`],
-			["Traits are inferred.", "From ~4,000 filtered articles. A larger sample might refine these."],
-			["Reading depth.", "A title could be a 3-second tab close or a 30-minute deep read. Chrome doesn't record dwell."],
-			["Other devices.", "Articles read on phone or tablet (without sync) don't appear here."],
-			["Incognito.", "Anything opened in private mode is invisible."],
+			["Domains aren't content.", "Some hosts are loaded in the background (3rd-party scripts, redirects, image CDNs, login flows) that I have no memory of visiting — which is exactly why this report quotes article titles, not host lists."],
+			["Time horizon.", `Chrome: ${SNAPSHOT.chromeDays} days. Discover: ${SNAPSHOT.discoverDays} days. Before those: invisible.`],
+			["Traits are inferred.", "From ~4,300 articles total. A larger sample might refine these."],
+			["Reading depth is unknown.", "A title could be a 3-second tab close or a 30-minute deep read."],
+			["Other devices / incognito.", "Articles read on phones without sync, or in private mode, don't appear."],
 		],
 	footnote: isVi
-		? `Tạo từ Google Takeout export ngày ${SNAPSHOT.exported}. Dữ liệu nguồn được giữ riêng tư.`
-		: `Generated from Google Takeout export of ${SNAPSHOT.exported}. Source data is kept private.`,
+		? `Tạo từ Google Takeout (Chrome) và My Activity (Discover) export ngày ${SNAPSHOT.exported}. Dữ liệu nguồn được giữ riêng tư.`
+		: `Generated from Google Takeout (Chrome) and My Activity (Discover) exports of ${SNAPSHOT.exported}. Source data is kept private.`,
 };
 
 const formatDate = (iso: string) => {
@@ -170,9 +142,11 @@ const formatDate = (iso: string) => {
 			<h1 class="ow-title">{t.pageTitle}</h1>
 			<p class="ow-sub">{t.pageDesc}</p>
 			<blockquote class="ow-quote">{t.dumbledore}</blockquote>
-			<p class="ow-intro"><strong>{t.introTitle}</strong> {t.introBody}</p>
+			<p class="ow-intro">{t.intro}</p>
 			<p class="ow-window">
-				{formatDate(SNAPSHOT.rangeStart)} → {formatDate(SNAPSHOT.rangeEnd)} · {SNAPSHOT.spanDays} {isVi ? "ngày" : "days"} · {SNAPSHOT.articlesAfterFilter.toLocaleString()} {isVi ? "bài viết" : "articles"}
+				{isVi ? "Chrome:" : "Chrome:"} {formatDate(SNAPSHOT.chromeStart)} → {formatDate(SNAPSHOT.chromeEnd)}
+				· {isVi ? "Discover:" : "Discover:"} {formatDate(SNAPSHOT.discoverStart)} → {formatDate(SNAPSHOT.discoverEnd)}
+				· {SNAPSHOT.combinedTotal.toLocaleString()} {isVi ? "bài tổng cộng" : "articles total"}
 			</p>
 		</header>
 
@@ -206,38 +180,22 @@ const formatDate = (iso: string) => {
 			<p class="ow-body">{t.t5Body2}</p>
 		</section>
 
-		<section class="ow-trait ow-synth">
+		<section class="ow-trait">
 			<h2 class="ow-h2">{t.t6Title}</h2>
 			<p class="ow-body">{t.t6Body1}</p>
 			<p class="ow-body">{t.t6Body2}</p>
 		</section>
 
-		<section class="ow-ref">
-			<h2 class="ow-h2">{t.refTitle}</h2>
-			<p class="ow-em">{t.refBody}</p>
-			<div class="ow-table-wrap">
-				<table class="ow-table">
-					<thead>
-						<tr><th>{t.refColSubj}</th><th class="num">{t.refColCount}</th><th class="num">{t.refColShare}</th><th>{t.refColTop}</th></tr>
-					</thead>
-					<tbody>
-						{SUBJECTS.map((s) => (
-							<tr>
-								<td><span class="ow-icon">{s.icon}</span> {isVi ? s.keyVi : s.keyEn}</td>
-								<td class="num">{s.count.toLocaleString()}</td>
-								<td class="num">{s.share.toFixed(1)}%</td>
-								<td class="ow-tophosts">{s.topHosts.map(([h, n]) => `${h} (${n})`).join(", ")}</td>
-							</tr>
-						))}
-						<tr class="ow-rest">
-							<td><span class="ow-icon">❓</span> {isVi ? "Đuôi dài (450 host hiếm)" : "Long tail (450 rare hosts)"}</td>
-							<td class="num">{widerCount.toLocaleString()}</td>
-							<td class="num">{(widerCount / SNAPSHOT.articlesAfterFilter * 100).toFixed(1)}%</td>
-							<td class="ow-tophosts">—</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
+		<section class="ow-trait">
+			<h2 class="ow-h2">{t.t7Title}</h2>
+			<p class="ow-body">{t.t7Body1}</p>
+			<p class="ow-body">{t.t7Body2}</p>
+		</section>
+
+		<section class="ow-trait ow-synth">
+			<h2 class="ow-h2">{t.t8Title}</h2>
+			<p class="ow-body">{t.t8Body1}</p>
+			<p class="ow-body">{t.t8Body2}</p>
 		</section>
 
 		<section class="ow-trait">
@@ -267,20 +225,8 @@ const formatDate = (iso: string) => {
 	.ow-trait { margin-top: var(--spacing-12); }
 	.ow-h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.8rem); font-weight: var(--font-weight-display); color: var(--color-text); margin: 0 0 var(--spacing-4); letter-spacing: -0.01em; }
 	.ow-body { font-family: var(--font-sans); font-size: var(--font-size-md); color: var(--color-text); line-height: var(--leading-relaxed); margin: 0 0 var(--spacing-3); max-width: 70ch; }
-	.ow-em { font-family: var(--font-sans); font-size: var(--font-size-sm); font-style: italic; color: var(--color-text-secondary); margin: 0 0 var(--spacing-4); max-width: 70ch; }
-	.ow-icon { display: inline-block; margin-right: 0.3em; }
 
 	.ow-synth { padding: var(--spacing-6) var(--spacing-6); background: var(--color-surface-elevated); border: 1px solid var(--color-border); border-radius: var(--radius); }
-
-	.ow-ref { margin-top: var(--spacing-14); }
-	.ow-table-wrap { overflow-x: auto; margin: var(--spacing-4) 0 var(--spacing-3); border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-surface-elevated); }
-	.ow-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--font-size-sm); }
-	.ow-table thead th { text-align: left; padding: var(--spacing-3) var(--spacing-4); font-family: var(--font-mono); font-size: var(--font-size-xs); font-weight: 500; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
-	.ow-table tbody td { padding: var(--spacing-2) var(--spacing-4); color: var(--color-text); border-bottom: 1px solid var(--color-border); vertical-align: top; }
-	.ow-table tbody tr:last-child td { border-bottom: 0; }
-	.ow-table .num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
-	.ow-table .ow-tophosts { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-text-secondary); }
-	.ow-table .ow-rest td { color: var(--color-muted); font-style: italic; }
 
 	.ow-caveats { list-style: none; padding: 0; margin: var(--spacing-4) 0 0; display: flex; flex-direction: column; gap: var(--spacing-3); }
 	.ow-caveats li { font-family: var(--font-sans); font-size: var(--font-size-sm); color: var(--color-text); line-height: var(--leading-relaxed); padding-left: var(--spacing-4); border-left: 2px solid var(--color-border); max-width: 75ch; }

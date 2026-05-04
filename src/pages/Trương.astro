@@ -1286,8 +1286,8 @@ function formatGHDate(iso: string) {
 			</h2>
 			<p class="section-desc">
 				{isVi
-					? "Nếu IMDb là kệ phim tôi cố tình chấm điểm, YouTube là kệ tự đầy bằng autoplay. Đây không phải báo cáo về thuật toán YouTube — đây là chân dung người xem mà 169 ngày tự động phát đã vẽ ra. 10.169 lượt mở qua sáu tháng (Google giới hạn cửa sổ Takeout ở đó), không phải chân dung trọn vẹn — nhưng đủ để biết tôi là ai khi không ai nhìn."
-					: "If IMDb is the shelf of films I deliberately score, YouTube is the shelf that fills itself by autoplay. This isn't a report about the YouTube algorithm — it's a portrait of the watcher 169 days of autoplay have painted. 10,169 watches across six months (Google caps the Takeout window there), not a complete portrait — but enough to know who I am when no one's looking."}
+					? "IMDb là kệ tôi chọn lọc. YouTube là kệ tự đầy. 10.169 lượt mở trong sáu tháng cho tôi biết cái gì chạy khi tôi không nhìn — và cái gì tôi quay lại đến năm lần."
+					: "IMDb is the shelf I curate. YouTube is the shelf that fills itself. 10,169 plays in six months tells me what runs when I'm not looking — and what I return to up to five times."}
 			</p>
 
 			<div class="wrapped-grid">
@@ -1299,8 +1299,8 @@ function formatGHDate(iso: string) {
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Sáu mươi lượt mở mỗi ngày, đều như nước. Khoảng ba tiếng YouTube mỗi ngày nếu giả định video trung bình ba phút. Không phải binge — đây là tiêu thụ-như-bầu-bạn."
-							: "Sixty opens a day, steady as water. About three hours of YouTube daily if you assume average video length of three minutes. Not bingeing — this is consumption-as-companionship."}
+							? "Sáu mươi video mỗi ngày trong 169 ngày. Highlight bóng đá giờ trưa. Lex Fridman lúc đi bộ. Hannah Fry giải thích sao người ta hắt hơi trước mặt trời. Zack D. Films khi không có gì khác để nhìn."
+							: "Sixty videos a day for 169 days. Football highlights at lunch. Lex Fridman during walks. Hannah Fry explaining why people sneeze at the sun. Zack D. Films when there's nothing else to look at."}
 					</p>
 				</article>
 
@@ -1388,200 +1388,129 @@ function formatGHDate(iso: string) {
 	<section id="owlery-wrapped" class="about-section">
 		<div class="about-inner">
 			<h2 class="section-heading" data-rune="ᚺ">
-				{isVi ? "Cú Đường — Một Năm Đọc Của Người Thợ" : "The Owlery — A Craftsman's Year of Reading"}
+				{isVi ? "Cú Đường — Năm Đọc" : "The Owlery — A Year of Reading"}
 				<a href="#owlery-wrapped" class="anchor-link" aria-label="Link to Owlery">#</a>
 			</h2>
 			<p class="section-desc">
 				{isVi
-					? "Tôi từng nói với chính mình rằng tôi đọc bài từ khắp nơi trên thế giới. Rồi tôi xuất một năm lịch sử Chrome và dữ liệu nói khác. 83.850 lượt mục thô; sau khi loại các tab công việc, dashboard, đăng nhập và mạng xã hội, 3.977 bài viết thật sự còn lại. Hình dạng không phải sự tò mò trải khắp thế giới — đó là một thợ thủ công đang theo kịp nghề. Phần lớn thời gian là framework, paper AI, Stack Overflow lúc 3 giờ chiều. Phần lang thang là thật, nhưng nhỏ. Đây là báo cáo trung thực."
-					: "I told myself I read articles from everywhere in the world. Then I exported a year of Chrome history and the data told me different. 83,850 raw entries; after dropping work tabs, dashboards, logins, and social feeds, 3,977 actual articles remain. The shape isn't world-spanning curiosity — it's a craftsman keeping pace with his trade. Most of the time it's frameworks, AI papers, Stack Overflow at 3 PM. The wandering is real but small. This is the honest report."}
+					? "Một năm đọc qua hai bề mặt: Chrome desktop (cú tôi gửi đi — bài tự tìm, gần 4.000 trong 365 ngày) và feed Discover trên iOS (cú đến tay — thuật toán chọn, 352 lượt chạm). Cùng một người đọc, hai góc nhìn. Đây là những gì tôi thật sự đọc — không phải tên miền, là tiêu đề thật."
+					: "One year of reading across two surfaces: Chrome desktop (owls I send out — what I sought, nearly 4,000 over 365 days) and the iOS Discover feed (owls that arrive — what the algorithm chose for me, 352 taps). Same reader, two angles. What follows is what I actually read — not domain names, real titles."}
 			</p>
 
 			<div class="wrapped-grid">
 				{/* HERO */}
 				<article class="wrap-card wrap-hero">
-					<div class="wrap-stat">3,977</div>
+					<div class="wrap-stat">4,329</div>
 					<div class="wrap-label">
-						{isVi ? "Bài viết Chrome · 365 ngày · ~11/ngày" : "Chrome articles · 365 days · ~11/day"}
+						{isVi ? "Bài đã đọc · 365 ngày · hai bề mặt" : "Articles read · 365 days · two surfaces"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Một năm tôi mở Chrome trên desktop. Sau khi loại tab công việc và dashboard, gần 4.000 bài viết tôi thật sự đọc. Đây không phải báo cáo dữ liệu — đây là chân dung người đọc bên dưới dữ liệu."
-							: "One year of opening Chrome on desktop. After filtering out work tabs and dashboards, nearly 4,000 articles I actually read. This isn't a data report — it's a portrait of the reader underneath the data."}
+							? "Mười một bài Chrome mỗi ngày. Cộng 352 cái GẬT với feed Discover. Stack Overflow giờ trưa. \"Loạn 12 sứ quân\" lúc nửa đêm. Một bài Atlantic lọt qua feed sáng Chủ Nhật. Cùng một người."
+							: "Eleven a day in Chrome. Plus 352 yeses to whatever Google's Discover feed put in front of me. Stack Overflow at lunch. \"Loạn 12 sứ quân\" at midnight. An Atlantic essay that found me on a Sunday morning. The same person, all of it."}
 					</p>
 				</article>
 
-				{/* TRAIT 1 — Stack Overflow at 3 PM Engineer */}
+				{/* TRAIT 1 — 3 PM Lookup Engineer */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-label wrap-label-top">
-						{isVi ? "Kỹ Sư Mở Stack Overflow Lúc 3 Giờ Chiều" : "The Stack-Overflow-At-3-PM Engineer"}
+						{isVi ? "Người Tra Lỗi Lúc 3 Giờ Chiều" : "The 3-PM Lookup Engineer"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "22% năm đọc của anh là tài liệu phần mềm — Stack Overflow, framework docs, changelog Vercel, blog Simon Willison. Cộng thêm 14% paper AI và tài liệu Claude SDK. Anh không nghỉ ngơi khỏi công việc bằng cách đọc; anh đọc để tiếp tục làm việc."
-							: "22% of his year-of-reading is software craft — Stack Overflow, framework docs, Vercel changelogs, Simon Willison's blog. Plus 14% AI papers and Claude SDK pages. He doesn't take breaks from his work to read; he reads to keep doing his work."}
+							? 'Khi code hỏng, anh tìm. "How to flush DNS cache." "Why is my Next.js page returning JSON instead of HTML." "TypeScript union type assertion." Copy lỗi, dán vào ô tìm kiếm, đọc câu trả lời được upvote nhất. Mỗi ngày, không cách nào khác. Đọc không phải để giải trí — đọc để mở khóa bước tiếp.'
+							: 'When code breaks, he looks it up. "How to flush DNS cache." "Why is my Next.js page returning JSON instead of HTML." "TypeScript union type assertion." Copy the error, paste it in the search box, read the highest-voted answer. Every day, no other way. Reading isn\'t for pleasure — it\'s to unblock the next move.'}
 					</p>
 				</article>
 
-				{/* TRAIT 2 — Hobbyist with Latin Names */}
-				<article class="wrap-card wrap-tall">
-					<div class="wrap-label wrap-label-top">
-						{isVi ? "Người Chơi Cá Thuộc Tên Latin" : "The Hobbyist Who Knows the Latin Names"}
-					</div>
-					<p class="wrap-note">
-						{isVi
-							? "Hồ thủy sinh chiếm 3% Chrome reading — nhỏ về khối lượng, sâu về độ chuyên. Anh tìm \"astatheros macracanthus\", \"oscura heterospila\", \"motaguense\" — tên loài cá nhập từ trí nhớ. Hầu hết người chơi cá nói \"cichlid vàng\". Anh không."
-							: "Aquariums show up at 3% of his Chrome reading — small in volume, deep in specificity. He searches \"astatheros macracanthus\", \"oscura heterospila\", \"motaguense\" — cichlid species names typed from memory. Most fishkeepers say \"yellow cichlid.\" He doesn't."}
-					</p>
-				</article>
-
-				{/* TRAIT 3 — Midnight Wikipedia Wanderer */}
-				<article class="wrap-card wrap-tall">
-					<div class="wrap-label wrap-label-top">
-						{isVi ? "Kẻ Lang Thang Wikipedia Lúc Nửa Đêm" : "The Midnight Wikipedia Wanderer"}
-					</div>
-					<p class="wrap-note">
-						{isVi
-							? 'Wikipedia chiếm 8% Chrome reading. Trong một năm anh mở tab cho "Loạn 12 sứ quân" (sứ quân thế kỷ 10), "Apple v. Microsoft" (vụ kiện UI năm 1988), "Honda CRF series" (xe trail), "Heimdall" (thần Bắc Âu) — thường lúc nửa đêm, không cái nào cho công việc. Sự lang thang là thật và cụ thể.'
-							: 'Wikipedia is 8% of his Chrome reading. In one year he opened tabs for "Loạn 12 sứ quân" (10th-century Vietnamese warlords), "Apple v. Microsoft" (the 1988 UI lawsuit), "Honda CRF series" (trail bikes), and "Heimdall" (the Norse god) — usually at midnight, none of it for work. The wandering is real and specific.'}
-					</p>
-				</article>
-
-				{/* TRAIT 4 — Bilingual Reader */}
-				<article class="wrap-card wrap-tall">
-					<div class="wrap-label wrap-label-top">
-						{isVi ? "Người Đọc Hai Tiếng" : "The Bilingual Reader"}
-					</div>
-					<p class="wrap-note">
-						{isVi
-							? "16% Chrome reading là tiếng Việt — VnExpress, Tuổi Trẻ, Thanh Niên, vi.wikipedia. Quê hương đọc hằng ngày bằng tiếng mẹ đẻ; mọi thứ khác đọc bằng tiếng Anh. Hai tiếng, một người, không xung đột — chỉ là hai cửa sổ vào cùng một thế giới."
-							: "16% of his Chrome reading is Vietnamese — VnExpress, Tuoi Tre, Thanh Nien, vi.wikipedia. The home country reads daily in his native voice; everything else reads in English. Two languages, one person, no conflict — just two windows into the same world."}
-					</p>
-				</article>
-
-				{/* TRAIT 5 — Specific Curiosity */}
-				<article class="wrap-card wrap-tall">
-					<div class="wrap-label wrap-label-top">
-						{isVi ? "Bề Rộng Sống Ở Các Góc" : "The Breadth Lives in the Corners"}
-					</div>
-					<p class="wrap-note">
-						{isVi
-							? "450 tên miền chỉ vào một hoặc hai lần. Trong đó: chosun.com (báo Hàn Quốc), avbrief.com (tin hàng không), manus.im (AI agent platform Trung Quốc), antirez.com (kỹ sư Redis). \"Tôi đọc bài từ khắp nơi\" không hẳn đúng theo khối lượng — nhưng các góc hẹp này là thật, và chúng được yêu."
-							: "450 domains visited exactly once or twice. Among them: chosun.com (Korean newspaper), avbrief.com (aviation news), manus.im (Chinese AI agent startup), antirez.com (Redis engineer). \"I read articles from everywhere\" isn't quite right by volume — but these narrow corners are real, and they're loved."}
-					</p>
-				</article>
-
-				{/* SORTING HAT */}
-				<article class="wrap-card wrap-wide">
-					<div class="wrap-label wrap-label-top">
-						{isVi ? "Người Thợ, Với Sở Thích Bên Cạnh" : "A Craftsman, With Hobbies On The Side"}
-					</div>
-					<p class="wrap-note wrap-note-top">
-						{isVi
-							? "Hình dạng rõ ràng: một thợ thủ công đọc để giữ tay nghề, với những lòng trung thành sâu bên cạnh — Manchester United, hồ cá, tin Việt Nam. Không phải học giả khảo sát mọi châu lục. Bề rộng sống ở các góc — và các góc được yêu."
-							: "The shape is clear: a craftsman reading to stay sharp, with deep loyalties on the side — Manchester United, fish-keeping, Vietnamese news. Not a polymath surveying every continent. The breadth lives in the corners — and the corners are loved."}
-					</p>
-				</article>
-			</div>
-
-			<p class="vial-footer">
-				<a href="/room-of-requirement/owlery-of-articles">
-					{isVi ? "Đọc bản phân tích đầy đủ — mỗi môn, mọi mẫu, đuôi dài 25 host →" : "Read the full analysis — every subject, all samples, 25 long-tail hosts →"}
-				</a>
-			</p>
-		</div>
-	</section>
-
-	<section id="owl-post-wrapped" class="about-section">
-		<div class="about-inner">
-			<h2 class="section-heading" data-rune="ᛞ">
-				{isVi ? "Cú Bưu — Discover Mang Đến Gì" : "Owl Post — What Discover Delivers"}
-				<a href="#owl-post-wrapped" class="anchor-link" aria-label="Link to Owl Post">#</a>
-			</h2>
-			<p class="section-desc">
-				{isVi
-					? "Đây không phải báo cáo về thuật toán Google Discover. Đây là báo cáo về tôi — vì thuật toán chỉ phản chiếu nơi tôi chạm. Sau 400 ngày và 352 lượt chạm bài, đây là hình dạng người đọc mà thuật toán thấy."
-					: "This isn't a report about Google's Discover algorithm. It's a report about me — because the algorithm only reflects where I tap. After 400 days and 352 article taps, here's the shape of the reader Discover sees."}
-			</p>
-
-			<div class="wrapped-grid">
-				{/* HERO */}
-				<article class="wrap-card wrap-hero">
-					<div class="wrap-stat">352</div>
-					<div class="wrap-label">
-						{isVi ? "Lượt chạm bài · 400 ngày · feed Discover iOS" : "Article taps · 400 days · iOS Discover feed"}
-					</div>
-					<p class="wrap-note">
-						{isVi
-							? "Một năm cộng một tháng. Cộng thêm 403 phiên feed mở mà tôi cuộn qua không chạm. Cái không chạm cũng nói lên điều gì đó — nhưng cái có chạm nói nhiều hơn."
-							: "A year and a month. Plus 403 sessions where I opened the feed and scrolled past without tapping anything. What I didn't tap says something — but what I did tap says more."}
-					</p>
-				</article>
-
-				{/* TRAIT 1 — The 17-Year United Lifer */}
+				{/* TRAIT 2 — 17-Year Manchester United Lifer */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-label wrap-label-top">
 						{isVi ? "Người Hâm Mộ Manchester United 17 Năm" : "The 17-Year Manchester United Lifer"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Trong 159 lượt chạm X threads (45% mọi lượt chạm), phần lớn là Man United. Tin chuyển nhượng, danh sách HLV, Mainoo và Garnacho. Qua mọi thay đổi thuật toán, mọi đổi việc, mọi đổi nước, đội bóng vẫn hiện lên vì nó vẫn quan trọng. 105 lần tìm \"mu fixtures\" qua nhiều năm nói cùng một điều."
-							: "Of 159 Discover taps to X threads (45% of all taps), most are about Manchester United. Transfer rumors, manager shortlists, Mainoo and Garnacho. Through every algorithm change, every job change, every country change, the team keeps coming up because it keeps mattering. The 105 lifetime \"mu fixtures\" searches say the same thing."}
+							? 'Mainoo. Garnacho. Mbeumo. "Lisandro Martinez on his recovery." "List of managers out of contract." "Eric Cantona asked to front Manchester United documentary." Qua mọi thay đổi thuật toán, mọi đổi việc, mọi đổi nước, đội bóng vẫn hiện lên vì nó vẫn quan trọng — 17 năm tìm "mu fixtures" cũng nói cùng một điều.'
+							: 'Mainoo. Garnacho. Mbeumo. "Lisandro Martinez on his recovery." "List of managers out of contract." "Eric Cantona asked to front Manchester United documentary." Through every algorithm change, every job change, every country change, the team keeps coming up because it keeps mattering — 17 years of "mu fixtures" searches say the same thing.'}
 					</p>
 				</article>
 
-				{/* TRAIT 2 — Daily Releaser */}
+				{/* TRAIT 3 — Daily Releaser */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-label wrap-label-top">
 						{isVi ? "Người Đọc Bản Ra Mắt Hằng Ngày" : "The Daily Releaser"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Đọc cái gì ra mắt hôm nay như người khác đọc tin tức. 29% lượt chạm Discover là Verge, TechCrunch, blog Google, Ars Technica, 9to5Mac, Tom's Guide. Apple thông báo gì? Anthropic ship cái gì? Mỗi sáng phải biết. Không phải để mắt vào lĩnh vực — anh để cả hai."
-							: "Reads what shipped today like other people read the news. 29% of Discover taps are Verge, TechCrunch, blog.google, Ars Technica, 9to5Mac, Tom's Guide. What did Apple announce? What did Anthropic ship? Every morning, must know. Doesn't keep an eye on the field — keeps both."}
+							? '"Gemini 3 Pro: the frontier of vision AI." "More advanced AI capabilities…" "The cost-friendly MacBook upgrade." "I test Gemini for a living." Mỗi thông báo Apple, mỗi cập nhật Claude, mỗi bản ra mắt framework — anh đã đọc trước cà phê sáng. Biết cái gì ship hôm nay là một phần của tay nghề, không phải tin tức.'
+							: '"Gemini 3 Pro: the frontier of vision AI." "More advanced AI capabilities…" "The cost-friendly MacBook upgrade." "I test Gemini for a living." Every Apple announcement, every Claude SDK update, every framework release — read before morning coffee. Knowing what shipped today is part of the craft, not news.'}
 					</p>
 				</article>
 
-				{/* TRAIT 3 — Quiet Broadsheet Reader */}
+				{/* TRAIT 4 — Hobbyist Latin Names */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-label wrap-label-top">
-						{isVi ? "Đọc Báo Lớn — Mà Không Đặt Báo" : "The Atlantic Subscriber, Without Subscribing"}
+						{isVi ? "Người Chơi Cá Thuộc Tên Latin" : "The Hobbyist Who Knows the Latin Names"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Khi NYT, The Atlantic, The Economist, Guardian, FT, Bloomberg lọt qua thuật toán, anh chạm — 11% mọi lượt chạm. Không bao giờ đặt báo nào trong số đó. Vẫn đọc khi chúng tìm đến. Đó là cách báo lớn vào nhà này: không qua hộp thư, mà qua feed."
-							: "When NYT, The Atlantic, The Economist, Guardian, FT, or Bloomberg reach him through the algorithm, he taps — 11% of all taps. Never subscribed to any of them. Reads them anyway when they find him. That's how the broadsheets enter this house: not through the mailbox, through the feed."}
+							? "\"Astatheros macracanthus.\" \"Oscura heterospila.\" \"Motaguense.\" Tên loài cichlid Latin nhập từ trí nhớ, qua nhiều năm, nhiều lần. Hầu hết người chơi cá nói \"cichlid vàng\". Anh không. Sở thích này có chiều sâu sống ngoài lịch sử trình duyệt — sống trong phòng cá, trong tủ kính, trong tên đã thuộc lòng."
+							: "\"Astatheros macracanthus.\" \"Oscura heterospila.\" \"Motaguense.\" Latin cichlid species names typed from memory, over many years, many times. Most fishkeepers say \"yellow cichlid.\" He doesn't. This hobby's depth lives outside browser history — in the tank room, in the glass cabinet, in names committed to memory."}
 					</p>
 				</article>
 
-				{/* TRAIT 4 — Bilingual Citizen */}
+				{/* TRAIT 5 — Midnight Wikipedia Wanderer */}
 				<article class="wrap-card wrap-tall">
 					<div class="wrap-label wrap-label-top">
-						{isVi ? "Công Dân Hai Tiếng" : "The Bilingual Citizen"}
+						{isVi ? "Kẻ Lang Thang Wikipedia Lúc Nửa Đêm" : "The Midnight Wikipedia Wanderer"}
 					</div>
 					<p class="wrap-note">
 						{isVi
-							? "Đọc Việt Nam qua cả hai tai. 5% lượt chạm là e.vnexpress (VnExpress tiếng Anh) và Tuổi Trẻ — Việt Nam viết bằng tiếng Anh, vì có lúc anh muốn đọc về quê nhà bằng giọng phân tích, không phải giọng quê. Tin cộng đồng đến qua tiếng Việt; phân tích đến qua tiếng Anh. Một quê hương, hai cửa sổ."
-							: "Reads Vietnam through both ears. 5% of taps are e.vnexpress (VnExpress in English) and Tuổi Trẻ — Vietnam written in English, because sometimes the home country reads better in the analytical voice than the local one. Daily news comes in Vietnamese; analysis comes in English. One country, two windows."}
+							? '"Loạn 12 sứ quân." "Apple Computer, Inc. v. Microsoft Corp." "Honda CRF series." "Heimdall." "Saturday Night Live 50th Anniversary." "List of Michelin-starred restaurants in Vietnam." Sáu chủ đề, một đêm — không cái nào cho công việc. Sự lang thang là thật và cụ thể.'
+							: '"Loạn 12 sứ quân." "Apple Computer, Inc. v. Microsoft Corp." "Honda CRF series." "Heimdall." "Saturday Night Live 50th Anniversary." "List of Michelin-starred restaurants in Vietnam." Six subjects, one night — none for work. The wandering is real and specific.'}
 					</p>
 				</article>
 
-				{/* SYNTHESIS — The Reader the Algorithm Sees */}
+				{/* TRAIT 6 — Bilingual Reader */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Người Đọc Hai Tiếng" : "The Bilingual Reader"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? '"Shark Bình tham gia rửa tiền trong vụ Mr Pips lừa đảo 1.300 tỉ đồng." "Nam sinh Bách khoa Hà Nội gây sốt với Phở anh Hai." "HCMC\'s scoop of nostalgia, served." Tin Việt đọc bằng tiếng Việt, phân tích quê nhà đọc bằng tiếng Anh. Một quê hương, hai cửa sổ — không cái nào cảm thấy xa lạ.'
+							: '"Shark Bình tham gia rửa tiền trong vụ Mr Pips lừa đảo 1.300 tỉ đồng." "Nam sinh Bách khoa Hà Nội gây sốt với Phở anh Hai." "HCMC\'s scoop of nostalgia, served." Vietnamese news read in Vietnamese, home-country analysis read in English. One country, two windows — neither feels foreign.'}
+					</p>
+				</article>
+
+				{/* TRAIT 7 — Once-A-Year Reads (replaces "domains" card) */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Bài Đọc Một Lần, Không Quay Lại" : "Read Once, Never Returned To"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? '"How I found a bypass in Google\'s big anti-adblock update." "21 Lessons From 14 Years at Google." "The Illustrated Transformer." "Don\'t fall into the anti-AI hype." "Sort your dependencies!" "Context Engineering for AI Agents." Mỗi bài đọc một lần, không bookmark, không quay lại. Không phải vì chúng dễ quên — mà vì chúng đã được đọc.'
+							: '"How I found a bypass in Google\'s big anti-adblock update." "21 Lessons From 14 Years at Google." "The Illustrated Transformer." "Don\'t fall into the anti-AI hype." "Sort your dependencies!" "Context Engineering for AI Agents." Each read once, never bookmarked, never returned to. Not because they\'re forgettable — because they\'re done.'}
+					</p>
+				</article>
+
+				{/* SYNTHESIS — Wide */}
 				<article class="wrap-card wrap-wide">
 					<div class="wrap-label wrap-label-top">
-						{isVi ? "Người Đọc Mà Thuật Toán Thấy" : "The Reader the Algorithm Sees"}
+						{isVi ? "Người Thợ Với Sở Thích Bên Cạnh" : "A Craftsman With Hobbies On The Side"}
 					</div>
 					<p class="wrap-note wrap-note-top">
 						{isVi
-							? "Discover không phơi anh ra với thế giới rộng hơn — nó tập trung thế giới hiện tại. Người hâm mộ Man United, người theo dõi tiền tuyến AI, người đọc báo lớn lặng lẽ, công dân hai tiếng. Bốn đặc điểm, bảy mươi phần trăm lượt chạm. Anh không phải kẻ lang thang — anh là người trở về."
-							: "Discover doesn't expose him to a wider world — it concentrates the existing one. Manchester United supporter, AI frontier watcher, quiet broadsheet reader, bilingual citizen. Four traits, seventy percent of taps. He's not a wanderer. He's a returner."}
+							? "Bảy đặc điểm, hai bề mặt, bốn-nghìn-bài-viết-cộng. Hình dạng là một người thợ thủ công đọc để giữ tay nghề — Stack Overflow, thông báo AI, framework docs — với những lòng trung thành sâu bên cạnh: Manchester United, hồ cá, tin Việt Nam, Wikipedia thi thoảng. Không phải học giả khảo sát mọi châu lục. Cũng không phải kỹ sư hẹp. Cái gì đó cụ thể hơn: một người mang công việc vào mọi thứ anh đọc, và mang sự yêu mến vào những góc còn lại."
+							: "Seven traits, two surfaces, four-thousand-something articles. The shape is a craftsman reading to stay sharp — Stack Overflow, AI announcements, framework docs — with deep loyalties on the side: Manchester United, fish-keeping, Vietnamese news, the occasional Wikipedia wandering. Not a polymath surveying every continent. Also not a narrow engineer. Something more specific: a person who brings his work into everything he reads, and brings affection into the corners that remain."}
 					</p>
 				</article>
 			</div>
 
 			<p class="vial-footer">
-				<a href="/room-of-requirement/owl-post">
-					{isVi ? "Đọc bản phân tích đầy đủ — mọi nguồn, mẫu tiêu đề, lưu ý →" : "Read the full analysis — every source, sampled titles, caveats →"}
+				<a href="/room-of-requirement/owlery-of-articles">
+					{isVi ? "Đọc bản phân tích đầy đủ — mọi đặc điểm, mọi trích dẫn, lưu ý →" : "Read the full analysis — every trait, all quotes, caveats →"}
 				</a>
 			</p>
 		</div>
