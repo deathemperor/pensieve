@@ -1399,13 +1399,13 @@ function formatGHDate(iso: string) {
 	<section id="owlery-wrapped" class="about-section">
 		<div class="about-inner">
 			<h2 class="section-heading" data-rune="ᚺ">
-				{isVi ? "Cú Đường — Một Năm Đọc" : "The Owlery — A Year of Reading"}
+				{isVi ? "Cú Đường — Một Năm Đọc Của Người Thợ" : "The Owlery — A Craftsman's Year of Reading"}
 				<a href="#owlery-wrapped" class="anchor-link" aria-label="Link to Owlery">#</a>
 			</h2>
 			<p class="section-desc">
 				{isVi
-					? "Cú phượng hoàng bay khắp thế giới giao thư. Đây là một năm thư tôi thật sự đã mở. Google Takeout trả về 365 ngày lịch sử Chrome — sau khi loại các trang quản trị, đăng nhập, dashboard, mạng xã hội và lượt xem lại, 3.977 bài viết còn lại. Đây là sự thật trung thực về tôi đọc gì: không phải khảo sát mọi châu lục, mà là vết cắt sâu của thợ thủ công vào phần mềm và AI, cộng với một đuôi dài tò mò THẬT SỰ đi khắp thế giới."
-					: "Owls fly across the world to deliver post. This is a year of post I actually opened. Google Takeout returned 365 days of Chrome history — after dropping work consoles, logins, dashboards, social feeds and revisit echoes, 3,977 articles remain. This is the honest answer to what I read: not a polymath survey of every continent, but a craftsman's deep cuts in software and AI, plus a long tail of curiosities that *do* range across the world."}
+					? "Tôi từng nói với chính mình rằng tôi đọc bài từ khắp nơi trên thế giới. Rồi tôi xuất một năm lịch sử Chrome và dữ liệu nói khác. 83.850 lượt mục thô; sau khi loại các tab công việc, dashboard, đăng nhập và mạng xã hội, 3.977 bài viết thật sự còn lại. Hình dạng không phải sự tò mò trải khắp thế giới — đó là một thợ thủ công đang theo kịp nghề. Phần lớn thời gian là framework, paper AI, Stack Overflow lúc 3 giờ chiều. Phần lang thang là thật, nhưng nhỏ. Đây là báo cáo trung thực."
+					: "I told myself I read articles from everywhere in the world. Then I exported a year of Chrome history and the data told me different. 83,850 raw entries; after dropping work tabs, dashboards, logins, and social feeds, 3,977 actual articles remain. The shape isn't world-spanning curiosity — it's a craftsman keeping pace with his trade. Most of the time it's frameworks, AI papers, Stack Overflow at 3 PM. The wandering is real but small. This is the honest report."}
 			</p>
 
 			<div class="wrapped-grid">
@@ -1523,6 +1523,120 @@ function formatGHDate(iso: string) {
 			<p class="vial-footer">
 				<a href="/room-of-requirement/owlery-of-articles">
 					{isVi ? "Đọc bản phân tích đầy đủ — mỗi môn, mọi mẫu, đuôi dài 25 host →" : "Read the full analysis — every subject, all samples, 25 long-tail hosts →"}
+				</a>
+			</p>
+		</div>
+	</section>
+
+	<section id="owl-post-wrapped" class="about-section">
+		<div class="about-inner">
+			<h2 class="section-heading" data-rune="ᛞ">
+				{isVi ? "Cú Bưu — Discover Mang Đến Gì" : "Owl Post — What Discover Delivers"}
+				<a href="#owl-post-wrapped" class="anchor-link" aria-label="Link to Owl Post">#</a>
+			</h2>
+			<p class="section-desc">
+				{isVi
+					? "Cú Đường là cho cú tôi GỬI ĐI — bài viết tôi tự tìm trên Chrome. Cú Bưu là ngược lại: cú thuật toán Google Discover thả xuống màn hình iOS của tôi, và những cái tôi đã chạm. Bề mặt khác, cùng một người đọc. Đây là báo cáo trung thực về việc thuật toán có \"số\" của tôi đến đâu — câu trả lời ngắn: rất sát."
+					: "The Owlery is for owls I send out — articles I sought on Chrome. Owl Post is the inverse: owls Google's Discover algorithm dropped on my iOS screen, and which ones I tapped. Different surface, same reader. This is the honest report on how well the algorithm has my number — short answer: very."}
+			</p>
+
+			<div class="wrapped-grid">
+				{/* HERO */}
+				<article class="wrap-card wrap-hero">
+					<div class="wrap-stat">352</div>
+					<div class="wrap-label">
+						{isVi ? "Lần Chạm Bài · 400 ngày · từ feed Discover" : "Article taps · 400 days · from the Discover feed"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Một năm cộng một tháng thuật toán Google chọn cards cho tôi và tôi chọn cái nào để chạm. Cộng thêm 403 phiên \"N cards in your feed\" — những lúc feed mở nhưng tôi cuộn qua không chạm. Bài chạm là tín hiệu thật."
+							: "A year-plus of Google's algorithm picking cards for me and me picking which to tap. Plus 403 \"N cards in your feed\" sessions — times the feed opened and I scrolled past without tapping. The taps are the truer signal."}
+					</p>
+				</article>
+
+				{/* SOURCES — wide fingerprint */}
+				<article class="wrap-card wrap-wide wrap-fingerprint">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Cú Đến Từ Đâu" : "Where the Owls Come From"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "73 tên miền duy nhất. Thuật toán quăng lưới rộng hơn việc đọc có chủ ý, nhưng phần lớn lưới rơi xuống cùng vài cây quen — và X chiếm gần một nửa."
+							: "73 unique hosts. The algorithm casts a wider net than deliberate reading does — but most of the casting lands on the same few favorite trees, and X claims almost half."}
+					</p>
+					<ul class="wrap-list owlpost-sources">
+						<li><span class="wrap-list-score">45.2%</span> 🐦 {isVi ? "X / Twitter — Man United, AI, hot-take lập trình" : "X / Twitter — Man United, AI, programming hot-takes"}</li>
+						<li><span class="wrap-list-score">29.3%</span> 🪄 {isVi ? "Báo Công Nghệ — Verge, TechCrunch, blog Google" : "Tech Press — Verge, TechCrunch, blog.google"}</li>
+						<li><span class="wrap-list-score">11.4%</span> 🌍 {isVi ? "Báo Thế Giới — NYT, Atlantic, Economist, Guardian" : "World Press — NYT, Atlantic, Economist, Guardian"}</li>
+						<li><span class="wrap-list-score">4.5%</span> 🇻🇳 {isVi ? "Tin Việt — VnExpress International, Tuổi Trẻ" : "Vietnamese — VnExpress International, Tuổi Trẻ"}</li>
+						<li><span class="wrap-list-score">2.8%</span> 🎮 {isVi ? "Game & Văn hóa — Polygon, IGN, Blizzard" : "Gaming & Pop — Polygon, IGN, Blizzard"}</li>
+						<li><span class="wrap-list-score">6.2%</span> ❓ {isVi ? "Đuôi dài — báo nhỏ một-lần" : "Long tail — one-off outlets"}</li>
+					</ul>
+				</article>
+
+				{/* X DOMINATES */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">45%</div>
+					<div class="wrap-label">
+						{isVi ? "X Threads — Thuật Toán Có Số Của Tôi" : "X Threads — The Algorithm Has My Number"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Gần một nửa lượt chạm là X threads, và Discover phục vụ chúng CHẶT: chuyển nhượng Manchester United, thông báo AI, hot-take React, đôi khi League of Legends. Feed không phơi tôi ra với thế giới rộng — nó tập trung thế giới hiện tại."
+							: "Nearly half of all taps are X threads, and Discover serves them tightly themed: Manchester United transfers, AI announcements, React hot-takes, occasionally League of Legends. The feed isn't exposing me to a wider world — it's concentrating the existing one."}
+					</p>
+				</article>
+
+				{/* THE BREADTH */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Báo Lớn Đến Đâu — 11%" : "How Far the Broadsheets Reach — 11%"}
+					</div>
+					<div class="wrap-sentimental">
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">The Atlantic · NYT</span>
+							<span class="wrap-senti-meta">{isVi ? "8 lượt — chính trị, AI, văn hóa" : "8 taps — politics, AI, culture"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Economist · Guardian · FT</span>
+							<span class="wrap-senti-meta">{isVi ? "6 lượt — kinh tế, thế sự" : "6 taps — economics, world affairs"}</span>
+						</div>
+						<div class="wrap-senti-item">
+							<span class="wrap-senti-title">Reuters · WSJ · Bloomberg</span>
+							<span class="wrap-senti-meta">{isVi ? "5 lượt — thị trường, tin nhanh" : "5 taps — markets, wire-service"}</span>
+						</div>
+					</div>
+				</article>
+
+				{/* TECH PRESS */}
+				<article class="wrap-card wrap-tall">
+					<div class="wrap-stat">29%</div>
+					<div class="wrap-label">
+						{isVi ? "Báo Công Nghệ — Người Thợ Giữ Nhịp" : "Tech Press — Craftsman Keeping Pace"}
+					</div>
+					<p class="wrap-note">
+						{isVi
+							? "Verge, TechCrunch, Ars, 9to5Mac, Tom's Guide, blog Google. Hình dạng giống Chrome: một thợ thủ công theo nhịp một lĩnh vực chuyển động nhanh. Discover chỉ bổ sung kênh cho cùng một lượt khám phá."
+							: "Verge, TechCrunch, Ars, 9to5Mac, Tom's Guide, blog.google. Same shape as Chrome: a craftsman keeping pace with a fast-moving field. Discover just adds a channel to the same exploration."}
+					</p>
+				</article>
+
+				{/* SORTING HAT */}
+				<article class="wrap-card wrap-wide">
+					<div class="wrap-label wrap-label-top">
+						{isVi ? "Lời Nón Phân Loại" : "What the Sorting Hat Says"}
+					</div>
+					<p class="wrap-note wrap-note-top">
+						{isVi
+							? "Sự thật trung thực: Discover không phải cánh cửa bí mật đến việc đọc rộng hơn. Đó là một tấm gương khác đôi chút của cùng một người. Fan bóng đá, người theo dõi AI, công dân Việt Nam, đôi khi đọc báo lớn. Bề rộng là thật nhưng nhỏ. Cả Cú Đường (Chrome) lẫn Cú Bưu (Discover) đều nói cùng một điều: đây là một thợ thủ công đọc để giữ tay nghề, không phải một học giả khảo sát mọi châu lục."
+							: "The honest truth: Discover is not the secret door to wider reading. It's a slightly different mirror of the same person. Football fan, AI watcher, Vietnam citizen, occasional broadsheet reader. The breadth is real but small. Both The Owlery (Chrome) and Owl Post (Discover) say the same thing: this is a craftsman reading to keep his hand sharp, not a polymath surveying every continent."}
+					</p>
+				</article>
+			</div>
+
+			<p class="vial-footer">
+				<a href="/room-of-requirement/owl-post">
+					{isVi ? "Đọc bản phân tích đầy đủ — mọi nguồn, mẫu tiêu đề, lưu ý →" : "Read the full analysis — every source, sampled titles, caveats →"}
 				</a>
 			</p>
 		</div>
