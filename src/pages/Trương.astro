@@ -271,7 +271,37 @@ function formatGHDate(iso: string) {
 							<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
 						</svg>
 					</a>
+					<button type="button" class="hero-profile-link" aria-label="Zalo" data-action="open-zalo-qr">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+							<path d="M12.49 10.272v-.45h1.347v6.322h-.77a.576.576 0 0 1-.577-.573v.001a3.13 3.13 0 0 1-1.846.589 3.179 3.179 0 1 1 0-6.358c.677 0 1.31.21 1.846.572zm-5.05-1.005H2.55a.582.582 0 1 1 0-1.165h5.527c.32 0 .61.117.83.357.197.21.305.49.305.78 0 .227-.06.435-.176.624l-.022.027-.005.006-.024.04-3.91 4.812h3.602c.42 0 .76.34.76.76v.39H2.367c-.32 0-.62-.18-.77-.5a.86.86 0 0 1 .096-.937l3.99-4.91c.235-.04.47-.025.704-.058l.052-.218zm9.937 6.871a3.179 3.179 0 1 1 0-6.358 3.179 3.179 0 0 1 0 6.358zm.022-1.346a1.84 1.84 0 1 0 0-3.679 1.84 1.84 0 0 0 0 3.679zm-5.95 0a1.84 1.84 0 1 0 0-3.679 1.84 1.84 0 0 0 0 3.679z" />
+						</svg>
+					</button>
 				</nav>
+
+				<dialog id="zalo-qr-dialog" class="zalo-qr-dialog" aria-labelledby="zalo-qr-title">
+					<form method="dialog" class="zalo-qr-close-form">
+						<button type="submit" class="zalo-qr-close" aria-label={isVi ? "Đóng" : "Close"}>
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<line x1="18" y1="6" x2="6" y2="18" />
+								<line x1="6" y1="6" x2="18" y2="18" />
+							</svg>
+						</button>
+					</form>
+					<h3 id="zalo-qr-title" class="zalo-qr-title">{isVi ? "Liên hệ Zalo" : "Contact via Zalo"}</h3>
+					<p class="zalo-qr-hint">
+						{isVi
+							? "Mở Zalo, bấm nút quét QR để kết bạn"
+							: "Open Zalo and use the QR scan button to add me"}
+					</p>
+					<img
+						src="/contact/zalo-qr.jpg"
+						alt={isVi ? "Mã QR Zalo của Lộc" : "Lộc's Zalo QR code"}
+						width="280"
+						height="427"
+						class="zalo-qr-image"
+						loading="lazy"
+					/>
+				</dialog>
 			</div>
 			<figure class="about-hero-photo" id="hero-photo" aria-hidden="false">
 				{/* Lotus petals unfurling */}
@@ -3316,6 +3346,7 @@ function formatGHDate(iso: string) {
 		justify-content: center;
 		width: 2.4rem;
 		height: 2.4rem;
+		padding: 0;
 		border-radius: 50%;
 		border: 1px solid rgba(240, 199, 94, 0.25);
 		background: radial-gradient(circle at 32% 28%,
@@ -3324,8 +3355,11 @@ function formatGHDate(iso: string) {
 			rgba(240, 199, 94, 0.02) 100%);
 		color: var(--color-muted);
 		text-decoration: none;
+		font: inherit;
+		cursor: pointer;
 		transition: color 220ms, border-color 220ms, background 220ms, transform 220ms, box-shadow 260ms;
 	}
+	button.hero-profile-link { appearance: none; }
 	/* Dashed sigil ring — hidden by default, orbits on hover/focus.
 	   Matches the chronology's major-milestone sigil but tighter. */
 	.hero-profile-link::before {
@@ -5083,6 +5117,75 @@ function formatGHDate(iso: string) {
 			transition: none !important;
 		}
 	}
+
+	/* Zalo QR modal */
+	.zalo-qr-dialog {
+		max-width: 360px;
+		width: calc(100% - 2rem);
+		padding: var(--spacing-6, 1.5rem);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		background: var(--color-surface-elevated);
+		color: var(--color-text);
+		box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+	}
+	.zalo-qr-dialog::backdrop {
+		background: rgba(5, 6, 8, 0.78);
+		backdrop-filter: blur(4px);
+	}
+	.zalo-qr-dialog[open] {
+		animation: zalo-qr-pop 220ms ease-out;
+	}
+	@keyframes zalo-qr-pop {
+		from { opacity: 0; transform: scale(0.96); }
+		to { opacity: 1; transform: scale(1); }
+	}
+	.zalo-qr-close-form { margin: 0; display: flex; justify-content: flex-end; }
+	.zalo-qr-close {
+		appearance: none;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		padding: 0;
+		border: 1px solid var(--color-border);
+		border-radius: 50%;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+		transition: color 180ms, border-color 180ms, background 180ms;
+	}
+	.zalo-qr-close:hover, .zalo-qr-close:focus-visible {
+		color: var(--color-text);
+		border-color: rgba(240, 199, 94, 0.55);
+		background: rgba(240, 199, 94, 0.06);
+	}
+	.zalo-qr-title {
+		font-family: var(--font-display);
+		font-size: 1.15rem;
+		font-weight: 600;
+		color: var(--color-text);
+		margin: 0 0 var(--spacing-1, 0.25rem);
+		text-align: center;
+	}
+	.zalo-qr-hint {
+		font-family: var(--font-sans);
+		font-size: var(--font-size-xs);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-4, 1rem);
+		text-align: center;
+		line-height: var(--leading-relaxed);
+	}
+	.zalo-qr-image {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: calc(var(--radius) - 2px);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.zalo-qr-dialog[open] { animation: none; }
+	}
 </style>
 
 <script is:inline>
@@ -5141,5 +5244,28 @@ function formatGHDate(iso: string) {
 		}, { threshold: 0.35 });
 
 		io.observe(firstProse);
+	})();
+
+	// Zalo QR modal — click button → showModal(); click backdrop or close → close
+	(function() {
+		const button = document.querySelector('[data-action="open-zalo-qr"]');
+		const dialog = document.getElementById('zalo-qr-dialog');
+		if (!button || !dialog) return;
+		button.addEventListener('click', () => {
+			if (typeof dialog.showModal === 'function') {
+				dialog.showModal();
+			} else {
+				// Fallback for browsers without <dialog> support — open the image directly
+				window.open('/contact/zalo-qr.jpg', '_blank', 'noopener');
+			}
+		});
+		// Click on backdrop (outside the dialog box) closes it
+		dialog.addEventListener('click', (e) => {
+			const rect = dialog.getBoundingClientRect();
+			const inside =
+				e.clientX >= rect.left && e.clientX <= rect.right &&
+				e.clientY >= rect.top && e.clientY <= rect.bottom;
+			if (!inside) dialog.close();
+		});
 	})();
 </script>
