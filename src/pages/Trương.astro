@@ -79,29 +79,12 @@ const reposEndpoint = ghToken
 	: "https://api.github.com/users/deathemperor/repos?sort=pushed&per_page=6&type=owner";
 
 let recentCommitCount = 0;
-let claudeEraCommitCount: number | null = null;
-
-// Claude-era stats:
-// 1. KV (daily cron) — captures pre-squash commits across merged PRs
-//    (recovers commits that admin-squash-merge erases on main).
-// 2. Live GraphQL — captures total commit contributions in the era,
-//    which includes direct-to-main commits the PR walk misses.
-// 3. Display total = preSquashCommits + max(0, liveContrib - prCount)
-//    so direct-to-main work shows up within the 1-hour edge cache,
-//    not the 24-hour KV cache.
+// Total GitHub contributions (commits, PRs, issues, reviews — public and
+// private) since the Claude Code era began on 2026-01-29. GitHub computes
+// this itself, so unlike a pre-squash commit sum it survives branch cleanup
+// and needs no KV snapshot.
 const CLAUDE_ERA_START_ISO = "2026-01-29T00:00:00Z";
-const CLAUDE_ERA_START_DATE = "2026-01-29";
-interface ClaudeEraStats { prCount: number; preSquashCommits: number; updatedAt: string }
-let eraStats: ClaudeEraStats | null = null;
-let claudeEraLiveContribs = 0; // live contributionsCollection since era start
-try {
-	const kv = (env as { SESSION?: { get: (k: string) => Promise<string | null> } }).SESSION;
-	const cached = await kv?.get?.("stats:claude-era");
-	if (cached) {
-		const parsed = JSON.parse(cached) as ClaudeEraStats;
-		if (parsed.preSquashCommits > 0) eraStats = parsed;
-	}
-} catch { /* KV unavailable — fall through to live search count */ }
+let claudeEraContributions: number | null = null;
 
 try {
 	const fetches: Promise<Response>[] = [
@@ -110,44 +93,16 @@ try {
 		fetch(reposEndpoint, ghFetchOpts),
 	];
 	if (ghToken) {
-		// GraphQL: total commit contributions in the last 30 days (Loc as author)
+		// One GraphQL round-trip: commit contributions in the last 30 days
+		// (activity stat) plus all contributions since the Claude Code era
+		// began on 2026-01-29 (era card). Both include private repos.
 		const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 		fetches.push(
 			fetch("https://api.github.com/graphql", {
 				method: "POST",
 				headers: { ...ghHeaders, "Content-Type": "application/json" },
 				body: JSON.stringify({
-					query: `{ viewer { contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } } }`,
-				}),
-				cf: { cacheTtl: 3600, cacheEverything: true },
-			} as RequestInit),
-		);
-		// REST search: all commits in Loc's repos (public + private) since
-		// adopting Claude Code. We don't filter by author — on his personal
-		// repos the only committers are him (squash-merges), Claude (branch
-		// commits), and renovate (deps). Filtering by author:deathemperor
-		// would collapse to just squash-merges and severely undercount.
-		// `user:deathemperor` scopes to repos he owns, so the shared Anthropic
-		// noreply email can't leak in commits from other users' projects.
-		const era = `user:deathemperor author-date:>=${CLAUDE_ERA_START_DATE}`;
-		fetches.push(
-			fetch(
-				`https://api.github.com/search/commits?q=${encodeURIComponent(era)}&per_page=1`,
-				ghFetchOpts,
-			),
-		);
-		// LIVE Claude-era contributions: GraphQL contributionsCollection from
-		// era start. Captures BOTH direct-to-main commits and squash-merge
-		// commits, so direct pushes to main grow the count within the 1-hour
-		// edge cache (instead of waiting for the daily KV cron). Combined
-		// with KV's pre-squash-PR data downstream so neither side is
-		// undercounted.
-		fetches.push(
-			fetch("https://api.github.com/graphql", {
-				method: "POST",
-				headers: { ...ghHeaders, "Content-Type": "application/json" },
-				body: JSON.stringify({
-					query: `{ viewer { contributionsCollection(from: "${CLAUDE_ERA_START_ISO}") { totalCommitContributions restrictedContributionsCount } } }`,
+					query: `{ viewer { last30: contributionsCollection(from: "${since}") { totalCommitContributions restrictedContributionsCount } era: contributionsCollection(from: "${CLAUDE_ERA_START_ISO}") { contributionCalendar { totalContributions } } } }`,
 				}),
 				cf: { cacheTtl: 3600, cacheEverything: true },
 			} as RequestInit),
@@ -159,18 +114,14 @@ try {
 	if (eventsRes.ok) ghEvents = await eventsRes.json();
 	if (reposRes.ok) ghRepos = (await reposRes.json() as GitHubRepo[]).filter((r) => !r.fork);
 	if (results[3]?.ok) {
-		const gql = await results[3].json() as { data?: { viewer?: { contributionsCollection?: { totalCommitContributions?: number; restrictedContributionsCount?: number } } } };
-		const last30 = gql?.data?.viewer?.contributionsCollection;
+		const gql = await results[3].json() as { data?: { viewer?: {
+			last30?: { totalCommitContributions?: number; restrictedContributionsCount?: number };
+			era?: { contributionCalendar?: { totalContributions?: number } };
+		} } };
+		const last30 = gql?.data?.viewer?.last30;
 		recentCommitCount = (last30?.totalCommitContributions ?? 0) + (last30?.restrictedContributionsCount ?? 0);
-	}
-	if (results[4]?.ok) {
-		const search = await results[4].json() as { total_count?: number };
-		if (typeof search.total_count === "number") claudeEraCommitCount = search.total_count;
-	}
-	if (results[5]?.ok) {
-		const gql = await results[5].json() as { data?: { viewer?: { contributionsCollection?: { totalCommitContributions?: number; restrictedContributionsCount?: number } } } };
-		const era = gql?.data?.viewer?.contributionsCollection;
-		claudeEraLiveContribs = (era?.totalCommitContributions ?? 0) + (era?.restrictedContributionsCount ?? 0);
+		const total = gql?.data?.viewer?.era?.contributionCalendar?.totalContributions;
+		if (typeof total === "number") claudeEraContributions = total;
 	}
 } catch {
 	// GitHub API unavailable — render without stats
@@ -1665,34 +1616,13 @@ function formatGHDate(iso: string) {
 							<span class="era-bar" style="flex: 0.5;" />
 							<div class="era-info">
 								<span class="era-label"><span class="era-rune" aria-hidden="true">ᛒ</span>Claude Code</span>
-								{(() => {
-									// Combine KV pre-squash totals with live contributions.
-									// preSquash captures Claude's branch work that squash-merge
-									// would otherwise erase. liveContribs captures direct-to-main
-									// commits the PR walk misses. Total = preSquash + max(0, live − prCount).
-									if (eraStats) {
-										const directDelta = Math.max(0, claudeEraLiveContribs - eraStats.prCount);
-										const totalCommits = eraStats.preSquashCommits + directDelta;
-										return (
-											<span class="era-commits">{
-												isVi
-													? `${eraStats.prCount.toLocaleString("vi-VN")} PR · ${totalCommits.toLocaleString("vi-VN")} commit`
-													: `${eraStats.prCount.toLocaleString("en-US")} PR${eraStats.prCount !== 1 ? "s" : ""} · ${totalCommits.toLocaleString("en-US")} commit${totalCommits !== 1 ? "s" : ""}`
-											}</span>
-										);
-									}
-									if (claudeEraLiveContribs > 0) {
-										return (
-											<span class="era-commits">{isVi ? `${claudeEraLiveContribs.toLocaleString("vi-VN")} commit` : `${claudeEraLiveContribs.toLocaleString("en-US")} commit${claudeEraLiveContribs !== 1 ? "s" : ""}`}</span>
-										);
-									}
-									if (claudeEraCommitCount !== null) {
-										return (
-											<span class="era-commits">{isVi ? `${claudeEraCommitCount.toLocaleString("vi-VN")} commit` : `${claudeEraCommitCount.toLocaleString("en-US")} commit${claudeEraCommitCount !== 1 ? "s" : ""}`}</span>
-										);
-									}
-									return null;
-								})()}
+								{claudeEraContributions !== null && (
+									<span class="era-commits">{
+										isVi
+											? `${claudeEraContributions.toLocaleString("vi-VN")} đóng góp`
+											: `${claudeEraContributions.toLocaleString("en-US")} contributions`
+									}</span>
+								)}
 								<span class="era-dates">{isVi ? "29 Th1, 2026 — nay" : "Jan 29, 2026 — now"}</span>
 								<span class="era-note">{isVi ? "Không có mã người viết — hoàn toàn do AI tạo" : "Zero human code — fully AI-generated"}</span>
 							</div>

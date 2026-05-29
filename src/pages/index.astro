@@ -116,6 +116,7 @@ const copy = {
 	rorDesc: isVi
 		? "Cách trang này được dựng nên. Kiến trúc, stack, và Priori Incantatem — mọi phiên Claude Code, từ đầu đến cuối."
 		: "How this site is built. Architecture, stack, and Priori Incantatem — every Claude Code session, end to end.",
+	aboutCta: isVi ? "Câu chuyện đầy đủ" : "Read the full story",
 	truongName: "Trương",
 	truongMeta: isVi ? "Giới thiệu" : "About",
 	truongDesc: isVi
@@ -251,6 +252,7 @@ function icon(key: string): string {
 				<p class="bio">
 					{copy.bio}<a href="https://papaya.asia" rel="noopener">Papaya</a>{copy.bioRest}
 				</p>
+				<a href="/Trương" class="about-cta">{copy.aboutCta} <span class="about-arrow">→</span></a>
 			</div>
 		</header>
 
@@ -419,6 +421,14 @@ function icon(key: string): string {
 	.tagline { font-size: 1.0625rem; color: var(--text); margin: 0; line-height: 1.5; font-weight: 500; }
 	.bio { font-size: .9375rem; color: var(--secondary); margin: 0; line-height: 1.6; }
 	.bio a { color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+	.about-cta {
+		grid-column: 1 / -1; justify-self: start;
+		display: inline-flex; align-items: center; gap: .4rem;
+		font-family: var(--mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+		color: #c08aff; text-decoration: none; margin-top: .25rem;
+	}
+	.about-cta .about-arrow { transition: transform .18s ease; }
+	.about-cta:hover .about-arrow { transform: translateX(3px); }
 
 	/* Section rules */
 	.section-rule {
