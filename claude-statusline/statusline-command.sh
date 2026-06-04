@@ -34,7 +34,7 @@ render_gauge() {
   local start=$(( (W - llen) / 2 ))
   local fill="\033[38;2;${rgb}m"                              # filled cells
   local chip_on="\033[48;2;${rgb}m\033[1m\033[38;2;25;25;35m"      # digit OVER filled: dark on bar color
-  local chip_off="\033[48;2;60;60;78m\033[1m\033[38;2;225;225;235m" # digit OVER empty: light on dim track
+  local chip_off="\033[48;2;60;60;78m\033[1m\033[38;2;${rgb}m"      # digit OVER empty: bar-colored on dim track
   local dim='\033[38;2;95;95;115m'                            # empty track
   local rst='\033[0m'
   local out="" i off ch
