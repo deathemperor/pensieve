@@ -33,21 +33,16 @@ render_gauge() {
   local llen=${#label}
   local start=$(( (W - llen) / 2 ))
   local fill="\033[38;2;${rgb}m"                            # filled cells
-  local chip_on="\033[48;2;${rgb}m\033[1m\033[38;2;25;25;35m"  # digit OVER filled: dark on bar color
-  local chip_off="\033[1m\033[38;2;${rgb}m"                    # digit OVER empty: bar-colored, no bg
+  local chip="\033[48;2;${rgb}m\033[1m\033[38;2;25;25;35m"  # % label pill: solid bar-colored bg, dark digits
   local dim='\033[38;2;95;95;115m'                          # empty track
   local rst='\033[0m'
   local out="" i off ch
   for ((i=0; i<W; i++)); do
     if [ "$i" -ge "$start" ] && [ "$i" -lt $(( start + llen )) ]; then
-      # A digit cell: chip background only where the bar is actually filled, so
-      # low percentages don't show a misleading colored block in the middle.
+      # The % is a solid label pill — always on a bar-colored background so it
+      # reads as one chip, never split across the fill boundary.
       off=$(( i - start )); ch="${label:off:1}"
-      if [ "$i" -lt "$filled" ]; then
-        out="${out}${chip_on}${ch}${rst}"
-      else
-        out="${out}${chip_off}${ch}${rst}"
-      fi
+      out="${out}${chip}${ch}${rst}"
     elif [ "$i" -lt "$filled" ]; then
       out="${out}${fill}█${rst}"
     else
