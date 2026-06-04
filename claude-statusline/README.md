@@ -5,10 +5,7 @@ status line. The session becomes a mage: context is HP, the rate-limit windows
 are MP and EXP, session cost is Gold, and an animated Black Mage portrait blinks
 from the left.
 
-```
-▟██▙ 🪄 deathemperor · 🧙 Opus 4.8 · HP ██78%█░░ · MP ██86%██░ · EXP ██84%██░ ⏳ 12h · 🔮 high · ⚔ +406/-397 · 🌀 Focus  🎒 Encumbered
-▝••▘ 🏰 banyan · 💰 22.79 Gold · 🕹 29h26m · ⚑ 3 · 🗺 …/papaya/banyan · 📜 main · ⛺ camp · 📖 «…»
-```
+![Claude Code RPG status line HUD](./hud.png)
 
 Every value comes from the JSON Claude Code feeds the status line on stdin, plus
 `git`/`gh` for the repo and PR bits. Nothing is invented — each gauge maps to a
