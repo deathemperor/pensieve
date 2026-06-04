@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code status line — Final Fantasy / WoW-style character HUD
-# Line 1 — hero + vitals:  [portrait] ► 🪄 <name> · 🧙 class · HP · MP · EXP · 🔮 power
-# Line 2 — world/context:  [portrait] 🗺 area · 📜 quest · 📖 tale · 🪙 Gil
+# Line 1 — hero + vitals:  [portrait] 🪄 <name> · 🧙 class · HP · MP · EXP · 🔮 power · ⚔ dmg · buffs
+# Line 2 — world/stats:    [portrait] 🏰 kingdom · 💰 Gold · 🕹 playtime · ⚑ PRs · 🗺 area · 📜 quest · ⛺ camp · 📖 tale
 #
 # A statusline is text + ANSI only. The portrait on the left is colored ASCII
 # (an animated Black Mage). Bars are slim gauges with the % centered on a
@@ -180,12 +180,12 @@ seg_power=""
 effort=$(echo "$input" | jq -r '.effort.level // empty')
 [ -n "$effort" ] && seg_power="\033[35m🔮 ${effort}\033[0m"
 
-# Gil (session cost)
+# Gold (session cost)
 seg_gil=""
 cost_usd=$(echo "$input" | jq -r '.cost.total_cost_usd // empty')
 if [ -n "$cost_usd" ]; then
   cost_fmt=$(printf '%.2f' "$cost_usd" 2>/dev/null || echo "$cost_usd")
-  seg_gil="\033[38;2;245;205;65m🪙 ${cost_fmt} Gil\033[0m"
+  seg_gil="\033[38;2;245;205;65m💰 ${cost_fmt} Gold\033[0m"
 fi
 
 # Companion (agent)
