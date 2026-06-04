@@ -122,7 +122,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `🧙` *model* | **Class / Job** | The model, family abbreviated (Opus→O, Sonnet→S, Haiku→H), in mage class-blue | `model.display_name` |
 | `HP` (red) | **Life** | Context window **remaining** — drains as context fills; 0 = compaction | `context_window.remaining_percentage` |
 | `MP` (blue) | **Mana** | 5-hour rate-limit left (`100 − used`) — recharges at reset | `rate_limits.five_hour` |
-| `EXP` (yellow) `⭐Lv N` | **Level** | Accumulates 7-day quota usage across time — 100% (one full week of tokens) = 1 level. The bar shows progress into the current level. Persisted in `~/.claude/.statusline-level` (survives reboots) | `rate_limits.seven_day` |
+| `EXP` (yellow) `⭐Lv N` `⏳` | **Level** | Bar = **current 7-day usage %** (reads 100% when maxed, never 0%); `⭐Lv N` banks completed weeks (see [How the Level is calculated](#how-the-level-is-calculated)); `⏳ Nd/Nh` reset cooldown shows **only when usage > 70%** | `rate_limits.seven_day` |
 | `🔮` *level* | **Spell power** | Reasoning effort (low/medium/high) | `effort.level` |
 | `⚔` `+N/-N` | **Damage dealt** | Lines added / removed this session | `cost.total_lines_*` |
 | `🌀 Focus` | **Buff** | Extended thinking is on | `thinking.enabled` |
@@ -155,6 +155,33 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
   class is mage class-blue.
 - Long text (branch, session name, worktree) is clipped to ~24 chars with `…`
   so the line stays bounded and the compact stats never get pushed off-screen.
+
+### How the Level is calculated
+
+The feed only exposes the **rolling 7-day quota usage**
+(`rate_limits.seven_day.used_percentage`, 0–100) — not a lifetime token count —
+so the level is tracked locally:
+
+- **The EXP bar = your current 7-day usage %.** It fills as you spend the week's
+  quota and reads **100% when you're maxed / over the weekly limit** — it never
+  shows 0% while you're actually using.
+- **The level banks completed weeks.** A *weekly reset* is detected as a sharp
+  drop in usage (`current < last − 20`); the week that just ended is then added
+  to a persistent `banked` total.
+- **`Level = (banked + current) / 100 + 1`.** So one full week of tokens (~100%)
+  banks ~100 points = **+1 level**; a light week that only reached 40% banks ~40.
+  You ding the next level the moment `banked + current` crosses the next hundred.
+
+State lives in `~/.claude/.statusline-level` as `banked last ts` (survives
+reboots). Sampling is gated to 30 s so concurrent terminals don't double-count.
+Delete the file to reset to **Lv 1**.
+
+**Reset cooldown:** when current usage is above 70%, `⏳ Nd/Nh` appears after the
+level — the time until the weekly window refreshes — as a low-quota heads-up.
+
+> **Example:** hit 100% this week → `⭐Lv 2`, bar 100%, `⏳ 2d`. After the reset
+> the bar drops to ~0% and `banked` becomes 100; the next full week dings
+> `⭐Lv 3`.
 
 ---
 

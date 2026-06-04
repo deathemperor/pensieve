@@ -121,32 +121,46 @@ else
   vitals+=("\033[90mMP ░░░░░░░░ --\033[0m")
 fi
 
-# EXP / Level — accumulate 7-day quota usage across time. One full week of
-# tokens (100 accumulated %) = 1 level. The running total is persisted in
-# ~/.claude/.statusline-level (survives reboots); each render adds the RISE in
-# weekly-usage % since the last sample (drops at the weekly reset are ignored,
-# so the total only grows). Sampling is gated to 30s to avoid double-counting
-# across concurrent renders. The EXP bar shows progress into the current level.
+# EXP / Level — the BAR shows your current 7-day quota usage (so it stays
+# correct even when you're maxed/over the weekly limit — it reads 100, never 0).
+# The LEVEL banks completed weeks: at each weekly reset (a sharp drop in usage)
+# the week that just ended is added to a persistent total in
+# ~/.claude/.statusline-level (survives reboots). Level = (banked + current) /
+# 100 + 1, so one full week of tokens = 1 level. Sampling is gated to 30s to
+# avoid racing concurrent renders.
 week_used=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 if [ -n "$week_used" ]; then
   cur_pct=${week_used%.*}
+  [ "$cur_pct" -gt 100 ] 2>/dev/null && cur_pct=100
   lvl_file="$HOME/.claude/.statusline-level"
-  read lvl_cum lvl_last lvl_ts < "$lvl_file" 2>/dev/null
-  case "$lvl_cum"  in ''|*[!0-9]*) lvl_cum=0  ;; esac
+  read lvl_bank lvl_last lvl_ts < "$lvl_file" 2>/dev/null
+  case "$lvl_bank" in ''|*[!0-9]*) lvl_bank=0 ;; esac
   case "$lvl_last" in ''|*[!0-9]*) lvl_last=0 ;; esac
   case "$lvl_ts"   in ''|*[!0-9]*) lvl_ts=0   ;; esac
   lvl_now=$(date +%s)
   if [ $(( lvl_now - lvl_ts )) -ge 30 ]; then
-    if [ "$lvl_ts" -ne 0 ] && [ "$cur_pct" -gt "$lvl_last" ]; then
-      lvl_cum=$(( lvl_cum + cur_pct - lvl_last ))
+    # weekly reset = a sharp usage drop → bank the week that just ended
+    if [ "$lvl_ts" -ne 0 ] && [ "$cur_pct" -lt $(( lvl_last - 20 )) ]; then
+      lvl_bank=$(( lvl_bank + lvl_last ))
     fi
     lvl_last=$cur_pct
-    printf '%s %s %s' "$lvl_cum" "$lvl_last" "$lvl_now" > "${lvl_file}.tmp" 2>/dev/null \
+    printf '%s %s %s' "$lvl_bank" "$lvl_last" "$lvl_now" > "${lvl_file}.tmp" 2>/dev/null \
       && mv "${lvl_file}.tmp" "$lvl_file" 2>/dev/null
   fi
-  level=$(( lvl_cum / 100 + 1 ))
-  prog=$(( lvl_cum % 100 ))
-  vitals+=("\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$prog" '245;205;65') \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m")
+  level=$(( (lvl_bank + cur_pct) / 100 + 1 ))
+  exp_seg="\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$cur_pct" '245;205;65') \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m"
+  # Weekly-reset cooldown — only shown when the 7-day quota is running low
+  # (current usage > 70%), as a warning of when the window refreshes.
+  if [ "$cur_pct" -gt 70 ]; then
+    week_resets_at=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
+    if [ -n "$week_resets_at" ]; then
+      secs_left=$(( week_resets_at - lvl_now ))
+      [ "$secs_left" -lt 0 ] && secs_left=0
+      if [ "$(( secs_left / 86400 ))" -ge 1 ]; then cd_str="$(( secs_left / 86400 ))d"; else cd_str="$(( secs_left / 3600 ))h"; fi
+      exp_seg="${exp_seg} \033[38;2;255;140;60m⏳ ${cd_str}\033[0m"
+    fi
+  fi
+  vitals+=("$exp_seg")
 else
   vitals+=("\033[90mEXP ░░░░░░░░ --\033[0m")
 fi
