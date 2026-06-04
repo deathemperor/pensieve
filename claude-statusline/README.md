@@ -165,16 +165,21 @@ so the level is tracked locally:
 - **The EXP bar = your current 7-day usage %.** It fills as you spend the week's
   quota and reads **100% when you're maxed / over the weekly limit** — it never
   shows 0% while you're actually using.
-- **The level banks completed weeks.** A *weekly reset* is detected as a sharp
-  drop in usage (`current < last − 20`); the week that just ended is then added
-  to a persistent `banked` total.
-- **`Level = (banked + current) / 100 + 1`.** So one full week of tokens (~100%)
-  banks ~100 points = **+1 level**; a light week that only reached 40% banks ~40.
-  You ding the next level the moment `banked + current` crosses the next hundred.
+- **The level banks completed weeks.** A *weekly reset* is detected when the
+  window's reset timestamp (`seven_day.resets_at`) **advances** — the
+  authoritative rollover signal. The just-ended week's usage is then added to a
+  persistent `banked` total. (Inferring the reset from a *usage drop* misfires in
+  pay-per-use / credits mode, where usage hovers at 100% and fluctuates — that
+  produced phantom weeks and an exploding level in an earlier version.)
+- **`Level = banked / 100 + 1`.** So one full week of tokens (~100%) banks ~100
+  points = **+1 level**; a light week that only reached 40% banks ~40. The bar
+  shows the current week independently of the level.
 
-State lives in `~/.claude/.statusline-level` as `banked last ts` (survives
-reboots). Sampling is gated to 30 s so concurrent terminals don't double-count.
-Delete the file to reset to **Lv 1**.
+State lives in `~/.claude/.statusline-level` as `banked last_reset_at last_used
+ts` (survives reboots). Values are bounded-checked on read (usage 0–100, reset a
+real epoch, bank < 1000 levels) so a corrupt/old-format file **self-heals**
+instead of corrupting the level. Sampling is gated to 30 s. Delete the file to
+reset to **Lv 1**.
 
 **Reset cooldown:** when current usage is above 70%, `⏳ Nd/Nh` appears after the
 level — the time until the weekly window refreshes — as a low-quota heads-up.

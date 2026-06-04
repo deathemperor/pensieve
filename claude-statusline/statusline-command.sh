@@ -121,33 +121,46 @@ else
   vitals+=("\033[90mMP ░░░░░░░░ --\033[0m")
 fi
 
-# EXP / Level — the BAR shows your current 7-day quota usage (so it stays
-# correct even when you're maxed/over the weekly limit — it reads 100, never 0).
-# The LEVEL banks completed weeks: at each weekly reset (a sharp drop in usage)
-# the week that just ended is added to a persistent total in
-# ~/.claude/.statusline-level (survives reboots). Level = (banked + current) /
-# 100 + 1, so one full week of tokens = 1 level. Sampling is gated to 30s to
-# avoid racing concurrent renders.
+# EXP / Level — the BAR shows your current 7-day quota usage (reads 100, never
+# 0, even when maxed/over the weekly limit). The LEVEL banks one week each time
+# the 7-day window actually ROLLS OVER — detected by seven_day.resets_at
+# advancing, NOT by usage drops (usage is noisy in credits mode and would bank
+# phantom weeks). At a real rollover the just-ended week's usage is added to a
+# persistent total in ~/.claude/.statusline-level (survives reboots). Level =
+# banked / 100 + 1, so ~one full week of tokens = 1 level. Sampling gated to 30s.
+# File format: "bank last_reset_at last_used ts".
 week_used=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
+week_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // 0')
 if [ -n "$week_used" ]; then
   cur_pct=${week_used%.*}
   [ "$cur_pct" -gt 100 ] 2>/dev/null && cur_pct=100
+  case "$week_reset" in ''|*[!0-9]*) week_reset=0 ;; esac
   lvl_file="$HOME/.claude/.statusline-level"
-  read lvl_bank lvl_last lvl_ts < "$lvl_file" 2>/dev/null
+  read lvl_bank lvl_lra lvl_lu lvl_ts < "$lvl_file" 2>/dev/null
   case "$lvl_bank" in ''|*[!0-9]*) lvl_bank=0 ;; esac
-  case "$lvl_last" in ''|*[!0-9]*) lvl_last=0 ;; esac
+  case "$lvl_lra"  in ''|*[!0-9]*) lvl_lra=0  ;; esac
+  case "$lvl_lu"   in ''|*[!0-9]*) lvl_lu=0   ;; esac
   case "$lvl_ts"   in ''|*[!0-9]*) lvl_ts=0   ;; esac
+  # Self-heal corrupt / old-format state: lu is a 0–100 percentage; lra is an
+  # epoch (~1.7e9); bank can't realistically exceed ~1000 levels (100000 pts).
+  # Without this, an old 3-field file ("bank last ts") misaligns into 4 vars and
+  # banks an epoch-sized value every render → the level explodes.
+  [ "$lvl_lu"   -gt 100 ] && lvl_lu=0
+  [ "$lvl_lra"  -lt 1000000000 ] && lvl_lra=0
+  [ "$lvl_bank" -gt 100000 ] && lvl_bank=0
   lvl_now=$(date +%s)
   if [ $(( lvl_now - lvl_ts )) -ge 30 ]; then
-    # weekly reset = a sharp usage drop → bank the week that just ended
-    if [ "$lvl_ts" -ne 0 ] && [ "$cur_pct" -lt $(( lvl_last - 20 )) ]; then
-      lvl_bank=$(( lvl_bank + lvl_last ))
+    # bank a week ONLY when the window truly rolled over (resets_at advanced)
+    if [ "$lvl_lra" -ne 0 ] && [ "$week_reset" -gt "$lvl_lra" ]; then
+      lvl_bank=$(( lvl_bank + lvl_lu ))
     fi
-    lvl_last=$cur_pct
-    printf '%s %s %s' "$lvl_bank" "$lvl_last" "$lvl_now" > "${lvl_file}.tmp" 2>/dev/null \
+    lvl_lra=$week_reset
+    lvl_lu=$cur_pct
+    lvl_ts=$lvl_now
+    printf '%s %s %s %s' "$lvl_bank" "$lvl_lra" "$lvl_lu" "$lvl_ts" > "${lvl_file}.tmp" 2>/dev/null \
       && mv "${lvl_file}.tmp" "$lvl_file" 2>/dev/null
   fi
-  level=$(( (lvl_bank + cur_pct) / 100 + 1 ))
+  level=$(( lvl_bank / 100 + 1 ))
   # When at the weekly cap (100%), detect ACTIVE credit burn: session cost rising.
   # If burning, flicker the bar like flame (yellow→orange→red via the sprite
   # frame) + 🔥. At the cap but idle → static. (Only runs when capped — no
@@ -174,14 +187,11 @@ if [ -n "$week_used" ]; then
   exp_seg="\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$cur_pct" "$exp_rgb")${exp_flame} \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m"
   # Weekly-reset cooldown — only shown when the 7-day quota is running low
   # (current usage > 70%), as a warning of when the window refreshes.
-  if [ "$cur_pct" -gt 70 ]; then
-    week_resets_at=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
-    if [ -n "$week_resets_at" ]; then
-      secs_left=$(( week_resets_at - lvl_now ))
-      [ "$secs_left" -lt 0 ] && secs_left=0
-      if [ "$(( secs_left / 86400 ))" -ge 1 ]; then cd_str="$(( secs_left / 86400 ))d"; else cd_str="$(( secs_left / 3600 ))h"; fi
-      exp_seg="${exp_seg} \033[38;2;255;140;60m⏳ ${cd_str}\033[0m"
-    fi
+  if [ "$cur_pct" -gt 70 ] && [ "$week_reset" -ne 0 ]; then
+    secs_left=$(( week_reset - lvl_now ))
+    [ "$secs_left" -lt 0 ] && secs_left=0
+    if [ "$(( secs_left / 86400 ))" -ge 1 ]; then cd_str="$(( secs_left / 86400 ))d"; else cd_str="$(( secs_left / 3600 ))h"; fi
+    exp_seg="${exp_seg} \033[38;2;255;140;60m⏳ ${cd_str}\033[0m"
   fi
   vitals+=("$exp_seg")
 else
