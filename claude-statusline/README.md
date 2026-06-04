@@ -179,6 +179,14 @@ Delete the file to reset to **Lv 1**.
 **Reset cooldown:** when current usage is above 70%, `⏳ Nd/Nh` appears after the
 level — the time until the weekly window refreshes — as a low-quota heads-up.
 
+**Credit-burn animation:** the feed has **no "credits used" field**, so overage
+is inferred. When you're at the weekly cap (bar = 100%) **and** the session cost
+is rising, the EXP bar flickers like flame (yellow → orange → red) with a `🔥` —
+you're actively spending pay-per-use credits. At the cap but idle (cost flat for
+>15 s) it stays static. Below the cap it's plain yellow. Active-spend tracking
+(`/tmp/claude-statusline-cost-<session>`) only runs while you're capped, so there
+is no overhead the rest of the time.
+
 > **Example:** hit 100% this week → `⭐Lv 2`, bar 100%, `⏳ 2d`. After the reset
 > the bar drops to ~0% and `banked` becomes 100; the next full week dings
 > `⭐Lv 3`.

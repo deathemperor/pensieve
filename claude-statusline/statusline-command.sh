@@ -148,7 +148,30 @@ if [ -n "$week_used" ]; then
       && mv "${lvl_file}.tmp" "$lvl_file" 2>/dev/null
   fi
   level=$(( (lvl_bank + cur_pct) / 100 + 1 ))
-  exp_seg="\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$cur_pct" '245;205;65') \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m"
+  # When at the weekly cap (100%), detect ACTIVE credit burn: session cost rising.
+  # If burning, flicker the bar like flame (yellow→orange→red via the sprite
+  # frame) + 🔥. At the cap but idle → static. (Only runs when capped — no
+  # overhead otherwise. There is no explicit "credits used" field in the feed.)
+  exp_rgb='245;205;65'; exp_flame=""
+  if [ "$cur_pct" -ge 100 ]; then
+    csid=$(echo "$input" | jq -r '.session_id // "x"')
+    cost_file="/tmp/claude-statusline-cost-${csid}"
+    cost_cents=$(awk -v c="$(echo "$input" | jq -r '.cost.total_cost_usd // 0')" 'BEGIN{printf "%d", c*100}')
+    read last_cents last_active < "$cost_file" 2>/dev/null
+    case "$last_cents"  in ''|*[!0-9]*) last_cents=0 ;; esac
+    case "$last_active" in ''|*[!0-9]*) last_active=0 ;; esac
+    if [ "$last_cents" -gt 0 ] && [ "$cost_cents" -gt "$last_cents" ]; then last_active=$lvl_now; fi
+    printf '%s %s' "$cost_cents" "$last_active" > "${cost_file}.tmp" 2>/dev/null && mv "${cost_file}.tmp" "$cost_file" 2>/dev/null
+    if [ $(( lvl_now - last_active )) -lt 15 ]; then
+      case "${frame:-0}" in
+        0|1) exp_rgb='245;205;65' ;;   # yellow
+        2|3) exp_rgb='255;150;50' ;;   # orange
+        *)   exp_rgb='255;90;50'  ;;   # red-orange
+      esac
+      exp_flame=" \033[1m\033[38;2;255;90;50m🔥\033[0m"
+    fi
+  fi
+  exp_seg="\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$cur_pct" "$exp_rgb")${exp_flame} \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m"
   # Weekly-reset cooldown — only shown when the 7-day quota is running low
   # (current usage > 70%), as a warning of when the window refreshes.
   if [ "$cur_pct" -gt 70 ]; then
