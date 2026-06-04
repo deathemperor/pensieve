@@ -139,7 +139,10 @@ fi
 
 # Class / Job (model) — mage class color (WoW mage blue)
 seg_class=""
-model=$(echo "$input" | jq -r '.model.display_name // empty' | sed -E 's/[[:space:]]*\([^)]*\)[[:space:]]*$//')
+# Strip the trailing "(…)" then abbreviate the family: Opus→O, Sonnet→S, Haiku→H.
+model=$(echo "$input" | jq -r '.model.display_name // empty' \
+  | sed -E 's/[[:space:]]*\([^)]*\)[[:space:]]*$//' \
+  | sed -E 's/^Opus /O /; s/^Sonnet /S /; s/^Haiku /H /')
 [ -n "$model" ] && seg_class="\033[38;2;63;199;235m🧙 ${model}\033[0m"
 
 # Area / zone (CWD) — last 2 path components
