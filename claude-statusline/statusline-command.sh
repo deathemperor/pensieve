@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Claude Code status line — Final Fantasy / WoW-style character HUD
+# Claude Code status line — WoW-style RPG character HUD
 # Line 1 — hero + vitals:  [portrait] 🪄 <name> · 🧙 class · HP · MP · EXP · 🔮 power · ⚔ dmg · buffs
 # Line 2 — world/stats:    [portrait] 🏰 kingdom · 💰 Gold · 🕹 playtime · ⚑ PRs · 🗺 area · 📜 quest · ⛺ camp · 📖 tale
 #
@@ -32,17 +32,23 @@ render_gauge() {
   local label="${pct}%"
   local llen=${#label}
   local start=$(( (W - llen) / 2 ))
-  local fill="\033[38;2;${rgb}m"                            # filled cells
-  local chip="\033[48;2;${rgb}m\033[1m\033[38;2;25;25;35m"  # % label pill: solid bar-colored bg, dark digits
-  local dim='\033[38;2;95;95;115m'                          # empty track
+  local fill="\033[38;2;${rgb}m"                              # filled cells
+  local chip_on="\033[48;2;${rgb}m\033[1m\033[38;2;25;25;35m"      # digit OVER filled: dark on bar color
+  local chip_off="\033[48;2;60;60;78m\033[1m\033[38;2;225;225;235m" # digit OVER empty: light on dim track
+  local dim='\033[38;2;95;95;115m'                            # empty track
   local rst='\033[0m'
   local out="" i off ch
   for ((i=0; i<W; i++)); do
     if [ "$i" -ge "$start" ] && [ "$i" -lt $(( start + llen )) ]; then
-      # The % is a solid label pill — always on a bar-colored background so it
-      # reads as one chip, never split across the fill boundary.
+      # The % digit sits on the bar's ACTUAL state at this cell: bar-color where
+      # filled, dim track where empty. Honest about fill (low % no longer shows a
+      # big colored block) and always a solid background (never bare terminal dark).
       off=$(( i - start )); ch="${label:off:1}"
-      out="${out}${chip}${ch}${rst}"
+      if [ "$i" -lt "$filled" ]; then
+        out="${out}${chip_on}${ch}${rst}"
+      else
+        out="${out}${chip_off}${ch}${rst}"
+      fi
     elif [ "$i" -lt "$filled" ]; then
       out="${out}${fill}█${rst}"
     else
@@ -52,7 +58,7 @@ render_gauge() {
   printf '%s' "$out"
 }
 
-# --- Portrait sprite (FF Black Mage — hooded figure, animated) -------------
+# --- Portrait sprite (Black Mage — hooded figure, animated) ----------------
 #   ▟██▙   hood        ▝••▘   glowing eyes (shimmer + blink)
 HOOD='130;122;235'   # bright indigo hood
 SHADE='80;74;180'    # darker indigo (eye sockets / shadow)
@@ -239,10 +245,8 @@ fi
 seg_play=""
 dur_ms=$(echo "$input" | jq -r '.cost.total_duration_ms // empty')
 if [ -n "$dur_ms" ] && [ "$dur_ms" -gt 0 ] 2>/dev/null; then
-  total_min=$(( dur_ms / 60000 ))
-  ph=$(( total_min / 60 )); pm=$(( total_min % 60 ))
-  if [ "$ph" -ge 1 ]; then play_str="${ph}h${pm}m"; else play_str="${pm}m"; fi
-  seg_play="\033[38;2;180;180;200m🕹 ${play_str}\033[0m"
+  play_h=$(( dur_ms / 3600000 ))   # whole hours only
+  seg_play="\033[38;2;180;180;200m🕹 ${play_h}h\033[0m"
 fi
 
 # Kingdom (repo) — the realm you're questing in
@@ -272,6 +276,29 @@ if [ -n "$repo_owner" ] && [ -n "$repo_name" ] && command -v gh >/dev/null 2>&1;
     read pr_mine pr_revs < "$pr_val"
     seg_pr="\033[38;2;120;200;120m⚑ ${pr_mine:-0}\033[0m"
     [ "${pr_revs:-0}" != "0" ] && seg_pr="${seg_pr} \033[38;2;235;180;90m🛡 ${pr_revs}\033[0m"
+  fi
+fi
+
+# Trial (CI) — the current branch's check-runs rolled up, WoW raid flavor:
+#   🏅 Clear (passed) · 💀 Wipe (failed) · ⚔ Pull (running). gh, cached like PRs.
+seg_ci=""
+if [ -n "$repo_owner" ] && [ -n "$repo_name" ] && [ -n "$branch" ] && command -v gh >/dev/null 2>&1; then
+  ci_key=$(printf '%s_%s_%s' "$repo_owner" "$repo_name" "$branch" | tr -c 'A-Za-z0-9_' '_')
+  ci_val="/tmp/claude-statusline-ci-${ci_key}.val"
+  ci_stamp="/tmp/claude-statusline-ci-${ci_key}.stamp"
+  ci_stamp_m=$(stat -f %m "$ci_stamp" 2>/dev/null || echo 0)
+  if [ $(( $(date +%s) - ci_stamp_m )) -ge 120 ]; then
+    : > "$ci_stamp"
+    ( st=$(gh api "repos/${repo_owner}/${repo_name}/commits/${branch}/check-runs" --jq 'if (.check_runs|length)==0 then "none" elif any(.check_runs[]; .conclusion=="failure" or .conclusion=="cancelled" or .conclusion=="timed_out" or .conclusion=="action_required") then "fail" elif any(.check_runs[]; .status!="completed") then "run" else "pass" end' 2>/dev/null)
+      printf '%s' "${st:-none}" > "${ci_val}.tmp" 2>/dev/null && mv "${ci_val}.tmp" "$ci_val" 2>/dev/null
+    ) >/dev/null 2>&1 &
+  fi
+  if [ -f "$ci_val" ]; then
+    case "$(cat "$ci_val" 2>/dev/null)" in
+      pass) seg_ci="\033[38;2;120;220;130m🏅 Clear\033[0m" ;;
+      fail) seg_ci="\033[38;2;255;85;85m💀 Wipe\033[0m" ;;
+      run)  seg_ci="\033[38;2;255;180;80m⚔ Pull\033[0m" ;;
+    esac
   fi
 fi
 
@@ -312,7 +339,7 @@ l1+=("${vitals[@]}")
 
 # Line 2 — world/context + session stats in RPG order, skipping empty segments.
 info=()
-for s in "$seg_kingdom" "$seg_gil" "$seg_play" "$seg_pr" \
+for s in "$seg_kingdom" "$seg_gil" "$seg_play" "$seg_pr" "$seg_ci" \
          "$seg_area" "$seg_quest" "$seg_worktree" "$seg_tale" \
          "$seg_agent" "$seg_realm" "$seg_style" "$seg_vim" "$seg_added"; do
   [ -n "$s" ] && info+=("$s")

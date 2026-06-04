@@ -1,6 +1,6 @@
 # Claude Code RPG Status Line
 
-A Final Fantasy / WoW-style **character HUD** for the [Claude Code](https://code.claude.com)
+A WoW-style **character HUD** for the [Claude Code](https://code.claude.com)
 status line. The session becomes a mage: context is HP, the rate-limit windows
 are MP and EXP, session cost is Gold, and an animated Black Mage portrait blinks
 from the left.
@@ -119,7 +119,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 |------|------|---------|--------|
 | `▟██▙` / `▝••▘` | Portrait | Animated Black Mage (shimmers + blinks) | — |
 | `🪄` *name* | **Hero** | The user (gold = the player) | system user |
-| `🧙` *model* | **Class / Job** | The model, in mage class-blue | `model.display_name` |
+| `🧙` *model* | **Class / Job** | The model, family abbreviated (Opus→O, Sonnet→S, Haiku→H), in mage class-blue | `model.display_name` |
 | `HP` (red) | **Life** | Context window **remaining** — drains as context fills; 0 = compaction | `context_window.remaining_percentage` |
 | `MP` (blue) | **Mana** | 5-hour rate-limit left (`100 − used`) — recharges at reset | `rate_limits.five_hour` |
 | `EXP` (yellow) `⏳` | **Experience** | 7-day rate-limit usage + countdown to the weekly reset | `rate_limits.seven_day` |
@@ -135,9 +135,10 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 |------|------|---------|--------|
 | `🏰` *repo* | **Kingdom** | The repository being worked in | `workspace.repo.name` |
 | `💰` *N* `Gold` | **Gold** | Session cost in USD (WoW gold) | `cost.total_cost_usd` |
-| `🕹` *N* | **Playtime** | Total session wall-clock | `cost.total_duration_ms` |
+| `🕹` *N*`h` | **Playtime** | Total session wall-clock (whole hours) | `cost.total_duration_ms` |
 | `⚑ N` | **Bounties** | Open PRs authored by the user in this repo | `gh` (cached) |
 | `🛡 M` | **Trials** | PRs awaiting the user's review (only when > 0) | `gh` (cached) |
+| `🏅`/`💀`/`⚔` | **Raid** (CI) | Current branch's checks: `🏅 Clear` (pass) · `💀 Wipe` (fail) · `⚔ Pull` (running); hidden when no checks | `gh` (cached) |
 | `🗺` *path* | **Area** | Current folder (last 2 path parts) | `cwd` |
 | `📜` *branch* | **Quest** | Git branch — a leading `✦` means uncommitted changes | git |
 | `⛺` *name* | **Camp** | Active git worktree (a temporary base) | `worktree.name` |
