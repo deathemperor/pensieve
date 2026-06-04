@@ -122,7 +122,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `🧙` *model* | **Class / Job** | The model, family abbreviated (Opus→O, Sonnet→S, Haiku→H), in mage class-blue | `model.display_name` |
 | `HP` (red) | **Life** | Context window **remaining** — drains as context fills; 0 = compaction | `context_window.remaining_percentage` |
 | `MP` (blue) | **Mana** | 5-hour rate-limit left (`100 − used`) — recharges at reset | `rate_limits.five_hour` |
-| `EXP` (yellow) `⏳` | **Experience** | 7-day rate-limit usage + countdown to the weekly reset | `rate_limits.seven_day` |
+| `EXP` (yellow) `⭐Lv N` | **Level** | Accumulates 7-day quota usage across time — 100% (one full week of tokens) = 1 level. The bar shows progress into the current level. Persisted in `~/.claude/.statusline-level` (survives reboots) | `rate_limits.seven_day` |
 | `🔮` *level* | **Spell power** | Reasoning effort (low/medium/high) | `effort.level` |
 | `⚔` `+N/-N` | **Damage dealt** | Lines added / removed this session | `cost.total_lines_*` |
 | `🌀 Focus` | **Buff** | Extended thinking is on | `thinking.enabled` |
@@ -174,10 +174,13 @@ working). An agent installing on an older version should drop the
 | Gauge width | `W=8` in `render_gauge()` |
 | Which line a segment is on / order | the `l1` (line 1) and `info` (line 2) arrays near the bottom |
 | Animation speed/pattern | the 6-frame `case` block in the sprite section |
-| PR cache TTL | the `120` in the "Bounties" block |
+| PR / CI cache TTL | the `120` in the "Bounties" / "Trial" blocks |
+| Tokens per level | the `/ 100` and `% 100` in the "EXP / Level" block |
 
-Runtime cache files live in `/tmp/claude-statusline-*` (per-session frame
-counter + per-repo PR cache) and are disposable.
+Transient cache files live in `/tmp/claude-statusline-*` (per-session frame
+counter + per-repo PR/CI cache) and are disposable. The **level** total is the
+one persistent piece of state — `~/.claude/.statusline-level` (`cum last ts`);
+delete it to reset back to Lv 1.
 
 ## Notes for the implementing agent
 
