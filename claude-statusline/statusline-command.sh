@@ -465,6 +465,24 @@ if [ -n "$b_transcript" ] && [ -f "$b_transcript" ] && command -v jq >/dev/null 
 fi
 [ -n "$seg_party" ] && l1+=("$seg_party")
 
+# ── Ambient magic ──────────────────────────────────────────────────────────
+# ~6% of renders, a random colored sparkle/rune is INSERTED at a random spot
+# between segments (not just appended) so it drifts around the HUD: "HP · ✨ · MP".
+fx_glyphs="✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉"   # magic-only; avoids ⭐(level) ✦(dirty) 🪄🔮💀🔥🌀(HUD)
+fx_colors="255;120;220 130;200;255 255;220;120 185;130;255 130;255;200 255;160;90"
+if [ $(( RANDOM % 16 )) -eq 0 ]; then
+  set -- $fx_glyphs; eval "fx_g=\${$(( RANDOM % $# + 1 ))}"
+  set -- $fx_colors; eval "fx_c=\${$(( RANDOM % $# + 1 ))}"
+  fx="\033[1m\033[38;2;${fx_c}m${fx_g}\033[0m"
+  if [ $(( RANDOM % 2 )) -eq 0 ] || [ "$boss_mode" = "1" ]; then
+    fx_i=$(( RANDOM % (${#l1[@]} + 1) ))
+    l1=("${l1[@]:0:$fx_i}" "$fx" "${l1[@]:$fx_i}")
+  elif [ ${#info[@]} -gt 0 ]; then
+    fx_i=$(( RANDOM % (${#info[@]} + 1) ))
+    info=("${info[@]:0:$fx_i}" "$fx" "${info[@]:$fx_i}")
+  fi
+fi
+
 line1="${sprite_l1}$(join_with "$sep" "${l1[@]}")"
 if [ "$boss_mode" = "1" ]; then
   # Boss/target frame replaces line 2. HP = remaining tasks (drains as you win).
@@ -482,18 +500,6 @@ if [ "$boss_mode" = "1" ]; then
   line2="${sprite_l2}${boss_frame}"
 else
   line2="${sprite_l2}$(join_with "$sep" "${info[@]}")"
-fi
-
-# ── Ambient magic ──────────────────────────────────────────────────────────
-# ~6% of renders, a random colored sparkle/rune flickers onto a random line —
-# a little spell shimmer drifting across the HUD.
-fx_glyphs="✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉"   # magic-only; avoids ⭐(level) ✦(dirty) 🪄🔮💀🔥🌀(HUD)
-fx_colors="255;120;220 130;200;255 255;220;120 185;130;255 130;255;200 255;160;90"
-if [ $(( RANDOM % 16 )) -eq 0 ]; then
-  set -- $fx_glyphs;  eval "fx_g=\${$(( RANDOM % $# + 1 ))}"
-  set -- $fx_colors;  eval "fx_c=\${$(( RANDOM % $# + 1 ))}"
-  fx="\033[1m\033[38;2;${fx_c}m${fx_g}\033[0m"
-  if [ $(( RANDOM % 2 )) -eq 0 ]; then line1="${line1}  ${fx}"; else line2="${line2}  ${fx}"; fi
 fi
 
 # Print both lines (only emit line 2 if it has content beyond the sprite).

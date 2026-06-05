@@ -225,9 +225,10 @@ ids in the transcript without a matching `tool_result`. **1–5 = 👥 Party**,
 
 ### ✨ Ambient magic
 
-~6 % of renders, a random colored sparkle / rune (`✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉`) flickers
-onto a random line — a little spell shimmer. Uses `$RANDOM`; glyphs are chosen to
-avoid colliding with real HUD icons.
+~6 % of renders, a random colored sparkle / rune (`✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉`) is
+**inserted at a random position between segments** (e.g. `HP · ✨ · MP`) so it
+drifts around the HUD rather than always sitting at the end. Uses `$RANDOM`;
+glyphs are chosen to avoid colliding with real HUD icons.
 
 ---
 
