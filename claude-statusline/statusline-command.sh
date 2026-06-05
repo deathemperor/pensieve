@@ -318,9 +318,17 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
   b_m=$(stat -f %m "$boss_stamp" 2>/dev/null || echo 0)
   if [ $(( NOW - b_m )) -ge 30 ]; then
     : > "$boss_stamp"
-    ( b_line=$(tail -n 5000 "$f_transcript" 2>/dev/null | grep -aE '"todos":\[' | tail -1)
+    ( bbuf=$(tail -n 5000 "$f_transcript" 2>/dev/null)   # one read; greps run in-memory
+      # (1) TodoWrite path — a "todos":[…] snapshot (overwritten each call)
+      b_line=$(printf '%s' "$bbuf" | grep -aE '"todos":\[' | tail -1)
       b_sum=""
       [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '[.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | "\($n)\t\($d)\t\($act)\t\($c)"' 2>/dev/null)
+      # (2) Agent-teams path — TaskCreate/TaskList snapshot (subject+status objects).
+      # Only runs when there's no TodoWrite, so TodoWrite sessions pay nothing extra.
+      if [ -z "$b_sum" ]; then
+        t_line=$(printf '%s' "$bbuf" | grep -aE '"subject":"' | grep -aE '"status":"' | tail -1)
+        [ -n "$t_line" ] && b_sum=$(printf '%s' "$t_line" | jq -r '[.. | objects | select(has("subject") and has("status"))] as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | (([$t[]|select(.status=="in_progress")][0].subject) // ([$t[]|select(.status=="pending")][0].subject) // "") as $a | ($a | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.subject]|join(" ")|gsub("[\t\n\r]";" ")) as $c | "\($n)\t\($d)\t\($act)\t\($c)"' 2>/dev/null)
+      fi
       if [ -n "$b_sum" ]; then
         b_n=$(printf '%s' "$b_sum" | cut -f1); b_d=$(printf '%s' "$b_sum" | cut -f2)
         b_act=$(printf '%s' "$b_sum" | cut -f3); b_c=$(printf '%s' "$b_sum" | cut -f4)

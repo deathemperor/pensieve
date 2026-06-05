@@ -201,12 +201,15 @@ per-session) parses it for two things:
 
 ### ⚔ Boss Fight
 
-When the latest `TodoWrite` block has an **incomplete** task list, the run becomes
-a boss fight and **line 2 switches to a boss/target frame** (line 1 — your
+When the latest task list is **incomplete**, the run becomes a boss fight and **line 2 switches to a boss/target frame** (line 1 — your
 character — stays). The objective is named after an iconic **WoW raid boss**,
 chosen by a stable hash of the task contents (same task list → same boss). The
 boss's **HP = remaining tasks** and drains as you complete them; when all tasks
 are done the boss dies and line 2 returns to normal.
+
+Both task systems are supported: **`TodoWrite`** (a `todos` array snapshot) and
+**Agent-teams `TaskCreate`/`TaskList`** (subject + status objects). The Task grep
+only runs when there's no `TodoWrite`, so it adds no cost to TodoWrite sessions.
 
 ```
 💀 Illidan  HP ███░░░░░ 40%  ⚔ 3/5 down  ▶ Doing task d
