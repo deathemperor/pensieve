@@ -186,15 +186,14 @@ case "$class_choice" in
   *)       [ -n "$f_model" ] && seg_class="\033[38;2;63;199;235m🧙 ${f_model}\033[0m" ;;
 esac
 
-# Area — last 2 path components (pure bash, no awk spawn)
-seg_area=""
-if [ -n "$f_cwd" ]; then
-  short_cwd="${f_cwd/#$HOME/~}"
-  case "$short_cwd" in
-    */*/*) rest="${short_cwd%/*}"; dir_display="…/${rest##*/}/${short_cwd##*/}" ;;
-    *) dir_display="$short_cwd" ;;
-  esac
-  seg_area="\033[33m🗺 ${dir_display}\033[0m"
+# Locale — RPG framing of where you are:
+#   in a worktree → out exploring the world (🧭 + the worktree's last part)
+#   in the primary checkout → back at the inn / home town (🏠 + the folder)
+seg_locale=""
+if [ -n "$f_worktree" ]; then
+  seg_locale="\033[38;2;140;210;150m🧭 $(clip "${f_worktree##*/}" 24)\033[0m"
+elif [ -n "$f_cwd" ]; then
+  seg_locale="\033[38;2;220;180;120m🏠 $(clip "${f_cwd##*/}" 20)\033[0m"
 fi
 
 # Quest (git branch + dirty) — CACHED in background (git status is slow in big repos)
@@ -221,7 +220,6 @@ if [ -n "$branch" ]; then
   fi
 fi
 
-seg_worktree=""; [ -n "$f_worktree" ] && seg_worktree="\033[34m⛺ $(clip "$f_worktree" 20)\033[0m"
 seg_tale="";     [ -n "$f_session" ] && seg_tale="\033[38;2;230;200;120m📖 «$(clip "$f_session" 24)»\033[0m"
 seg_power="";    [ -n "$f_effort" ] && seg_power="\033[35m🔮 ${f_effort}\033[0m"
 
@@ -320,7 +318,7 @@ l1+=("${vitals[@]}")
 
 info=()
 for s in "$seg_kingdom" "$seg_gil" "$seg_play" "$seg_pr" "$seg_ci" \
-         "$seg_area" "$seg_quest" "$seg_worktree" "$seg_tale" \
+         "$seg_locale" "$seg_quest" "$seg_tale" \
          "$seg_agent" "$seg_realm" "$seg_style" "$seg_vim" "$seg_added" \
          "$seg_cooldown"; do
   [ -n "$s" ] && info+=("$s")
