@@ -25,7 +25,7 @@ order, paired with what it produced. Each phase ends with the commits it shipped
 | "be creative about session name for rpg" *(+ shot)* | Session name styled as a "Tale" `📖 «…»` |
 | "bars look too thick … put percentage on middle of bar" | 8-cell gauges, % centered on the bar |
 
-**Shipped:** `c24e20d1`
+**Shipped:** [`c24e20d1`](https://github.com/deathemperor/pensieve/commit/c24e20d1)
 
 ## Phase 2 — WoW direction & honest gauges · 2026-06-04
 
@@ -47,7 +47,7 @@ order, paired with what it produced. Each phase ends with the commits it shipped
 | "⚔ 🪄 deathemperor, can the ► be removed?" | Removed the ► marker |
 | "is there any better wand icon/char?" | Evaluated; kept 🪄 |
 
-**Shipped:** `4d27c3fe` `9ed9734e` `d18d6cc8` `8d7dab0e` `dc8a76c8`
+**Shipped:** [`4d27c3fe`](https://github.com/deathemperor/pensieve/commit/4d27c3fe) [`9ed9734e`](https://github.com/deathemperor/pensieve/commit/9ed9734e) [`d18d6cc8`](https://github.com/deathemperor/pensieve/commit/d18d6cc8) [`8d7dab0e`](https://github.com/deathemperor/pensieve/commit/8d7dab0e) [`dc8a76c8`](https://github.com/deathemperor/pensieve/commit/dc8a76c8)
 
 ## Phase 3 — Repo it & rename Gil→Gold · 2026-06-04
 
@@ -62,7 +62,7 @@ order, paired with what it produced. Each phase ends with the commits it shipped
 | "mana isn't blue" *(+ shot)* | MP bar → actually blue |
 | "ship it" / "resume" / "not seeing the new shot on git" | Pushed; re-added the missing screenshot |
 
-**Shipped:** `1b6d222d` `d3b5e76b` `29417589`
+**Shipped:** [`1b6d222d`](https://github.com/deathemperor/pensieve/commit/1b6d222d) [`d3b5e76b`](https://github.com/deathemperor/pensieve/commit/d3b5e76b) [`29417589`](https://github.com/deathemperor/pensieve/commit/29417589)
 
 ## Phase 4 — EXP leveling & credit burn · 2026-06-05
 
@@ -74,7 +74,7 @@ order, paired with what it produced. Each phase ends with the commits it shipped
 | "can you animate the exp bar … do you know usage credits is being used?" | Flame animation on active credit burn + usage detection |
 | "this is what I see flame works" *(+ shot)* | Confirmed the flame |
 
-**Shipped:** `aba125a7` `a264de91` `4aefe6b1` `c1f83b73` `176c9cc4`
+**Shipped:** [`aba125a7`](https://github.com/deathemperor/pensieve/commit/aba125a7) [`a264de91`](https://github.com/deathemperor/pensieve/commit/a264de91) [`4aefe6b1`](https://github.com/deathemperor/pensieve/commit/4aefe6b1) [`c1f83b73`](https://github.com/deathemperor/pensieve/commit/c1f83b73) [`176c9cc4`](https://github.com/deathemperor/pensieve/commit/176c9cc4)
 
 ## Phase 5 — Boss fights, party, ambient magic · 2026-06-05
 
@@ -82,7 +82,7 @@ order, paired with what it produced. Each phase ends with the commits it shipped
 |---|---|
 | Boss Fight mode *(task lists → WoW boss, HP = remaining tasks; party/raid = sub-agents; ambient magic)* | Implemented all three |
 
-**Shipped:** `381197f1` `a454f9d7`
+**Shipped:** [`381197f1`](https://github.com/deathemperor/pensieve/commit/381197f1) [`a454f9d7`](https://github.com/deathemperor/pensieve/commit/a454f9d7)
 
 ## Phase 6 — The two crises · 2026-06-05
 
@@ -98,7 +98,7 @@ scans → render ~5s → ~0.1s, load 527 → stable. Also race-proofed the level
 (deterministic from `resets_at`, not accumulated) after ~15 concurrent sessions
 corrupted a shared level file (Lv 160 million).
 
-**Shipped:** `352d705f` `dda889d6` `a0553098` `2066715f`
+**Shipped:** [`352d705f`](https://github.com/deathemperor/pensieve/commit/352d705f) [`dda889d6`](https://github.com/deathemperor/pensieve/commit/dda889d6) [`a0553098`](https://github.com/deathemperor/pensieve/commit/a0553098) [`2066715f`](https://github.com/deathemperor/pensieve/commit/2066715f)
 
 ## Phase 7 — Agent-teams boss fights & class chooser · 2026-06-05
 
@@ -112,7 +112,7 @@ corrupted a shared level file (Lv 160 million).
 | "issue updating boss fight?" *(+ shot — stuck at 0/6)* | Aggregate latest status per task id (track `TaskUpdate` completions) |
 | "capture the agent teams on boss fight, showing as raid team" | Running sub-agents shown as `🚩 Raid(N)` on the boss |
 
-**Shipped:** `eba854b5` `d8fb5773` `24cc4ed9` `7b482969` `964287eb`
+**Shipped:** [`eba854b5`](https://github.com/deathemperor/pensieve/commit/eba854b5) [`d8fb5773`](https://github.com/deathemperor/pensieve/commit/d8fb5773) [`24cc4ed9`](https://github.com/deathemperor/pensieve/commit/24cc4ed9) [`7b482969`](https://github.com/deathemperor/pensieve/commit/7b482969) [`964287eb`](https://github.com/deathemperor/pensieve/commit/964287eb)
 
 ## Phase 8 — Locale & Quest polish · 2026-06-06
 
@@ -129,7 +129,7 @@ corrupted a shared level file (Lv 160 million).
 | "how about a summary of your work/outcome for each of my prompts?" | Paired each prompt with its outcome |
 | "structure the prompts and what you build for easier of read" | Reformatted into these per-phase tables |
 
-**Shipped:** `d99b7627` `8cbcde57` `aca680c2` `992247ab` `b14a3994` `ae71b2c8` (+ this rewrite)
+**Shipped:** [`d99b7627`](https://github.com/deathemperor/pensieve/commit/d99b7627) [`8cbcde57`](https://github.com/deathemperor/pensieve/commit/8cbcde57) [`aca680c2`](https://github.com/deathemperor/pensieve/commit/aca680c2) [`992247ab`](https://github.com/deathemperor/pensieve/commit/992247ab) [`b14a3994`](https://github.com/deathemperor/pensieve/commit/b14a3994) [`ae71b2c8`](https://github.com/deathemperor/pensieve/commit/ae71b2c8) (+ this rewrite)
 
 ---
 
