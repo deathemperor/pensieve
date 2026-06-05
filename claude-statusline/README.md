@@ -223,7 +223,10 @@ When the latest task list is **incomplete**, the run becomes a boss fight and **
 character — stays). The objective is named after an iconic **WoW raid boss**,
 chosen by a stable hash of the task contents (same task list → same boss). The
 boss's **HP = remaining tasks** and drains as you complete them; when all tasks
-are done the boss dies and line 2 returns to normal. A fight also expires if
+are done the boss dies and line 2 returns to normal. During the fight, the
+running sub-agents (Claude Teams) are shown as the **raid** attacking the boss —
+`🚩 Raid(2): coder, apple` — from `Agent` tool_use ids without a `tool_result`.
+A fight also expires if
 the last task update is **> 15 min old** (Agent-teams doesn't always emit a final
 all-done snapshot), and the boss **name is locked** for the whole fight.
 

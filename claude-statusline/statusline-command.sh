@@ -337,14 +337,14 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       # (1) TodoWrite path — a "todos":[…] snapshot (overwritten each call)
       b_line=$(printf '%s' "$bbuf" | grep -aE '"todos":\[' | tail -1)
       b_sum=""
-      [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '. as $r | [.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)"' 2>/dev/null)
+      [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '. as $r | [.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)\t"' 2>/dev/null)
       # (2) Agent-teams path — aggregate the LATEST status per task across the
       # window: TaskCreate gives {id,subject,status}, TaskUpdate gives
       # {taskId,status} (no subject), so completions via TaskUpdate are counted.
       # Only runs when there's no TodoWrite AND tasks are present (cheap guard
       # before the slurp), so TodoWrite/taskless sessions pay nothing extra.
       if [ -z "$b_sum" ] && printf '%s' "$bbuf" | grep -qaE '"subject":"'; then
-        b_sum=$(printf '%s' "$bbuf" | jq -rs 'def epoch: if . == null or . == "" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end; . as $lines | ([$lines[] | select(any(.. | objects; (has("id") or has("taskId")) and has("status"))) | (.timestamp // "")] | map(epoch) | max // 0) as $ts | [$lines[] | .. | objects | select((has("id") or has("taskId")) and has("status")) | {tid: (.id // .taskId), subject: (.subject // ""), status: .status}] | group_by(.tid) | map({subject: (([.[].subject] | map(select(. != "")) | last) // ""), status: (.[-1].status)}) | map(select(.subject != "")) | (length) as $n | ([.[]|select(.status=="completed")]|length) as $d | (([.[]|select(.status=="in_progress")][0].subject) // ([.[]|select(.status=="pending")][0].subject) // "") as $a | "\($n)\t\($d)\t\($a | gsub("[\t\n\r]";" "))\t\([.[].subject]|join(" ")|gsub("[\t\n\r]";" "))\t\($ts)"' 2>/dev/null)
+        b_sum=$(printf '%s' "$bbuf" | jq -rs 'def epoch: if . == null or . == "" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end; . as $lines | ([$lines[] | select(any(.. | objects; (has("id") or has("taskId")) and has("status"))) | (.timestamp // "")] | map(epoch) | max // 0) as $ts | [$lines[] | .. | objects | select((has("id") or has("taskId")) and has("status")) | {tid: (.id // .taskId), subject: (.subject // ""), status: .status}] | group_by(.tid) | map({subject: (([.[].subject] | map(select(. != "")) | last) // ""), status: (.[-1].status)}) | map(select(.subject != "")) | (length) as $n | ([.[]|select(.status=="completed")]|length) as $d | (([.[]|select(.status=="in_progress")][0].subject) // ([.[]|select(.status=="pending")][0].subject) // "") as $a | (([$lines[]|..|objects|select(.type=="tool_use" and .name=="Agent")] as $au | [$lines[]|..|objects|select(.type=="tool_result")|.tool_use_id] as $dn | [$au[]|select((.id) as $i|($dn|index($i))|not)|(.input.subagent_type // "agent")]) | join(",")) as $raid | "\($n)\t\($d)\t\($a | gsub("[\t\n\r]";" "))\t\([.[].subject]|join(" ")|gsub("[\t\n\r]";" "))\t\($ts)\t\($raid)"' 2>/dev/null)
       fi
       # Expire a stale fight: if the latest task/todo update is > 15 min old, the
       # fight is over (Agent-teams doesn't always emit a final all-done snapshot).
@@ -353,6 +353,7 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       if [ -n "$b_sum" ]; then
         b_n=$(printf '%s' "$b_sum" | cut -f1); b_d=$(printf '%s' "$b_sum" | cut -f2)
         b_act=$(printf '%s' "$b_sum" | cut -f3); b_c=$(printf '%s' "$b_sum" | cut -f4)
+        b_raid=$(printf '%s' "$b_sum" | cut -f6)   # running sub-agents = the raid team
         if [ "${b_n:-0}" -gt 0 ] && [ "${b_d:-0}" -lt "${b_n:-0}" ]; then
           # Active fight → LOCK the boss name for its duration: reuse the cached
           # name (the cache only exists during an ongoing fight), else roll fresh.
@@ -365,13 +366,13 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
             b_h=$(printf '%s' "$b_c" | cksum | awk '{print $1}')
             b_name=${BOSSES[$(( b_h % ${#BOSSES[@]} ))]}
           fi
-          printf '%s|%s|%s|%s' "${b_n}" "${b_d}" "$b_name" "$b_act" > "${boss_cache}.tmp" 2>/dev/null && mv "${boss_cache}.tmp" "$boss_cache" 2>/dev/null
+          printf '%s|%s|%s|%s|%s' "${b_n}" "${b_d}" "$b_name" "$b_raid" "$b_act" > "${boss_cache}.tmp" 2>/dev/null && mv "${boss_cache}.tmp" "$boss_cache" 2>/dev/null
         else rm -f "$boss_cache" 2>/dev/null; fi
       else rm -f "$boss_cache" 2>/dev/null; fi
     ) >/dev/null 2>&1 &
   fi
   if [ -f "$boss_cache" ]; then
-    IFS='|' read boss_total boss_done boss_name boss_active < "$boss_cache"
+    IFS='|' read boss_total boss_done boss_name boss_raid boss_active < "$boss_cache"
     case "$boss_total" in ''|*[!0-9]*) boss_total=0 ;; esac
     case "$boss_done"  in ''|*[!0-9]*) boss_done=0 ;; esac
     [ "$boss_total" -gt 0 ] && [ "$boss_done" -lt "$boss_total" ] && boss_mode=1
@@ -395,7 +396,7 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
     elif [ "$p_n" -ge 1 ]; then seg_party="\033[38;2;150;200;255m👥 Party (${p_n})\033[0m"; fi
   fi
 fi
-[ -n "$seg_party" ] && l1+=("$seg_party")
+[ -n "$seg_party" ] && [ "$boss_mode" != "1" ] && l1+=("$seg_party")   # in boss mode the raid shows in the boss frame
 
 # ── Ambient magic — ~6% of renders, a sparkle inserted between segments ──
 fx_glyphs="✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉"
@@ -419,6 +420,11 @@ if [ "$boss_mode" = "1" ]; then
   bhp="${bhp}\033[0m"
   boss_frame="\033[1m\033[38;2;255;80;80m💀 ${boss_name}\033[0m  \033[38;2;255;85;85mHP\033[0m ${bhp} \033[38;2;255;85;85m${boss_rem}%\033[0m  \033[38;2;200;200;210m⚔ ${boss_done}/${boss_total} down\033[0m"
   [ -n "$boss_active" ] && boss_frame="${boss_frame}  \033[38;2;255;200;120m▶ $(clip "$boss_active" 28)\033[0m"
+  # The running sub-agents are the raid team attacking the boss.
+  if [ -n "$boss_raid" ]; then
+    raid_n=$(printf '%s' "$boss_raid" | awk -F, '{print NF}')
+    boss_frame="${boss_frame}  \033[1m\033[38;2;150;200;255m🚩 Raid(${raid_n}): $(clip "$boss_raid" 30)\033[0m"
+  fi
   line2="${sprite_l2}${boss_frame}"
 else
   line2="${sprite_l2}$(join_with "$sep" "${info[@]}")"
