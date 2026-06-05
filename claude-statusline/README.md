@@ -64,7 +64,7 @@ The snippet is:
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh",
-    "refreshInterval": 1
+    "refreshInterval": 3
   }
 }
 ```
