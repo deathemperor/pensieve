@@ -122,7 +122,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `🧙` *model* | **Class / Job** | The model, family abbreviated (Opus→O, Sonnet→S, Haiku→H), in mage class-blue | `model.display_name` |
 | `HP` (red) | **Life** | Context window **remaining** — drains as context fills; 0 = compaction | `context_window.remaining_percentage` |
 | `MP` (blue) | **Mana** | 5-hour rate-limit left (`100 − used`) — recharges at reset | `rate_limits.five_hour` |
-| `EXP` (yellow) `⭐Lv N` `⏳` | **Level** | Bar = **current 7-day usage %** (reads 100% when maxed, never 0%); `⭐Lv N` banks completed weeks (see [How the Level is calculated](#how-the-level-is-calculated)); `⏳ Nd/Nh` reset cooldown shows **only when usage > 70%** | `rate_limits.seven_day` |
+| `EXP` (yellow) `⭐Lv N` | **Level** | Bar = **current 7-day usage %** (reads 100% when maxed, never 0%); `⭐Lv N` banks completed weeks (see [How the Level is calculated](#how-the-level-is-calculated)); `⏳ Nd/Nh` reset cooldown shows **only when usage > 70%** | `rate_limits.seven_day` |
 | `🔮` *level* | **Spell power** | Reasoning effort (low/medium/high) | `effort.level` |
 | `⚔` `+N/-N` | **Damage dealt** | Lines added / removed this session | `cost.total_lines_*` |
 | `🌀 Focus` | **Buff** | Extended thinking is on | `thinking.enabled` |
@@ -145,7 +145,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `📖 «…»` | **Tale** | Session name | `session_name` |
 
 **Conditional segments** (appear only when present): `🎭` agent · `🔧` dev-mode ·
-`🎨` output-style · `✏️` vim-mode · `📂` added-dirs.
+`🎨` output-style · `✏️` vim-mode · `📂` added-dirs · `⏳` weekly-reset cooldown (last, only when 7-day usage > 70%).
 
 ### Gauges & colors
 

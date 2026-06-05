@@ -102,7 +102,7 @@ user=${USER:-$(whoami)}
 hero="\033[38;2;255;209;0m🪄 ${user}\033[0m"
 
 # --- Vitals (HP / MP / EXP) ---
-vitals=()
+vitals=(); seg_cooldown=""
 
 if [ -n "$f_remain" ]; then
   vitals+=("\033[38;2;255;85;85mHP\033[0m $(render_gauge "${f_remain%.*}" '255;85;85')")
@@ -157,10 +157,11 @@ if [ -n "$f_seven_used" ]; then
     fi
   fi
   exp_seg="\033[38;2;245;205;65mEXP\033[0m $(render_gauge "$cur_pct" "$exp_rgb")${exp_flame} \033[1m\033[38;2;255;220;90m⭐Lv ${level}\033[0m"
+  # Weekly-reset cooldown → its own segment, placed last on line 2 (only > 70%).
   if [ "$cur_pct" -gt 70 ] && [ "$week_reset" -ne 0 ]; then
     secs_left=$(( week_reset - NOW )); [ "$secs_left" -lt 0 ] && secs_left=0
     if [ "$(( secs_left / 86400 ))" -ge 1 ]; then cd_str="$(( secs_left / 86400 ))d"; else cd_str="$(( secs_left / 3600 ))h"; fi
-    exp_seg="${exp_seg} \033[38;2;255;140;60m⏳ ${cd_str}\033[0m"
+    seg_cooldown="\033[38;2;255;140;60m⏳ ${cd_str}\033[0m"
   fi
   vitals+=("$exp_seg")
 else
@@ -305,7 +306,8 @@ l1+=("${vitals[@]}")
 info=()
 for s in "$seg_kingdom" "$seg_gil" "$seg_play" "$seg_pr" "$seg_ci" \
          "$seg_area" "$seg_quest" "$seg_worktree" "$seg_tale" \
-         "$seg_agent" "$seg_realm" "$seg_style" "$seg_vim" "$seg_added"; do
+         "$seg_agent" "$seg_realm" "$seg_style" "$seg_vim" "$seg_added" \
+         "$seg_cooldown"; do
   [ -n "$s" ] && info+=("$s")
 done
 
