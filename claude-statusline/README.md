@@ -139,7 +139,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `⚑ N` | **Bounties** | Open PRs authored by the user in this repo | `gh` (cached) |
 | `🛡 M` | **Trials** | PRs awaiting the user's review (only when > 0) | `gh` (cached) |
 | `🏅`/`💀`/`⚔` | **Raid** (CI) | Current branch's checks: `🏅 Clear` (pass) · `💀 Wipe` (fail) · `⚔ Pull` (running); hidden when no checks | `gh` (cached) |
-| `🐎`·`⛵`·`⛰`·`👣`·`🌲` *name* / `🏠` *folder* | **Locale** | Where you are, RPG-framed: in a **git worktree** you're out **exploring the world** — the travel icon (horse · sailboat · mountain · footprints · pine) is picked per-worktree from a pure-bash hash of its name, so each worktree gets its own stable mount (no flicker); in the **primary checkout** you're `🏠` back at the home town / inn (shows the folder). Mutually exclusive. | `worktree.name` / `cwd` |
+| `🐎`·`⛵`·`⛰`·`👣`·`🌲` *name* / `🏠` *folder* | **Locale** | Where you are, RPG-framed: in a **git worktree** you're out **exploring the world** — the travel icon (horse · sailboat · mountain · footprints · pine) is picked per-worktree from a pure-bash hash of its name, so each worktree gets its own stable mount (no flicker); in the **primary checkout** you're back in **home town** — the building icon (🏪 marketplace · 🏨 inn · 🏠 home · ⚒ forge) is likewise picked per-folder from a hash of its name (shows the folder). Mutually exclusive. | `worktree.name` / `cwd` |
 | `📜` *branch* | **Quest** | Git branch — a leading `✦` means uncommitted changes | git |
 | `📖 «…»` | **Tale** | Session name | `session_name` |
 

@@ -200,7 +200,12 @@ if [ -n "$f_worktree" ]; then
   exp_ico="${explore_icons[$(( eh % ${#explore_icons[@]} ))]}"
   seg_locale="\033[38;2;140;210;150m${exp_ico} $(clip "$wt" 24)\033[0m"
 elif [ -n "$f_cwd" ]; then
-  seg_locale="\033[38;2;220;180;120m🏠 $(clip "${f_cwd##*/}" 20)\033[0m"
+  cf="${f_cwd##*/}"
+  town_icons=("🏪" "🏨" "🏠" "⚒")   # marketplace, inn, home, forge — picked per-folder
+  th=0; ti=0
+  while [ "$ti" -lt "${#cf}" ]; do th=$(( (th + $(printf '%d' "'${cf:$ti:1}")) % 100003 )); ti=$((ti+1)); done
+  town_ico="${town_icons[$(( th % ${#town_icons[@]} ))]}"
+  seg_locale="\033[38;2;220;180;120m${town_ico} $(clip "$cf" 20)\033[0m"
 fi
 
 # Quest (git branch + dirty) — CACHED in background (git status is slow in big repos)
