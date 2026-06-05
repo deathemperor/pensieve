@@ -332,10 +332,20 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       if [ -n "$b_sum" ]; then
         b_n=$(printf '%s' "$b_sum" | cut -f1); b_d=$(printf '%s' "$b_sum" | cut -f2)
         b_act=$(printf '%s' "$b_sum" | cut -f3); b_c=$(printf '%s' "$b_sum" | cut -f4)
-        BOSSES=("Ragnaros" "Nefarian" "Kel'Thuzad" "Illidan" "Kil'jaeden" "Arthas" "Deathwing" "Yogg-Saron" "C'Thun" "Onyxia" "Archimonde" "Sargeras" "Garrosh" "N'Zoth" "Algalon" "Lady Vashj")
-        b_h=$(printf '%s' "$b_c" | cksum | awk '{print $1}')
-        b_name=${BOSSES[$(( b_h % ${#BOSSES[@]} ))]}
-        printf '%s|%s|%s|%s' "${b_n:-0}" "${b_d:-0}" "$b_name" "$b_act" > "${boss_cache}.tmp" 2>/dev/null && mv "${boss_cache}.tmp" "$boss_cache" 2>/dev/null
+        if [ "${b_n:-0}" -gt 0 ] && [ "${b_d:-0}" -lt "${b_n:-0}" ]; then
+          # Active fight → LOCK the boss name for its duration: reuse the cached
+          # name (the cache only exists during an ongoing fight), else roll fresh.
+          # Stops the name jumping as the task snapshot/order wobbles.
+          b_old=$(cut -d'|' -f3 < "$boss_cache" 2>/dev/null)
+          if [ -n "$b_old" ]; then
+            b_name="$b_old"
+          else
+            BOSSES=("Ragnaros" "Nefarian" "Kel'Thuzad" "Illidan" "Kil'jaeden" "Arthas" "Deathwing" "Yogg-Saron" "C'Thun" "Onyxia" "Archimonde" "Sargeras" "Garrosh" "N'Zoth" "Algalon" "Lady Vashj")
+            b_h=$(printf '%s' "$b_c" | cksum | awk '{print $1}')
+            b_name=${BOSSES[$(( b_h % ${#BOSSES[@]} ))]}
+          fi
+          printf '%s|%s|%s|%s' "${b_n}" "${b_d}" "$b_name" "$b_act" > "${boss_cache}.tmp" 2>/dev/null && mv "${boss_cache}.tmp" "$boss_cache" 2>/dev/null
+        else rm -f "$boss_cache" 2>/dev/null; fi
       else rm -f "$boss_cache" 2>/dev/null; fi
     ) >/dev/null 2>&1 &
   fi
