@@ -338,11 +338,13 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       b_line=$(printf '%s' "$bbuf" | grep -aE '"todos":\[' | tail -1)
       b_sum=""
       [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '. as $r | [.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)"' 2>/dev/null)
-      # (2) Agent-teams path — TaskCreate/TaskList snapshot (subject+status objects).
-      # Only runs when there's no TodoWrite, so TodoWrite sessions pay nothing extra.
-      if [ -z "$b_sum" ]; then
-        t_line=$(printf '%s' "$bbuf" | grep -aE '"subject":"' | grep -aE '"status":"' | tail -1)
-        [ -n "$t_line" ] && b_sum=$(printf '%s' "$t_line" | jq -r '. as $r | [.. | objects | select(has("subject") and has("status"))] as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | (([$t[]|select(.status=="in_progress")][0].subject) // ([$t[]|select(.status=="pending")][0].subject) // "") as $a | ($a | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.subject]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)"' 2>/dev/null)
+      # (2) Agent-teams path — aggregate the LATEST status per task across the
+      # window: TaskCreate gives {id,subject,status}, TaskUpdate gives
+      # {taskId,status} (no subject), so completions via TaskUpdate are counted.
+      # Only runs when there's no TodoWrite AND tasks are present (cheap guard
+      # before the slurp), so TodoWrite/taskless sessions pay nothing extra.
+      if [ -z "$b_sum" ] && printf '%s' "$bbuf" | grep -qaE '"subject":"'; then
+        b_sum=$(printf '%s' "$bbuf" | jq -rs 'def epoch: if . == null or . == "" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end; . as $lines | ([$lines[] | select(any(.. | objects; (has("id") or has("taskId")) and has("status"))) | (.timestamp // "")] | map(epoch) | max // 0) as $ts | [$lines[] | .. | objects | select((has("id") or has("taskId")) and has("status")) | {tid: (.id // .taskId), subject: (.subject // ""), status: .status}] | group_by(.tid) | map({subject: (([.[].subject] | map(select(. != "")) | last) // ""), status: (.[-1].status)}) | map(select(.subject != "")) | (length) as $n | ([.[]|select(.status=="completed")]|length) as $d | (([.[]|select(.status=="in_progress")][0].subject) // ([.[]|select(.status=="pending")][0].subject) // "") as $a | "\($n)\t\($d)\t\($a | gsub("[\t\n\r]";" "))\t\([.[].subject]|join(" ")|gsub("[\t\n\r]";" "))\t\($ts)"' 2>/dev/null)
       fi
       # Expire a stale fight: if the latest task/todo update is > 15 min old, the
       # fight is over (Agent-teams doesn't always emit a final all-done snapshot).
