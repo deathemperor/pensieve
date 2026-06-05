@@ -122,22 +122,25 @@ if [ -n "$f_seven_used" ]; then
   cur_pct=${f_seven_used%.*}
   [ "$cur_pct" -gt 100 ] 2>/dev/null && cur_pct=100
   week_reset=$f_seven_reset; case "$week_reset" in ''|*[!0-9]*) week_reset=0 ;; esac
+  # Level is DERIVED, not accumulated — race-proof across concurrent sessions.
+  # We persist only `first_reset` (the earliest weekly-reset epoch ever seen);
+  # since seven_day.resets_at advances ~7 days per weekly rollover, the number of
+  # weeks elapsed = (current_reset - first_reset) / 604800. Every session computes
+  # the SAME level deterministically; the only write lowers first_reset (idempotent,
+  # converges) and uses a per-PID temp so concurrent writes can't corrupt it.
   lvl_file="$HOME/.claude/.statusline-level"
-  read lvl_bank lvl_lra lvl_lu lvl_ts < "$lvl_file" 2>/dev/null
-  case "$lvl_bank" in ''|*[!0-9]*) lvl_bank=0 ;; esac
-  case "$lvl_lra"  in ''|*[!0-9]*) lvl_lra=0  ;; esac
-  case "$lvl_lu"   in ''|*[!0-9]*) lvl_lu=0   ;; esac
-  case "$lvl_ts"   in ''|*[!0-9]*) lvl_ts=0   ;; esac
-  [ "$lvl_lu"   -gt 100 ] && lvl_lu=0
-  [ "$lvl_lra"  -lt 1000000000 ] && lvl_lra=0
-  [ "$lvl_bank" -gt 100000 ] && lvl_bank=0
-  if [ $(( NOW - lvl_ts )) -ge 30 ]; then
-    if [ "$lvl_lra" -ne 0 ] && [ "$week_reset" -gt "$lvl_lra" ]; then lvl_bank=$(( lvl_bank + lvl_lu )); fi
-    lvl_lra=$week_reset; lvl_lu=$cur_pct; lvl_ts=$NOW
-    printf '%s %s %s %s' "$lvl_bank" "$lvl_lra" "$lvl_lu" "$lvl_ts" > "${lvl_file}.tmp" 2>/dev/null \
-      && mv "${lvl_file}.tmp" "$lvl_file" 2>/dev/null
+  read first_reset _rest < "$lvl_file" 2>/dev/null
+  case "$first_reset" in ''|*[!0-9]*) first_reset=0 ;; esac
+  [ "$first_reset" -lt 1000000000 ] && first_reset=0      # heal corrupt / old 4-field format
+  if [ "$week_reset" -ge 1000000000 ] && { [ "$first_reset" -eq 0 ] || [ "$week_reset" -lt "$first_reset" ]; }; then
+    first_reset=$week_reset
+    printf '%s' "$first_reset" > "${lvl_file}.tmp.$$" 2>/dev/null && mv "${lvl_file}.tmp.$$" "$lvl_file" 2>/dev/null
   fi
-  level=$(( lvl_bank / 100 + 1 ))
+  if [ "$first_reset" -ne 0 ] && [ "$week_reset" -ge "$first_reset" ]; then
+    level=$(( (week_reset - first_reset) / 604800 + 1 ))
+  else
+    level=1
+  fi
   # Active credit burn at the cap → flame flicker + 🔥.
   exp_rgb='245;205;65'; exp_flame=""
   if [ "$cur_pct" -ge 100 ]; then

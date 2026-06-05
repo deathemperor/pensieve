@@ -163,23 +163,18 @@ The feed only exposes the **rolling 7-day quota usage**
 so the level is tracked locally:
 
 - **The EXP bar = your current 7-day usage %.** It fills as you spend the week's
-  quota and reads **100% when you're maxed / over the weekly limit** — it never
-  shows 0% while you're actually using.
-- **The level banks completed weeks.** A *weekly reset* is detected when the
-  window's reset timestamp (`seven_day.resets_at`) **advances** — the
-  authoritative rollover signal. The just-ended week's usage is then added to a
-  persistent `banked` total. (Inferring the reset from a *usage drop* misfires in
-  pay-per-use / credits mode, where usage hovers at 100% and fluctuates — that
-  produced phantom weeks and an exploding level in an earlier version.)
-- **`Level = banked / 100 + 1`.** So one full week of tokens (~100%) banks ~100
-  points = **+1 level**; a light week that only reached 40% banks ~40. The bar
-  shows the current week independently of the level.
+  quota and reads **100% when maxed**; it never shows 0% while you're using.
+- **The level is DERIVED from time, not accumulated** (so it's race-proof across
+  many concurrent sessions sharing one file). `seven_day.resets_at` advances ~7
+  days each weekly rollover, so:
+  **`Level = (current_reset − first_reset) / 604800 + 1`**, where `first_reset` is
+  the earliest weekly-reset epoch ever seen. Every session computes the *same*
+  level; ~1 level per week elapsed since you started.
 
-State lives in `~/.claude/.statusline-level` as `banked last_reset_at last_used
-ts` (survives reboots). Values are bounded-checked on read (usage 0–100, reset a
-real epoch, bank < 1000 levels) so a corrupt/old-format file **self-heals**
-instead of corrupting the level. Sampling is gated to 30 s. Delete the file to
-reset to **Lv 1**.
+State lives in `~/.claude/.statusline-level` — a single value, `first_reset`
+(survives reboots). Writes use a per-PID temp file and only ever *lower*
+`first_reset`, so concurrent sessions can't corrupt or over-count it. An old
+4-field / corrupt file self-heals on read. Delete the file to reset to **Lv 1**.
 
 **Reset cooldown:** when current usage is above 70%, `⏳ Nd/Nh` appears after the
 level — the time until the weekly window refreshes — as a low-quota heads-up.
