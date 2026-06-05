@@ -27,7 +27,7 @@ $(printf '%s' "$input" | jq -r '
     (.workspace.current_dir // .cwd // ""),
     (.workspace.project_dir // ""),
     (.transcript_path // ""),
-    ((.model.display_name // "") | gsub("\\s*\\([^)]*\\)\\s*$";"") | sub("^Opus ";"O ") | sub("^Sonnet ";"S ") | sub("^Haiku ";"H ")),
+    ((.model.display_name // "") | gsub("\\s*\\([^)]*\\)\\s*$";"") | sub("^Opus ";"O") | sub("^Sonnet ";"S") | sub("^Haiku ";"H")),
     ((.session_name // "") | gsub("[\t\n\r]";" ")),
     (.effort.level // ""),
     (.workspace.repo.owner // ""),
@@ -169,7 +169,22 @@ else
 fi
 
 # --- Segments ---
-seg_class=""; [ -n "$f_model" ] && seg_class="\033[38;2;63;199;235m🧙 ${f_model}\033[0m"
+# Class — a chosen WoW vanilla class (~/.claude/.statusline-class, set via
+# statusline-class.sh) rendered in its class color; falls back to the model.
+seg_class=""; class_choice=""
+[ -f "$HOME/.claude/.statusline-class" ] && read class_choice < "$HOME/.claude/.statusline-class"
+case "$class_choice" in
+  warrior) seg_class="\033[38;2;198;156;110m🪓 Warrior\033[0m" ;;
+  paladin) seg_class="\033[38;2;245;140;186m🔨 Paladin\033[0m" ;;
+  hunter)  seg_class="\033[38;2;171;212;115m🏹 Hunter\033[0m" ;;
+  rogue)   seg_class="\033[38;2;255;245;105m🗡 Rogue\033[0m" ;;
+  priest)  seg_class="\033[38;2;240;240;245m🙏 Priest\033[0m" ;;
+  shaman)  seg_class="\033[38;2;36;120;255m🌩 Shaman\033[0m" ;;
+  mage)    seg_class="\033[38;2;105;204;240m🧙 Mage\033[0m" ;;
+  warlock) seg_class="\033[38;2;148;130;201m😈 Warlock\033[0m" ;;
+  druid)   seg_class="\033[38;2;255;125;10m🐻 Druid\033[0m" ;;
+  *)       [ -n "$f_model" ] && seg_class="\033[38;2;63;199;235m🧙 ${f_model}\033[0m" ;;
+esac
 
 # Area — last 2 path components (pure bash, no awk spawn)
 seg_area=""
@@ -213,7 +228,7 @@ seg_power="";    [ -n "$f_effort" ] && seg_power="\033[35m🔮 ${f_effort}\033[0
 seg_gil=""
 if [ -n "$f_cost" ]; then
   cost_fmt=$(printf '%.2f' "$f_cost" 2>/dev/null || echo "$f_cost")
-  seg_gil="\033[38;2;245;205;65m💰 ${cost_fmt} Gold\033[0m"
+  seg_gil="\033[38;2;245;205;65m💰 ${cost_fmt}G\033[0m"
 fi
 
 seg_agent=""; [ -n "$f_agent" ] && seg_agent="\033[35m🎭 ${f_agent}\033[0m"
@@ -322,13 +337,17 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       # (1) TodoWrite path — a "todos":[…] snapshot (overwritten each call)
       b_line=$(printf '%s' "$bbuf" | grep -aE '"todos":\[' | tail -1)
       b_sum=""
-      [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '[.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | "\($n)\t\($d)\t\($act)\t\($c)"' 2>/dev/null)
+      [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '. as $r | [.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)"' 2>/dev/null)
       # (2) Agent-teams path — TaskCreate/TaskList snapshot (subject+status objects).
       # Only runs when there's no TodoWrite, so TodoWrite sessions pay nothing extra.
       if [ -z "$b_sum" ]; then
         t_line=$(printf '%s' "$bbuf" | grep -aE '"subject":"' | grep -aE '"status":"' | tail -1)
-        [ -n "$t_line" ] && b_sum=$(printf '%s' "$t_line" | jq -r '[.. | objects | select(has("subject") and has("status"))] as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | (([$t[]|select(.status=="in_progress")][0].subject) // ([$t[]|select(.status=="pending")][0].subject) // "") as $a | ($a | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.subject]|join(" ")|gsub("[\t\n\r]";" ")) as $c | "\($n)\t\($d)\t\($act)\t\($c)"' 2>/dev/null)
+        [ -n "$t_line" ] && b_sum=$(printf '%s' "$t_line" | jq -r '. as $r | [.. | objects | select(has("subject") and has("status"))] as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | (([$t[]|select(.status=="in_progress")][0].subject) // ([$t[]|select(.status=="pending")][0].subject) // "") as $a | ($a | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.subject]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)"' 2>/dev/null)
       fi
+      # Expire a stale fight: if the latest task/todo update is > 15 min old, the
+      # fight is over (Agent-teams doesn't always emit a final all-done snapshot).
+      b_ts=$(printf '%s' "$b_sum" | cut -f5)
+      if [ -n "$b_sum" ] && [ "${b_ts:-0}" -gt 0 ] 2>/dev/null && [ $(( NOW - b_ts )) -gt 900 ]; then b_sum=""; fi
       if [ -n "$b_sum" ]; then
         b_n=$(printf '%s' "$b_sum" | cut -f1); b_d=$(printf '%s' "$b_sum" | cut -f2)
         b_act=$(printf '%s' "$b_sum" | cut -f3); b_c=$(printf '%s' "$b_sum" | cut -f4)
@@ -382,12 +401,9 @@ fx_colors="255;120;220 130;200;255 255;220;120 185;130;255 130;255;200 255;160;9
 if [ $(( RANDOM % 16 )) -eq 0 ]; then
   set -- $fx_glyphs; eval "fx_g=\${$(( RANDOM % $# + 1 ))}"
   set -- $fx_colors; eval "fx_c=\${$(( RANDOM % $# + 1 ))}"
-  fx="\033[1m\033[38;2;${fx_c}m${fx_g}\033[0m"
-  if [ $(( RANDOM % 2 )) -eq 0 ] || [ "$boss_mode" = "1" ]; then
-    fx_i=$(( RANDOM % (${#l1[@]} + 1) )); l1=("${l1[@]:0:$fx_i}" "$fx" "${l1[@]:$fx_i}")
-  elif [ ${#info[@]} -gt 0 ]; then
-    fx_i=$(( RANDOM % (${#info[@]} + 1) )); info=("${info[@]:0:$fx_i}" "$fx" "${info[@]:$fx_i}")
-  fi
+  # The mage "casts": the wand 🪄 flickers into a colored sparkle for this frame.
+  fx="\033[1m\033[38;2;${fx_c}m${fx_g}\033[0m\033[38;2;255;209;0m"
+  l1[0]="${l1[0]//🪄/$fx}"
 fi
 
 line1="${sprite_l1}$(join_with "$sep" "${l1[@]}")"

@@ -119,7 +119,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 |------|------|---------|--------|
 | `▟██▙` / `▝••▘` | Portrait | Animated Black Mage (shimmers + blinks) | — |
 | `🪄` *name* | **Hero** | The user (gold = the player) | system user |
-| `🧙` *model* | **Class / Job** | The model, family abbreviated (Opus→O, Sonnet→S, Haiku→H), in mage class-blue | `model.display_name` |
+| *class* | **Class** | Chosen WoW class in its class color (set via the [class chooser](#class-chooser)); falls back to the model, family-abbreviated + compacted (`O4.8`) | `~/.claude/.statusline-class` / `model.display_name` |
 | `HP` (red) | **Life** | Context window **remaining** — drains as context fills; 0 = compaction | `context_window.remaining_percentage` |
 | `MP` (blue) | **Mana** | 5-hour rate-limit left (`100 − used`) — recharges at reset | `rate_limits.five_hour` |
 | `EXP` (yellow) `⭐Lv N` | **Level** | Bar = **current 7-day usage %** (reads 100% when maxed, never 0%); `⭐Lv N` banks completed weeks (see [How the Level is calculated](#how-the-level-is-calculated)); `⏳ Nd/Nh` reset cooldown shows **only when usage > 70%** | `rate_limits.seven_day` |
@@ -134,7 +134,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | Icon | Name | Meaning | Source |
 |------|------|---------|--------|
 | `🏰` *repo* | **Kingdom** | The repository being worked in | `workspace.repo.name` |
-| `💰` *N* `Gold` | **Gold** | Session cost in USD (WoW gold) | `cost.total_cost_usd` |
+| `💰` *N*`G` | **Gold** | Session cost in USD (WoW gold), e.g. `💰 947.80G` | `cost.total_cost_usd` |
 | `🕹` *N*`h` | **Playtime** | Total session wall-clock (whole hours) | `cost.total_duration_ms` |
 | `⚑ N` | **Bounties** | Open PRs authored by the user in this repo | `gh` (cached) |
 | `🛡 M` | **Trials** | PRs awaiting the user's review (only when > 0) | `gh` (cached) |
@@ -193,6 +193,24 @@ is no overhead the rest of the time.
 
 ---
 
+## Class chooser
+
+Pick a WoW vanilla class — it renders in that class's color where the model
+normally shows. Run `statusline-class.sh`:
+
+```bash
+bash claude-statusline/statusline-class.sh          # interactive menu
+bash claude-statusline/statusline-class.sh warrior  # set directly
+bash claude-statusline/statusline-class.sh reset    # back to showing the model
+```
+
+Classes (icon · color): 🪓 Warrior · 🔨 Paladin · 🏹 Hunter · 🗡 Rogue ·
+🙏 Priest · 🌩 Shaman · 🧙 Mage · 😈 Warlock · 🐻 Druid. The choice is stored in
+`~/.claude/.statusline-class` (shared across profiles). Copy `statusline-class.sh`
+next to the main script when installing.
+
+---
+
 ## Special modes (transcript-derived)
 
 The status-line feed has no task / sub-agent fields, but it does expose
@@ -205,7 +223,9 @@ When the latest task list is **incomplete**, the run becomes a boss fight and **
 character — stays). The objective is named after an iconic **WoW raid boss**,
 chosen by a stable hash of the task contents (same task list → same boss). The
 boss's **HP = remaining tasks** and drains as you complete them; when all tasks
-are done the boss dies and line 2 returns to normal.
+are done the boss dies and line 2 returns to normal. A fight also expires if
+the last task update is **> 15 min old** (Agent-teams doesn't always emit a final
+all-done snapshot), and the boss **name is locked** for the whole fight.
 
 Both task systems are supported: **`TodoWrite`** (a `todos` array snapshot) and
 **Agent-teams `TaskCreate`/`TaskList`** (subject + status objects). The Task grep
@@ -224,8 +244,8 @@ ids in the transcript without a matching `tool_result`. **1–5 = 👥 Party**,
 ### ✨ Ambient magic
 
 ~6 % of renders, a random colored sparkle / rune (`✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉`) is
-**inserted at a random position between segments** (e.g. `HP · ✨ · MP`) so it
-drifts around the HUD rather than always sitting at the end. Uses `$RANDOM`;
+shown **at the wand** — the hero's `🪄` flickers into the sparkle for that
+frame (the mage "casting"). Uses `$RANDOM`;
 glyphs are chosen to avoid colliding with real HUD icons.
 
 ---
