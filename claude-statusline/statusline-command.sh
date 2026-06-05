@@ -187,11 +187,18 @@ case "$class_choice" in
 esac
 
 # Locale — RPG framing of where you are:
-#   in a worktree → out exploring the world (🧭 + the worktree's last part)
+#   in a worktree → out exploring the world (a travel icon + the worktree's last part)
 #   in the primary checkout → back at the inn / home town (🏠 + the folder)
+# The travel icon is picked per-worktree (stable within a worktree, varies across)
+# from a pure-bash hash of the name — no fork, no per-render flicker.
 seg_locale=""
 if [ -n "$f_worktree" ]; then
-  seg_locale="\033[38;2;140;210;150m🧭 $(clip "${f_worktree##*/}" 24)\033[0m"
+  wt="${f_worktree##*/}"
+  explore_icons=("🐎" "⛵" "⛰" "👣" "🌲")   # horse, sailboat, mountain, footprints, pine
+  eh=0; ei=0
+  while [ "$ei" -lt "${#wt}" ]; do eh=$(( (eh + $(printf '%d' "'${wt:$ei:1}")) % 100003 )); ei=$((ei+1)); done
+  exp_ico="${explore_icons[$(( eh % ${#explore_icons[@]} ))]}"
+  seg_locale="\033[38;2;140;210;150m${exp_ico} $(clip "$wt" 24)\033[0m"
 elif [ -n "$f_cwd" ]; then
   seg_locale="\033[38;2;220;180;120m🏠 $(clip "${f_cwd##*/}" 20)\033[0m"
 fi
