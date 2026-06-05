@@ -258,6 +258,15 @@ delete it to reset back to Lv 1.
 
 ## Notes for the implementing agent
 
+- **Performance (critical for `refreshInterval: 1`):** the script runs every
+  second in every pane. It extracts **all** feed fields in **one** `jq` call (not
+  ~25 separate spawns), computes `date` once, and pushes git/gh/transcript work
+  into **background-cached** jobs. Transcript scans are bounded with
+  `tail -n 5000` (a full `jq -rs` slurp of a large transcript took **20 s** and
+  piled up under the 1 s cadence, spiking load average into the hundreds). Never
+  reintroduce a per-render `git status`, an unbounded transcript scan, or
+  multiple `jq` calls.
+
 - The script is **`bash 3.2`-safe** — keep it that way (no associative arrays,
   no `local -n` namerefs). macOS ships bash 3.2.
 - Colors are stored as literal `\033` escapes and decoded once by a final
