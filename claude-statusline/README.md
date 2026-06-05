@@ -140,7 +140,7 @@ Step 2 `jq` merge just re-sets the same `statusLine` key. Nothing is duplicated.
 | `🛡 M` | **Trials** | PRs awaiting the user's review (only when > 0) | `gh` (cached) |
 | `🏅`/`💀`/`⚔` | **Raid** (CI) | Current branch's checks: `🏅 Clear` (pass) · `💀 Wipe` (fail) · `⚔ Pull` (running); hidden when no checks | `gh` (cached) |
 | `🐎`·`⛵`·`⛰`·`👣`·`🌲` *name* / `🏠` *folder* | **Locale** | Where you are, RPG-framed: in a **git worktree** you're out **exploring the world** — the travel icon (horse · sailboat · mountain · footprints · pine) is picked per-worktree from a pure-bash hash of its name, so each worktree gets its own stable mount (no flicker); in the **primary checkout** you're back in **home town** — the building icon (🏪 marketplace · 🏨 inn · 🏠 home · ⚒ forge) is likewise picked per-folder from a hash of its name (shows the folder). Mutually exclusive. | `worktree.name` / `cwd` |
-| `📜` *branch* | **Quest** | Git branch — a leading `✦` means uncommitted changes | git |
+| `📜` *quest* | **Quest** | Git branch, RP-styled: the git-flow type prefix (`feat/`, `fix/`, `chore/`, …) is stripped and dashes become spaces (`feat/claim-intake` → `claim intake`). A leading `✦` means uncommitted changes. **Detached HEAD** reads `📜 adrift <sha>` (no active quest, wandering off the path). | git |
 | `📖 «…»` | **Tale** | Session name | `session_name` |
 
 **Conditional segments** (appear only when present): `🎭` agent · `🔧` dev-mode ·

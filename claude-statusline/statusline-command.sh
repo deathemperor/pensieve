@@ -215,16 +215,27 @@ if [ -n "$f_cwd" ]; then
   git_cache="/tmp/claude-statusline-git-${git_key}"
   git_m=$(stat -f %m "$git_cache" 2>/dev/null || echo 0)
   if [ $(( NOW - git_m )) -ge 5 ]; then
-    ( gb=$(git --no-optional-locks -C "$f_cwd" symbolic-ref --short HEAD 2>/dev/null \
-            || git --no-optional-locks -C "$f_cwd" rev-parse --short HEAD 2>/dev/null)
+    ( gb=$(git --no-optional-locks -C "$f_cwd" symbolic-ref --short HEAD 2>/dev/null); det=0
+      [ -z "$gb" ] && { det=1; gb=$(git --no-optional-locks -C "$f_cwd" rev-parse --short HEAD 2>/dev/null); }
       gd=0; [ -n "$(git --no-optional-locks -C "$f_cwd" status --porcelain 2>/dev/null | head -1)" ] && gd=1
-      printf '%s\t%s' "$gb" "$gd" > "${git_cache}.tmp" 2>/dev/null && mv "${git_cache}.tmp" "$git_cache" 2>/dev/null
+      printf '%s\t%s\t%s' "$gb" "$gd" "$det" > "${git_cache}.tmp" 2>/dev/null && mv "${git_cache}.tmp" "$git_cache" 2>/dev/null
     ) >/dev/null 2>&1 &
   fi
-  [ -f "$git_cache" ] && IFS=$'\t' read -r branch git_dirty < "$git_cache"
+  [ -f "$git_cache" ] && IFS=$'\t' read -r branch git_dirty git_detached < "$git_cache"
 fi
 if [ -n "$branch" ]; then
-  br=$(clip "$branch" 24)
+  # Display-only RP transform of the branch (leave $branch intact for the CI lookup).
+  if [ "${git_detached:-0}" = "1" ]; then
+    q="adrift ${branch}"   # detached HEAD — no active quest, just wandering off the path
+  else
+    q="$branch"
+    # strip the git-flow type prefix (feat/, fix/, chore/, …) — keep only the slug
+    case "$q" in
+      feat/*|feature/*|fix/*|hotfix/*|bugfix/*|chore/*|refactor/*|docs/*|doc/*|test/*|tests/*|perf/*|build/*|ci/*|style/*|release/*|wip/*|spike/*) q="${q#*/}" ;;
+    esac
+    q="${q//-/ }"          # dashes → spaces so it reads like a quest name
+  fi
+  br=$(clip "$q" 24)
   if [ "${git_dirty:-0}" = "1" ]; then
     seg_quest="\033[34m\033[33m✦\033[34m 📜 ${br}\033[0m"
   else
