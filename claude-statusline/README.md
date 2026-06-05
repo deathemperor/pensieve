@@ -198,6 +198,39 @@ is no overhead the rest of the time.
 
 ---
 
+## Special modes (transcript-derived)
+
+The status-line feed has no task / sub-agent fields, but it does expose
+`transcript_path` — the session's JSONL log. A background job (cached ~15 s,
+per-session) parses it for two things:
+
+### ⚔ Boss Fight
+
+When the latest `TodoWrite` block has an **incomplete** task list, the run becomes
+a boss fight and **line 2 switches to a boss/target frame** (line 1 — your
+character — stays). The objective is named after an iconic **WoW raid boss**,
+chosen by a stable hash of the task contents (same task list → same boss). The
+boss's **HP = remaining tasks** and drains as you complete them; when all tasks
+are done the boss dies and line 2 returns to normal.
+
+```
+💀 Illidan  HP ███░░░░░ 40%  ⚔ 3/5 down  ▶ Doing task d
+```
+
+### 👥 Party / 🚩 Raid
+
+Counts **currently-running sub-agents** (Claude Teams) — `Agent`/`Task` tool_use
+ids in the transcript without a matching `tool_result`. **1–5 = 👥 Party**,
+**> 5 = 🚩 Raid**; hidden when solo. Shown on line 1 with your character.
+
+### ✨ Ambient magic
+
+~6 % of renders, a random colored sparkle / rune (`✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉`) flickers
+onto a random line — a little spell shimmer. Uses `$RANDOM`; glyphs are chosen to
+avoid colliding with real HUD icons.
+
+---
+
 ## `refreshInterval` (the animation)
 
 `refreshInterval: 1` re-runs the script every second so the portrait animates

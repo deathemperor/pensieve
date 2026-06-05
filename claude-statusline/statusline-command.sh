@@ -402,8 +402,99 @@ for s in "$seg_kingdom" "$seg_gil" "$seg_play" "$seg_pr" "$seg_ci" \
   [ -n "$s" ] && info+=("$s")
 done
 
+# ── Boss Fight ─────────────────────────────────────────────────────────────
+# If the latest TodoWrite block (parsed from the transcript) has an incomplete
+# task list, the run is a "boss fight": the objective is a WoW boss (stable hash
+# of the task contents → boss name), task completion is the boss's HP, and line 2
+# switches to the boss/target frame. Cached + background-parsed (transcripts are
+# large). Cache format: "total|done|boss|active_task".
+boss_mode=0; boss_total=0; boss_done=0; boss_name=""; boss_active=""
+b_transcript=$(echo "$input" | jq -r '.transcript_path // empty')
+b_sid=$(echo "$input" | jq -r '.session_id // "x"')
+boss_cache="/tmp/claude-statusline-boss-${b_sid}"
+boss_stamp="/tmp/claude-statusline-boss-${b_sid}.stamp"
+if [ -n "$b_transcript" ] && [ -f "$b_transcript" ] && command -v jq >/dev/null 2>&1; then
+  b_stamp_m=$(stat -f %m "$boss_stamp" 2>/dev/null || echo 0)
+  if [ $(( $(date +%s) - b_stamp_m )) -ge 15 ]; then
+    : > "$boss_stamp"
+    ( b_line=$(grep -aE '"todos":\[' "$b_transcript" 2>/dev/null | tail -1)
+      b_sum=""
+      [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '[.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | "\($n)\t\($d)\t\($act)\t\($c)"' 2>/dev/null)
+      if [ -n "$b_sum" ]; then
+        b_n=$(printf '%s' "$b_sum" | cut -f1); b_d=$(printf '%s' "$b_sum" | cut -f2)
+        b_act=$(printf '%s' "$b_sum" | cut -f3); b_c=$(printf '%s' "$b_sum" | cut -f4)
+        BOSSES=("Ragnaros" "Nefarian" "Kel'Thuzad" "Illidan" "Kil'jaeden" "Arthas" "Deathwing" "Yogg-Saron" "C'Thun" "Onyxia" "Archimonde" "Sargeras" "Garrosh" "N'Zoth" "Algalon" "Lady Vashj")
+        b_h=$(printf '%s' "$b_c" | cksum | awk '{print $1}')
+        b_name=${BOSSES[$(( b_h % ${#BOSSES[@]} ))]}
+        printf '%s|%s|%s|%s' "${b_n:-0}" "${b_d:-0}" "$b_name" "$b_act" > "${boss_cache}.tmp" 2>/dev/null && mv "${boss_cache}.tmp" "$boss_cache" 2>/dev/null
+      else
+        rm -f "$boss_cache" 2>/dev/null
+      fi
+    ) >/dev/null 2>&1 &
+  fi
+  if [ -f "$boss_cache" ]; then
+    IFS='|' read boss_total boss_done boss_name boss_active < "$boss_cache"
+    case "$boss_total" in ''|*[!0-9]*) boss_total=0 ;; esac
+    case "$boss_done"  in ''|*[!0-9]*) boss_done=0 ;; esac
+    [ "$boss_total" -gt 0 ] && [ "$boss_done" -lt "$boss_total" ] && boss_mode=1
+  fi
+fi
+
+# ── Party / Raid ───────────────────────────────────────────────────────────
+# Count currently-running sub-agents (Claude Teams): Task/Agent tool_use ids in
+# the transcript without a matching tool_result. 1–5 = Party, >5 = Raid. Cached.
+seg_party=""
+if [ -n "$b_transcript" ] && [ -f "$b_transcript" ] && command -v jq >/dev/null 2>&1; then
+  party_cache="/tmp/claude-statusline-party-${b_sid}"
+  party_stamp="/tmp/claude-statusline-party-${b_sid}.stamp"
+  p_stamp_m=$(stat -f %m "$party_stamp" 2>/dev/null || echo 0)
+  if [ $(( $(date +%s) - p_stamp_m )) -ge 15 ]; then
+    : > "$party_stamp"
+    ( running=$(jq -rs '[.[] | .. | objects | select(.type=="tool_use" and (.name=="Task" or .name=="Agent")) | .id] as $s | [.[] | .. | objects | select(.type=="tool_result") | .tool_use_id] as $d | (($s - $d) | length)' "$b_transcript" 2>/dev/null)
+      printf '%s' "${running:-0}" > "${party_cache}.tmp" 2>/dev/null && mv "${party_cache}.tmp" "$party_cache" 2>/dev/null
+    ) >/dev/null 2>&1 &
+  fi
+  if [ -f "$party_cache" ]; then
+    p_n=$(cat "$party_cache" 2>/dev/null); case "$p_n" in ''|*[!0-9]*) p_n=0 ;; esac
+    if [ "$p_n" -gt 5 ]; then
+      seg_party="\033[1m\033[38;2;255;120;90m🚩 Raid (${p_n})\033[0m"
+    elif [ "$p_n" -ge 1 ]; then
+      seg_party="\033[38;2;150;200;255m👥 Party (${p_n})\033[0m"
+    fi
+  fi
+fi
+[ -n "$seg_party" ] && l1+=("$seg_party")
+
 line1="${sprite_l1}$(join_with "$sep" "${l1[@]}")"
-line2="${sprite_l2}$(join_with "$sep" "${info[@]}")"
+if [ "$boss_mode" = "1" ]; then
+  # Boss/target frame replaces line 2. HP = remaining tasks (drains as you win).
+  # WoW-style solid health bar: red fill, dim empty, % AFTER it (no centered chip
+  # — keeps the boss HP clean regardless of fill level).
+  boss_rem=$(( (boss_total - boss_done) * 100 / boss_total ))
+  bhp_fill=$(( (boss_rem * 8 + 50) / 100 )); bhp=""; bi=0
+  while [ "$bi" -lt 8 ]; do
+    if [ "$bi" -lt "$bhp_fill" ]; then bhp="${bhp}\033[38;2;255;85;85m█"; else bhp="${bhp}\033[38;2;95;95;115m░"; fi
+    bi=$(( bi + 1 ))
+  done
+  bhp="${bhp}\033[0m"
+  boss_frame="\033[1m\033[38;2;255;80;80m💀 ${boss_name}\033[0m  \033[38;2;255;85;85mHP\033[0m ${bhp} \033[38;2;255;85;85m${boss_rem}%\033[0m  \033[38;2;200;200;210m⚔ ${boss_done}/${boss_total} down\033[0m"
+  [ -n "$boss_active" ] && boss_frame="${boss_frame}  \033[38;2;255;200;120m▶ $(clip "$boss_active" 28)\033[0m"
+  line2="${sprite_l2}${boss_frame}"
+else
+  line2="${sprite_l2}$(join_with "$sep" "${info[@]}")"
+fi
+
+# ── Ambient magic ──────────────────────────────────────────────────────────
+# ~6% of renders, a random colored sparkle/rune flickers onto a random line —
+# a little spell shimmer drifting across the HUD.
+fx_glyphs="✨ 💫 🌟 ❈ ✺ ⟡ ✧ ❉"   # magic-only; avoids ⭐(level) ✦(dirty) 🪄🔮💀🔥🌀(HUD)
+fx_colors="255;120;220 130;200;255 255;220;120 185;130;255 130;255;200 255;160;90"
+if [ $(( RANDOM % 16 )) -eq 0 ]; then
+  set -- $fx_glyphs;  eval "fx_g=\${$(( RANDOM % $# + 1 ))}"
+  set -- $fx_colors;  eval "fx_c=\${$(( RANDOM % $# + 1 ))}"
+  fx="\033[1m\033[38;2;${fx_c}m${fx_g}\033[0m"
+  if [ $(( RANDOM % 2 )) -eq 0 ]; then line1="${line1}  ${fx}"; else line2="${line2}  ${fx}"; fi
+fi
 
 # Print both lines (only emit line 2 if it has content beyond the sprite).
 if [ -n "$line2" ]; then
