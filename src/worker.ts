@@ -9,6 +9,7 @@ export { PluginBridge } from "@emdash-cms/cloudflare/sandbox";
  * With base: "/" Astro owns the entire domain. The worker only
  * intercepts routes that need special handling:
  *   /plant-gallery/*  → static assets (outside Astro)
+ *   /fish/tuyet/*     → static assets (outside Astro)
  *   /pensieve/m/*     → R2 media proxy, 1-year cache
  *   /trương           → 301 redirect to canonical /Trương
  *   everything else   → Astro
@@ -25,6 +26,16 @@ export default {
 			);
 		}
 		if (path.startsWith("/plant-gallery/")) {
+			return env.ASSETS.fetch(request);
+		}
+
+		// Fish order list (Tuyết Aquarium) — static assets outside Astro
+		if (path === "/fish/tuyet" || path === "/fish/tuyet/") {
+			return env.ASSETS.fetch(
+				new Request(new URL("/fish/tuyet/index.html", url), request),
+			);
+		}
+		if (path.startsWith("/fish/tuyet/")) {
 			return env.ASSETS.fetch(request);
 		}
 

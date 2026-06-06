@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Tuyết Aquarium — Chọn cá đặt hàng</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0c1014; color: #e0e6ea; min-height: 100vh; }
+
+  header { position: sticky; top: 0; z-index: 100; background: rgba(16,22,28,0.92); border-bottom: 1px solid #1d2832; padding: 14px 20px; backdrop-filter: blur(12px); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 19px; font-weight: 700; white-space: nowrap; }
+  header h1 span { color: #22d3ee; }
+  .header-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex: 1; justify-content: flex-end; }
+  .search { background: #131c24; border: 1px solid #243441; color: #e0e6ea; padding: 8px 12px; border-radius: 8px; font-size: 14px; width: 180px; }
+  .search:focus { outline: none; border-color: #22d3ee; }
+  .filter-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filter-btn { background: #18222b; border: 1px solid #26333f; color: #b9c4cc; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; transition: all 0.15s; white-space: nowrap; }
+  .filter-btn.active { background: #22d3ee; color: #06141a; border-color: #22d3ee; font-weight: 600; }
+  .cart-badge { background: #22d3ee; color: #06141a; font-weight: 700; border-radius: 20px; padding: 7px 16px; font-size: 14px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .cart-badge:hover { background: #06b6d4; transform: scale(1.04); }
+
+  main { padding: 20px; max-width: 1500px; margin: 0 auto; }
+  .cat-section { margin-bottom: 36px; }
+  .cat-title { font-size: 15px; font-weight: 700; color: #22d3ee; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #1d2832; display: flex; align-items: baseline; gap: 8px; }
+  .cat-title .count { font-size: 12px; color: #5a6b78; font-weight: 500; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+
+  .card { position: relative; border-radius: 12px; overflow: hidden; background: #131c24; border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+  .card.selected { border-color: #22d3ee; box-shadow: 0 0 0 1px #22d3ee, 0 8px 24px rgba(34,211,238,0.15); }
+
+  .card-media { position: relative; aspect-ratio: 1; background: #06141a; cursor: zoom-in; overflow: hidden; }
+  .card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-media .noimg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #3a4a56; font-size: 12px; text-align: center; padding: 12px; }
+  .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(6,20,26,0.6); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+  .card-media:hover .carousel-nav { opacity: 1; }
+  .carousel-nav.prev { left: 6px; }
+  .carousel-nav.next { right: 6px; }
+  .carousel-nav:hover { background: #22d3ee; color: #06141a; }
+  .dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.35); }
+  .dot.active { background: #22d3ee; }
+  .qty-badge { position: absolute; top: 8px; right: 8px; background: #22d3ee; color: #06141a; font-weight: 700; font-size: 12px; padding: 3px 9px; border-radius: 12px; z-index: 3; }
+
+  .card-body { padding: 10px 12px 12px; }
+  .card-name { font-size: 14px; font-weight: 600; color: #e7edf1; line-height: 1.3; }
+  .card-price { font-size: 12px; color: #f5b942; margin-top: 3px; min-height: 16px; }
+  .card-actions { margin-top: 10px; }
+  .add-btn { width: 100%; padding: 8px; background: #18222b; border: 1px solid #2a3a47; color: #22d3ee; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .add-btn:hover { background: #22d3ee; color: #06141a; border-color: #22d3ee; }
+  .qty-ctrl { display: flex; align-items: center; gap: 6px; background: #0c1419; border-radius: 8px; padding: 4px; }
+  .qty-btn { width: 30px; height: 30px; border: none; background: #22303b; color: #fff; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .qty-btn:hover { background: #22d3ee; color: #06141a; }
+  .qty-input { flex: 1; text-align: center; background: transparent; border: none; color: #fff; font-size: 14px; font-weight: 700; -moz-appearance: textfield; width: 40px; }
+  .qty-input::-webkit-outer-spin-button, .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .empty-search { text-align: center; color: #5a6b78; padding: 60px 20px; }
+
+  /* Lightbox */
+  .lightbox { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.93); backdrop-filter: blur(8px); align-items: center; justify-content: center; flex-direction: column; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 74vh; object-fit: contain; border-radius: 8px; }
+  .lightbox-cap { color: #cdd6dc; margin-top: 14px; font-size: 15px; text-align: center; }
+  .lightbox-cap b { color: #fff; } .lightbox-cap span { color: #f5b942; }
+  .lightbox-close { position: absolute; top: 18px; right: 22px; background: none; border: none; color: #fff; font-size: 32px; cursor: pointer; }
+  .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.1); border: none; color: #fff; font-size: 28px; padding: 12px 16px; cursor: pointer; border-radius: 8px; }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+  .lightbox-nav.prev { left: 18px; } .lightbox-nav.next { right: 18px; }
+  .lightbox-actions { margin-top: 14px; }
+  .lightbox-add { padding: 9px 22px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; background: #22d3ee; color: #06141a; }
+  .lightbox-add.added { background: #ef4444; color: #fff; }
+
+  /* Cart panel */
+  .overlay { display: none; position: fixed; inset: 0; z-index: 140; background: rgba(0,0,0,0.55); }
+  .overlay.open { display: block; }
+  .cart-panel { display: none; position: fixed; right: 0; top: 0; bottom: 0; width: 370px; max-width: 90vw; z-index: 150; background: #101820; border-left: 1px solid #1d2832; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,0.5); }
+  .cart-panel.open { display: flex; }
+  .cart-header { padding: 18px 20px; border-bottom: 1px solid #1d2832; display: flex; justify-content: space-between; align-items: center; }
+  .cart-header h2 { font-size: 17px; }
+  .cart-close { background: none; border: none; color: #8a98a3; font-size: 24px; cursor: pointer; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 12px; }
+  .cart-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; margin-bottom: 8px; background: #18222b; }
+  .cart-item img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; background: #06141a; flex-shrink: 0; }
+  .cart-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .cart-item-name { font-size: 13px; color: #e7edf1; font-weight: 600; }
+  .cart-item-price { font-size: 11px; color: #f5b942; }
+  .cart-item .qty-ctrl { padding: 2px; }
+  .cart-item .qty-btn { width: 24px; height: 24px; font-size: 14px; }
+  .cart-item-remove { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 20px; padding: 4px 6px; flex-shrink: 0; align-self: flex-start; }
+  .cart-footer { padding: 16px 20px; border-top: 1px solid #1d2832; }
+  .cart-footer p { font-size: 13px; color: #8a98a3; margin-bottom: 12px; }
+  .cart-export { width: 100%; padding: 12px; background: #22d3ee; color: #06141a; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .cart-export:hover { background: #06b6d4; }
+  .cart-empty { text-align: center; color: #566571; padding: 50px 20px; font-size: 14px; }
+
+  /* Result modal */
+  .result-modal { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 20px; }
+  .result-modal.open { display: flex; }
+  .result-content { background: #101820; border-radius: 16px; padding: 26px; max-width: 560px; width: 100%; max-height: 82vh; display: flex; flex-direction: column; }
+  .result-content h2 { margin-bottom: 14px; color: #22d3ee; font-size: 18px; }
+  .result-content pre { background: #06141a; padding: 16px; border-radius: 8px; font-size: 13px; overflow-y: auto; white-space: pre-wrap; color: #cdd6dc; flex: 1; line-height: 1.6; }
+  .result-btns { margin-top: 14px; display: flex; gap: 10px; }
+  .result-btn { flex: 1; padding: 11px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .result-copy { background: #22d3ee; color: #06141a; }
+  .result-copy.done { background: #4ade80; }
+  .result-close { background: #22303b; color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🐟 <span>Tuyết Aquarium</span> — Đặt hàng</h1>
+  <div class="header-tools">
+    <input class="search" id="search" type="search" placeholder="Tìm tên cá…" autocomplete="off">
+    <div class="filter-btns" id="filters"></div>
+    <div class="cart-badge" id="cartBadge">Giỏ (0)</div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose">&times;</button>
+  <button class="lightbox-nav prev" id="lbPrev">&lsaquo;</button>
+  <button class="lightbox-nav next" id="lbNext">&rsaquo;</button>
+  <img id="lbImg" alt="">
+  <div class="lightbox-cap" id="lbCap"></div>
+  <div class="lightbox-actions">
+    <button class="lightbox-add" id="lbAdd">Thêm vào giỏ</button>
+  </div>
+</div>
+
+<!-- Cart panel -->
+<div class="overlay" id="overlay"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>Giỏ hàng</h2>
+    <button class="cart-close" id="cartClose">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <p id="cartCount">Chưa chọn con nào</p>
+    <button class="cart-export" id="cartExport">Sao chép đơn hàng</button>
+  </div>
+</div>
+
+<!-- Result modal -->
+<div class="result-modal" id="resultModal">
+  <div class="result-content">
+    <h2>Đơn hàng của bạn</h2>
+    <pre id="resultText"></pre>
+    <div class="result-btns">
+      <button class="result-btn result-copy" id="resultCopy">📋 Sao chép</button>
+      <button class="result-btn result-close" id="resultClose">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE = '/fish/tuyet/';
+const CATS = [
+  { key: 'oc', label: 'Ốc dọn bể' },
+  { key: 'thuy-sinh', label: 'Cá thủy sinh' },
+  { key: 'tang-day', label: 'Cá tầng đáy' },
+  { key: 'tep', label: 'Tép thủy sinh' },
+];
+let ITEMS = [];                  // [{slug,name,price,cat,imgs:[...]}]
+const bySlug = new Map();        // slug -> item
+const selected = new Map();      // slug -> qty
+const carouselIdx = new Map();   // slug -> current image index
+let filter = 'all';
+let query = '';
+let lb = { slug: null, idx: 0 };
+
+const img = (rel) => BASE + rel;
+
+function totalQty() { let t = 0; for (const q of selected.values()) t += q; return t; }
+
+function visibleItems() {
+  return ITEMS.filter((it) => {
+    if (filter !== 'all' && it.cat !== filter) return false;
+    if (query && !it.name.toLowerCase().includes(query)) return false;
+    return true;
+  });
+}
+
+function renderFilters() {
+  const el = document.getElementById('filters');
+  const btns = [{ key: 'all', label: 'Tất cả' }, ...CATS];
+  el.innerHTML = btns.map((b) =>
+    `<button class="filter-btn ${b.key === filter ? 'active' : ''}" data-filter="${b.key}">${b.label}</button>`
+  ).join('');
+  el.querySelectorAll('.filter-btn').forEach((btn) => {
+    btn.addEventListener('click', () => { filter = btn.dataset.filter; renderFilters(); renderGallery(); });
+  });
+}
+
+function cardHTML(it) {
+  const idx = carouselIdx.get(it.slug) || 0;
+  const has = it.imgs && it.imgs.length;
+  const media = has
+    ? `<img src="${img(it.imgs[idx])}" alt="${it.name}" loading="lazy">`
+    : `<div class="noimg">chưa có ảnh</div>`;
+  const arrows = has && it.imgs.length > 1
+    ? `<button class="carousel-nav prev" data-nav="prev">&lsaquo;</button>
+       <button class="carousel-nav next" data-nav="next">&rsaquo;</button>
+       <div class="dots">${it.imgs.map((_, i) => `<span class="dot ${i === idx ? 'active' : ''}"></span>`).join('')}</div>`
+    : '';
+  const qty = selected.get(it.slug);
+  const qtyBadge = qty ? `<div class="qty-badge">×${qty}</div>` : '';
+  const action = qty
+    ? `<div class="qty-ctrl">
+         <button class="qty-btn" data-act="dec">−</button>
+         <input class="qty-input" type="number" min="1" value="${qty}" data-act="set">
+         <button class="qty-btn" data-act="inc">+</button>
+       </div>`
+    : `<button class="add-btn" data-act="add">+ Thêm</button>`;
+  return `
+  <div class="card ${qty ? 'selected' : ''}" data-slug="${it.slug}">
+    <div class="card-media">${qtyBadge}${media}${arrows}</div>
+    <div class="card-body">
+      <div class="card-name">${it.name}</div>
+      <div class="card-price">${it.price || ''}</div>
+      <div class="card-actions">${action}</div>
+    </div>
+  </div>`;
+}
+
+function renderGallery() {
+  const main = document.getElementById('main');
+  const list = visibleItems();
+  if (!list.length) { main.innerHTML = `<div class="empty-search">Không tìm thấy con nào.</div>`; return; }
+  const groups = (filter === 'all' ? CATS : CATS.filter((c) => c.key === filter))
+    .map((c) => {
+      const items = list.filter((it) => it.cat === c.key);
+      if (!items.length) return '';
+      return `<section class="cat-section">
+        <h2 class="cat-title">${c.label} <span class="count">${items.length} loại</span></h2>
+        <div class="grid">${items.map(cardHTML).join('')}</div>
+      </section>`;
+    }).join('');
+  main.innerHTML = groups;
+  bindCards();
+  updateBadge();
+}
+
+function bindCards() {
+  document.querySelectorAll('.card').forEach((card) => {
+    const slug = card.dataset.slug;
+    card.querySelector('.card-media').addEventListener('click', (e) => {
+      if (e.target.dataset.nav) {
+        e.stopPropagation();
+        cycle(slug, e.target.dataset.nav === 'next' ? 1 : -1);
+      } else {
+        openLightbox(slug);
+      }
+    });
+    card.querySelectorAll('[data-act]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const act = el.dataset.act;
+        if (act === 'add') setQty(slug, 1);
+        else if (act === 'inc') setQty(slug, (selected.get(slug) || 0) + 1);
+        else if (act === 'dec') setQty(slug, (selected.get(slug) || 0) - 1);
+      });
+      if (el.dataset.act === 'set') {
+        el.addEventListener('click', (e) => e.stopPropagation());
+        el.addEventListener('change', () => setQty(slug, parseInt(el.value) || 0));
+      }
+    });
+  });
+}
+
+function cycle(slug, dir) {
+  const it = bySlug.get(slug);
+  if (!it || !it.imgs.length) return;
+  const cur = carouselIdx.get(slug) || 0;
+  carouselIdx.set(slug, (cur + dir + it.imgs.length) % it.imgs.length);
+  renderGallery();
+}
+
+function setQty(slug, qty) {
+  qty = Math.max(0, Math.floor(qty || 0));
+  if (qty === 0) selected.delete(slug); else selected.set(slug, qty);
+  renderGallery();
+  if (document.getElementById('cartPanel').classList.contains('open')) renderCart();
+}
+
+function updateBadge() {
+  document.getElementById('cartBadge').textContent = `Giỏ (${totalQty()})`;
+}
+
+/* Lightbox — cycles the selected item's images */
+function openLightbox(slug) {
+  const it = bySlug.get(slug);
+  if (!it || !it.imgs.length) return;
+  lb = { slug, idx: carouselIdx.get(slug) || 0 };
+  renderLb();
+  document.getElementById('lightbox').classList.add('open');
+}
+function renderLb() {
+  const it = bySlug.get(lb.slug);
+  document.getElementById('lbImg').src = img(it.imgs[lb.idx]);
+  document.getElementById('lbCap').innerHTML = `<b>${it.name}</b> &nbsp; <span>${it.price || ''}</span> &nbsp; <small>${lb.idx + 1}/${it.imgs.length}</small>`;
+  const btn = document.getElementById('lbAdd');
+  const has = selected.has(lb.slug);
+  btn.textContent = has ? 'Bỏ khỏi giỏ' : 'Thêm vào giỏ';
+  btn.classList.toggle('added', has);
+}
+function lbStep(dir) {
+  const it = bySlug.get(lb.slug);
+  lb.idx = (lb.idx + dir + it.imgs.length) % it.imgs.length;
+  renderLb();
+}
+document.getElementById('lbClose').addEventListener('click', () => document.getElementById('lightbox').classList.remove('open'));
+document.getElementById('lbPrev').addEventListener('click', () => lbStep(-1));
+document.getElementById('lbNext').addEventListener('click', () => lbStep(1));
+document.getElementById('lbAdd').addEventListener('click', () => {
+  if (selected.has(lb.slug)) setQty(lb.slug, 0); else setQty(lb.slug, 1);
+  renderLb();
+});
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('open');
+  if (e.key === 'ArrowLeft') lbStep(-1);
+  if (e.key === 'ArrowRight') lbStep(1);
+});
+
+/* Cart */
+document.getElementById('cartBadge').addEventListener('click', () => {
+  document.getElementById('cartPanel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  renderCart();
+});
+function closeCart() {
+  document.getElementById('cartPanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+document.getElementById('cartClose').addEventListener('click', closeCart);
+document.getElementById('overlay').addEventListener('click', closeCart);
+
+function renderCart() {
+  const box = document.getElementById('cartItems');
+  if (selected.size === 0) {
+    box.innerHTML = `<div class="cart-empty">Chưa chọn con nào.<br>Bấm “+ Thêm” trên mỗi loại để chọn.</div>`;
+  } else {
+    box.innerHTML = [...selected.entries()].map(([slug, qty]) => {
+      const it = bySlug.get(slug);
+      const thumb = it.imgs && it.imgs.length ? `<img src="${img(it.imgs[0])}" alt="">` : `<img alt="">`;
+      return `<div class="cart-item" data-slug="${slug}">
+        ${thumb}
+        <div class="cart-item-body">
+          <span class="cart-item-name">${it.name}</span>
+          <span class="cart-item-price">${it.price || ''}</span>
+          <div class="qty-ctrl">
+            <button class="qty-btn" data-act="dec">−</button>
+            <input class="qty-input" type="number" min="1" value="${qty}" data-act="set">
+            <button class="qty-btn" data-act="inc">+</button>
+          </div>
+        </div>
+        <button class="cart-item-remove" data-act="rm">&times;</button>
+      </div>`;
+    }).join('');
+    box.querySelectorAll('.cart-item').forEach((row) => {
+      const slug = row.dataset.slug;
+      row.querySelector('[data-act="dec"]').addEventListener('click', () => { setQty(slug, (selected.get(slug) || 0) - 1); renderCart(); });
+      row.querySelector('[data-act="inc"]').addEventListener('click', () => { setQty(slug, (selected.get(slug) || 0) + 1); renderCart(); });
+      row.querySelector('[data-act="rm"]').addEventListener('click', () => { setQty(slug, 0); renderCart(); });
+      row.querySelector('[data-act="set"]').addEventListener('change', (e) => { setQty(slug, parseInt(e.target.value) || 0); renderCart(); });
+    });
+  }
+  document.getElementById('cartCount').textContent =
+    selected.size ? `${selected.size} loại · ${totalQty()} đơn vị` : 'Chưa chọn con nào';
+}
+
+/* Export — plain text order */
+function buildOrderText() {
+  const lines = ['Đơn hàng Tuyết Aquarium', '—'];
+  for (const [slug, qty] of selected) {
+    const it = bySlug.get(slug);
+    lines.push(`${qty}× ${it.name}${it.price ? ' — ' + it.price : ''}`);
+  }
+  return lines.join('\n');
+}
+document.getElementById('cartExport').addEventListener('click', () => {
+  if (!selected.size) return;
+  document.getElementById('resultText').textContent = buildOrderText();
+  document.getElementById('resultCopy').textContent = '📋 Sao chép';
+  document.getElementById('resultCopy').classList.remove('done');
+  document.getElementById('resultModal').classList.add('open');
+  closeCart();
+});
+document.getElementById('resultCopy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(document.getElementById('resultText').textContent); } catch {}
+  const b = document.getElementById('resultCopy');
+  b.textContent = '✓ Đã sao chép'; b.classList.add('done');
+});
+document.getElementById('resultClose').addEventListener('click', () => document.getElementById('resultModal').classList.remove('open'));
+
+/* Search */
+document.getElementById('search').addEventListener('input', (e) => { query = e.target.value.trim().toLowerCase(); renderGallery(); });
+
+/* Boot */
+fetch(BASE + 'fish-data.json')
+  .then((r) => r.json())
+  .then((data) => {
+    ITEMS = data;
+    ITEMS.forEach((it) => bySlug.set(it.slug, it));
+    renderFilters();
+    renderGallery();
+  })
+  .catch(() => { document.getElementById('main').innerHTML = `<div class="empty-search">Không tải được danh sách cá.</div>`; });
+</script>
+</body>
+</html>
