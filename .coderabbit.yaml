@@ -1,0 +1,57 @@
+# CodeRabbit config — https://docs.coderabbit.ai/reference/configuration
+# Complements the existing Claude PR reviewer (.github/workflows/claude-review.yml).
+# Tuned to this repo's EmDash/Astro conventions (see CLAUDE.md "PR reviewer rules").
+language: "en-US"
+tone_instructions: "Be concise. Flag real issues; skip nitpicks on a personal site. Trust the author."
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+
+  # Don't burn review passes on committed binaries, generated files, or content dumps.
+  path_filters:
+    - "!**/*.{jpg,jpeg,png,gif,webp,svg,ico,mp4,woff,woff2,ttf}"
+    - "!public/**/images/**"
+    - "!public/plant-gallery/**"
+    - "!seed/seed.json"
+    - "!emdash-env.d.ts"
+    - "!**/dist/**"
+    - "!.claude/**"
+    - "!**/*.min.*"
+    - "!**/*-lock.*"
+    - "!bun.lock"
+
+  # Repo-specific conventions — mirror the ruleset in CLAUDE.md so CodeRabbit
+  # flags the same silent bugs the Claude reviewer watches for.
+  path_instructions:
+    - path: "src/**/*.astro"
+      instructions: >
+        EmDash/Astro site, output: "server" — all content pages are server-rendered.
+        Flag: getStaticPaths() on CMS routes (breaks live updates);
+        missing Astro.cache.set(cacheHint) on any page that queries an EmDash collection;
+        image fields rendered as strings (they are { src, alt } objects — use <Image image={...} /> from "emdash/ui");
+        confusing entry.id (slug) with entry.data.id (DB ULID) in getEntryTerms()/getEntriesByTerm();
+        link() used outside /pensieve/ (it prepends /pensieve/ — root pages must use absolute paths);
+        target="_blank" on in-site hrefs that start with "/" (new-tab is for external URLs only);
+        new user-facing copy in only one locale (the site is bilingual — every EN string needs a VI pair and vice versa);
+        Portable Text mark stripping when translating (replacing children with a single unmarked span drops markDefs/links).
+    - path: "src/**/*.{ts,tsx}"
+      instructions: >
+        Flag committed localhost:3000 / localhost:3001 URLs (original game author's dev servers, break in prod);
+        unescaped attacker-controlled input (PR title, branch name, commit messages) flowing into shell or AI prompts;
+        `date +%3N` in shell scripts (BSD date writes literal "3N" — use node/python for ISO timestamps).
+    - path: "**/*.astro"
+      instructions: >
+        New static pages must be added to src/data/site-routes.json (sitemap, llms.txt, ai-plugin.json read from it).
+
+chat:
+  auto_reply: true
