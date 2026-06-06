@@ -88,7 +88,11 @@ sprite_l1=""; sprite_l2=""
 if [ "$SPRITE_ENABLED" = "1" ]; then
   HOOD='130;122;235'; SHADE='80;74;180'; EYES='250;215;75'
   frame_file="/tmp/claude-statusline-frame-${f_sid}"
-  read frame < "$frame_file" 2>/dev/null   # builtin read, no `cat` spawn
+  frame=0
+  # Guard the input redirect: a missing file makes `< "$frame_file"` fail at
+  # redirection-setup time, which leaks "No such file" to stderr BEFORE the
+  # `2>/dev/null` on the same line can suppress it. The -r test avoids that.
+  [ -r "$frame_file" ] && read frame < "$frame_file" 2>/dev/null
   case "$frame" in ''|*[!0-9]*) frame=0 ;; esac
   echo $(( (frame + 1) % 6 )) > "$frame_file" 2>/dev/null
   case "$frame" in
@@ -360,12 +364,13 @@ if [ -n "$f_transcript" ] && [ -f "$f_transcript" ] && command -v jq >/dev/null 
       b_sum=""
       [ -n "$b_line" ] && b_sum=$(printf '%s' "$b_line" | jq -r '. as $r | [.. | objects | select(has("todos")) | .todos] | last as $t | ($t|length) as $n | ([$t[]|select(.status=="completed")]|length) as $d | ([$t[]|select(.status=="in_progress")][0]) as $a | (($a.activeForm // $a.content) // "" | gsub("[\t\n\r]";" ")) as $act | ([$t[]|.content]|join(" ")|gsub("[\t\n\r]";" ")) as $c | (($r.timestamp // "") | if .=="" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end) as $ts | "\($n)\t\($d)\t\($act)\t\($c)\t\($ts)\t"' 2>/dev/null)
       # (2) Agent-teams path — aggregate the LATEST status per task across the
-      # window: TaskCreate gives {id,subject,status}, TaskUpdate gives
-      # {taskId,status} (no subject), so completions via TaskUpdate are counted.
+      # window: TaskCreate gives {id,subject} (NO status — defaults pending),
+      # TaskUpdate gives {taskId,status} (no subject). We aggregate per id:
+      # subject from the create, latest status from updates → completions counted.
       # Only runs when there's no TodoWrite AND tasks are present (cheap guard
       # before the slurp), so TodoWrite/taskless sessions pay nothing extra.
       if [ -z "$b_sum" ] && printf '%s' "$bbuf" | grep -qaE '"subject":"'; then
-        b_sum=$(printf '%s' "$bbuf" | jq -rs 'def epoch: if . == null or . == "" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end; . as $lines | ([$lines[] | select(any(.. | objects; (has("id") or has("taskId")) and has("status"))) | (.timestamp // "")] | map(epoch) | max // 0) as $ts | [$lines[] | .. | objects | select((has("id") or has("taskId")) and has("status")) | {tid: (.id // .taskId), subject: (.subject // ""), status: .status}] | group_by(.tid) | map({subject: (([.[].subject] | map(select(. != "")) | last) // ""), status: (.[-1].status)}) | map(select(.subject != "")) | (length) as $n | ([.[]|select(.status=="completed")]|length) as $d | (([.[]|select(.status=="in_progress")][0].subject) // ([.[]|select(.status=="pending")][0].subject) // "") as $a | (([$lines[]|..|objects|select(.type=="tool_use" and .name=="Agent")] as $au | [$lines[]|..|objects|select(.type=="tool_result")|.tool_use_id] as $dn | [$au[]|select((.id) as $i|($dn|index($i))|not)|(.input.subagent_type // "agent")]) | join(",")) as $raid | "\($n)\t\($d)\t\($a | gsub("[\t\n\r]";" "))\t\([.[].subject]|join(" ")|gsub("[\t\n\r]";" "))\t\($ts)\t\($raid)"' 2>/dev/null)
+        b_sum=$(printf '%s' "$bbuf" | jq -rs 'def epoch: if . == null or . == "" then 0 else (gsub("\\.[0-9]+Z$";"Z") | fromdateiso8601) end; . as $lines | ([$lines[] | select(any(.. | objects; (has("id") or has("taskId")) and (has("subject") or has("status")))) | (.timestamp // "")] | map(epoch) | max // 0) as $ts | [$lines[] | .. | objects | select((has("id") or has("taskId")) and (has("subject") or has("status"))) | {tid: (.id // .taskId), subject: (.subject // ""), status: .status}] | group_by(.tid) | map({subject: (([.[].subject] | map(select(. != "")) | last) // ""), status: (([.[].status] | map(select(. != "")) | last) // "pending")}) | map(select(.subject != "")) | (length) as $n | ([.[]|select(.status=="completed")]|length) as $d | (([.[]|select(.status=="in_progress")][0].subject) // ([.[]|select(.status=="pending")][0].subject) // "") as $a | (([$lines[]|..|objects|select(.type=="tool_use" and .name=="Agent")] as $au | [$lines[]|..|objects|select(.type=="tool_result")|.tool_use_id] as $dn | [$au[]|select((.id) as $i|($dn|index($i))|not)|(.input.subagent_type // "agent")]) | join(",")) as $raid | "\($n)\t\($d)\t\($a | gsub("[\t\n\r]";" "))\t\([.[].subject]|join(" ")|gsub("[\t\n\r]";" "))\t\($ts)\t\($raid)"' 2>/dev/null)
       fi
       # Expire a stale fight: if the latest task/todo update is > 15 min old, the
       # fight is over (Agent-teams doesn't always emit a final all-done snapshot).
