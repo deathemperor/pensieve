@@ -14,3 +14,18 @@ The blog at [/pensieve](https://huuloc.com/pensieve) collects long-form narrativ
 ## Built with
 
 [Astro](https://astro.build) + [EmDash CMS](https://github.com/emdash-cms/emdash), running on Cloudflare Workers with D1, R2, and KV.
+
+## Developer setup
+
+Install the CLI toolbelt this project leans on (search, git, JSON, container, and
+security tooling). Idempotent — safe to re-run:
+
+```bash
+scripts/onboard.sh            # everything
+scripts/onboard.sh --core     # just the everyday essentials
+scripts/onboard.sh --no-shell # skip shell-rc changes
+```
+
+Installs Homebrew if missing, then the formulae plus a few non-brew extras
+(composio, llmfit, the `gh-dash` extension), and wires `atuin` + `direnv` into
+your shell rc. See the header of `scripts/onboard.sh` for the full list.
