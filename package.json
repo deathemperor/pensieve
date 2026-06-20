@@ -43,7 +43,7 @@
 		"@types/node": "22.19.17",
 		"puppeteer": "23.11.1",
 		"tsx": "4.21.0",
-		"wrangler": "4.81.1"
+		"wrangler": "4.103.0"
 	},
 	"overrides": {
 		"hono": "^4.12.14",
