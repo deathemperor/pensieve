@@ -8,6 +8,9 @@ export const prerender = false;
 type D1 = import("@cloudflare/workers-types").D1Database;
 const db = () => (env as any).DB as D1;
 
+/** Fewest submissions before a percentile is meaningful rather than noise. */
+const MIN_SAMPLE = 20;
+
 /** GET ?day=YYYY-MM-DD → how many runs were submitted for that day. */
 export const GET: APIRoute = async ({ request }) => {
 	const url = new URL(request.url);
@@ -56,7 +59,10 @@ export const POST: APIRoute = async ({ request }) => {
 	const total = stats?.total ?? 1;
 	const above = stats?.above ?? 0;
 	// "Top X% of scores submitted today" — smaller is better; a leading score is Top 1%.
-	const topPercent = total > 0 ? Math.max(1, Math.round((above / total) * 100)) : 100;
+	// Below MIN_SAMPLE a percentile is noise: the only submitter of a 0/18 would
+	// otherwise be told they're "Top 1%". Report the raw count instead.
+	const topPercent =
+		total >= MIN_SAMPLE ? Math.max(1, Math.round((above / total) * 100)) : null;
 
 	return json({ ok: true, count: total, topPercent });
 };

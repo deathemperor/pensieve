@@ -220,7 +220,7 @@ const attribution = isVi
 		let letter: string;
 		try {
 			const res = await fetch(`${API}/hint?${q}`);
-			letter = (await res.json()).letter;
+			letter = ((await res.json()) as { letter?: string }).letter ?? "";
 			if (!letter) return;
 		} catch { return; }
 		// place a matching unused tray tile into this slot, then lock it
@@ -264,7 +264,7 @@ const attribution = isVi
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ day: puzzle!.day, score, timeMs }),
 				});
-				const j = await res.json();
+				const j = (await res.json()) as { topPercent?: number; count?: number };
 				top = j.topPercent ?? null; count = j.count ?? null;
 			} catch { /* leaderboard offline — run still stands */ }
 		}
@@ -312,7 +312,6 @@ const attribution = isVi
 		`;
 		renderTimer();
 		bind();
-		void solvedSplit;
 	}
 
 	function renderTimer() {
@@ -488,6 +487,12 @@ const attribution = isVi
 	.game-page-attribution a:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
 
 	.board-holder { max-width: 640px; margin: 0 auto; padding: var(--spacing-10) var(--spacing-6) var(--spacing-16); }
+</style>
+
+<!-- The board is injected at runtime via innerHTML, so its nodes never get
+     Astro's data-astro-cid-* scoping attribute. These rules must be global
+     or none of them match. All selectors are chu- prefixed. -->
+<style is:global>
 	.chu { font-family: var(--font-sans); color: var(--color-text); }
 	.chu-status { text-align: center; color: var(--color-muted); font-family: var(--font-mono); padding: var(--spacing-12) 0; }
 
