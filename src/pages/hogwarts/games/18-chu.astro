@@ -1,0 +1,577 @@
+---
+export const prerender = false;
+
+import Base from "../../../layouts/Base.astro";
+import { getCurrentLang } from "../../../utils/lang";
+
+const currentLang = getCurrentLang(Astro);
+const isVi = currentLang === "vi";
+
+const title = isVi ? "18 Chữ" : "18 Words";
+const tagline = isVi
+	? "Giải 18 từ tiếng Việt bị xáo trộn — mỗi từ 30 giây. Sai một từ hoặc hết giờ là kết thúc. Bạn sống sót được bao nhiêu?"
+	: "Unscramble 18 Vietnamese words — 30 seconds each. One wrong answer or one timeout ends the run. How far can you survive?";
+const attribution = isVi
+	? "Lấy cảm hứng từ 18words.com. Mã nguồn và bộ từ đều là bản gốc."
+	: "Inspired by 18words.com. All code and word data are original.";
+---
+
+<Base
+	title={`${title} — Pensieve`}
+	description={tagline}
+	breadcrumbs={[
+		{ label: "Hogwarts", href: "/" },
+		{ label: isVi ? "Sân Chơi" : "Games", href: "/hogwarts/games/" },
+		{ label: title },
+	]}
+>
+	<section class="game-wrap">
+		<header class="game-hero">
+			<div class="game-hero-inner">
+				<div class="room-rule"></div>
+				<span class="room-label">{isVi ? "Sân Chơi" : "Games"}</span>
+				<h1 class="game-page-title">{title}</h1>
+				<p class="game-page-tagline">{tagline}</p>
+				<p class="game-page-attribution">
+					{attribution} —
+					<a href="https://18words.com/" target="_blank" rel="noopener noreferrer">18words.com</a>
+				</p>
+			</div>
+		</header>
+
+		<div class="board-holder">
+			<div id="chu-app" class="chu" data-lang={currentLang} aria-live="polite"></div>
+		</div>
+	</section>
+</Base>
+
+<script>
+	type Word = { tiles: string[]; length: number; splits: number[]; hash: string };
+	type Puzzle = {
+		day: string;
+		mode: "daily" | "practice" | "relax";
+		seed: string;
+		salt: string;
+		attribution: string;
+		words: Word[];
+	};
+
+	const root = document.getElementById("chu-app")!;
+	const lang = (root.dataset.lang === "en" ? "en" : "vi") as "vi" | "en";
+	const T = {
+		vi: {
+			daily: "Hằng ngày", practice: "Luyện tập", relax: "Thư giãn",
+			start: "Bắt đầu", submit: "Trả lời", shuffle: "Xáo trộn", del: "Xoá",
+			hint: "Gợi ý", word: "Từ", of: "trên", timeUp: "Hết giờ!",
+			wrong: "Sai rồi!", loading: "Đang tải…",
+			wonTitle: "Sống sót cả 18 từ! 🎉", lostTitle: "Kết thúc",
+			scored: (s: number) => `Bạn qua được ${s}/18 từ`,
+			time: "Thời gian", top: (x: number) => `Top ${x}% điểm gửi hôm nay`,
+			played: (n: number) => `${n} lượt chơi hôm nay`,
+			share: "Chia sẻ", copied: "Đã chép!", again: "Chơi lại",
+			tomorrow: "Câu đố mới vào ngày mai", streak: "Chuỗi ngày",
+			archive: "Kho lưu trữ", today: "Hôm nay", offline: "Mất kết nối — thử lại.",
+		},
+		en: {
+			daily: "Daily", practice: "Practice", relax: "Relax",
+			start: "Start", submit: "Submit", shuffle: "Shuffle", del: "Delete",
+			hint: "Hint", word: "Word", of: "of", timeUp: "Time's up!",
+			wrong: "Wrong!", loading: "Loading…",
+			wonTitle: "Survived all 18! 🎉", lostTitle: "Run over",
+			scored: (s: number) => `You got ${s}/18 words`,
+			time: "Time", top: (x: number) => `Top ${x}% of scores submitted today`,
+			played: (n: number) => `${n} runs today`,
+			share: "Share", copied: "Copied!", again: "Play again",
+			tomorrow: "New puzzle tomorrow", streak: "Streak",
+			archive: "Archive", today: "Today", offline: "Lost connection — try again.",
+		},
+	}[lang];
+
+	const SECONDS = 30;
+	const HINTS = 3;
+	const API = "/api/games/18-chu";
+	const LS_KEY = "chu18:v1";
+
+	// ---- persistence (streak + archive; personal, client-trusted) ----
+	type Store = { streak: number; longest: number; lastDay: string; best: Record<string, number> };
+	function load(): Store {
+		try { return { streak: 0, longest: 0, lastDay: "", best: {}, ...JSON.parse(localStorage.getItem(LS_KEY) || "{}") }; }
+		catch { return { streak: 0, longest: 0, lastDay: "", best: {} }; }
+	}
+	function save(s: Store) { try { localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch { /* private mode */ } }
+	function prevDay(d: string): string {
+		const t = Date.parse(`${d}T00:00:00Z`) - 86_400_000;
+		return new Date(t).toISOString().slice(0, 10);
+	}
+	function recordDaily(day: string, score: number) {
+		const s = load();
+		s.best[day] = Math.max(s.best[day] ?? 0, score);
+		if (s.lastDay !== day) {
+			s.streak = s.lastDay === prevDay(day) ? s.streak + 1 : 1;
+			s.lastDay = day;
+			s.longest = Math.max(s.longest, s.streak);
+		}
+		save(s);
+		return s;
+	}
+
+	async function sha256Hex(str: string): Promise<string> {
+		const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+		return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+	}
+
+	// ---- run state ----
+	let puzzle: Puzzle | null = null;
+	let mode: Puzzle["mode"] = "daily";
+	let wordIdx = 0;
+	let placed: (number | null)[] = []; // slot -> tray index
+	let trayUsed: boolean[] = [];
+	let trayOrder: number[] = [];
+	let locked: Set<number> = new Set(); // slot indices revealed by hint (immovable)
+	let hintsLeft = HINTS;
+	let score = 0;
+	let runStart = 0;
+	let timer: number | null = null;
+	let remaining = SECONDS;
+	let over = false;
+
+	function stopTimer() { if (timer !== null) { clearInterval(timer); timer = null; } }
+
+	function currentGuess(): string[] {
+		return placed.map((ti) => (ti === null ? "" : puzzle!.words[wordIdx].tiles[ti]));
+	}
+
+	function param(name: string): string | null { return new URL(location.href).searchParams.get(name); }
+
+	async function fetchPuzzle(m: Puzzle["mode"], opts: { day?: string; seed?: string } = {}) {
+		const q = new URLSearchParams({ mode: m });
+		if (opts.day) q.set("day", opts.day);
+		if (opts.seed) q.set("seed", opts.seed);
+		const res = await fetch(`${API}/puzzle?${q}`);
+		if (!res.ok) throw new Error(String(res.status));
+		return (await res.json()) as Puzzle;
+	}
+
+	async function startRun(m: Puzzle["mode"], opts: { day?: string; seed?: string } = {}) {
+		mode = m;
+		root.innerHTML = `<p class="chu-status">${T.loading}</p>`;
+		try {
+			puzzle = await fetchPuzzle(m, opts);
+		} catch {
+			root.innerHTML = `<p class="chu-status">${T.offline}</p>`;
+			return;
+		}
+		wordIdx = 0; score = 0; hintsLeft = HINTS; over = false; runStart = Date.now();
+		loadWord();
+	}
+
+	function loadWord() {
+		const w = puzzle!.words[wordIdx];
+		placed = Array(w.length).fill(null);
+		trayUsed = Array(w.length).fill(false);
+		trayOrder = w.tiles.map((_, i) => i);
+		locked = new Set();
+		remaining = SECONDS;
+		stopTimer();
+		if (mode !== "relax") {
+			timer = window.setInterval(() => {
+				remaining -= 0.1;
+				if (remaining <= 0) { remaining = 0; renderTimer(); endRun(false); }
+				else renderTimer();
+			}, 100);
+		}
+		render();
+	}
+
+	function placeTile(trayIdx: number) {
+		if (over || trayUsed[trayIdx]) return;
+		const slot = placed.findIndex((v, i) => v === null && !locked.has(i));
+		if (slot === -1) return;
+		placed[slot] = trayIdx;
+		trayUsed[trayIdx] = true;
+		render();
+		if (placed.every((v) => v !== null)) submit();
+	}
+	function clearSlot(slot: number) {
+		if (over || locked.has(slot) || placed[slot] === null) return;
+		trayUsed[placed[slot]!] = false;
+		placed[slot] = null;
+		render();
+	}
+	function backspace() {
+		for (let i = placed.length - 1; i >= 0; i--) {
+			if (placed[i] !== null && !locked.has(i)) { clearSlot(i); return; }
+		}
+	}
+	function shuffle() {
+		for (let i = trayOrder.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[trayOrder[i], trayOrder[j]] = [trayOrder[j], trayOrder[i]];
+		}
+		render();
+	}
+
+	async function useHint() {
+		if (over || hintsLeft <= 0) return;
+		const slot = placed.findIndex((v, i) => v === null && !locked.has(i));
+		if (slot === -1) return;
+		const q = new URLSearchParams({ mode, word: String(wordIdx), pos: String(slot) });
+		if (mode === "daily") q.set("day", puzzle!.day); else q.set("seed", puzzle!.seed);
+		let letter: string;
+		try {
+			const res = await fetch(`${API}/hint?${q}`);
+			letter = ((await res.json()) as { letter?: string }).letter ?? "";
+			if (!letter) return;
+		} catch { return; }
+		// place a matching unused tray tile into this slot, then lock it
+		const w = puzzle!.words[wordIdx];
+		const ti = trayOrder.find((idx) => !trayUsed[idx] && w.tiles[idx] === letter);
+		if (ti === undefined) return;
+		if (placed[slot] !== null) { trayUsed[placed[slot]!] = false; }
+		placed[slot] = ti;
+		trayUsed[ti] = true;
+		locked.add(slot);
+		hintsLeft--;
+		render();
+		if (placed.every((v) => v !== null)) submit();
+	}
+
+	async function submit() {
+		if (over || placed.some((v) => v === null)) return;
+		const w = puzzle!.words[wordIdx];
+		const guess = currentGuess().join("").normalize("NFC").toLowerCase();
+		const ok = (await sha256Hex(puzzle!.salt + guess)) === w.hash;
+		if (!ok) { flashWrong(); endRun(false); return; }
+		score++;
+		if (wordIdx === puzzle!.words.length - 1) { endRun(true); return; }
+		wordIdx++;
+		loadWord();
+	}
+
+	async function endRun(won: boolean) {
+		if (over) return;
+		over = true;
+		stopTimer();
+		const timeMs = Date.now() - runStart;
+		let top: number | null = null;
+		let count: number | null = null;
+		if (mode === "daily") {
+			const s = recordDaily(puzzle!.day, score);
+			renderStreak(s);
+			try {
+				const res = await fetch(`${API}/result`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ day: puzzle!.day, score, timeMs }),
+				});
+				const j = (await res.json()) as { topPercent?: number; count?: number };
+				top = j.topPercent ?? null; count = j.count ?? null;
+			} catch { /* leaderboard offline — run still stands */ }
+		}
+		renderOver(won, timeMs, top, count);
+	}
+
+	// ---------- rendering ----------
+	function fmtTime(ms: number): string {
+		const s = Math.round(ms / 1000);
+		return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+	}
+
+	function render() {
+		const w = puzzle!.words[wordIdx];
+		// The syllable split is the puzzle — never hint it in the slot layout.
+		const slotsHtml = placed.map((ti, i) => {
+			const ch = ti === null ? "" : w.tiles[ti];
+			const lk = locked.has(i) ? " chu-locked" : "";
+			return `<button class="chu-slot${ch ? " chu-filled" : ""}${lk}" data-slot="${i}">${ch}</button>`;
+		}).join("");
+		const trayHtml = trayOrder.map((idx) => {
+			const used = trayUsed[idx];
+			return `<button class="chu-tile${used ? " chu-tile-used" : ""}" data-tray="${idx}" ${used ? "disabled" : ""}>${w.tiles[idx]}</button>`;
+		}).join("");
+		const dots = puzzle!.words.map((_, i) =>
+			`<span class="chu-dot${i < wordIdx ? " chu-dot-done" : i === wordIdx ? " chu-dot-now" : ""}"></span>`).join("");
+
+		root.innerHTML = `
+			<div class="chu-topbar">
+				<span class="chu-wordno">${T.word} ${wordIdx + 1} ${T.of} 18</span>
+				<span class="chu-mode-badge">${T[mode]}</span>
+			</div>
+			<div class="chu-timer${mode === "relax" ? " chu-timer-off" : ""}">
+				<div class="chu-timer-bar" id="chu-bar"></div>
+				<span class="chu-timer-num" id="chu-num"></span>
+			</div>
+			<div class="chu-dots">${dots}</div>
+			<div class="chu-slots" id="chu-slots">${slotsHtml}</div>
+			<div class="chu-tray" id="chu-tray">${trayHtml}</div>
+			<div class="chu-controls">
+				<button class="chu-btn" data-act="shuffle">${T.shuffle}</button>
+				<button class="chu-btn" data-act="del">← ${T.del}</button>
+				<button class="chu-btn chu-hint" data-act="hint">${T.hint} (${hintsLeft})</button>
+			</div>
+		`;
+		renderTimer();
+		bind();
+	}
+
+	function renderTimer() {
+		const bar = document.getElementById("chu-bar");
+		const num = document.getElementById("chu-num");
+		if (!bar || !num) return;
+		if (mode === "relax") { bar.style.width = "100%"; num.textContent = "∞"; return; }
+		bar.style.width = `${(remaining / SECONDS) * 100}%`;
+		bar.classList.toggle("chu-timer-low", remaining <= 5);
+		num.textContent = String(Math.ceil(remaining));
+	}
+
+	function flashWrong() {
+		const slots = document.getElementById("chu-slots");
+		if (slots) { slots.classList.add("chu-shake"); }
+	}
+
+	function renderStreak(_s: Store) { /* shown on the over card */ }
+
+	function renderOver(won: boolean, timeMs: number, top: number | null, count: number | null) {
+		const s = load();
+		const emojis = "🟩".repeat(score) + (score < 18 ? "🟥" : "");
+		const n = puzzle!.mode === "daily" ? puzzleNumber(puzzle!.day) : null;
+		const shareText =
+			`18 Chữ${n ? ` #${n}` : ""} — ${score}/18 · ⏱️${fmtTime(timeMs)} · ${emojis}`;
+		root.innerHTML = `
+			<div class="chu-over">
+				<h2 class="chu-over-title">${won ? T.wonTitle : T.lostTitle}</h2>
+				<p class="chu-over-score">${T.scored(score)}</p>
+				<div class="chu-over-meta">
+					<span>${T.time}: ${fmtTime(timeMs)}</span>
+					${mode === "daily" ? `<span>${T.streak}: ${s.streak}🔥</span>` : ""}
+					${top !== null ? `<span>${T.top(top)}</span>` : ""}
+					${top === null && count !== null ? `<span>${T.played(count)}</span>` : ""}
+				</div>
+				<div class="chu-tiles-emoji">${emojis}</div>
+				<div class="chu-over-actions">
+					<button class="chu-btn chu-btn-primary" data-over="share">${T.share}</button>
+					${mode === "daily"
+						? `<span class="chu-tomorrow">${T.tomorrow}</span>`
+						: `<button class="chu-btn" data-over="again">${T.again}</button>`}
+				</div>
+			</div>
+			${renderArchive()}
+		`;
+		bindOver(shareText);
+	}
+
+	function renderArchive(): string {
+		const s = load();
+		const days: string[] = [];
+		let d = todayVN();
+		for (let i = 0; i < 14; i++) { days.push(d); d = prevDay(d); }
+		const chips = days.map((day, i) => {
+			const best = s.best[day];
+			const cls = best === 18 ? " chu-arch-perfect" : best !== undefined ? " chu-arch-done" : "";
+			const label = i === 0 ? T.today : day.slice(5);
+			return `<button class="chu-arch-chip${cls}" data-day="${day}">${label}${best !== undefined ? `<i>${best}</i>` : ""}</button>`;
+		}).join("");
+		return `<div class="chu-archive"><span class="chu-arch-label">${T.archive}</span><div class="chu-arch-grid">${chips}</div></div>`;
+	}
+
+	// launch / mode screen
+	function renderStart() {
+		root.innerHTML = `
+			<div class="chu-start">
+				<div class="chu-modes">
+					<button class="chu-btn chu-btn-primary" data-start="daily">${T.daily}</button>
+					<button class="chu-btn" data-start="practice">${T.practice}</button>
+					<button class="chu-btn" data-start="relax">${T.relax}</button>
+				</div>
+				${renderArchive()}
+			</div>
+		`;
+		root.querySelectorAll<HTMLButtonElement>("[data-start]").forEach((b) =>
+			b.addEventListener("click", () => {
+				const m = b.dataset.start as Puzzle["mode"];
+				// Pin the daily to an explicit date so the edge caches each day
+				// under its own URL (no stale puzzle after the VN-time rollover).
+				startRun(m, m === "daily" ? { day: todayVN() } : {});
+			}));
+		bindArchive();
+	}
+
+	function bind() {
+		document.getElementById("chu-tray")!.querySelectorAll<HTMLButtonElement>("[data-tray]").forEach((b) =>
+			b.addEventListener("click", () => placeTile(Number(b.dataset.tray))));
+		document.getElementById("chu-slots")!.querySelectorAll<HTMLButtonElement>("[data-slot]").forEach((b) =>
+			b.addEventListener("click", () => clearSlot(Number(b.dataset.slot))));
+		root.querySelectorAll<HTMLButtonElement>("[data-act]").forEach((b) =>
+			b.addEventListener("click", () => {
+				if (b.dataset.act === "shuffle") shuffle();
+				else if (b.dataset.act === "del") backspace();
+				else if (b.dataset.act === "hint") void useHint();
+			}));
+	}
+
+	function bindArchive() {
+		root.querySelectorAll<HTMLButtonElement>("[data-day]").forEach((b) =>
+			b.addEventListener("click", () => startRun("daily", { day: b.dataset.day })));
+	}
+
+	function bindOver(shareText: string) {
+		root.querySelectorAll<HTMLButtonElement>("[data-over]").forEach((b) =>
+			b.addEventListener("click", async () => {
+				if (b.dataset.over === "again") startRun(mode);
+				else if (b.dataset.over === "share") {
+					try { await navigator.clipboard.writeText(shareText + `\n${location.origin}/hogwarts/games/18-chu`); b.textContent = T.copied; }
+					catch { /* clipboard blocked */ }
+				}
+			}));
+		bindArchive();
+	}
+
+	// keyboard: type a char matching a tray tile; Enter submits; Backspace deletes
+	document.addEventListener("keydown", (e) => {
+		if (!puzzle || over) return;
+		if (e.key === "Enter") { void submit(); return; }
+		if (e.key === "Backspace") { e.preventDefault(); backspace(); return; }
+		const ch = e.key.toLowerCase();
+		if (ch.length === 1 && /\p{L}/u.test(ch)) {
+			const w = puzzle.words[wordIdx];
+			const ti = trayOrder.find((idx) => !trayUsed[idx] && w.tiles[idx] === ch);
+			if (ti !== undefined) placeTile(ti);
+		}
+	});
+
+	// --- date helpers mirroring the server (Vietnam time) ---
+	function todayVN(): string {
+		return new Intl.DateTimeFormat("en-CA", {
+			timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit",
+		}).format(new Date());
+	}
+	function puzzleNumber(day: string): number {
+		const ms = Date.parse(`${day}T00:00:00Z`) - Date.parse("2026-07-10T00:00:00Z");
+		return Math.max(1, Math.floor(ms / 86_400_000) + 1);
+	}
+
+	// boot: ?day / ?seed deep-links jump straight into a run
+	const deepDay = param("day");
+	const deepSeed = param("seed");
+	if (deepDay) startRun("daily", { day: deepDay });
+	else if (deepSeed) startRun("practice", { seed: deepSeed });
+	else renderStart();
+</script>
+
+<style>
+	.game-wrap { border-bottom: 1px solid var(--color-border); }
+	.game-hero { border-bottom: 1px solid var(--color-border); }
+	.game-hero-inner {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-16) var(--spacing-8) var(--spacing-10);
+	}
+	.room-rule { width: 24px; height: 1px; background: var(--color-accent); margin-bottom: var(--spacing-5); }
+	.room-label {
+		display: block; font-family: var(--font-sans); font-size: var(--font-size-xs);
+		font-weight: 500; text-transform: uppercase; letter-spacing: var(--tracking-wider);
+		color: var(--color-muted); margin-bottom: var(--spacing-4);
+	}
+	.game-page-title {
+		font-family: var(--font-display); font-size: clamp(1.75rem, 3.25vw, 2.75rem);
+		font-weight: var(--font-weight-display); line-height: 1.1; letter-spacing: -0.022em;
+		color: var(--color-text); margin: 0 0 var(--spacing-4);
+	}
+	.game-page-tagline {
+		font-family: var(--font-sans); font-size: var(--font-size-base);
+		line-height: var(--leading-relaxed); color: var(--color-text-secondary);
+		max-width: 60ch; margin: 0 0 var(--spacing-3);
+	}
+	.game-page-attribution { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin: 0; }
+	.game-page-attribution a { color: var(--color-text-secondary); text-decoration: none; border-bottom: 1px solid var(--color-border); }
+	.game-page-attribution a:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
+
+	.board-holder { max-width: 640px; margin: 0 auto; padding: var(--spacing-10) var(--spacing-6) var(--spacing-16); }
+</style>
+
+<!-- The board is injected at runtime via innerHTML, so its nodes never get
+     Astro's data-astro-cid-* scoping attribute. These rules must be global
+     or none of them match. All selectors are chu- prefixed. -->
+<style is:global>
+	.chu { font-family: var(--font-sans); color: var(--color-text); }
+	.chu-status { text-align: center; color: var(--color-muted); font-family: var(--font-mono); padding: var(--spacing-12) 0; }
+
+	.chu-topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4); }
+	.chu-wordno { font-family: var(--font-mono); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+	.chu-mode-badge {
+		font-family: var(--font-mono); font-size: var(--font-size-xs); text-transform: uppercase;
+		letter-spacing: var(--tracking-wider); color: var(--color-muted);
+		border: 1px solid var(--color-border); border-radius: 999px; padding: 2px 10px;
+	}
+
+	.chu-timer { position: relative; height: 6px; background: var(--color-border); border-radius: 999px; overflow: hidden; margin-bottom: var(--spacing-2); }
+	.chu-timer-bar { height: 100%; width: 100%; background: var(--color-accent); transition: width 0.1s linear; }
+	.chu-timer-bar.chu-timer-low { background: #e5484d; }
+	.chu-timer-off .chu-timer-bar { background: var(--color-border); }
+	.chu-timer-num { position: absolute; right: 0; top: 10px; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); }
+
+	.chu-dots { display: flex; gap: 4px; justify-content: center; margin: var(--spacing-6) 0 var(--spacing-5); flex-wrap: wrap; }
+	.chu-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-border); }
+	.chu-dot-done { background: var(--color-accent); }
+	.chu-dot-now { background: var(--color-text); transform: scale(1.35); }
+
+	.chu-slots { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: var(--spacing-8); min-height: 56px; }
+	.chu-slots.chu-shake { animation: chu-shake 0.35s; }
+	@keyframes chu-shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+	.chu-slot {
+		width: 46px; height: 56px; border: 1.5px solid var(--color-border); border-radius: 8px;
+		background: transparent; font-family: var(--font-display); font-size: 1.5rem; font-weight: 600;
+		text-transform: uppercase; color: var(--color-text); cursor: pointer; display: grid; place-items: center;
+	}
+	.chu-slot.chu-filled { border-color: var(--color-text); background: var(--color-surface, rgba(255,255,255,0.04)); }
+	.chu-slot.chu-locked { border-color: var(--color-accent); color: var(--color-accent); cursor: default; }
+
+	.chu-tray { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: var(--spacing-6); }
+	.chu-tile {
+		width: 46px; height: 52px; border: 1.5px solid var(--color-border); border-radius: 8px;
+		background: var(--color-surface, rgba(255,255,255,0.04)); font-family: var(--font-display);
+		font-size: 1.4rem; font-weight: 600; text-transform: uppercase; color: var(--color-text);
+		cursor: pointer; transition: transform 0.08s, border-color 0.12s;
+	}
+	.chu-tile:hover:not(:disabled) { transform: translateY(-2px); border-color: var(--color-text); }
+	.chu-tile-used { opacity: 0.22; cursor: default; }
+
+	.chu-controls, .chu-modes, .chu-over-actions { display: flex; gap: var(--spacing-3); justify-content: center; flex-wrap: wrap; }
+	.chu-btn {
+		font-family: var(--font-sans); font-size: var(--font-size-sm); font-weight: 500;
+		padding: 10px 18px; border: 1px solid var(--color-border); border-radius: 8px;
+		background: transparent; color: var(--color-text); cursor: pointer; transition: border-color 0.12s, background 0.12s;
+	}
+	.chu-btn:hover { border-color: var(--color-text); }
+	.chu-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+	.chu-hint { color: var(--color-accent); }
+
+	.chu-start { padding: var(--spacing-8) 0; }
+	.chu-modes { margin-bottom: var(--spacing-10); }
+
+	.chu-over { text-align: center; padding: var(--spacing-8) 0 var(--spacing-6); }
+	.chu-over-title { font-family: var(--font-display); font-size: 1.75rem; margin: 0 0 var(--spacing-2); }
+	.chu-over-score { color: var(--color-text-secondary); margin: 0 0 var(--spacing-4); }
+	.chu-over-meta { display: flex; gap: var(--spacing-4); justify-content: center; flex-wrap: wrap; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); margin-bottom: var(--spacing-5); }
+	.chu-tiles-emoji { font-size: 1.1rem; letter-spacing: 2px; margin-bottom: var(--spacing-6); word-break: break-all; }
+	.chu-tomorrow { align-self: center; font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--color-muted); }
+
+	.chu-archive { margin-top: var(--spacing-10); border-top: 1px solid var(--color-border); padding-top: var(--spacing-6); }
+	.chu-arch-label { display: block; font-family: var(--font-mono); font-size: var(--font-size-xs); text-transform: uppercase; letter-spacing: var(--tracking-wider); color: var(--color-muted); margin-bottom: var(--spacing-4); text-align: center; }
+	.chu-arch-grid { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+	.chu-arch-chip {
+		position: relative; font-family: var(--font-mono); font-size: 11px; color: var(--color-text-secondary);
+		border: 1px solid var(--color-border); border-radius: 6px; background: transparent; padding: 6px 8px; cursor: pointer; min-width: 40px;
+	}
+	.chu-arch-chip:hover { border-color: var(--color-text); }
+	.chu-arch-chip i { display: block; font-style: normal; font-size: 9px; color: var(--color-muted); }
+	.chu-arch-done { border-color: var(--color-accent); }
+	.chu-arch-perfect { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+	.chu-arch-perfect i { color: rgba(255,255,255,0.8); }
+
+	@media (max-width: 460px) {
+		.chu-slot, .chu-tile { width: 38px; }
+		.chu-slot { height: 48px; font-size: 1.25rem; }
+		.chu-tile { height: 44px; font-size: 1.15rem; }
+	}
+</style>
