@@ -19,7 +19,7 @@
  * the plaintext answers never reach the browser. Run:  npx tsx scripts/build-18chu-bank.ts
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -63,14 +63,17 @@ function classify(raw: string): { word: string; letters: number } | null {
 }
 
 async function loadList(file: string): Promise<string[]> {
-	mkdirSync(CACHE, { recursive: true });
-	const cached = join(CACHE, file);
-	if (existsSync(cached)) return readFileSync(cached, "utf8").split("\n");
+	// Prefer a local copy in scripts/.cache/ (a single read — no exists-then-read
+	// race). Otherwise pull the list into memory; we don't persist fetched bytes
+	// to disk. To cache, drop the .txt files into scripts/.cache/ yourself.
+	try {
+		return readFileSync(join(CACHE, file), "utf8").split("\n");
+	} catch {
+		/* not cached locally — fall through to network */
+	}
 	const res = await fetch(`${BASE_URL}/${file}`);
 	if (!res.ok) throw new Error(`fetch ${file}: ${res.status}`);
-	const text = await res.text();
-	writeFileSync(cached, text);
-	return text.split("\n");
+	return (await res.text()).split("\n");
 }
 
 async function main() {
@@ -106,12 +109,18 @@ async function main() {
 		slots[bucket].push(scored[i].word);
 	}
 
-	// Word 18 pool from Lộc's writing, if a corpus dump exists.
+	// Word 18 pool from Lộc's writing, if a corpus dump exists. Read directly and
+	// treat a missing file as "no pool" — no exists-then-read race.
 	const validSet = new Set(tierOf.keys());
-	let corpusPool: string[] = [];
-	if (existsSync(CORPUS_FILE)) {
-		const text = readFileSync(CORPUS_FILE, "utf8").normalize("NFC").toLowerCase();
-		const tokens = text.split(/[^\p{L}]+/u).filter(Boolean);
+	const corpusPool: string[] = [];
+	let corpusText: string | null = null;
+	try {
+		corpusText = readFileSync(CORPUS_FILE, "utf8").normalize("NFC").toLowerCase();
+	} catch {
+		/* no corpus dump — slot 18 falls back to bucket 18 */
+	}
+	if (corpusText) {
+		const tokens = corpusText.split(/[^\p{L}]+/u).filter(Boolean);
 		const seen = new Set<string>();
 		for (let i = 0; i < tokens.length - 1; i++) {
 			const pair = `${tokens[i]} ${tokens[i + 1]}`;
