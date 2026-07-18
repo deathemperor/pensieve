@@ -21,7 +21,7 @@
 		"@resvg/resvg-wasm": "^2.6.2",
 		"@rive-app/canvas-lite": "^2.37.1",
 		"@types/adm-zip": "^0.5.8",
-		"adm-zip": "^0.5.17",
+		"adm-zip": "^0.6.0",
 		"astro": "^6.1.2",
 		"emdash": "^0.5.0",
 		"hono": "^4.12.14",
