@@ -1,6 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "pensieve",
+	"account_id": "76f1666bfa8377c4a6ecd1c8993a37df",
 	"main": "./src/worker.ts",
 	"compatibility_date": "2026-03-29",
 	"compatibility_flags": [
@@ -23,12 +24,12 @@
 		{
 			"binding": "DB",
 			"database_name": "pensieve-db",
-			"database_id": "1855e187-632c-4585-8c94-e5b7b139f76c",
+			"database_id": "b937d135-b3fe-438d-9a00-898e18c83df5",
 		},
 		{
 			"binding": "HOL_DB",
 			"database_name": "hol-archive",
-			"database_id": "79796069-2544-4c3b-94bc-8171e45e337e",
+			"database_id": "96e6aa9d-fff8-476d-a4db-07165c696bdf",
 		},
 	],
 	"r2_buckets": [
@@ -40,7 +41,7 @@
 	"kv_namespaces": [
 		{
 			"binding": "SESSION",
-			"id": "3b03dd400a3645aba498f70808f08c76",
+			"id": "21adb2f7216e4fd9bed2f90f0c5d82e9",
 		},
 	],
 	"observability": {
